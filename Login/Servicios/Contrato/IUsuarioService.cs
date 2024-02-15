@@ -6,8 +6,8 @@ namespace Plataforma.Servicios.Contrato
     public interface IUsuarioService
     {
         //primer metodo devuelve un usuario atravez del correo y la contraseña
-        Task<Usuario> GetUsuarios(string correo, string password);
+        Task<Empleado> GetUsuarios(string correo, string password);
         //el segundo metodo guarda usuarios
-        Task<Usuario> SaveUsuario(Usuario modelo);
+        Task<Empleado> SaveUsuario(Empleado modelo);
     }
 }

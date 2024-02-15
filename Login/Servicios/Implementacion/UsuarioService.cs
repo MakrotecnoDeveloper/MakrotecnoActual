@@ -7,21 +7,21 @@ namespace Plataforma.Servicios.Implementacion
     public class UsuarioService : IUsuarioService
     {
         //variable de solo lectura para referenciar la base de datos
-        private readonly PruebaDbContext _dbContext;
-        public UsuarioService(PruebaDbContext dbContext)
+        private readonly BaseAdmContext _dbContext;
+        public UsuarioService(BaseAdmContext dbContext)
         {
             _dbContext = dbContext;
         }
-        public async Task<Usuario> GetUsuarios(string correo, string password)
+        public async Task<Empleado> GetUsuarios(string correo, string password)
         {
-            Usuario usuario_encontrando = await _dbContext.Usuarios.Where(u => u.Correo == correo && u.Clave == password).FirstOrDefaultAsync();
+            Empleado usuario_encontrando = await _dbContext.Empleados.Where(u => u.Correo == correo && u.Contrasena == password).FirstOrDefaultAsync();
 
             return usuario_encontrando;
         }
 
-        public async Task<Usuario> SaveUsuario(Usuario modelo)
+        public async Task<Empleado> SaveUsuario(Empleado modelo)
         {
-            _dbContext.Usuarios.Add(modelo);
+            _dbContext.Empleados.Add(modelo);
             await _dbContext.SaveChangesAsync();
             return modelo;
         }

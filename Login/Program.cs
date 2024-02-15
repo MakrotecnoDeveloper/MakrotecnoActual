@@ -12,9 +12,9 @@ builder.Services.AddControllersWithViews();
 
 
 //Configura el contexto de la base de datos en la aplicacion, osea la variable cadenaSQL que se asigna en appsettings.json
-builder.Services.AddDbContext<PruebaDbContext>(options =>
+builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL"));
+    options.UseMySQL(builder.Configuration.GetConnectionString("cadenaSQL"));
 });
 
 
@@ -23,7 +23,8 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
     {
-        option.LoginPath = "/Inicio/IniciarSesion";
+        //option.LoginPath = "/Home/LoginHome";
+        //option.AccessDeniedPath = "/Home/Error/{404}";
         option.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     });
 
@@ -55,6 +56,6 @@ app.UseAuthorization();
 //establece una ruta predeterminada para la aplicaci�n web
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Inicio}/{action=IniciarSesion}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/");
 
 app.Run();
