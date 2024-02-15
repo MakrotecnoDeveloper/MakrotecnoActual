@@ -5,27 +5,30 @@ using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // configura los servicios de MVC (Model-View-Controller) en la aplicaci�n web
 builder.Services.AddControllersWithViews();
 
-
+builder.Services.AddIdentity<IdentityUser, IdentityRole>();
 //Configura el contexto de la base de datos en la aplicacion, osea la variable cadenaSQL que se asigna en appsettings.json
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
     options.UseMySQL(builder.Configuration.GetConnectionString("cadenaSQL"));
 });
 
-
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
     {
-        //option.LoginPath = "/Home/LoginHome";
-        //option.AccessDeniedPath = "/Home/Error/{404}";
-        option.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        option.LoginPath = "/Home/Login";
+        option.LogoutPath = "/Home/Logout";
+        option.ExpireTimeSpan = TimeSpan.Zero;
+        //Si estamos viendo algo el tiempo de expiracion de mi cookie se aumenta 20 minutos mas.
+        option.SlidingExpiration = false;
     });
 
 
@@ -56,6 +59,6 @@ app.UseAuthorization();
 //establece una ruta predeterminada para la aplicaci�n web
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

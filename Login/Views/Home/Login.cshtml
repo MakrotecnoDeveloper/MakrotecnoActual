@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     Layout = null;
 }
 
@@ -15,7 +14,7 @@
     <div class="container">
        <div class="row">
            <div class="col-12">
-                <form asp-controller="Inicio" asp-action="IniciarSesion" method="POST">
+                <form asp-controller="Home" asp-action="IniciarSesion" method="POST">
                     <div class="form-group">
                         <label>Correo Corporativo</label>
                         <input type="email" class="form-control" name="correo">
@@ -26,14 +25,6 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
                     <small>¿Se te olvido la contraseña?, Recuperala <a>AQUI</a></small>
-                    @if (ViewData["Mensaje"] != null)
-                    {
-                        <div class="form-group">
-                            <div class="alert alert-danger" role="alert">
-                                @ViewData["Mensaje"]
-                            </div>
-                        </div>
-                    }
                 </form>
            </div>
        </div>

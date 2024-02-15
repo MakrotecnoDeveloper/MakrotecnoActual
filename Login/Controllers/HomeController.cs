@@ -1,7 +1,5 @@
-﻿using Plataforma.Models;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Security.Claims;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers
@@ -23,11 +21,29 @@ namespace Plataforma.Controllers
         {
             return View();
         }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Login()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
+        }
+        [HttpPost]
+        public IActionResult Login(string correo, string contrasena)
+        {
+            string Email = correo;
+            string Password = contrasena;
+            if(Email == null || Password == null)
+            {
+                return View("Error/SinDatos");
+            }else
+            {
+                var validarUsuario = _usuarioService.GetUsuarios(correo, contrasena);
+
+            }
+            return View();
+        }
+        public IActionResult Logout()
+        {
+            return View();
         }
         
     }
