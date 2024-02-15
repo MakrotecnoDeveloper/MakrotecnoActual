@@ -1,0 +1,7 @@
+1. Todo comienza en Program.cs, el archivo que asigna la clase y metodo en donde inicia la aplicacion web
+2. Se realiza la solicitud en la carpeta Controllers, el cual llama la vista de la carpeta Views
+3. Esta muestra la vista la cual trae un html, donde se digitan unos datos.
+4. Cuando los datos son digitados el va al Controller y realiza una solicitud a Models el cual contiene la BD
+5. Dependiendo de la solicitud que se haya registrado, se llama a Servicios el cual tiene:
+IUsuarioService -> establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
+UsuarioService -> proporciona la lógica concreta para llevar a cabo esas operaciones.
