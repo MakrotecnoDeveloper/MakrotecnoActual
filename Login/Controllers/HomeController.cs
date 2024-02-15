@@ -29,17 +29,20 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult Login(string correo, string contrasena)
         {
-            string Email = correo;
-            string Password = contrasena;
-            if(Email == null || Password == null)
+            if(correo == null || contrasena == null)
             {
                 return View("Error/SinDatos");
             }else
             {
                 var validarUsuario = _usuarioService.GetUsuarios(correo, contrasena);
-
+                if(validarUsuario != null)
+                {
+                    return View("Inicio/Index");
+                }else
+                {
+                    return View("Error/ProblemasDatos");
+                }
             }
-            return View();
         }
         public IActionResult Logout()
         {
