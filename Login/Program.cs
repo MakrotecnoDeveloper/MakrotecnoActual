@@ -17,12 +17,12 @@ builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
     options.UseMySQL(builder.Configuration.GetConnectionString("cadenaSQL"));
 });
-
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
     {
+        option.Cookie.Name = "CookieMakrotecno";
         option.LoginPath = "/Home/Login";
         option.LogoutPath = "/Home/Logout";
         option.ExpireTimeSpan = TimeSpan.Zero;

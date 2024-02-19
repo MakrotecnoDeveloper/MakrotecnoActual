@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Servicios.Contrato;
+using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
@@ -27,16 +30,35 @@ namespace Plataforma.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult Login(string correo, string contrasena)
+        public async Task<IActionResult> Login(string correo, string password)
         {
-            if(correo == null || contrasena == null)
+            if(correo == null || password == null)
             {
                 return View("Error/SinDatos");
             }else
             {
-                var validarUsuario = _usuarioService.GetUsuarios(correo, contrasena);
+                var validarUsuario = _usuarioService.GetUsuarios(correo, password);
                 if(validarUsuario != null)
                 {
+                    var claims = new List<Claim>() {
+                    new Claim("Cedula",""),
+                    new Claim("Nombre",""),
+                    new Claim("Apellido",""),
+                    new Claim("Genero",""),
+                    new Claim("Correo",""),
+                    new Claim("RH",""),
+                    new Claim("Celular",""),
+                    new Claim("Contrasena",""),
+                    };
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new ClaimsPrincipal(identity);
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+                        new AuthenticationProperties()
+                        {
+                            ExpiresUtc = false == true ? DateTime.UtcNow.AddMonths(2) : DateTime.UtcNow.AddMinutes(60),
+                            AllowRefresh = true,
+                            IsPersistent = false
+                        });
                     return View("Inicio/Index");
                 }else
                 {
