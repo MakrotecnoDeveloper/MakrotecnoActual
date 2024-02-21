@@ -11,7 +11,7 @@ public partial class BaseAdmContext : DbContext
     {
     }
 
-    public DbSet<Empleado> Empleados { get; set; }
+    public DbSet<Empleado> Empleado { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

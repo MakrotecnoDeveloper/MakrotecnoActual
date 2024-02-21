@@ -4,5 +4,5 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Hola señor </h1>
+<h1>Hola señor @User.FindFirst("Nombre").Value</h1>
 

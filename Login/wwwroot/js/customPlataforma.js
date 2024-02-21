@@ -42,3 +42,25 @@ system.btnEnabled = function (btn) {
         });
     }
 }
+
+system.inputClear = function (form) {
+    $(form).find(":input").each(function () {
+        if (!$(this).hasClass("noLimpiar")) {
+            var input = $(this);
+            if ($(input).is('input:checkbox') || $(input).is('input:radio')) {
+                $(input).prop("checked", false);
+            } else {
+                if ($(input).attr("type") == 'number' || $(input).is("input:text") || $(input).is("input:hidden") || $(input).is("input:pa")) {
+                    $(input).val("");
+                }
+            }
+        }
+    });
+
+    $(form).find("textarea").each(function () {
+        $(this).val("");
+    });
+    $(form).find("select").each(function () {
+        $(this).val("");
+    });
+}

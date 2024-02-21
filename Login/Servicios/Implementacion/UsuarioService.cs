@@ -14,14 +14,14 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<Empleado> GetUsuarios(string correo, string password)
         {
-            Empleado usuario_encontrando = await _dbContext.Empleados.Where(u => u.Correo == correo && u.Contrasena == password).FirstOrDefaultAsync();
+            Empleado usuario_encontrando = await _dbContext.Empleado.Where(u => u.Correo == correo && u.Contrasena == password).FirstOrDefaultAsync();
 
             return usuario_encontrando;
         }
 
         public async Task<Empleado> SaveUsuario(Empleado modelo)
         {
-            _dbContext.Empleados.Add(modelo);
+            _dbContext.Empleado.Add(modelo);
             await _dbContext.SaveChangesAsync();
             return modelo;
         }

@@ -51,64 +51,65 @@
 <div class="app-main__outer">
 	<div class="app-main__inner">
     	<!-- FORM LOGIN/REGISTRO -->
-<div class="container class-login">
-    <div class="row text-center login-page">
-	    <div class="col-md-12 login-form">
-          <form asp-controller="Home" asp-action="Login" method="POST">
-            <div class="row">
-		    	<div class="col-md-12 login-form-header">
-		       		<p class="login-form-font-header">Makro<span>tecno</span><p>
-		    	</div>
+		<div class="container class-login">
+			<div class="row text-center login-page">
+				<div class="col-md-12 login-form">
+				  <form asp-controller="Home" asp-action="Login" method="POST">
+					<div class="row">
+		    			<div class="col-md-12 login-form-header">
+		       				<p class="login-form-font-header">Makro<span>tecno</span><p>
+		    			</div>
+					</div>
+					<div class="row">
+		   				<div class="col-md-12 login-from-row">
+				   <input type="text" name="correo" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Correo">
+		   				</div>
+					</div>
+					<div class="row">
+		   				<div class="col-md-12 login-from-row">
+				   <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Contraseña">
+		   				</div>
+					</div>
+					<div class="row">
+		   				<div class="col-md-12 login-from-row">
+		      				<button class="btn btn-info">Entrar</button>
+		   				</div>
+					</div>
+				  </form>
+				</div>
 			</div>
-			<div class="row">
-		   		<div class="col-md-12 login-from-row">
-           <input type="text" name="correo" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Correo">
-		   		</div>
-			</div>
-			<div class="row">
-		   		<div class="col-md-12 login-from-row">
-           <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Contraseña">
-		   		</div>
-			</div>
-			<div class="row">
-		   		<div class="col-md-12 login-from-row">
-		      		<button class="btn btn-info">Entrar</button>
-		   		</div>
-			</div>
-	      </form>
-		</div>
-    </div>
-  </div>
-	<!-- FIN DEL FORM -->
+		  </div>
+		<!-- FIN DEL FORM -->
+	</div>
 </div>
+	<script>
+		$("btnLogin").click(function () {
+			event.preventDefault();
+			let btn = $(this);
+			var form = $(this).closest('form');
+			if (system.formValidate(form) == false) {
+				return;
+			}
+			system.sendForm(
+				'@Url.Content("~/Home/Login")',
+				form,
+				function (response) {
+					if (response.isSuccess == true) {
+						system.inputClear(form);
+						Swal.fire({
+							title: response.titulo,
+							html: response.message,
+							icon: "success",
+							confirmButtonText = 'Cerrar'
+						});
+					} else {
+						Swal.fire("Error!", response.message, "error");
+					}
+					system.btnEnabled(btn);
+				},
+				btn
+			);
+		});
+	</script>
 </body>
-<script>
-	$("btnLogin").click(function () {
-		event.preventDefault();
-		let btn = $(this);
-		var form = $(this).closest('form');
-		if (system.formValidate(form) == false) {
-			return;
-		}
-		system.sendForm(
-			'@Url.Content("~")',
-			form,
-			function (response) {
-				if (response.isSuccess == true) {
-					system.inputClear(form);
-					Swal.fire({
-						title: response.titulo,
-						html: response.message,
-						icon: "success",
-						confirmButtonText = 'Cerrar'
-					});
-				} else {
-					Swal.fire("Error!", response.message, "error");
-				}
-				system.btnEnabled(btn);
-			},
-			btn
-		);
-	});
-</script>
 </html>
