@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\AdminLTE\" />
     <Folder Include="Recursos\" />
   </ItemGroup>
 
