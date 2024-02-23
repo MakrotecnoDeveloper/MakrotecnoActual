@@ -2,6 +2,16 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string nombre;
+    var nombreClaim = User.FindFirst("Nombre");
+    if (nombreClaim != null && nombreClaim.Value != null)
+    {
+        nombre = nombreClaim.Value;
+    }
+    else
+    {
+        nombre = "No se está sincronizando la información en la BD";
+    }
 }
 
 <!-- Content Wrapper. Contains page content -->
@@ -12,7 +22,7 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0">Dashboard</h1>
-                    <h1>Hola señor @User.FindFirst("Nombre").Value</h1>
+                    <h1>Hola señor @nombre</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">

@@ -211,8 +211,8 @@
                     <!-- Add icons to the links using the .nav-icon class
                          with font-awesome or any other icon font library -->
                     <li class="nav-header">SISTEMAS</li>
-                    <li class="nav-item menu-open">
-                        <a href="#" class="nav-link active">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
                                 Configuracion
@@ -250,13 +250,14 @@
                                     <p>Vinculacion ES</p>
                                 </a>
                             </li>
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    <p>
-                                        Area Transaccional
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                                        <p>
+                                            Area Transaccional
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
                                     <ul class="nav nav-treeview">
                                         <li class="nav-item">
                                             <a href="../Inicio/index3.cshtml" class="nav-link">
@@ -265,11 +266,12 @@
                                             </a>
                                         </li>
                                     </ul>
+                                </li>
                         </ul>
                     </li>
                     <li class="nav-header">GESTION ADMINISTRATIVA</li>
-                    <li class="nav-item menu-open">
-                        <a href="#" class="nav-link active">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
                                 Configuracion Empresas
@@ -278,7 +280,7 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link active">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Panel de Usuario</p>
                                 </a>
@@ -291,613 +293,249 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-header">GESTION ADMINISTRATIVA</li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-copy"></i>
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
-                                Layout Options
-                                <i class="fas fa-angle-left right"></i>
-                                <span class="badge badge-info right">6</span>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/top-nav.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Top Navigation</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/top-nav-sidebar.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Top Navigation + Sidebar</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/boxed.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Boxed</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/fixed-sidebar.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Fixed Sidebar</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/fixed-sidebar-custom.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Fixed Sidebar <small>+ Custom Area</small></p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/fixed-topnav.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Fixed Navbar</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/fixed-footer.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Fixed Footer</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/layout/collapsed-sidebar.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Collapsed Sidebar</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-chart-pie"></i>
-                            <p>
-                                Charts
+                                Financiero
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/charts/chartjs.cshtml" class="nav-link">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>ChartJS</p>
+                                    <p>Registrar Pago</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/charts/flot.cshtml" class="nav-link">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Flot</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/charts/inline.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Inline</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/charts/uplot.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>uPlot</p>
+                                    <p>Balance General</p>
                                 </a>
                             </li>
                         </ul>
-                    </li>
-                    <li class="nav-item">
+                     </li>
+                     <li class="nav-item">
                         <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-tree"></i>
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
-                                UI Elements
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/general.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>General</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/icons.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Icons</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/buttons.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Buttons</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/sliders.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Sliders</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/modals.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Modals & Alerts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/navbar.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Navbar & Tabs</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/timeline.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Timeline</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/UI/ribbons.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Ribbons</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-edit"></i>
-                            <p>
-                                Forms
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/forms/general.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>General Elements</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/forms/advanced.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Advanced Elements</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/forms/editors.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Editors</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/forms/validation.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Validation</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-table"></i>
-                            <p>
-                                Tables
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/tables/simple.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Simple Tables</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/tables/data.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>DataTables</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/tables/jsgrid.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>jsGrid</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-header">EXAMPLES</li>
-                    <li class="nav-item">
-                            <a href="~/AdminLTE/pages/calendar.cshtml" class="nav-link">
-                            <i class="nav-icon far fa-calendar-alt"></i>
-                            <p>
-                                Calendar
-                                <span class="badge badge-info right">2</span>
-                            </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                            <a href="~/AdminLTE/pages/gallery.cshtml" class="nav-link">
-                            <i class="nav-icon far fa-image"></i>
-                            <p>
-                                Gallery
-                            </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                            <a href="~/AdminLTE/pages/kanban.cshtml" class="nav-link">
-                            <i class="nav-icon fas fa-columns"></i>
-                            <p>
-                                Kanban Board
-                            </p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon far fa-envelope"></i>
-                            <p>
-                                Mailbox
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/mailbox/mailbox.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Inbox</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/mailbox/compose.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Compose</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/mailbox/read-mail.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Read</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-book"></i>
-                            <p>
-                                Pages
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/invoice.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Invoice</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/profile.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Profile</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/e-commerce.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>E-commerce</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/projects.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Projects</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/project-add.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Project Add</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/project-edit.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Project Edit</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/project-detail.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Project Detail</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/contacts.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Contacts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/faq.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>FAQ</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/contact-us.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Contact us</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon far fa-plus-square"></i>
-                            <p>
-                                Extras
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>
-                                        Login & Register v1
-                                        <i class="fas fa-angle-left right"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/login.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Login v1</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/register.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Register v1</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/forgot-password.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Forgot Password v1</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/recover-password.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Recover Password v1</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>
-                                        Login & Register v2
-                                        <i class="fas fa-angle-left right"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/login-v2.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Login v2</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/register-v2.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Register v2</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/forgot-password-v2.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Forgot Password v2</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                            <a href="~/AdminLTE/pages/examples/recover-password-v2.cshtml" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Recover Password v2</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/lockscreen.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Lockscreen</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/legacy-user-menu.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Legacy User Menu</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/language-menu.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Language Menu</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/404.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Error 404</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/500.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Error 500</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/pace.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Pace</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/examples/blank.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Blank Page</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/starter.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Starter Page</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-search"></i>
-                            <p>
-                                Search
-                                <i class="fas fa-angle-left right"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/search/simple.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Simple Search</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                    <a href="~/AdminLTE/pages/search/enhanced.cshtml" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Enhanced</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-header">MISCELLANEOUS</li>
-                    <li class="nav-item">
-                            <a href="~/AdminLTE/iframe.cshtml" class="nav-link">
-                            <i class="nav-icon fas fa-ellipsis-h"></i>
-                            <p>Tabbed IFrame Plugin</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="https://adminlte.io/docs/3.1/" class="nav-link">
-                            <i class="nav-icon fas fa-file"></i>
-                            <p>Documentation</p>
-                        </a>
-                    </li>
-                    <li class="nav-header">MULTI LEVEL EXAMPLE</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-circle nav-icon"></i>
-                            <p>Level 1</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-circle"></i>
-                            <p>
-                                Level 1
+                                Historicos
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Level 2</p>
+                                    <p>Historico Login</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>
-                                        Level 2
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="#" class="nav-link">
-                                            <i class="far fa-dot-circle nav-icon"></i>
-                                            <p>Level 3</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="#" class="nav-link">
-                                            <i class="far fa-dot-circle nav-icon"></i>
-                                            <p>Level 3</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="#" class="nav-link">
-                                            <i class="far fa-dot-circle nav-icon"></i>
-                                            <p>Level 3</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Level 2</p>
+                                    <p>Historico Pagos</p>
                                 </a>
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-circle nav-icon"></i>
-                            <p>Level 1</p>
-                        </a>
-                    </li>
-                    <li class="nav-header">LABELS</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon far fa-circle text-danger"></i>
-                            <p class="text">Important</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon far fa-circle text-warning"></i>
-                            <p>Warning</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon far fa-circle text-info"></i>
-                            <p>Informational</p>
-                        </a>
-                    </li>
+                    <li class="nav-header">GESTION DE PRODUCTOS</li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Inserccion
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Agregar Productos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ver Productos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Agregar Stock</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Historicos
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Historico Inventario</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Historico Categoria</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-header">GESTION DE VENTAS</li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Facturas
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Agregar Factura</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ver Facturas</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Devolucion y Garantias</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Pedidos
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Agregar pedido</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                                        <p>
+                                            Ver Pedidos
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Pedidos Vencidos</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Pedidos Realizados</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Pedidos Pendientes</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-header">GESTION HISTORICOS</li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Ganancias
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Agregar Ganancia</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ver Ganancias</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Reportes
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Reporte General</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ver Ganancias</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->
         </div>
         <!-- /.sidebar -->
     </aside>
-
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var yearElement = document.getElementById('currentYear');
+                if (yearElement) {
+                    var currentYear = new Date().getFullYear();
+                    yearElement.textContent = currentYear;
+                }
+            });
+        </script>
             @RenderBody()
     <footer class="main-footer">
-        <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong>
-        All rights reserved.
+        <strong>Copyright &copy; <span id="currentYear"></span> Makrotecno</strong>
+            Plantilla diseñada por <span>https://adminlte.io</span>, Editada y Organizada por Makrotecno
         <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 3.2.0
+            <b>Version</b> 0.0.1
         </div>
     </footer>
 
