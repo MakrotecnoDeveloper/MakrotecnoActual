@@ -17,6 +17,6 @@ public partial class BaseAdmContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Empleado>().HasKey(e => e.Cedula);
-        modelBuilder.Entity<Producto>().HasKey(e => e.cod_producto);
+        modelBuilder.Entity<Producto>().HasKey(e => e.Cod_Producto);
     }
 }

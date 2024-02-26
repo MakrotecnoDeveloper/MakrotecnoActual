@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -12,6 +13,10 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext = dbContext;
         }
+        public List<Producto> ObtenerProductos()
+        {
+            return _dbContext.Productos.ToList();
+        }
         public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias)
         {
             try
@@ -19,13 +24,13 @@ namespace Plataforma.Servicios.Implementacion
                 // Crear un nuevo objeto Producto con los parámetros proporcionados
                 var nuevoProducto = new Producto
                 {
-                    cod_producto = codigo,
-                    nombreProducto = descripcion,
-                    cantidadProducto = stock,
-                    valorNetoProducto = valor_neto,
-                    valorVentaProducto = valor_unitario,
-                    id_empresa = id_empresa,
-                    categoria = categorias
+                    Cod_Producto = codigo,
+                    NombreProducto = descripcion,
+                    CantidadProducto = stock,
+                    ValorNetoProducto = valor_neto,
+                    ValorVentaProducto = valor_unitario,
+                    ID_Empresa = id_empresa,
+                    Categoria = categorias
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -41,9 +46,20 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
-        public List<Producto> ObtenerProductos()
+        public async Task<IEnumerable<Producto>> BuscarProductosAsync(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
         {
-            return _dbContext.Productos.ToList();
+            var query = _dbContext.Productos.AsQueryable();
+
+            // Aplica los criterios de búsqueda según sea necesario
+            if (!string.IsNullOrEmpty(id_empresa))
+            {
+                query = query.Where(p => p.ID_Empresa == id_empresa);
+            }
+
+            // Agrega lógica para otros criterios de búsqueda...
+
+            var resultados = await query.ToListAsync();
+            return resultados;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Login.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
@@ -43,31 +44,11 @@ namespace Plataforma.Controllers
             return Json(new { success = false });
         }
         [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> VisualizarProducto(int id, string nombreProducto)
+        [HttpPost]
+        public async Task<IActionResult> BuscarProductosAsync(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
         {
-            string cod_producto = "";
-            string descripcion = nombreProducto;
-            int cantidadProducto = 0;
-            float valorNetoProducto = 0;
-            float valorVentaProducto = 0;
-            string id_empresa = "";
-            string categoria = "";
-            var perfil = _usuarioService.ObtenerPerfilPorId(id);
-            var resultados = await _usuarioService.BuscarUsuarios(nombre, municipio, lider, area, celula);
-            var comentarios = await _usuarioService.ObtenerComentariosPorIdDestinatario(id);
-            if (perfil == null)
-            {
-                return RedirectToAction("Error", "Errores", new { mensaje = "Error, no se encontro toda la informacion solicitada." });
-            }
-            var modelo = new VisualizarUsuarioViewModel
-            {
-                Perfil = perfil,
-                Comentarios = comentarios,
-                ResultadosBusqueda = resultados,
-                Celula = idCelula
-            };
-            return View(modelo);
+            var resultados = await _productoservice.BuscarProductosAsync(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
+            return Json(resultados);
         }
     }
 }

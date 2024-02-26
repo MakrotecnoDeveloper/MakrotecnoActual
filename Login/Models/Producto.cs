@@ -5,12 +5,12 @@ namespace Plataforma.Models
     public partial class Producto
     {
         [Key]
-        public string? cod_producto { get; set; }
-        public string? nombreProducto { get; set; }
-        public int cantidadProducto { get; set; }
-        public float valorNetoProducto { get; set; }
-        public float valorVentaProducto { get; set; }
-        public string? id_empresa { get; set; }
-        public string? categoria { get; set; }
+        public string? Cod_Producto { get; set; }
+        public string? NombreProducto { get; set; }
+        public int CantidadProducto { get; set; }
+        public float ValorNetoProducto { get; set; }
+        public float ValorVentaProducto { get; set; }
+        public string? ID_Empresa { get; set; }
+        public string? Categoria { get; set; }
     }
 }

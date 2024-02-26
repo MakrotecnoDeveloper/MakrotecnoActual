@@ -40,3 +40,45 @@ function enviarProducto(id_empresa, codigo, descripcion, valorNeto, valorVenta, 
     });
 }
 //Fin codigo
+
+        $(document).ready(function () {
+            $('#buscarBtn').on('click', function () {
+                // Obtén los valores de los filtros
+                var id_empresa = $('#filtroEmpresa').val();
+                var codigo = $('#filtroCodigo').val();
+                var descripcion = $('#filtroDescripcion').val();
+                var valorNeto = parseFloat($('#filtroValorNeto').val());
+                var valorVenta = parseFloat($('#filtroValorVenta').val());
+                var stock = parseInt($('#filtroStock').val());
+                var categoria = $('#filtroCategoria').val();
+
+                // Realiza la solicitud AJAX
+                $.ajax({
+                    url: '/Producto/BuscarProductosAsync',
+                    type: 'POST',
+                    data: {
+                        id_empresa: id_empresa,
+                        codigo: codigo,
+                        descripcion: descripcion,
+                        valorNeto: valorNeto,
+                        valorVenta: valorVenta,
+                        stock: stock,
+                        categoria: categoria
+                    },
+                    success: function (resultados) {
+                        // Actualiza la tabla con los resultados
+                        actualizarTabla(resultados);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+        function actualizarTabla(resultados) {
+            // Implementa lógica para actualizar la tabla con los resultados
+            // Puedes usar el mismo código que tienes en tu script actualizado para mostrar los resultados
+            // Asegúrate de adaptar el código según tus necesidades
+            console.log(resultados);
+        }
+    });

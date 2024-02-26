@@ -32,13 +32,13 @@ namespace Plataforma.Servicios.Implementacion
                 // Crear un nuevo objeto Producto con los parámetros proporcionados
                 var nuevoProducto = new Producto
                 {
-                    cod_producto = codigo,
-                    nombreProducto = descripcion,
-                    cantidadProducto = stock,
-                    valorNetoProducto = valor_neto,
-                    valorVentaProducto = valor_unitario,
-                    id_empresa = id_empresa,
-                    categoria = categorias
+                    Cod_Producto = codigo,
+                    NombreProducto = descripcion,
+                    CantidadProducto = stock,
+                    ValorNetoProducto = valor_neto,
+                    ValorVentaProducto = valor_unitario,
+                    ID_Empresa = id_empresa,
+                    Categoria = categorias
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos

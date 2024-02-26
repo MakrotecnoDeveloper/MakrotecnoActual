@@ -22,7 +22,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.cod_producto</option>
+                                                <option>@producto.Cod_Producto</option>
                                             }
                                         </select>
                                     </div>
@@ -38,7 +38,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.nombreProducto</option>
+                                                <option>@producto.NombreProducto</option>
                                             }
                                         </select>
                                     </div>
@@ -54,8 +54,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                    Console.WriteLine(producto.valorNetoProducto);
-                                                    <option>@producto.valorNetoProducto</option>
+                                                    <option>@producto.ValorNetoProducto</option>
                                             }
                                         </select>
                                     </div>
@@ -71,7 +70,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.valorVentaProducto</option>
+                                                <option>@producto.ValorVentaProducto</option>
                                             }
                                         </select>
                                     </div>
@@ -87,7 +86,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.cantidadProducto</option>
+                                                <option>@producto.CantidadProducto</option>
                                             }
                                         </select>
                                     </div>
@@ -103,7 +102,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.categoria</option>
+                                                <option>@producto.Categoria</option>
                                             }
                                         </select>
                                     </div>
@@ -119,7 +118,7 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.id_empresa</option>
+                                                <option>@producto.ID_Empresa</option>
                                             }
                                         </select>
                                     </div>
@@ -194,14 +193,14 @@
             // Crea las filas de la tabla con los perfiles
             var fila = document.createElement('tr');
             fila.className = 'perfil-fila';
-
-            var html = `<td>${perfil.cod_producto}</td>`;
+            console.log(perfil);
+            var html = `<td>${perfil.cod_Producto}</td>`;
             html += `<td>${perfil.nombreProducto}</td>`;
             html += `<td>${perfil.valorNetoProducto}</td>`;
             html += `<td>${perfil.valorVentaProducto}</td>`;
             html += `<td>${perfil.cantidadProducto}</td>`;
             html += `<td>${perfil.categoria}</td>`;
-            html += `<td>${perfil.id_empresa}</td>`;
+            html += `<td>${perfil.iD_Empresa}</td>`;
             // Crear enlace y asignarle el evento onclick para redirigir
             var enlace = document.createElement('a');
             enlace.href = `/Inicio/VisualizarUsuario?id=${perfil.id}&nombrePerfil=${perfil.nombrePerfil}`;
