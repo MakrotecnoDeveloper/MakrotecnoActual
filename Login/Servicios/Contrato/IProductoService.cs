@@ -3,12 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
-    public interface IUsuarioService
+    public interface IProductoService
     {
-        //primer metodo devuelve un usuario atravez del correo y la contraseña
-        Task<Empleado> GetUsuarios(string correo, string password);
-        //el segundo metodo guarda usuarios
-        Task<Empleado> SaveUsuario(Empleado modelo);
         Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias);
+        List<Producto> ObtenerProductos();
     }
 }

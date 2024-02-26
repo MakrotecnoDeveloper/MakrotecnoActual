@@ -1,0 +1,235 @@
+﻿@model List<Producto>
+@{
+    ViewData["Title"] = "Visualizar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-white text-center">Productos</h1>
+            <div class="table-responsive justify-content-center">
+                <table class="table table-bordered tabla_ListaUsuarios">
+                    <thead style="background-color: #002d72;">
+                        <tr>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Codigo Producto</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroNombre" name="nombre">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.cod_producto</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Nombre Producto</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroMunicipio" name="municipio">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.nombreProducto</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Valor Neto</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroLider" name="lider">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.valorNetoProducto</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Valor Venta</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroArea" name="area">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.valorVentaProducto</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Cantidad</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroCelula" name="celula">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.cantidadProducto</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Categoria</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroCelula" name="celula">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.categoria</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col">
+                                <div class="input-group mb-3">
+                                    <div class="col-12">
+                                        <p>Empresa ID</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <select class="filtro-select" id="filtroCelula" name="celula">
+                                            <option></option>
+                                            @foreach (var producto in Model)
+                                            {
+                                                <option>@producto.id_empresa</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </th>
+                            <th scope="col" class="text-center">
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <button type="button" class="btn btn-info" id="buscarBtn">Buscar</button>
+                                        </div>
+                                        <div class="col-12">
+                                            <hr />
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="button" class="btn btn-info" id="volverBtn">Volver</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <!--Lista de Usuarios-->
+                    <tbody id="resultados" class="listaUsuarios">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
+    <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
+    <span id="pagina-actual" class="text-white">Página 1</span>
+    <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
+</div>
+
+<script>
+    var paginaActual = 1;
+    var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
+    var totalPerfiles = @Model.Count(); // Obtén el total de perfiles desde el modelo
+
+    function cambiarPagina(direccion) {
+        paginaActual += direccion;
+        mostrarPerfiles();
+    }
+
+    function mostrarPerfiles() {
+        // Obtener la lista completa de perfiles
+        var perfiles = @Html.Raw(Json.Serialize(Model));
+        //console.log(perfiles);
+
+        // Calcular el índice de inicio y fin para la página actual
+        var inicio = (paginaActual - 1) * perfilesPorPagina;
+        var fin = inicio + perfilesPorPagina;
+
+        // Obtener los perfiles para la página actual
+        var perfilesPagina = perfiles.slice(inicio, fin);
+
+        // Mostrar los perfiles en el contenedor
+        actualizarTabla(perfilesPagina);
+
+        // Actualizar la información de paginación
+        actualizarPaginacion();
+    }
+
+    function actualizarTabla(perfiles) {
+        var resultados = document.getElementById('resultados');
+        resultados.innerHTML = '';
+
+        perfiles.forEach(perfil => {
+            // Crea las filas de la tabla con los perfiles
+            var fila = document.createElement('tr');
+            fila.className = 'perfil-fila';
+
+            var html = `<td>${perfil.nombrePerfil}</td>`;
+            html += `<td>${perfil.municipio}</td>`;
+            html += `<td>${perfil.lider}</td>`;
+            html += `<td>${perfil.area}</td>`;
+            html += `<td>${perfil.celula}</td>`;
+            // Crear enlace y asignarle el evento onclick para redirigir
+            var enlace = document.createElement('a');
+            enlace.href = `/Inicio/VisualizarUsuario?id=${perfil.id}&nombrePerfil=${perfil.nombrePerfil}`;
+            enlace.innerHTML = 'Visualizar';
+            enlace.onclick = function () {
+                // Redirigir a la URL especificada
+                window.location.href = this.href;
+                return false; // Prevenir el comportamiento predeterminado del enlace
+            };
+
+            // Agregar enlace a la celda
+            var celda = document.createElement('td');
+            celda.appendChild(enlace);
+            html += celda.outerHTML;
+
+            fila.innerHTML = html;
+            resultados.appendChild(fila);
+        });
+    }
+
+    function actualizarPaginacion() {
+        var paginaActualElement = document.getElementById('pagina-actual');
+        paginaActualElement.textContent = `Página ${paginaActual}`;
+
+        var botonAnterior = document.getElementById('botonAnterior');
+        var botonSiguiente = document.getElementById('botonSiguiente');
+
+        botonAnterior.disabled = paginaActual <= 1;
+        botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
+    }
+
+    // Llama a mostrarPerfiles al cargar la página para mostrar la primera página
+    mostrarPerfiles();
+</script>

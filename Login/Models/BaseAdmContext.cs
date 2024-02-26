@@ -12,9 +12,11 @@ public partial class BaseAdmContext : DbContext
     }
 
     public DbSet<Empleado> Empleado { get; set; }
+    public DbSet<Producto> Productos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Empleado>().HasKey(e => e.Cedula);
+        modelBuilder.Entity<Producto>().HasKey(e => e.cod_producto);
     }
 }

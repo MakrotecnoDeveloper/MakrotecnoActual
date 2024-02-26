@@ -1,4 +1,17 @@
-﻿<!DOCTYPE html>
+﻿@{
+    string nombre;
+    var nombreClaim = User.FindFirst("Nombre");
+    if (nombreClaim != null && nombreClaim.Value != null)
+    {
+        nombre = nombreClaim.Value;
+    }
+    else
+    {
+        nombre = "No se está sincronizando la información en la BD";
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,7 +19,6 @@
     <title>@ViewData["Title"] - Login</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Login.styles.css" asp-append-version="true" />
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
@@ -176,9 +188,9 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="index3.html" class="brand-link">
-            <img src="~/AdminLTE/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">AdminLTE 3</span>
+        <a asp-controller="Inicio" asp-action="Index" class="brand-link">
+            <img src="~/img/logo-inverse.png" class="brand-image img-circle elevation-3" style="opacity: .8">
+            <span class="brand-text font-weight-light">Makrotecno</span>
         </a>
 
         <!-- Sidebar -->
@@ -189,7 +201,7 @@
                     <img src="~/AdminLTE/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
                 </div>
                 <div class="info">
-                    <a href="#" class="d-block">@User.FindFirst("Nombre").Value</a>
+                        <a href="#" class="d-block">@nombre</a>
                 </div>
             </div>
 
@@ -350,13 +362,13 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                    <a asp-controller="Producto" asp-action="Insertar" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Agregar Productos</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                    <a asp-controller="Producto" asp-action="Index" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ver Productos</p>
                                     </a>
@@ -560,8 +572,6 @@
     <script src="~/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <!-- ChartJS -->
     <script src="~/AdminLTE/plugins/chart.js/Chart.min.js"></script>
-        <!-- Sparkline -->
-    <script src="~/AdminLTE/plugins/sparklines/sparkline.js"></script>
         <!-- JQVMap -->
     <script src="~/AdminLTE/plugins/jqvmap/jquery.vmap.min.js"></script>
     <script src="~/AdminLTE/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
@@ -581,8 +591,7 @@
         <!-- AdminLTE for demo purposes -->
     <script src="~/AdminLTE/dist/js/demo.js"></script>
         <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-    <script src="~/AdminLTE/dist/js/pages/dashboard.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- Fin AdminLTE -->
 </body>

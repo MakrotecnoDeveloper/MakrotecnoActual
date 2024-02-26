@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // configura los servicios de MVC (Model-View-Controller) en la aplicaci�n web
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 //Configura el contexto de la base de datos en la aplicacion, osea la variable cadenaSQL que se asigna en appsettings.json
 builder.Services.AddDbContext<BaseAdmContext>(options =>
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<BaseAdmContext>(options =>
     options.UseMySQL(builder.Configuration.GetConnectionString("cadenaSQL"));
 });
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
