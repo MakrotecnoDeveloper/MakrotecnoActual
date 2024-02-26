@@ -54,7 +54,8 @@
                                             <option></option>
                                             @foreach (var producto in Model)
                                             {
-                                                <option>@producto.valorNetoProducto</option>
+                                                    Console.WriteLine(producto.valorNetoProducto);
+                                                    <option>@producto.valorNetoProducto</option>
                                             }
                                         </select>
                                     </div>
@@ -194,11 +195,13 @@
             var fila = document.createElement('tr');
             fila.className = 'perfil-fila';
 
-            var html = `<td>${perfil.nombrePerfil}</td>`;
-            html += `<td>${perfil.municipio}</td>`;
-            html += `<td>${perfil.lider}</td>`;
-            html += `<td>${perfil.area}</td>`;
-            html += `<td>${perfil.celula}</td>`;
+            var html = `<td>${perfil.cod_producto}</td>`;
+            html += `<td>${perfil.nombreProducto}</td>`;
+            html += `<td>${perfil.valorNetoProducto}</td>`;
+            html += `<td>${perfil.valorVentaProducto}</td>`;
+            html += `<td>${perfil.cantidadProducto}</td>`;
+            html += `<td>${perfil.categoria}</td>`;
+            html += `<td>${perfil.id_empresa}</td>`;
             // Crear enlace y asignarle el evento onclick para redirigir
             var enlace = document.createElement('a');
             enlace.href = `/Inicio/VisualizarUsuario?id=${perfil.id}&nombrePerfil=${perfil.nombrePerfil}`;

@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
+using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
@@ -38,6 +41,33 @@ namespace Plataforma.Controllers
             }
 
             return Json(new { success = false });
+        }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> VisualizarProducto(int id, string nombreProducto)
+        {
+            string cod_producto = "";
+            string descripcion = nombreProducto;
+            int cantidadProducto = 0;
+            float valorNetoProducto = 0;
+            float valorVentaProducto = 0;
+            string id_empresa = "";
+            string categoria = "";
+            var perfil = _usuarioService.ObtenerPerfilPorId(id);
+            var resultados = await _usuarioService.BuscarUsuarios(nombre, municipio, lider, area, celula);
+            var comentarios = await _usuarioService.ObtenerComentariosPorIdDestinatario(id);
+            if (perfil == null)
+            {
+                return RedirectToAction("Error", "Errores", new { mensaje = "Error, no se encontro toda la informacion solicitada." });
+            }
+            var modelo = new VisualizarUsuarioViewModel
+            {
+                Perfil = perfil,
+                Comentarios = comentarios,
+                ResultadosBusqueda = resultados,
+                Celula = idCelula
+            };
+            return View(modelo);
         }
     }
 }
