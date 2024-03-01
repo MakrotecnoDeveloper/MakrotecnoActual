@@ -46,19 +46,15 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
-        public async Task<IEnumerable<Producto>> BuscarProductosAsync(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
+        public IEnumerable<Producto> BuscarProductos(string searchTerm)
         {
-            var query = _dbContext.Productos.AsQueryable();
+            // Lógica de búsqueda en la base de datos usando Entity Framework o cualquier otro mecanismo
 
-            // Aplica los criterios de búsqueda según sea necesario
-            if (!string.IsNullOrEmpty(id_empresa))
-            {
-                query = query.Where(p => p.ID_Empresa == id_empresa);
-            }
+            // Ejemplo usando Entity Framework Core
+            var resultados = _dbContext.Productos
+                .Where(p => EF.Functions.Like(p.NombreProducto, $"%{searchTerm}%"))
+                .ToList();
 
-            // Agrega lógica para otros criterios de búsqueda...
-
-            var resultados = await query.ToListAsync();
             return resultados;
         }
     }

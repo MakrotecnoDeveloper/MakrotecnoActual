@@ -128,13 +128,11 @@
                                 <div class="container">
                                     <div class="row">
                                         <div class="col-12">
-                                            <button type="button" class="btn btn-info" id="buscarBtn">Buscar</button>
-                                        </div>
-                                        <div class="col-12">
-                                            <hr />
-                                        </div>
-                                        <div class="col-12">
-                                            <button type="button" class="btn btn-info" id="volverBtn">Volver</button>
+                                                <form id="formBusqueda">
+                                                    <label for="searchTerm">Buscar:</label>
+                                                    <input type="text" id="searchTerm" name="searchTerm" />
+                                                    <button type="button" onclick="buscarProductos()">Buscar</button>
+                                                </form>
                                         </div>
                                     </div>
                                 </div>
@@ -154,6 +152,11 @@
     <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
     <span id="pagina-actual" class="text-white">Página 1</span>
     <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
+</div>
+
+<div id="tablaProductosContainer">
+    <!-- Aquí se renderizará la tabla de productos -->
+    @await Html.PartialAsync("_TablaProductos", Model)
 </div>
 
 <script>
@@ -193,7 +196,6 @@
             // Crea las filas de la tabla con los perfiles
             var fila = document.createElement('tr');
             fila.className = 'perfil-fila';
-            console.log(perfil);
             var html = `<td>${perfil.cod_Producto}</td>`;
             html += `<td>${perfil.nombreProducto}</td>`;
             html += `<td>${perfil.valorNetoProducto}</td>`;
@@ -234,4 +236,23 @@
 
     // Llama a mostrarPerfiles al cargar la página para mostrar la primera página
     mostrarPerfiles();
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function buscarProductos() {
+        var searchTerm = $('#searchTerm').val();
+
+        $.ajax({
+            url: '/Producto/Buscar',
+            type: 'POST',
+            data: { searchTerm: searchTerm },
+            success: function (data) {
+                $('#tablaProductosContainer').html(data);
+            },
+            error: function () {
+                console.error('Error al realizar la búsqueda.');
+            }
+        });
+    }
 </script>

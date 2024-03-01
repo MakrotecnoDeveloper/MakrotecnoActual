@@ -1,0 +1,26 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model IEnumerable<Producto>
+
+@if (Model.Any())
+{
+    <table>
+        <thead>
+            <!-- Encabezados de la tabla -->
+        </thead>
+        <tbody>
+            @foreach (var producto in Model)
+            {
+                <td>@producto.NombreProducto</td>
+                <td>@producto.CantidadProducto</td>
+                <td>@producto.ValorNetoProducto</td>
+                <td>@producto.ValorVentaProducto</td>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No se ha encontrado el producto solicitado.</p>
+}

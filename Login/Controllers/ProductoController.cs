@@ -43,12 +43,13 @@ namespace Plataforma.Controllers
 
             return Json(new { success = false });
         }
-        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> BuscarProductosAsync(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
+        public IActionResult Buscar(string searchTerm)
         {
-            var resultados = await _productoservice.BuscarProductosAsync(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
-            return Json(resultados);
+            // Lógica de búsqueda en la base de datos utilizando _productoService
+            var resultados = _productoservice.BuscarProductos(searchTerm);
+
+            return PartialView("_TablaProductos", resultados);
         }
     }
 }

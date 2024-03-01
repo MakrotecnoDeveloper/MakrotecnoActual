@@ -7,6 +7,6 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias);
         List<Producto> ObtenerProductos();
-        Task<IEnumerable<Producto>> BuscarProductosAsync(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria);
+        IEnumerable<Producto> BuscarProductos(string searchTerm);
     }
 }
