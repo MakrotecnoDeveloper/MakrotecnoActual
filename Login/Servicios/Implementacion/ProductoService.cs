@@ -46,16 +46,26 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
-        public IEnumerable<Producto> BuscarProductos(string searchTerm)
+        public List<Producto> BuscarProductos(string searchTerm, string categoriaTerm)
         {
-            // Lógica de búsqueda en la base de datos usando Entity Framework o cualquier otro mecanismo
-
-            // Ejemplo usando Entity Framework Core
-            var resultados = _dbContext.Productos
-                .Where(p => EF.Functions.Like(p.NombreProducto, $"%{searchTerm}%"))
-                .ToList();
-
-            return resultados;
+            // Lógica para buscar productos por el nombre o la categoría
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                return _dbContext.Productos
+                    .Where(p => p.NombreProducto.Contains(searchTerm))
+                    .ToList();
+            }
+            else if (!string.IsNullOrEmpty(categoriaTerm))
+            {
+                return _dbContext.Productos
+                    .Where(p => p.Categoria == categoriaTerm)
+                    .ToList();
+            }
+            else
+            {
+                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
+                return new List<Producto>();
+            }
         }
     }
 }

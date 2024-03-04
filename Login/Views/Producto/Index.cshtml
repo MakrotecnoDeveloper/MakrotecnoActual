@@ -9,22 +9,13 @@
         <div class="col-12">
             <h1 class="text-white text-center">Productos</h1>
             <div class="table-responsive justify-content-center">
-                <table class="table table-bordered tabla_ListaUsuarios">
+                <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
                     <thead style="background-color: #002d72;">
                         <tr>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
                                         <p>Codigo Producto</p>
-                                    </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroNombre" name="nombre">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.Cod_Producto</option>
-                                            }
-                                        </select>
                                     </div>
                                 </div>
                             </th>
@@ -33,30 +24,12 @@
                                     <div class="col-12">
                                         <p>Nombre Producto</p>
                                     </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroMunicipio" name="municipio">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.NombreProducto</option>
-                                            }
-                                        </select>
-                                    </div>
                                 </div>
                             </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
                                         <p>Valor Neto</p>
-                                    </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroLider" name="lider">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                    <option>@producto.ValorNetoProducto</option>
-                                            }
-                                        </select>
                                     </div>
                                 </div>
                             </th>
@@ -65,15 +38,6 @@
                                     <div class="col-12">
                                         <p>Valor Venta</p>
                                     </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroArea" name="area">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.ValorVentaProducto</option>
-                                            }
-                                        </select>
-                                    </div>
                                 </div>
                             </th>
                             <th scope="col">
@@ -81,46 +45,30 @@
                                     <div class="col-12">
                                         <p>Cantidad</p>
                                     </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroCelula" name="celula">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.CantidadProducto</option>
-                                            }
-                                        </select>
-                                    </div>
                                 </div>
                             </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Categoria</p>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Categoria</p>
+                                        </div>
+                                        <div class="col-12">
+                                            <form id="formCategoria">
+                                                <select class="filtro-select" id="categoriaTerm" name="celula">
+                                                    <option></option>
+                                                    @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
+                                                    {
+                                                        <option name="@categoria">@categoria</option>
+                                                    }
+                                                </select>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroCelula" name="celula">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.Categoria</option>
-                                            }
-                                        </select>
-                                    </div>
-                                </div>
-                            </th>
+                                </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
                                         <p>Empresa ID</p>
-                                    </div>
-                                    <div class="col-12">
-                                        <select class="filtro-select" id="filtroCelula" name="celula">
-                                            <option></option>
-                                            @foreach (var producto in Model)
-                                            {
-                                                <option>@producto.ID_Empresa</option>
-                                            }
-                                        </select>
                                     </div>
                                 </div>
                             </th>
@@ -131,7 +79,7 @@
                                                 <form id="formBusqueda">
                                                     <label for="searchTerm">Buscar:</label>
                                                     <input type="text" id="searchTerm" name="searchTerm" />
-                                                    <button type="button" onclick="buscarProductos()">Buscar</button>
+                                                    <button type="button" id="btnBuscar">Buscar</button>
                                                 </form>
                                         </div>
                                     </div>
@@ -154,10 +102,10 @@
     <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
 </div>
 
-<div id="tablaProductosContainer">
-    <!-- Aquí se renderizará la tabla de productos -->
-    @await Html.PartialAsync("_TablaProductos", Model)
-</div>
+<!-- Contenedor para la tabla temporal -->
+<div id="tablaTemporalContainer"></div>
+<!-- Contenedor para mensajes -->
+<div id="mensajeContainer"></div>
 
 <script>
     var paginaActual = 1;
@@ -236,23 +184,28 @@
 
     // Llama a mostrarPerfiles al cargar la página para mostrar la primera página
     mostrarPerfiles();
-</script>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    function buscarProductos() {
-        var searchTerm = $('#searchTerm').val();
 
-        $.ajax({
-            url: '/Producto/Buscar',
-            type: 'POST',
-            data: { searchTerm: searchTerm },
-            success: function (data) {
-                $('#tablaProductosContainer').html(data);
-            },
-            error: function () {
-                console.error('Error al realizar la búsqueda.');
-            }
+    // Script para manejar la búsqueda asíncrona
+    $(document).ready(function () {
+        $("#btnBuscar").click(function () {
+            var searchTerm = $("#searchTerm").val();
+            var categoriaTerm = $("#categoriaTerm").val();
+
+            $.ajax({
+                type: "POST",
+                url: "/Producto/Buscar",
+                data: { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
+                success: function (result) {
+                    if (result.length > 0) {
+                        // Productos encontrados, muestra la tabla temporal
+                        $("#tablaProductos").html(result);
+                    } else {
+                        // No se encontraron productos, muestra el mensaje
+                        $("#mensajeContainer").html("<p>Producto no encontrado</p>");
+                    }
+                }
+            });
         });
-    }
+    });
 </script>

@@ -39,6 +39,8 @@
     <link rel="stylesheet" href="~/AdminLTE/plugins/daterangepicker/daterangepicker.css">
     <!-- summernote -->
     <link rel="stylesheet" href="~/AdminLTE/plugins/summernote/summernote-bs4.min.css">
+    <!-- jQuery -->
+    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -374,7 +376,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
+                                    <a asp-controller="Inicio" asp-action="Stock" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Agregar Stock</p>
                                     </a>
@@ -560,8 +562,6 @@
         <!-- /.control-sidebar -->
         </div>
         <!-- ./wrapper -->
-        <!-- jQuery -->
-    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
         <!-- jQuery UI 1.11.4 -->
     <script src="~/AdminLTE/plugins/jquery-ui/jquery-ui.min.js"></script>
         <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->

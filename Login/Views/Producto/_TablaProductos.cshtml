@@ -1,26 +1,39 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model IEnumerable<Producto>
+﻿@model List<Producto>
 
-@if (Model.Any())
-{
-    <table>
-        <thead>
-            <!-- Encabezados de la tabla -->
-        </thead>
-        <tbody>
-            @foreach (var producto in Model)
-            {
-                <td>@producto.NombreProducto</td>
-                <td>@producto.CantidadProducto</td>
-                <td>@producto.ValorNetoProducto</td>
-                <td>@producto.ValorVentaProducto</td>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No se ha encontrado el producto solicitado.</p>
-}
+
+                    <table class="table table-bordered tabla_ListaUsuarios">
+                        <thead style="background-color: #002d72;">
+                            <!-- Encabezados de la tabla -->
+                            <tr>
+                                <th scope="col">Código Producto</th>
+                                <th scope="col">Nombre Producto</th>
+                                <th scope="col">Valor Neto</th>
+                                <th scope="col">Valor Venta</th>
+                                <th scope="col">Cantidad</th>
+                                <th scope="col">Categoría</th>
+                                <th scope="col">Empresa ID</th>
+                                <!-- Agrega más columnas si es necesario -->
+                            </tr>
+                        </thead>
+                        <tbody id="resultados" class="listaUsuarios">
+                            <!-- Filas de la tabla -->
+                            @foreach (var producto in Model)
+                            {
+                                <tr>
+                                    <td>@producto.Cod_Producto</td>
+                                    <td>@producto.NombreProducto</td>
+                                    <td>@producto.ValorNetoProducto</td>
+                                    <td>@producto.ValorVentaProducto</td>
+                                    <td>@producto.CantidadProducto</td>
+                                    <td>@producto.Categoria</td>
+                                    <td>@producto.ID_Empresa</td>
+                                    <!-- Agrega más celdas si es necesario -->
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+<div class="text-center mt-3">
+    <a href="@Url.Action("Index")" class="btn btn-primary">Volver</a>
+</div>

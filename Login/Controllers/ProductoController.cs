@@ -44,12 +44,25 @@ namespace Plataforma.Controllers
             return Json(new { success = false });
         }
         [HttpPost]
-        public IActionResult Buscar(string searchTerm)
+        public IActionResult Buscar(string searchTerm, string categoriaTerm)
         {
-            // Lógica de búsqueda en la base de datos utilizando _productoService
-            var resultados = _productoservice.BuscarProductos(searchTerm);
+            var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
 
-            return PartialView("_TablaProductos", resultados);
+            if (productosEncontrados.Any())
+            {
+                // Oculta la tabla de productos y muestra la tabla temporal
+                return PartialView("_TablaProductos", productosEncontrados);
+            }
+            else
+            {
+                // Producto no encontrado, maneja la lógica adecuada
+                ViewBag.Mensaje = "Producto no encontrado";
+                return PartialView("_Mensaje");
+            }
+        }
+        public IActionResult Stock()
+        {
+            return View();
         }
     }
 }
