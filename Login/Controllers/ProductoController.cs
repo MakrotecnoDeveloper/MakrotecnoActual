@@ -26,7 +26,7 @@ namespace Plataforma.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, int valorNeto, int valorVenta, int stock, string categoria)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
         {
             Console.WriteLine(valorNeto);
 
@@ -47,7 +47,7 @@ namespace Plataforma.Controllers
         public IActionResult Buscar(string searchTerm, string categoriaTerm)
         {
             var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-
+            //Console.WriteLine(productosEncontrados);
             if (productosEncontrados.Any())
             {
                 // Oculta la tabla de productos y muestra la tabla temporal

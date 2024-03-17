@@ -1,39 +1,172 @@
 ﻿@model List<Producto>
 
 
-                    <table class="table table-bordered tabla_ListaUsuarios">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-white text-center">Productos</h1>
+                <div class="table-responsive justify-content-center">
+                    <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
                         <thead style="background-color: #002d72;">
-                            <!-- Encabezados de la tabla -->
                             <tr>
-                                <th scope="col">Código Producto</th>
-                                <th scope="col">Nombre Producto</th>
-                                <th scope="col">Valor Neto</th>
-                                <th scope="col">Valor Venta</th>
-                                <th scope="col">Cantidad</th>
-                                <th scope="col">Categoría</th>
-                                <th scope="col">Empresa ID</th>
-                                <!-- Agrega más columnas si es necesario -->
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Codigo Producto</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Nombre Producto</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Valor Neto</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Valor Venta</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Cantidad</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Categoria</p>
+                                        </div>
+                                        <div class="col-12">
+                                            <form id="formCategoria">
+                                                <select class="filtro-select" id="categoriaTerm" name="celula">
+                                                    <option></option>
+                                                    @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
+                                                    {
+                                                        <option name="@categoria">@categoria</option>
+                                                    }
+                                                </select>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Empresa ID</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col" class="text-center">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <form id="formBusqueda">
+                                                    <label for="searchTerm">Buscar:</label>
+                                                    <input type="text" id="searchTerm" name="searchTerm" />
+                                                    <button type="button" id="btnBuscar">Buscar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
+                        <!--Lista de Usuarios-->
                         <tbody id="resultados" class="listaUsuarios">
-                            <!-- Filas de la tabla -->
-                            @foreach (var producto in Model)
-                            {
-                                <tr>
-                                    <td>@producto.Cod_Producto</td>
-                                    <td>@producto.NombreProducto</td>
-                                    <td>@producto.ValorNetoProducto</td>
-                                    <td>@producto.ValorVentaProducto</td>
-                                    <td>@producto.CantidadProducto</td>
-                                    <td>@producto.Categoria</td>
-                                    <td>@producto.ID_Empresa</td>
-                                    <!-- Agrega más celdas si es necesario -->
-                                </tr>
-                            }
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    var paginaActual = 1;
+    var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
+    var totalPerfiles = @Model.Count(); // Obtén el total de perfiles desde el modelo
 
+    function cambiarPagina(direccion) {
+        paginaActual += direccion;
+        mostrarPerfiles();
+    }
 
-<div class="text-center mt-3">
-    <a href="@Url.Action("Index")" class="btn btn-primary">Volver</a>
-</div>
+    function mostrarPerfiles() {
+        // Obtener la lista completa de perfiles
+        var perfiles = @Html.Raw(Json.Serialize(Model));
+        //console.log(perfiles);
+
+        // Calcular el índice de inicio y fin para la página actual
+        var inicio = (paginaActual - 1) * perfilesPorPagina;
+        var fin = inicio + perfilesPorPagina;
+
+        // Obtener los perfiles para la página actual
+        var perfilesPagina = perfiles.slice(inicio, fin);
+
+        // Mostrar los perfiles en el contenedor
+        actualizarTabla(perfilesPagina);
+
+        // Actualizar la información de paginación
+        actualizarPaginacion();
+    }
+
+    function actualizarTabla(perfiles) {
+        var resultados = document.getElementById('resultados');
+        resultados.innerHTML = '';
+
+        perfiles.forEach(perfil => {
+            // Crea las filas de la tabla con los perfiles
+            var fila = document.createElement('tr');
+            fila.className = 'perfil-fila';
+            var html = `<td>${perfil.cod_Producto}</td>`;
+            html += `<td>${perfil.nombreProducto}</td>`;
+            html += `<td>${perfil.valorNetoProducto}</td>`;
+            html += `<td>${perfil.valorVentaProducto}</td>`;
+            html += `<td>${perfil.cantidadProducto}</td>`;
+            html += `<td>${perfil.categoria}</td>`;
+            html += `<td>${perfil.iD_Empresa}</td>`;
+            // Crear enlace y asignarle el evento onclick para redirigir
+            var enlace = document.createElement('a');
+            enlace.href = `/Inicio/VisualizarUsuario?id=${perfil.id}&nombrePerfil=${perfil.nombrePerfil}`;
+            enlace.innerHTML = 'Visualizar';
+            enlace.onclick = function () {
+                // Redirigir a la URL especificada
+                window.location.href = this.href;
+                return false; // Prevenir el comportamiento predeterminado del enlace
+            };
+
+            // Agregar enlace a la celda
+            var celda = document.createElement('td');
+            celda.appendChild(enlace);
+            html += celda.outerHTML;
+
+            fila.innerHTML = html;
+            resultados.appendChild(fila);
+        });
+    }
+
+    function actualizarPaginacion() {
+        var paginaActualElement = document.getElementById('pagina-actual');
+        paginaActualElement.textContent = `Página ${paginaActual}`;
+
+        var botonAnterior = document.getElementById('botonAnterior');
+        var botonSiguiente = document.getElementById('botonSiguiente');
+
+        botonAnterior.disabled = paginaActual <= 1;
+        botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
+    }
+
+    // Llama a mostrarPerfiles al cargar la página para mostrar la primera página
+    mostrarPerfiles();
+</script>

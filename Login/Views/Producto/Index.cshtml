@@ -3,7 +3,7 @@
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<div class="content-wrapper">
+<div class="content-wrapper" id="tablaProductosContainer">
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -102,11 +102,6 @@
     <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
 </div>
 
-<!-- Contenedor para la tabla temporal -->
-<div id="tablaTemporalContainer"></div>
-<!-- Contenedor para mensajes -->
-<div id="mensajeContainer"></div>
-
 <script>
     var paginaActual = 1;
     var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
@@ -191,19 +186,20 @@
         $("#btnBuscar").click(function () {
             var searchTerm = $("#searchTerm").val();
             var categoriaTerm = $("#categoriaTerm").val();
-
+            console.log(searchTerm);
+            console.log(categoriaTerm);
             $.ajax({
                 type: "POST",
                 url: "/Producto/Buscar",
                 data: { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
                 success: function (result) {
-                    if (result.length > 0) {
-                        // Productos encontrados, muestra la tabla temporal
-                        $("#tablaProductos").html(result);
-                    } else {
-                        // No se encontraron productos, muestra el mensaje
-                        $("#mensajeContainer").html("<p>Producto no encontrado</p>");
-                    }
+                    // Se espera que el controlador devuelva la vista parcial adecuada según la situación
+                    $("#tablaProductosContainer").html(result);
+                    console.log(result);
+                },
+                error: function () {
+                    // Manejo de errores si es necesario
+                    $("#tablaProductosContainer").html("<p>Ocurrió un error al procesar la solicitud.</p>");
                 }
             });
         });

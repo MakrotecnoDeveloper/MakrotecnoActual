@@ -17,7 +17,7 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Productos.ToList();
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias)
         {
             try
             {
@@ -48,18 +48,18 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<Producto> BuscarProductos(string searchTerm, string categoriaTerm)
         {
+            
             // Lógica para buscar productos por el nombre o la categoría
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                return _dbContext.Productos
-                    .Where(p => p.NombreProducto.Contains(searchTerm))
-                    .ToList();
+
+                var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm).ToList();
+                return consulta;
             }
             else if (!string.IsNullOrEmpty(categoriaTerm))
             {
-                return _dbContext.Productos
-                    .Where(p => p.Categoria == categoriaTerm)
-                    .ToList();
+                var consulta = _dbContext.Productos.Where(p => p.Categoria == categoriaTerm).ToList();
+                return consulta;
             }
             else
             {

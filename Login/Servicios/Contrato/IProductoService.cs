@@ -5,7 +5,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias);
+        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias);
         List<Producto> ObtenerProductos();
         List<Producto> BuscarProductos(string searchTerm, string categoriaTerm);
     }
