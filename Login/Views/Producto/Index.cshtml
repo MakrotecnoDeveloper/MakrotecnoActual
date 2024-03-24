@@ -113,21 +113,11 @@
     }
 
     function mostrarPerfiles() {
-        // Obtener la lista completa de perfiles
         var perfiles = @Html.Raw(Json.Serialize(Model));
-        //console.log(perfiles);
-
-        // Calcular el índice de inicio y fin para la página actual
         var inicio = (paginaActual - 1) * perfilesPorPagina;
         var fin = inicio + perfilesPorPagina;
-
-        // Obtener los perfiles para la página actual
         var perfilesPagina = perfiles.slice(inicio, fin);
-
-        // Mostrar los perfiles en el contenedor
         actualizarTabla(perfilesPagina);
-
-        // Actualizar la información de paginación
         actualizarPaginacion();
     }
 
@@ -136,7 +126,6 @@
         resultados.innerHTML = '';
 
         perfiles.forEach(perfil => {
-            // Crea las filas de la tabla con los perfiles
             var fila = document.createElement('tr');
             fila.className = 'perfil-fila';
             var html = `<td>${perfil.cod_Producto}</td>`;
@@ -146,25 +135,92 @@
             html += `<td>${perfil.cantidadProducto}</td>`;
             html += `<td>${perfil.categoria}</td>`;
             html += `<td>${perfil.iD_Empresa}</td>`;
-            // Crear enlace y asignarle el evento onclick para redirigir
-            var enlace = document.createElement('a');
-            enlace.href = `/Inicio/VisualizarUsuario?id=${perfil.id}&nombrePerfil=${perfil.nombrePerfil}`;
-            enlace.innerHTML = 'Visualizar';
-            enlace.onclick = function () {
-                // Redirigir a la URL especificada
-                window.location.href = this.href;
-                return false; // Prevenir el comportamiento predeterminado del enlace
-            };
 
-            // Agregar enlace a la celda
-            var celda = document.createElement('td');
-            celda.appendChild(enlace);
-            html += celda.outerHTML;
+            // Crear celdas para cada propiedad del perfil
+            var propiedades = ['cod_Producto', 'nombreProducto', 'valorNetoProducto', 'valorVentaProducto', 'cantidadProducto', 'categoria', 'iD_Empresa'];
+            propiedades.forEach(propiedad => {
+                var celda = document.createElement('td');
+                celda.textContent = perfil[propiedad];
+                fila.appendChild(celda);
+            });
 
-            fila.innerHTML = html;
+            // Enlace 1 - Editar Producto
+            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-bars');
+            // Enlace 2 - Agregar Stock
+            var enlace2 = crearEnlaceStock(perfil.cod_Producto);
+            // Enlace 3 - Eliminar Producto
+            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-user');
+
+            // Agregar enlaces a una celda
+            var acciones = document.createElement('td');
+            acciones.appendChild(enlace1);
+            acciones.appendChild(enlace2);
+            acciones.appendChild(enlace3);
+            fila.appendChild(acciones);
+
+            // Agregar la fila a la tabla
             resultados.appendChild(fila);
         });
     }
+
+    function crearEnlace(href, iconoClass) {
+        var enlace = document.createElement('a');
+        enlace.href = href;
+        var icono = document.createElement('i');
+
+        // Separar las clases y agregarlas individualmente
+        var clases = iconoClass.split(' ');
+        clases.forEach(clase => {
+            icono.classList.add(clase);
+        });
+
+        enlace.appendChild(icono);
+        enlace.onclick = function () {
+            window.location.href = this.href;
+            return false; // Prevenir el comportamiento predeterminado del enlace
+        };
+        return enlace;
+    }
+
+    function crearEnlaceStock(codProducto) {
+        var enlace = document.createElement('button');
+        var icono = document.createElement('i');
+        icono.classList.add('fas', 'fa-user');
+        enlace.appendChild(icono);
+        enlace.onclick = function () {
+            var eliminarAgregar = prompt("Que proceso vas a realizar, Eliminar o Agregar un producto PD: Para Agregar escribe 1, para Borrar el 2");
+            if(eliminarAgregar == 1){
+                var cantidad = prompt("Ingrese la cantidad de stock a actualizar:", "");
+                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
+                    // Verificar si la cantidad es un número válido
+                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
+                        // Construir la URL con la cantidad proporcionada
+                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
+                        // Redirigir a la nueva URL
+                        window.location.href = nuevaUrl;
+                    } else {
+                        alert("Por favor, ingrese una cantidad válida.");
+                    }
+                }
+            }
+            if(eliminarAgregar == 2){
+                var cantidad = prompt("Ingrese la cantidad de stock a eliminar:", "");
+                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
+                    // Verificar si la cantidad es un número válido
+                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
+                        // Construir la URL con la cantidad proporcionada
+                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
+                        // Redirigir a la nueva URL
+                        window.location.href = nuevaUrl;
+                    } else {
+                        alert("Por favor, ingrese una cantidad válida.");
+                    }
+                }
+            }
+        };
+        return enlace;
+    }
+    //fin funciones
 
     function actualizarPaginacion() {
         var paginaActualElement = document.getElementById('pagina-actual');
@@ -177,7 +233,6 @@
         botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
     }
 
-    // Llama a mostrarPerfiles al cargar la página para mostrar la primera página
     mostrarPerfiles();
 
 
@@ -186,8 +241,6 @@
         $("#btnBuscar").click(function () {
             var searchTerm = $("#searchTerm").val();
             var categoriaTerm = $("#categoriaTerm").val();
-            console.log(searchTerm);
-            console.log(categoriaTerm);
             $.ajax({
                 type: "POST",
                 url: "/Producto/Buscar",
@@ -195,7 +248,6 @@
                 success: function (result) {
                     // Se espera que el controlador devuelva la vista parcial adecuada según la situación
                     $("#tablaProductosContainer").html(result);
-                    console.log(result);
                 },
                 error: function () {
                     // Manejo de errores si es necesario

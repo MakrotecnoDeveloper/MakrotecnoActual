@@ -28,7 +28,6 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
         {
-            Console.WriteLine(valorNeto);
 
             if (ModelState.IsValid)
             {
@@ -60,9 +59,34 @@ namespace Plataforma.Controllers
                 return PartialView("_Mensaje");
             }
         }
-        public IActionResult Stock()
+        public IActionResult Editar(string id)
         {
-            return View();
+            string categoriaTerm = "";
+            var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
+            if (editarProducto.Any())
+            {
+                // Oculta la tabla de productos y muestra la tabla temporal
+                return View("", editarProducto);
+            }
+            else
+            {
+                // Producto no encontrado, maneja la lógica adecuada
+                ViewBag.Mensaje = "Producto no encontrado";
+                return View("_Mensaje");
+            }
+        }
+        public IActionResult Stock(string id, int cantidad, int opcion)
+        {
+            var productosActualizados = _productoservice.EditarStock(id, cantidad, opcion);
+            if (productosActualizados.Any())
+            {
+                return View("Index", productosActualizados);
+            }
+            else
+            {
+                ViewBag.Mensaje = "Producto no encontrado";
+                return View("_Mensaje");
+            }
         }
     }
 }

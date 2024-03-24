@@ -24,7 +24,6 @@ function enviarProducto(id_empresa, codigo, descripcion, valorNeto, valorVenta, 
         categoria: categoria
     };
     // Realiza la solicitud AJAX
-    console.log(data);
     $.ajax({
         type: "POST",
         url: "/Producto/Insertar", // Ajusta la URL según tu ruta
@@ -32,6 +31,8 @@ function enviarProducto(id_empresa, codigo, descripcion, valorNeto, valorVenta, 
         success: function (response) {
             // Lógica para manejar el éxito
             alert("Producto agregado exitosamente.");
+            $("#formularioProducto")[0].reset();
+
         },
         error: function (error) {
             // Lógica para manejar el error

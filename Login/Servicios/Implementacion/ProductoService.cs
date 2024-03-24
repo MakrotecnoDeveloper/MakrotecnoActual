@@ -67,5 +67,79 @@ namespace Plataforma.Servicios.Implementacion
                 return new List<Producto>();
             }
         }
+        public async Task<bool> AgregarStockAsync(string idProducto, int cantidad)
+        {
+            try
+            {
+                // Buscar el producto en la base de datos
+                var producto = await _dbContext.Productos.FindAsync(idProducto);
+
+                if (producto != null)
+                {
+                    // Actualizar el stock del producto
+                    producto.CantidadProducto += cantidad;
+
+                    // Guardar los cambios en la base de datos
+                    await _dbContext.SaveChangesAsync();
+
+                    return true; // Devolver true si la actualización fue exitosa
+                }
+                else
+                {
+                    return false; // Devolver false si no se encontró el producto
+                }
+            }
+            catch (Exception)
+            {
+                // Manejar cualquier error que ocurra durante la actualización del stock
+                return false; // Devolver false en caso de error
+            }
+        }
+        public IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion)
+        {
+            // Lógica para editar el stock del producto
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == id);
+            Console.WriteLine(opcion);
+            if (producto != null)
+            {
+                if (opcion == 1)
+                {
+                    if(cantidad == 0)
+                    {
+                        Console.WriteLine("La cantidad no puede ser 0");
+                    }else
+                    {
+                        // Agregar stock al producto
+                        producto.CantidadProducto += cantidad;
+                    }
+                    
+                }
+                else if (opcion == 2)
+                {
+                    // Verificar si hay suficiente stock antes de eliminar
+                    if (producto.CantidadProducto >= cantidad)
+                    {
+                        if (cantidad == 0)
+                        {
+                            Console.WriteLine("La cantidad no puede ser 0");
+                        }
+                        else
+                        {
+                            // Eliminar la cantidad especificada de stock del producto
+                            producto.CantidadProducto -= cantidad;
+                        }
+                    }
+                    else
+                    {
+                        // No hay suficiente stock para eliminar
+                        // Lanza una excepción indicando que la cantidad a eliminar es mayor que el stock actual
+                        Console.WriteLine("La cantidad a eliminar es mayor que el stock actual del producto.");
+                    }
+                }
+                // Guardar los cambios en la base de datos
+                _dbContext.SaveChanges();
+            }
+            return _dbContext.Productos.ToList();
+        }
     }
 }
