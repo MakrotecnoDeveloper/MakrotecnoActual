@@ -99,7 +99,6 @@ namespace Plataforma.Servicios.Implementacion
         {
             // Lógica para editar el stock del producto
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == id);
-            Console.WriteLine(opcion);
             if (producto != null)
             {
                 if (opcion == 1)
@@ -141,5 +140,72 @@ namespace Plataforma.Servicios.Implementacion
             }
             return _dbContext.Productos.ToList();
         }
+        //a
+        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
+        {
+
+            if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto <= 0 || valorVenta <= 0 || cantidad <= 0)
+            {
+                Console.WriteLine("Error: Todos los campos deben tener un valor. No se permiten valores nulos.");
+                return;
+            }
+
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == codigo);
+            //Console.WriteLine("El ID de la empresa es: " + idEmpresa);
+            if (producto != null)
+            {
+                producto.Cod_Producto = codigo;
+                producto.NombreProducto = nombreProducto;
+                producto.CantidadProducto = cantidad;
+                producto.ValorNetoProducto = valorNeto;
+                producto.ValorVentaProducto = valorVenta;
+                producto.ID_Empresa = idEmpresa;
+                producto.Categoria = categoria;
+                try
+                {
+                    _dbContext.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al guardar los cambios en la base de datos: " + ex.Message);
+                    // Puedes agregar un código adicional aquí para manejar el error, como registrar el error en un archivo de registro, notificar al usuario, etc.
+                }
+            }
+            else
+            {
+                Console.WriteLine("El producto no existe");
+                // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
+            }
+        }
+        public void EliminarProducto(string id)
+        {
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == id);
+            if (producto != null)
+            {
+                try
+                {
+                    // 3. Eliminar el producto.
+                    _dbContext.Productos.Remove(producto);
+
+                    // 4. Guardar los cambios en la base de datos.
+                    _dbContext.SaveChanges();
+
+                    Console.WriteLine("Producto eliminado exitosamente.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al eliminar el producto: " + ex.Message);
+                    // Puedes agregar un código adicional aquí para manejar el error, como registrar el error en un archivo de registro, notificar al usuario, etc.
+                }
+            }
+            else
+            {
+                Console.WriteLine("El producto no existe.");
+                // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
+            }
+        }
+
+        //a
+
     }
 }

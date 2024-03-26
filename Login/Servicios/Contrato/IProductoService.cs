@@ -10,5 +10,7 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> BuscarProductos(string searchTerm, string categoriaTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
+        void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa);
+        void EliminarProducto(string id);
     }
 }

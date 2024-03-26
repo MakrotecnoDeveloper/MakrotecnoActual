@@ -4,20 +4,77 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="content-wrapper" id="tablaProductosContainer">
-    <div class="container-fluid">
-        <h1>Editar</h1>
-        <div class="row">
-            <div class="col-12">
-                <form>
-                    <label>
-                        Codigo  Producto
-                    </label>
-                    <input />
-
-                </form>
+<!-- Contenido principal -->
+<div class="content-wrapper">
+    <!-- Contenido del encabezado -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Editar Producto</h1>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
+    <!-- Formulario -->
+    <section class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Ingrese los datos del producto</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- Formulario -->
+                        <form role="form" action="EditarProducto" method="POST">
+                            <div class="card-body">
+                                @foreach (var producto in Model)
+                                {
+                                    <div class="form-group">
+                                        <label for="codigo">Código</label>
+                                        <input type="text" class="form-control" id="codigo" name="codigo" value="@producto.Cod_Producto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="nombreProducto">Nombre del Producto</label>
+                                        <input type="text" class="form-control" id="nombreProducto" name="nombreProducto" value="@producto.NombreProducto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="valorNeto">Valor Neto</label>
+                                        <input type="number" class="form-control" id="valorNeto" name="valorNeto" value="@producto.ValorNetoProducto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="valorVenta">Valor de Venta</label>
+                                        <input type="number" class="form-control" id="valorVenta" name="valorVenta" value="@producto.ValorVentaProducto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cantidad">Cantidad</label>
+                                        <input type="number" class="form-control" id="cantidad" name="cantidad" value="@producto.CantidadProducto">
+                                    </div>
+                                    <select class="form-group d-none" name="categoria">
+                                        <option class="form-control" value="@producto.Categoria">@producto.Categoria</option>
+                                    </select>
+                                    <div class="form-group d-none">
+                                        <label for="idProducto">Id Empresa</label>
+                                        <input type="text" class="form-control" id="idProducto" name="idEmpresa" value="@producto.ID_Empresa">
+                                    </div>
+                                }
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer justify-content-end">
+                                <button type="submit" class="btn btn-primary">Editar Producto</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->

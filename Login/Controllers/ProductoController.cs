@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
@@ -66,7 +67,7 @@ namespace Plataforma.Controllers
             if (editarProducto.Any())
             {
                 // Oculta la tabla de productos y muestra la tabla temporal
-                return View("", editarProducto);
+                return View("Editar", editarProducto);
             }
             else
             {
@@ -74,6 +75,15 @@ namespace Plataforma.Controllers
                 ViewBag.Mensaje = "Producto no encontrado";
                 return View("_Mensaje");
             }
+        }
+        [HttpPost]
+        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
+        {
+            // Llama al método EditarProducto del servicio de productos
+            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, cantidad, categoria, idEmpresa);
+
+            // Redirige a la acción que deseas después de editar el producto
+            return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos
         }
         public IActionResult Stock(string id, int cantidad, int opcion)
         {
@@ -87,6 +97,11 @@ namespace Plataforma.Controllers
                 ViewBag.Mensaje = "Producto no encontrado";
                 return View("_Mensaje");
             }
+        }
+        public IActionResult Eliminar(string id)
+        {
+            _productoservice.EliminarProducto(id);
+            return RedirectToAction("Index");
         }
     }
 }

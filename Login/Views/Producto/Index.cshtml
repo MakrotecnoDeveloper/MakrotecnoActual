@@ -3,6 +3,14 @@
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    .icono-enlace {
+        display: inline-block;
+        vertical-align: middle; /* Centrar verticalmente */
+        margin-right: 10px; /* Agregar espacio entre iconos */
+        font-size: 20px; /* Tamaño de fuente del icono */
+    }
+</style>
 <div class="content-wrapper" id="tablaProductosContainer">
 <div class="container-fluid">
     <div class="row">
@@ -145,11 +153,11 @@
             });
 
             // Enlace 1 - Editar Producto
-            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-bars');
+            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-pencil-alt');
             // Enlace 2 - Agregar Stock
             var enlace2 = crearEnlaceStock(perfil.cod_Producto);
             // Enlace 3 - Eliminar Producto
-            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-user');
+            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
 
             // Agregar enlaces a una celda
             var acciones = document.createElement('td');
@@ -168,6 +176,8 @@
         enlace.href = href;
         var icono = document.createElement('i');
 
+        icono.classList.add('icono-enlace');
+
         // Separar las clases y agregarlas individualmente
         var clases = iconoClass.split(' ');
         clases.forEach(clase => {
@@ -185,7 +195,7 @@
     function crearEnlaceStock(codProducto) {
         var enlace = document.createElement('button');
         var icono = document.createElement('i');
-        icono.classList.add('fas', 'fa-user');
+        icono.classList.add('fas', 'fa-plus-circle', 'icono-enlace');
         enlace.appendChild(icono);
         enlace.onclick = function () {
             var eliminarAgregar = prompt("Que proceso vas a realizar, Eliminar o Agregar un producto PD: Para Agregar escribe 1, para Borrar el 2");

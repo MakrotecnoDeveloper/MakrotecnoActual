@@ -1,3 +1,56 @@
 ﻿https://flowbite.com/
 https://ui.aceternity.com/components/3d-card-effect
 https://tailwindui.com/?ref=top
+
+public void Metodo(propiedades)
+{
+Se utiliza cuando el método simplemente realiza alguna acción y no necesita devolver ningún resultado.
+}
+
+public IEnumerable<ModeloDB> Metodo(propiedades)
+{
+Este método devuelve una secuencia de elementos del tipo ModeloDB. La interfaz IEnumerable<T> se utiliza cuando se necesita iterar sobre una colección de elementos.
+}
+
+public async Task(bool) Metodo(propiedades)
+{
+ Este método devuelve una tarea (Task) que eventualmente producirá un resultado booleano. Se utiliza para realizar operaciones asincrónicas que eventualmente devolverán un resultado booleano.
+}
+
+public ModeloDB Metodo(propiedades)
+{
+Este método devuelve un solo objeto del tipo ModeloDB. Se utiliza cuando solo se necesita devolver un único resultado
+}
+
+public async Task<List<ModeloDB>> Metodo(propiedades)
+{
+Este método devuelve una tarea (Task) que eventualmente producirá una lista (List) de objetos del tipo ModeloDB. Se utiliza para realizar operaciones asincrónicas que eventualmente devolverán una lista de resultados.
+}
+
+public async Task<IEnumerable<ModeloDB>> Metodo(propiedades)
+{
+Este método devuelve una tarea (Task) que eventualmente producirá una secuencia de elementos del tipo ModeloDB. Se utiliza para realizar operaciones asincrónicas que eventualmente devolverán una colección de elementos que pueden ser iterados.
+}
+public List<ModeloDB> Metodo(propiedades)
+{
+Este método devuelve una lista (List) de objetos del tipo ModeloDB. Se utiliza cuando se necesita devolver una lista concreta de objetos.
+}
+public async Task Metodo(propiedades)
+{
+Este método devuelve una tarea (Task) que no produce ningún resultado. Se utiliza para realizar operaciones asincrónicas que no necesitan devolver un valor específico.
+}
+
+
+
+Si voy a llamar un metodo async Task, debo usar await ej:
+
+public async Task<ModeloDB> MetodoAsync(propiedades)
+{
+............
+}
+
+public IEnumerable Metodo(propiedades)
+{
+var llamarAsyncrono = await _dbService.MetodoAsync(propiedades);
+return llamadaAsyncrono;
+}
