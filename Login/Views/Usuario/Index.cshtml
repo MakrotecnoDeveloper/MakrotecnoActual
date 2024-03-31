@@ -1,84 +1,265 @@
-﻿
+﻿@model List<Empleado>
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<div class="content-wrapper">
-    <!-- Contenido del encabezado -->
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Agregar Producto</h1>
+<style>
+    .icono-enlace {
+        display: inline-block;
+        vertical-align: middle; /* Centrar verticalmente */
+        margin-right: 10px; /* Agregar espacio entre iconos */
+        font-size: 20px; /* Tamaño de fuente del icono */
+    }
+</style>
+<div class="content-wrapper" id="tablaEmpleadoContainer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-white text-center">Empleados</h1>
+                <div class="table-responsive justify-content-center">
+                    <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
+                        <thead style="background-color: #002d72;">
+                            <tr>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Cedula</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Nombre</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Apellido</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Genero</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Correo</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>RH</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Celular</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="input-group mb-3">
+                                        <div class="col-12">
+                                            <p>Contrasena</p>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th scope="col" class="text-center">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <form id="formBusqueda">
+                                                    <label for="searchTerm">Buscar:</label>
+                                                    <input type="text" id="searchTerm" name="searchTerm" />
+                                                    <button type="button" id="btnBuscar">Buscar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <!--Lista de Usuarios-->
+                        <tbody id="resultados" class="listaUsuarios">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Formulario -->
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Ingrese los datos del producto</h3>
-                        </div>
-                        <!-- /.card-header -->
-                        <!-- Formulario -->
-                        <form role="form">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="cedula">Cédula</label>
-                                    <input type="number" class="form-control" id="cedula" placeholder="Ingrese la cédula">
-                                </div>
-                                <div class="form-group">
-                                    <label for="nombre">Nombre</label>
-                                    <input type="text" class="form-control" id="nombre" placeholder="Ingrese el nombre">
-                                </div>
-                                <div class="form-group">
-                                    <label for="apellido">Apellido</label>
-                                    <input type="text" class="form-control" id="apellido" placeholder="Ingrese el apellido">
-                                </div>
-                                <div class="form-group">
-                                    <label for="genero">Género</label>
-                                    <select class="form-control" id="genero">
-                                        <option value="masculino">Masculino</option>
-                                        <option value="femenino">Femenino</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="correo">Correo Electrónico</label>
-                                    <input type="email" class="form-control" id="correo" placeholder="Ingrese el correo electrónico">
-                                </div>
-                                <div class="form-group">
-                                    <label for="rh">RH</label>
-                                    <input type="text" class="form-control" id="rh" placeholder="Ingrese el RH">
-                                </div>
-                                <div class="form-group">
-                                    <label for="celular">Celular</label>
-                                    <input type="tel" class="form-control" id="celular" placeholder="Ingrese el número de celular">
-                                </div>
-                                <div class="form-group">
-                                    <label for="contrasena">Contraseña</label>
-                                    <input type="password" class="form-control" id="contrasena" placeholder="Ingrese la contraseña">
-                                </div>
-                            </div>
-                            <!-- /.card-body -->
-
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Agregar Producto</button>
-                            </div>
-                        </form>
-                    </div>
-                    <!-- /.card -->
-                </div>
-                <!-- /.col -->
-            </div>
-            <!-- /.row -->
-        </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
+    </div>
 </div>
-<!-- /.content-wrapper -->
+<div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
+    <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
+    <span id="pagina-actual" class="text-white">Página 1</span>
+    <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
+</div>
+
+<script>
+    var paginaActual = 1;
+    var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
+    var totalPerfiles = @Model.Count(); // Obtén el total de perfiles desde el modelo
+
+    function cambiarPagina(direccion) {
+        paginaActual += direccion;
+        mostrarPerfiles();
+    }
+
+    function mostrarPerfiles() {
+        var perfiles = @Html.Raw(Json.Serialize(Model));
+        var inicio = (paginaActual - 1) * perfilesPorPagina;
+        var fin = inicio + perfilesPorPagina;
+        var perfilesPagina = perfiles.slice(inicio, fin);
+        actualizarTabla(perfilesPagina);
+        actualizarPaginacion();
+    }
+
+    function actualizarTabla(perfiles) {
+        var resultados = document.getElementById('resultados');
+        resultados.innerHTML = '';
+        perfiles.forEach(perfil => {
+            var fila = document.createElement('tr');
+            fila.className = 'perfil-fila';
+            var html = `<td>${perfil.cedula}</td>`;
+            html += `<td>${perfil.nombre}</td>`;
+            html += `<td>${perfil.apellido}</td>`;
+            html += `<td>${perfil.genero}</td>`;
+            html += `<td>${perfil.correo}</td>`;
+            html += `<td>${perfil.rh}</td>`;
+            html += `<td>${perfil.celular}</td>`;
+            html += `<td>${perfil.contrasena}</td>`;
+
+            // Crear celdas para cada propiedad del perfil
+            var propiedades = ['cedula', 'nombre', 'apellido', 'genero', 'correo', 'rh', 'celular', 'contrasena'];
+            propiedades.forEach(propiedad => {
+                var celda = document.createElement('td');
+                celda.textContent = perfil[propiedad];
+                fila.appendChild(celda);
+            });
+
+            // Enlace 1 - Editar Producto
+            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-pencil-alt');
+            // Enlace 2 - Agregar Stock
+            var enlace2 = crearEnlaceStock(perfil.cod_Producto);
+            // Enlace 3 - Eliminar Producto
+            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
+
+            // Agregar enlaces a una celda
+            var acciones = document.createElement('td');
+            acciones.appendChild(enlace1);
+            acciones.appendChild(enlace2);
+            acciones.appendChild(enlace3);
+            fila.appendChild(acciones);
+
+            // Agregar la fila a la tabla
+            resultados.appendChild(fila);
+        });
+    }
+
+    function crearEnlace(href, iconoClass) {
+        var enlace = document.createElement('a');
+        enlace.href = href;
+        var icono = document.createElement('i');
+
+        icono.classList.add('icono-enlace');
+
+        // Separar las clases y agregarlas individualmente
+        var clases = iconoClass.split(' ');
+        clases.forEach(clase => {
+            icono.classList.add(clase);
+        });
+
+        enlace.appendChild(icono);
+        enlace.onclick = function () {
+            window.location.href = this.href;
+            return false; // Prevenir el comportamiento predeterminado del enlace
+        };
+        return enlace;
+    }
+
+    function crearEnlaceStock(codProducto) {
+        var enlace = document.createElement('button');
+        var icono = document.createElement('i');
+        icono.classList.add('fas', 'fa-plus-circle', 'icono-enlace');
+        enlace.appendChild(icono);
+        enlace.onclick = function () {
+            var eliminarAgregar = prompt("Que proceso vas a realizar, Eliminar o Agregar un producto PD: Para Agregar escribe 1, para Borrar el 2");
+            if (eliminarAgregar == 1) {
+                var cantidad = prompt("Ingrese la cantidad de stock a actualizar:", "");
+                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
+                    // Verificar si la cantidad es un número válido
+                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
+                        // Construir la URL con la cantidad proporcionada
+                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
+                        // Redirigir a la nueva URL
+                        window.location.href = nuevaUrl;
+                    } else {
+                        alert("Por favor, ingrese una cantidad válida.");
+                    }
+                }
+            }
+            if (eliminarAgregar == 2) {
+                var cantidad = prompt("Ingrese la cantidad de stock a eliminar:", "");
+                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
+                    // Verificar si la cantidad es un número válido
+                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
+                        // Construir la URL con la cantidad proporcionada
+                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
+                        // Redirigir a la nueva URL
+                        window.location.href = nuevaUrl;
+                    } else {
+                        alert("Por favor, ingrese una cantidad válida.");
+                    }
+                }
+            }
+        };
+        return enlace;
+    }
+    //fin funciones
+
+    function actualizarPaginacion() {
+        var paginaActualElement = document.getElementById('pagina-actual');
+        paginaActualElement.textContent = `Página ${paginaActual}`;
+
+        var botonAnterior = document.getElementById('botonAnterior');
+        var botonSiguiente = document.getElementById('botonSiguiente');
+
+        botonAnterior.disabled = paginaActual <= 1;
+        botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
+    }
+
+    mostrarPerfiles();
+
+
+    // Script para manejar la búsqueda asíncrona
+    $(document).ready(function () {
+        $("#btnBuscar").click(function () {
+            var searchTerm = $("#searchTerm").val();
+            var categoriaTerm = $("#categoriaTerm").val();
+            $.ajax({
+                type: "POST",
+                url: "/Producto/Buscar",
+                data: { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
+                success: function (result) {
+                    // Se espera que el controlador devuelva la vista parcial adecuada según la situación
+                    $("#tablaEmpleadoContainer").html(result);
+                },
+                error: function () {
+                    // Manejo de errores si es necesario
+                    $("#tablaEmpleadoContainer").html("<p>Ocurrió un error al procesar la solicitud.</p>");
+                }
+            });
+        });
+    });
+</script>

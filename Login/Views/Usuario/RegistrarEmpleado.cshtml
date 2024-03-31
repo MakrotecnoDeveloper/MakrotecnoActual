@@ -1,0 +1,94 @@
+﻿
+@{
+    ViewData["Title"] = "RegistrarEmpleado";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <!-- Contenido del encabezado -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Agregar Empleado</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Ingrese los datos</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- Formulario -->
+                        <form role="form" asp-controller="Usuario" asp-action="RegistrarDBEmpleado" method="POST">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="cedula">Cédula</label>
+                                    <input type="number" class="form-control" id="cedula" placeholder="Ingrese la cédula" name="cedula">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nombre">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" placeholder="Ingrese el nombre" name="nombre">
+                                </div>
+                                <div class="form-group">
+                                    <label for="apellido">Apellido</label>
+                                    <input type="text" class="form-control" id="apellido" placeholder="Ingrese el apellido" name="apellido">
+                                </div>
+                                <div class="form-group">
+                                    <label for="genero">Género</label>
+                                    <select class="form-control" id="genero" name="genero">
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Femenino</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="correo">Correo Electrónico</label>
+                                    <input type="email" class="form-control" id="correo" placeholder="Ingrese el correo electrónico" name="correo">
+                                </div>
+                                <div class="form-group">
+                                    <label for="genero">RH</label>
+                                    <select class="form-control" id="rh" name="rh">
+                                        <option value="A+">A+</option>
+                                        <option value="O+">O+</option>
+                                        <option value="B+">B+</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="O-">O-</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="celular">Celular</label>
+                                    <input type="tel" class="form-control" id="celular" placeholder="Ingrese el número de celular" name="celular">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contrasena">Contraseña</label>
+                                    <input type="password" class="form-control" id="contrasena" placeholder="Ingrese la contraseña" name="contrasena">
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">Agregar Usuario</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+

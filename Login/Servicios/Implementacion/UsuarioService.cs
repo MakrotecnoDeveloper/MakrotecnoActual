@@ -12,6 +12,10 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext = dbContext;
         }
+        public List<Empleado> ObtenerUsuarios()
+        {
+            return _dbContext.Empleado.ToList();
+        }
         public async Task<Empleado> GetUsuarios(string correo, string password)
         {
             Empleado usuario_encontrando = await _dbContext.Empleado.Where(u => u.Correo == correo && u.Contrasena == password).FirstOrDefaultAsync();
@@ -25,34 +29,37 @@ namespace Plataforma.Servicios.Implementacion
             await _dbContext.SaveChangesAsync();
             return modelo;
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias)
+        public IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
-            try
+            var empleadoExistente = _dbContext.Empleado.FirstOrDefault(p => p.Cedula == cedula);
+            if (empleadoExistente != null)
             {
-                // Crear un nuevo objeto Producto con los parámetros proporcionados
-                var nuevoProducto = new Producto
-                {
-                    Cod_Producto = codigo,
-                    NombreProducto = descripcion,
-                    CantidadProducto = stock,
-                    ValorNetoProducto = valor_neto,
-                    ValorVentaProducto = valor_unitario,
-                    ID_Empresa = id_empresa,
-                    Categoria = categorias
-                };
-
-                // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
-                _dbContext.Productos.Add(nuevoProducto);
-                _dbContext.SaveChanges();
-
-                // Devolver true si la operación fue exitosa
-                return Task.FromResult(true);
+                // Si ya existe un empleado con la misma cédula, puedes manejarlo de acuerdo a tus requerimientos, por ejemplo, lanzar una excepción, devolver un mensaje de error, etc.
+                // Aquí estoy lanzando una excepción como ejemplo.
+                Console.WriteLine("Ya existe un empleado con la misma cédula");
             }
-            catch (Exception)
+
+            // Crear una nueva instancia de Empleado
+            var nuevoEmpleado = new Empleado
             {
-                // Manejar cualquier error y devolver false si la operación falla
-                return Task.FromResult(false);
-            }
+                Cedula = cedula,
+                Nombre = nombre,
+                Apellido = apellido,
+                Genero = genero,
+                Correo = correo,
+                Rh = rh,
+                Celular = celular,
+                Contrasena = contrasena
+            };
+
+            // Agregar el nuevo empleado al contexto de la base de datos
+            _dbContext.Empleado.Add(nuevoEmpleado);
+
+            // Guardar los cambios en la base de datos
+            _dbContext.SaveChanges();
+
+            // Retornar todos los empleados después de agregar el nuevo empleado
+            return _dbContext.Empleado.ToList();
         }
     }
 }

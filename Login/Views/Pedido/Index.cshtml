@@ -1,0 +1,60 @@
+﻿@model List<Factura>
+@{
+    ViewData["Title"] = "Facturas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">Listado de Facturas</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Venta</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var factura in Model)
+                                {
+                                    <tr>
+                                        <td>@factura.cod_factura</td>
+                                        <td>@factura.estado</td>
+                                        <td>@factura.fechaVenta</td>
+                                        <td>
+                                            @if (factura.estado == "Proceso")
+                                            {
+                                                <span>En proceso, no se puede utilizar el código</span>
+                                            }
+                                            else if (factura.estado == "Pagado")
+                                            {
+                                                <a href="@Url.Action("EditarFactura", "Factura", new { codigo = factura.cod_factura })">Editar</a>
+                                            }
+                                            else if (factura.estado == "Cerrado")
+                                            {
+                                                <span>Factura cerrada, no se puede editar</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </section>
+</div>

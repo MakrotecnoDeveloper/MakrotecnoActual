@@ -5,10 +5,10 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
     {
-        //primer metodo devuelve un usuario atravez del correo y la contraseña
+        List<Empleado> ObtenerUsuarios();
         Task<Empleado> GetUsuarios(string correo, string password);
         //el segundo metodo guarda usuarios
         Task<Empleado> SaveUsuario(Empleado modelo);
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, int valor_neto, int valor_unitario, int stock, string categorias);
+        IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
     }
 }
