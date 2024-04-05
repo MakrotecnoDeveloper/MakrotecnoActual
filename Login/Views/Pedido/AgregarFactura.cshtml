@@ -1,5 +1,4 @@
-﻿@model List<Factura>
-@{
+﻿@{
     ViewData["Title"] = "Agregar Factura";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -24,13 +23,6 @@
                     <!-- form start -->
                     <form role="form" method="post" asp-controller="Pedido" asp-action="CrearFactura">
                         <div class="box-body">
-                            @if (Model.Count > 0)
-                            {
-                                var ultimaFactura = Model[Model.Count - 1];
-                                <div class="form-group">
-                                    <label for="cod_factura">Código de Factura</label>
-                                    <input type="text" class="form-control" id="cod_factura" name="cod_factura" placeholder="Código de Factura" readonly value="@ultimaFactura.cod_factura">
-                                </div>
                                 <div class="form-group">
                                     <label for="cedula_cliente">Cédula del Cliente</label>
                                     <input type="text" class="form-control" id="cedula_cliente" name="cedula_cliente" placeholder="Cédula del Cliente">
@@ -51,7 +43,6 @@
                                         <option value="Cerrado">Cerrado</option>
                                     </select>
                                 </div>
-                            }
                         </div>
                         
                         <!-- /.box-body -->

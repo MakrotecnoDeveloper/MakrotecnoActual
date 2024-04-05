@@ -1,0 +1,268 @@
+﻿@model PedidoViewModel
+@{
+    ViewData["Title"] = "CrearPedido";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <!-- Contenido del encabezado -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Agregar Producto</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Ingrese los datos del producto</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- Formulario -->
+                        <form role="form" id="productForm" asp-controller="Pedido" asp-action="InsertarPedido">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="codfact">Cod Factura</label>
+                                    <input type="number" class="form-control" id="codfact" name="codfact" value="@Model.Factura.cod_factura" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cod_producto">Codigo Producto</label>
+                                    <input type="text" class="form-control" id="cod_producto" placeholder="Ingrese el codigo del producto" name="cod_producto">
+                                    <div id="opcionesCodigosProducto"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="stock">Cantidad</label>
+                                    <input type="number" class="form-control" id="stock" placeholder="Ingrese la cantidad de producto">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vneto">Neto</label>
+                                    <input type="number" class="form-control" id="vneto" name="vneto">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vventa">Venta</label>
+                                    <input type="number" class="form-control" id="vventa" name="vventa">
+                                </div>
+                                <div class="form-group">
+                                    <label for="estado">Estado</label>
+                                    <select class="form-control" id="estado" name="estado">
+                                        <option value="Venta">Venta</option>
+                                        <option value="Descuento">Descuento</option>
+                                        <option value="Cambio">Cambio</option>
+                                        <option value="Devolucion">Devolucion</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-primary" id="btnMostrarFormulario">+</button>
+                            </div>
+                        </form>
+                        <!-- Formulario de cantidad de productos oculto -->
+                        <div id="divAgregarProductos" style="display: none;">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="cantidad">Cantidad de productos a agregar</label>
+                                    <input type="number" class="form-control" id="cantidadProductos" placeholder="Ingrese la cantidad">
+                                </div>
+                                <button type="button" class="btn btn-primary" id="btnAceptar">Aceptar</button>
+                            </div>
+                        </div>
+                        <!-- /.card -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<script>
+    // Manejar clic del botón "Mostrar Formulario"
+    document.getElementById('btnMostrarFormulario').addEventListener('click', function() {
+        document.getElementById('divAgregarProductos').style.display = 'block'; // Mostrar el formulario de cantidad de productos
+    });
+
+
+
+    $(document).ready(function () {
+        // Manejar clic del botón "Aceptar" en el formulario de cantidad de productos
+        $('#btnAceptar').on('click', function () {
+            var cantidad = parseInt($('#cantidadProductos').val());
+            var formHtml = '';
+
+            for (var i = 0; i < cantidad; i++) {
+                formHtml += `
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="codfact${i}">Codigo del Producto ${i + 1}</label>
+                        <input type="text" class="form-control codigoProducto" id="codfact${i}" placeholder="Ingrese el codigo del producto">
+                        <div class="opcionesCodigosProducto"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="vneto${i}">Valor Neto ${i + 1}</label>
+                        <input type="number" class="form-control vneto" id="vneto${i}" placeholder="Ingrese valor Neto">
+                    </div>
+                    <div class="form-group">
+                        <label for="vventa${i}">Valor Venta ${i + 1}</label>
+                        <input type="number" class="form-control vventa" id="vventa${i}" placeholder="Ingrese valor Venta">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock${i}">Cantidad a vender ${i + 1}</label>
+                        <input type="number" class="form-control stock" id="stock${i}" placeholder="Cantidad producto">
+                    </div>
+                </div>
+                `;
+            }
+
+            // Insertar el formulario de productos dinámico
+            $('#productForm').append(formHtml + '<button type="button" class="btn btn-primary" id="btnAgregar">Agregar Producto(s)</button>');
+        });
+
+        // Manejar cambios en el campo de código de producto dinámico
+        $(document).on('input', '.codigoProducto', function () {
+            var codigo = $(this).val();
+            var opcionesCodigosProducto = $(this).siblings('.opcionesCodigosProducto');
+            var index = $(this).attr('id').replace('codfact', ''); // Obtener el índice del conjunto actual
+
+            if (codigo.length >= 3) {
+                // Realizar la solicitud AJAX para autocompletar códigos de productos
+                $.ajax({
+                    url: '@Url.Action("AutocompletarCodigosProducto", "Pedido")',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { codigo: codigo },
+                    success: function (response) {
+                        mostrarOpcionesAutocompletado(response, opcionesCodigosProducto);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error al autocompletar códigos de productos:', error);
+                        opcionesCodigosProducto.empty();
+                    }
+                });
+
+                // Realizar la solicitud AJAX para autocompletar datos de producto
+                $.ajax({
+                    url: '@Url.Action("AutocompletarProducto", "Pedido")',
+                    type: 'GET',
+                    data: { codigo: codigo },
+                    success: function (data) {
+                        $('#vneto' + index).val(data.vneto);
+                        $('#vventa' + index).val(data.vventa);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error al obtener los datos del producto:', error);
+                    }
+                });
+            } else {
+                opcionesCodigosProducto.empty();
+            }
+        });
+
+        // Manejar clic del botón "Agregar Producto(s)"
+        $(document).on('click', '#btnAgregar', function () {
+            var productos = [];
+
+            $('.codigoProducto').each(function (index) {
+                var index = $(this).attr('id').replace('codfact', '');
+                var producto = {
+                    codfact: $(this).val(),
+                    vneto: $('#vneto' + index).val(),
+                    vventa: $('#vventa' + index).val(),
+                    stock: $('#stock' + index).val(),
+                };
+                productos.push(producto);
+            });
+
+            console.log(productos); // Puedes enviarlos al controlador aquí
+        });
+    });
+
+
+
+
+
+
+    $(document).ready(function () {
+        // Manejar cambios en el campo de código de producto
+        $('#cod_producto').on('input', function () {
+            var codigo = $(this).val();
+            //console.log(codigo);
+            if (codigo.length >= 3) { // Realizar la solicitud solo si el código tiene al menos 3 caracteres
+
+                // Realizar la solicitud AJAX para autocompletar códigos de productos
+                $.ajax({
+                    url: '@Url.Action("AutocompletarCodigosProducto", "Pedido")',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { codigo: codigo },
+                    success: function (response) {
+                        mostrarOpcionesAutocompletado(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+
+                // Realizar la solicitud AJAX para autocompletar datos de producto
+                $.ajax({
+                    url: '@Url.Action("AutocompletarProducto", "Pedido")',
+                    type: 'GET',
+                    data: { codigo: codigo },
+                    success: function (data) {
+                        console.log(data);
+                        $('#vneto').val(data.valorNetoProducto);
+                        $('#vventa').val(data.valorVentaProducto);
+                    },
+                    error: function () {
+                        //console.log('Error al obtener los datos del producto.');
+                    }
+                });
+
+            } else {
+                // Limpiar las opciones de autocompletado si el código es demasiado corto
+                $('#opcionesCodigosProducto').empty();
+            }
+        });
+    });
+
+
+
+
+
+
+    // Mostrar opciones de autocompletado obtenidas como respuesta AJAX
+    function mostrarOpcionesAutocompletado(opciones) {
+        var opcionesHtml = '';
+        opciones.forEach(function (opcion) {
+            opcionesHtml += '<div class="opcion">' + opcion + '</div>';
+        });
+        $('#opcionesCodigosProducto').html(opcionesHtml);
+    }
+
+
+
+
+
+
+
+    // Manejar selección de una opción de autocompletado
+    $(document).on('click', '.opcion', function () {
+        var codigoSeleccionado = $(this).text();
+        $('#cod_producto').val(codigoSeleccionado); // Llenar el campo con el código seleccionado
+        $('#opcionesCodigosProducto').empty(); // Limpiar las opciones de autocompletado
+    });
+</script>
+

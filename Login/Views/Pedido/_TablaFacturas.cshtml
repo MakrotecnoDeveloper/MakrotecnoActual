@@ -1,0 +1,34 @@
+﻿@model List<Factura>
+
+@foreach (var factura in Model)
+{
+    <tr>
+        <td>@factura.cod_factura</td>
+        <td>@factura.cedula_cliente</td>
+        <td>@factura.cedula</td>
+        <td>@factura.fechaVenta</td>
+        <td>
+            @if (factura.estado == "Proceso")
+            {
+                <span>En Proceso</span>
+            }
+            else if (factura.estado == "Pagado")
+            {
+                <span>Completada</span>
+            }
+            else if (factura.estado == "Cerrado")
+            {
+                <span>Cerrada</span>
+            }
+        </td>
+        <td>
+            @if (factura.estado == "Proceso")
+            {
+                <a href="@Url.Action("CrearPedido", "Pedido", new { codigo = factura.cod_factura })">Agregar</a>
+            }else
+            {
+                <span>Sin acciones</span>
+            }
+        </td>
+    </tr>
+}

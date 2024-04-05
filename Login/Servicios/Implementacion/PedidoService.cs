@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -29,16 +30,8 @@ namespace Plataforma.Servicios.Implementacion
 
             _dbContext.SaveChanges();
         }
-        public IEnumerable<Factura> CrearFactura(int cod_factura, int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado)
+        public IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado)
         {
-            var facturaExistente = _dbContext.Factura.FirstOrDefault(p => p.cod_factura == cod_factura);
-            if (facturaExistente != null)
-            {
-                // Si ya existe un empleado con la misma cédula, puedes manejarlo de acuerdo a tus requerimientos, por ejemplo, lanzar una excepción, devolver un mensaje de error, etc.
-                // Aquí estoy lanzando una excepción como ejemplo.
-                Console.WriteLine("Ya existe una factura con el mismo codigo");
-            }
-
             // Crear una nueva instancia de Empleado
             var nuevaFactura = new Factura
             {
@@ -56,6 +49,46 @@ namespace Plataforma.Servicios.Implementacion
 
             // Retornar todos los empleados después de agregar el nuevo empleado
             return _dbContext.Factura.ToList();
+        }
+        public List<string> ObtenerCodigosProductosAutocompletado(string codigo)
+        {
+            return _dbContext.Productos
+                .Where(p => p.Cod_Producto.StartsWith(codigo))
+                .Select(p => p.Cod_Producto)
+                .ToList();
+        }
+        public async Task<Producto> ObtenerInfoProductoAsync(string codigoProducto)
+        {
+            var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == codigoProducto);
+            return producto;
+        }
+        public async Task<List<Factura>> ObtenerFacturasAsync(int page, int pageSize)
+        {
+            // Lógica para obtener facturas desde tu base de datos, teniendo en cuenta la paginación
+            // Por ejemplo, puedes usar LINQ para aplicar la paginación
+            var facturas = await _dbContext.Factura
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return facturas;
+        }
+
+        public async Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura)
+        {
+            return await _dbContext.Factura
+                .Where(f => f.cod_factura == numeroFactura)
+                .ToListAsync();
+        }
+        public async Task<int> ObtenerCantidadTotalFacturasAsync()
+        {
+            int totalFacturas = await _dbContext.Factura.CountAsync();
+            return totalFacturas;
+        }
+        public Factura BuscarFacturaPorId(int id)
+        {
+            // Implementa la lógica para buscar la factura en la base de datos
+            return _dbContext.Factura.FirstOrDefault(f => f.cod_factura == id);
         }
     }
 }

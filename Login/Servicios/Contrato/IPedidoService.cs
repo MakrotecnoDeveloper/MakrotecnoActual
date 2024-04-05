@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
@@ -6,6 +7,12 @@ namespace Plataforma.Servicios.Contrato
     {
         List<Factura> ObtenerFacturas();
         void ActualizarEstadoFacturas();
-        IEnumerable<Factura> CrearFactura(int cod_factura, int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado);
+        IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado);
+        List<string> ObtenerCodigosProductosAutocompletado(string codigo);
+        Task<Producto> ObtenerInfoProductoAsync(string codigoProducto);
+        Task<List<Factura>> ObtenerFacturasAsync(int pagina, int pageSize);
+        Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura);
+        Task<int> ObtenerCantidadTotalFacturasAsync();
+        Factura BuscarFacturaPorId(int id);
     }
 }
