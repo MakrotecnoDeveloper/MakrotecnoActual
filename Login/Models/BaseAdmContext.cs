@@ -14,7 +14,7 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Empleado> Empleado { get; set; }
     public DbSet<Producto> Productos { get; set; }
     public DbSet<Factura> Factura { get; set; }
-    public DbSet<Pedido> Pedido { get; set; }
+    public DbSet<Pedidos> Pedidos { get; set; }
     public DbSet<Cliente> Cliente { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,11 +24,11 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Producto>().HasKey(e => e.Cod_Producto);
         modelBuilder.Entity<Factura>().HasKey(e => e.cod_factura);
         modelBuilder.Entity<Cliente>().HasKey(c => c.cedulaCliente);
-        modelBuilder.Entity<Pedido>().HasKey(cp => cp.cod_pedido);
+        modelBuilder.Entity<Pedidos>().HasKey(cp => cp.cod_pedido);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
-        modelBuilder.Entity<Pedido>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
-        modelBuilder.Entity<Pedido>().HasOne<Producto>().WithMany().HasForeignKey(f => f.cod_producto);
+        modelBuilder.Entity<Pedidos>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
+        modelBuilder.Entity<Pedidos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.cod_producto);
     }
 }

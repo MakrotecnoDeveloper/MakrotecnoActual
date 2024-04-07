@@ -40,7 +40,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="stock">Cantidad</label>
-                                    <input type="number" class="form-control" id="stock" placeholder="Ingrese la cantidad de producto">
+                                    <input type="number" class="form-control" id="stock" placeholder="Ingrese la cantidad de producto" name="stock">
                                 </div>
                                 <div class="form-group">
                                     <label for="vneto">Neto</label>
@@ -60,11 +60,13 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- /.card-body -->
-
+                            <div class="card-footer">
+                                <button class="btn btn-primary">Agregar Producto</button>
+                            </div>
+                            <!-- /.card-body
                             <div class="card-footer">
                                 <button type="button" class="btn btn-primary" id="btnMostrarFormulario">+</button>
-                            </div>
+                            </div>-->
                         </form>
                         <!-- Formulario de cantidad de productos oculto -->
                         <div id="divAgregarProductos" style="display: none;">
@@ -91,16 +93,16 @@
 
 <script>
     // Manejar clic del botón "Mostrar Formulario"
-    document.getElementById('btnMostrarFormulario').addEventListener('click', function() {
+    /*document.getElementById('btnMostrarFormulario').addEventListener('click', function() {
         document.getElementById('divAgregarProductos').style.display = 'block'; // Mostrar el formulario de cantidad de productos
-    });
+    });*/
 
 
 
     $(document).ready(function () {
         // Manejar clic del botón "Aceptar" en el formulario de cantidad de productos
-        $('#btnAceptar').on('click', function () {
-            var cantidad = parseInt($('#cantidadProductos').val());
+        /*$('#btnAceptar').on('click', function () {
+            /*var cantidad = parseInt($('#cantidadProductos').val());
             var formHtml = '';
 
             for (var i = 0; i < cantidad; i++) {
@@ -129,7 +131,7 @@
 
             // Insertar el formulario de productos dinámico
             $('#productForm').append(formHtml + '<button type="button" class="btn btn-primary" id="btnAgregar">Agregar Producto(s)</button>');
-        });
+        });*/
 
         // Manejar cambios en el campo de código de producto dinámico
         $(document).on('input', '.codigoProducto', function () {

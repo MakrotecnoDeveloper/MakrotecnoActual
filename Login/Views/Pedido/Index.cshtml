@@ -105,7 +105,7 @@ max-width: 100%;
             });
 
             // Verificar si el estado es "Completado" o "Proceso"
-            if (perfil.estado === "Completado" || perfil.estado === "Proceso") {
+            if (perfil.estado === "Proceso") {
                 // Enlace 1 - Editar Producto
                 var enlace1 = crearEnlace(`/Pedido/CrearPedido?id=${perfil.cod_factura}`, 'fas fa-pencil-alt');
 

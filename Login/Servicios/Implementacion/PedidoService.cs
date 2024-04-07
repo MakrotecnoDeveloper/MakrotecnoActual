@@ -90,5 +90,38 @@ namespace Plataforma.Servicios.Implementacion
             // Implementa la lógica para buscar la factura en la base de datos
             return _dbContext.Factura.FirstOrDefault(f => f.cod_factura == id);
         }
+        public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
+        {
+            var pedido = new Pedidos
+            {
+                cod_factura = codfact,
+                cod_producto = cod_producto,
+                cantidad = stock,
+                valorNeto = vneto,
+                valorVenta = vventa,
+                estado = estado
+            };
+
+            _dbContext.Pedidos.Add(pedido);
+            _dbContext.SaveChanges();
+        }
+        public async Task<List<Factura>> VisualizarPedido(string estado)
+        {
+            return await _dbContext.Factura
+                .Where(f => f.estado == estado)
+                .ToListAsync();
+        }
+        public async Task<List<Pedidos>> VisualizarPedidoPorId(int id)
+        {
+            List<Pedidos> pedidos = await _dbContext.Pedidos.Where(p => p.cod_factura == id).ToListAsync();
+            if (pedidos != null && pedidos.Count > 0)
+            {
+                return pedidos;
+            }
+            else
+            {
+                throw new Exception("No se encontró ningún pedido con el ID especificado");
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Plataforma.Models;
 
-public partial class Pedido
+public partial class Pedidos
 {
     [Key]
     public int cod_pedido { get; set; }

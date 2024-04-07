@@ -423,7 +423,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a asp-controller="Pedido" asp-action="Index" class="nav-link">
+                                    <a asp-controller="Pedido" asp-action="VisualizarFacturas" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ver Facturas</p>
                                     </a>
@@ -446,7 +446,7 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                    <a asp-controller="Pedido" asp-action="Index" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Agregar pedido</p>
                                     </a>
@@ -461,21 +461,25 @@
                                     </a>
                                     <ul class="nav nav-treeview">
                                         <li class="nav-item">
-                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                            @{
+                                                // Generar la URL base usando los atributos HTML Helpers de ASP.NET Core
+                                                var url = Url.Action("VisualizarPedido", "Pedido");
+                                            }
+                                            <a class="nav-link" href="@($"{url}?estado=Proceso")">
                                                 <i class="far fa-circle nav-icon"></i>
-                                                <p>Pedidos Vencidos</p>
+                                                <p>Pedidos en Proceso</p>
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                            <a class="nav-link" href="@($"{url}?estado=Completado")">
                                                 <i class="far fa-circle nav-icon"></i>
-                                                <p>Pedidos Realizados</p>
+                                                <p>Pedidos Completados</p>
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                            <a class="nav-link" href="@($"{url}?estado=Cerrado")">
                                                 <i class="far fa-circle nav-icon"></i>
-                                                <p>Pedidos Pendientes</p>
+                                                <p>Pedidos Cerrados</p>
                                             </a>
                                         </li>
                                     </ul>

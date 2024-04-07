@@ -84,9 +84,13 @@ namespace Plataforma.Controllers
             return NotFound();
         }
         [HttpPost]
-        public IActionResult InsertarPedido()
+        public IActionResult InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
         {
-            return View();
+            // Llamada al servicio para insertar el pedido en la base de datos
+            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, estado);
+
+            // Redireccionar a la vista Index
+            return RedirectToAction("Index");
         }
         public async Task<IActionResult> Facturas(int page = 1, int pageSize = 10)
         {
@@ -107,6 +111,55 @@ namespace Plataforma.Controllers
             // Puedes llamar a tu servicio para buscar la factura por número de factura
             List<Factura> facturasEncontradas = await _pedidoServicio.BuscarFacturaPorNumeroAsync(numeroFactura);
             return PartialView("_TablaFacturas", facturasEncontradas);
+        }
+        public async Task<IActionResult> VisualizarPedido(string estado)
+        {
+            List<Factura> facturasEncontradas = null;
+            // Aquí puedes usar el valor de "estado" para tomar decisiones en tu lógica de negocio
+            if (estado == "Proceso")
+            {
+                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            else if (estado == "Completado")
+            {
+                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            else if (estado == "Cerrado")
+            {
+               facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            else
+            {
+                // Hacer algo si el estado no es reconocido
+            }
+
+            return View("PedidoVisualizado", facturasEncontradas);
+        }
+        public IActionResult PedidoVisualizado()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> VerPedidoPorId(int id)
+        {
+            // Obtener el pedido o la lista de pedidos por su ID
+            List<Pedidos> pedidos = await _pedidoServicio.VisualizarPedidoPorId(id);
+
+            if (pedidos == null || pedidos.Count == 0)
+            {
+                return NotFound();
+            }
+
+            if (pedidos.Count == 1)
+            {
+                // Si solo hay un pedido, mostrar la vista VerPedido para ese pedido
+                return View("VerPedido", new List<Pedidos> { pedidos.First() });
+            }
+            else
+            {
+                // Si hay múltiples pedidos, mostrar la vista VerPedidos para la lista de pedidos
+                return View("VerPedido", pedidos);
+            }
         }
     }
 }
