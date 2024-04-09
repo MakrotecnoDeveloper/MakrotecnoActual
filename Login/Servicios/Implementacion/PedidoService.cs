@@ -123,5 +123,45 @@ namespace Plataforma.Servicios.Implementacion
                 throw new Exception("No se encontró ningún pedido con el ID especificado");
             }
         }
+        public async Task<List<Pedidos>> traerValorProductos(int id)
+        {
+            var pedidos = await _dbContext.Pedidos
+                       .Where(p => p.cod_factura == id)
+                       .ToListAsync();
+            var vnetoTotal = pedidos.Sum(p => p.valorNeto);
+            var vventaTotal = pedidos.Sum(p => p.valorVenta);
+            return pedidos;
+        }
+        public async Task<int> VentaInsertada(int cod_factura, int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        {
+            var ventas = new Ventas
+            {
+                cod_factura = cod_factura,
+                ventaTotal = ventaTotal,
+                ventaMakrotecno = ventaMakrotecno,
+                netoMakrotecno = netoMakrotecno,
+                ventaRecargas = ventaRecarga,
+                ventaTienda = ventaTienda,
+                ventaPasivos = ventapasivos
+            };
+
+            _dbContext.Ventas.Add(ventas);
+            _dbContext.SaveChanges();
+            return ventas.id_venta;
+        }
+        public async Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
+        {
+            var ganancia = new Ganancias
+            { 
+                id_venta = id_venta,
+                gananciaMakrotecno = gananciaMakrotecno,
+                gananciaTotal = gananciaTotal,
+                gananciaMaria = gananciaMaria,
+                gananciaVictor = gananciaVictor,
+                gananciaTeresa = gananciaTeresa
+            };
+            _dbContext.Ganancias.Add(ganancia);
+            _dbContext.SaveChanges();
+        }
     }
 }

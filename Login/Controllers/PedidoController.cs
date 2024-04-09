@@ -161,5 +161,52 @@ namespace Plataforma.Controllers
                 return View("VerPedido", pedidos);
             }
         }
+        public async Task<IActionResult> FormGanancia(string estado)
+        {
+            List<Factura> facturasEncontradas = null;
+            if (estado == "Proceso")
+            {
+                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            return View("Ganancia", facturasEncontradas);
+        }
+        public async Task<IActionResult> VerGananciaPorId(int id)
+        {
+            //Fase 1: ID de la factura
+            ViewBag.Id = id;
+            //Fase 2: Venta Neto-Venta
+            var productosValores = await _pedidoServicio.traerValorProductos(id);
+            decimal totalVneto = productosValores.Sum(p => p.valorNeto);
+            decimal totalVventa = productosValores.Sum(p => p.valorVenta);
+            ViewBag.TotalVneto = totalVneto;
+            ViewBag.TotalVventa = totalVventa;
+            //Fase 3: Retorno a la vista
+            return View("AgregarGanancia");
+        }
+        [HttpPost]
+        public async Task<IActionResult> InsertarVentas(int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        {
+            int ventaTotal = ventaMakrotecno + ventaRecarga + ventaTienda;
+            // Fase 1
+            if (ventapasivos > 0)
+            {
+                ventaTotal = ventaTotal - ventapasivos;
+            }
+            // Fase 2
+            int id_venta = await _pedidoServicio.VentaInsertada(cod_factura, ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
+            // Fase 3
+            await Ganancias(id_venta, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
+            return RedirectToAction("Index");
+        }
+        public async Task Ganancias(int id_venta, int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda)
+        {
+            int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
+            int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
+            int gananciaVictor = gananciaMakrotecno - gananciaMaria;
+            int gananciaTeresa = (int)(ventaTienda * 0.15);
+            int gananciaRecargas = (int)(ventaRecarga * 0.056);
+            int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
+            await _pedidoServicio.GananciaInsertada(id_venta, gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+        }
     }
 }

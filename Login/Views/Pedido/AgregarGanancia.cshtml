@@ -1,0 +1,92 @@
+﻿
+@{
+    ViewData["Title"] = "AgregarGanancia";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Agregar Factura</h1>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Your page content here -->
+
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Ingrese los datos de la factura</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form role="form" asp-controller="Pedido" asp-action="InsertarVentas">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="cod_factura">Código de Factura</label>
+                                    <input type="number" class="form-control" id="cod_factura" placeholder="Ingrese el código de factura" value="@ViewBag.Id" name="cod_factura">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ventaMakrotecno">Venta Makrotecno</label>
+                                    <input type="number" class="form-control" id="ventaMakrotecno" value="@ViewBag.TotalVventa" name="ventaMakrotecno">
+                                </div>
+                                <div class="form-group">
+                                    <label for="netoMakrotecno">Neto Makrotecno</label>
+                                    <input type="number" class="form-control" id="netoMakrotecno" value="@ViewBag.TotalVneto" name="netoMakrotecno">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ventaRecarga">Venta de Recarga</label>
+                                    <input type="number" class="form-control" id="ventaRecarga" placeholder="Ingrese la venta de recarga" name="ventaRecarga">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ventaTienda">Venta de Tienda</label>
+                                    <input type="number" class="form-control" id="ventaTienda" placeholder="Ingrese la venta de tienda" name="ventaTienda">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ventaPasivos">Venta de Pasivos</label>
+                                    <input type="checkbox" id="chkVentaPasivos" onchange="toggleInput()" />
+                                    <input type="number" class="form-control" id="ventaPasivos" placeholder="Ingrese la venta de pasivos" name="ventapasivos" value="0" disabled />
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<script>
+    function toggleInput() {
+        var inputVentaPasivos = document.getElementById('ventaPasivos');
+        var chkVentaPasivos = document.getElementById('chkVentaPasivos');
+
+        if (chkVentaPasivos.checked) {
+            inputVentaPasivos.disabled = false;
+        } else {
+            inputVentaPasivos.disabled = true;
+            inputVentaPasivos.value = '0'; // Establecer el valor a 0 cuando se deshabilite
+        }
+    }
+</script>
+

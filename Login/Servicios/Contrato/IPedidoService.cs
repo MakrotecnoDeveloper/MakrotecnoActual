@@ -17,5 +17,8 @@ namespace Plataforma.Servicios.Contrato
         void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado);
         Task<List<Factura>> VisualizarPedido(string estado);
         Task<List<Pedidos>> VisualizarPedidoPorId(int id);
+        Task<List<Pedidos>> traerValorProductos(int id);
+        Task<int> VentaInsertada(int cod_factura, int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos);
+        Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal);
     }
 }
