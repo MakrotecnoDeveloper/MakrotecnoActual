@@ -92,18 +92,32 @@ namespace Plataforma.Servicios.Implementacion
         }
         public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
         {
-            var pedido = new Pedidos
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
+            if(producto != null)
             {
-                cod_factura = codfact,
-                cod_producto = cod_producto,
-                cantidad = stock,
-                valorNeto = vneto,
-                valorVenta = vventa,
-                estado = estado
-            };
+                if(producto.CantidadProducto >= stock)
+                {
+                    int cantidadRestante = producto.CantidadProducto - stock;
+                    producto.CantidadProducto = cantidadRestante;
+                    _dbContext.SaveChanges();
+                    var pedido = new Pedidos
+                    {
+                        cod_factura = codfact,
+                        cod_producto = cod_producto,
+                        cantidad = stock,
+                        valorNeto = vneto,
+                        valorVenta = vventa,
+                        estado = estado
+                    };
 
-            _dbContext.Pedidos.Add(pedido);
-            _dbContext.SaveChanges();
+                    _dbContext.Pedidos.Add(pedido);
+                    _dbContext.SaveChanges();
+                }else
+                {
+                    Console.WriteLine("No hay suficiente stock disponible para este producto.");
+                }
+            }
+            
         }
         public async Task<List<Factura>> VisualizarPedido(string estado)
         {
