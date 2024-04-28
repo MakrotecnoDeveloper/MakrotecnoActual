@@ -15,16 +15,6 @@ namespace Plataforma.Controllers
         {
             return View();
         }
-        public IActionResult ListarUsuarios() 
-        {
-            return View();
-        }
-
-        public IActionResult Prueba()
-        {
-            return View();
-        }
-
         [HttpPost]
         public async Task<IActionResult> ListarUsuarios(string correo, string password)
         {

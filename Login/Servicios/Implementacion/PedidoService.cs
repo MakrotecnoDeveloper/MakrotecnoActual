@@ -93,11 +93,13 @@ namespace Plataforma.Servicios.Implementacion
         public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
         {
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
-            if(producto != null)
+            if (producto != null)
             {
-                if(producto.CantidadProducto >= stock)
+                if (producto.CantidadProducto >= stock)
                 {
                     int cantidadRestante = producto.CantidadProducto - stock;
+                    vventa = stock * vventa;
+                    vneto = stock * vneto;
                     producto.CantidadProducto = cantidadRestante;
                     _dbContext.SaveChanges();
                     var pedido = new Pedidos
@@ -112,12 +114,13 @@ namespace Plataforma.Servicios.Implementacion
 
                     _dbContext.Pedidos.Add(pedido);
                     _dbContext.SaveChanges();
-                }else
+                }
+                else
                 {
                     Console.WriteLine("No hay suficiente stock disponible para este producto.");
                 }
             }
-            
+
         }
         public async Task<List<Factura>> VisualizarPedido(string estado)
         {
@@ -166,7 +169,7 @@ namespace Plataforma.Servicios.Implementacion
         public async Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
         {
             var ganancia = new Ganancias
-            { 
+            {
                 id_venta = id_venta,
                 gananciaMakrotecno = gananciaMakrotecno,
                 gananciaTotal = gananciaTotal,
@@ -176,6 +179,37 @@ namespace Plataforma.Servicios.Implementacion
             };
             _dbContext.Ganancias.Add(ganancia);
             _dbContext.SaveChanges();
+        }
+        public List<Ganancias> TraerGanancias()
+        {
+            return _dbContext.Ganancias.ToList();
+        }
+        public void EliminarPedido(int id)
+        {
+            var pedidoVerificado = _dbContext.Pedidos.FirstOrDefault(p => p.cod_pedido == id);
+            if (pedidoVerificado != null)
+            {
+                try
+                {
+                    // 3. Eliminar el producto.
+                    _dbContext.Pedidos.Remove(pedidoVerificado);
+
+                    // 4. Guardar los cambios en la base de datos.
+                    _dbContext.SaveChanges();
+
+                    Console.WriteLine("Producto eliminado exitosamente.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al eliminar el producto: " + ex.Message);
+                    // Puedes agregar un código adicional aquí para manejar el error, como registrar el error en un archivo de registro, notificar al usuario, etc.
+                }
+            }
+            else
+            {
+                Console.WriteLine("El producto no existe.");
+                // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
+            }
         }
     }
 }

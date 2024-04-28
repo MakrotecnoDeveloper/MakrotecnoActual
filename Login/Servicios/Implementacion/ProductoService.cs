@@ -52,12 +52,13 @@ namespace Plataforma.Servicios.Implementacion
             // Lógica para buscar productos por el nombre o la categoría
             if (!string.IsNullOrEmpty(searchTerm))
             {
-
+                Console.WriteLine("searchTerm");
                 var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm).ToList();
                 return consulta;
             }
             else if (!string.IsNullOrEmpty(categoriaTerm))
             {
+                Console.WriteLine("Categoria");
                 var consulta = _dbContext.Productos.Where(p => p.Categoria == categoriaTerm).ToList();
                 return consulta;
             }
@@ -144,7 +145,7 @@ namespace Plataforma.Servicios.Implementacion
         public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
         {
 
-            if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto <= 0 || valorVenta <= 0 || cantidad <= 0)
+            if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
             {
                 Console.WriteLine("Error: Todos los campos deben tener un valor. No se permiten valores nulos.");
                 return;

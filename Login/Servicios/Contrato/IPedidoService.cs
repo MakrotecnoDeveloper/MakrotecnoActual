@@ -20,5 +20,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Pedidos>> traerValorProductos(int id);
         Task<int> VentaInsertada(int cod_factura, int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos);
         Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal);
+        List<Ganancias> TraerGanancias();
+        void EliminarPedido(int id);
     }
 }

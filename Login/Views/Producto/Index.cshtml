@@ -15,43 +15,43 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h1 class="text-white text-center">Productos</h1>
+            <h1 class="text-center">Productos</h1>
             <div class="table-responsive justify-content-center">
                 <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
-                    <thead style="background-color: #002d72;">
+                        <thead style="background-color: #002d72;" class="text-white">
                         <tr>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Codigo Producto</p>
+                                        <p>Codigo</p>
                                     </div>
                                 </div>
                             </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Nombre Producto</p>
+                                        <p>Producto</p>
                                     </div>
                                 </div>
                             </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Valor Neto</p>
+                                        <p>Neto</p>
                                     </div>
                                 </div>
                             </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Valor Venta</p>
+                                        <p>Venta</p>
                                     </div>
                                 </div>
                             </th>
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Cantidad</p>
+                                        <p>Stock</p>
                                     </div>
                                 </div>
                             </th>
@@ -62,7 +62,7 @@
                                         </div>
                                         <div class="col-12">
                                             <form id="formCategoria">
-                                                <select class="filtro-select" id="categoriaTerm" name="celula">
+                                                <select class="filtro-select" id="categoriaTerm" name="celula" onchange="handleCategorySelection(this)">
                                                     <option></option>
                                                     @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
                                                     {
@@ -76,7 +76,7 @@
                             <th scope="col">
                                 <div class="input-group mb-3">
                                     <div class="col-12">
-                                        <p>Empresa ID</p>
+                                        <p>Compañia</p>
                                     </div>
                                 </div>
                             </th>
@@ -87,7 +87,7 @@
                                                 <form id="formBusqueda">
                                                     <label for="searchTerm">Buscar:</label>
                                                     <input type="text" id="searchTerm" name="searchTerm" />
-                                                    <button type="button" id="btnBuscar">Buscar</button>
+                                                    <button type="button" id="btnBuscar" onclick="handleProductCodeSearch()">Buscar</button>
                                                 </form>
                                         </div>
                                     </div>
@@ -103,12 +103,13 @@
         </div>
     </div>
 </div>
+    <div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
+        <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
+        <span id="pagina-actual" class="text-white">Página 1</span>
+        <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
+    </div>
 </div>
-<div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
-    <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
-    <span id="pagina-actual" class="text-white">Página 1</span>
-    <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
-</div>
+
 
 <script>
     var paginaActual = 1;
@@ -247,23 +248,69 @@
 
 
     // Script para manejar la búsqueda asíncrona
+/*
     $(document).ready(function () {
         $("#btnBuscar").click(function () {
             var searchTerm = $("#searchTerm").val();
+            console.log(searchTerm);
             var categoriaTerm = $("#categoriaTerm").val();
-            $.ajax({
-                type: "POST",
-                url: "/Producto/Buscar",
-                data: { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
-                success: function (result) {
-                    // Se espera que el controlador devuelva la vista parcial adecuada según la situación
-                    $("#tablaProductosContainer").html(result);
-                },
-                error: function () {
-                    // Manejo de errores si es necesario
-                    $("#tablaProductosContainer").html("<p>Ocurrió un error al procesar la solicitud.</p>");
-                }
+            console.log(categoriaTerm);
+            $.post("/Producto/Buscar",
+                { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
+                function (data) {
+                    $("#resultados").html(data);
+                });
             });
+        $("#volverBtn").click(function () {
+            window.location.href = '/Inicio/ListarUsuarios';
         });
     });
+    */
+
+    function handleCategorySelection(selectElement) {
+        const categoriaSeleccionada = selectElement.value;
+        // Envía la categoría seleccionada al controlador usando AJAX
+        sendSelectedCategoryToController(categoriaSeleccionada);
+    }
+
+    function handleProductCodeSearch() {
+        const terminoBusqueda = document.getElementById('searchTerm').value;
+        // Envía el término de búsqueda al controlador usando AJAX
+        sendSearchTermToController(terminoBusqueda);
+    }
+
+    function sendSelectedCategoryToController(categoriaSeleccionada) {
+        const searchTerm = "";
+        $.ajax({
+            url: '/Producto/Buscar', // Reemplaza con la URL real de la acción del controlador
+            type: 'POST',
+            data: { searchTerm: searchTerm, categoriaTerm: categoriaSeleccionada },
+            success: function (response) {
+                // Maneja la respuesta exitosa del controlador
+                // Actualiza la tabla usando los datos recibidos
+                $("#resultados").html(response);
+            },
+            error: function (error) {
+                // Maneja el error durante la solicitud AJAX
+                console.error('Error enviando categoría:', error);
+            }
+        });
+    }
+    function sendSearchTermToController(terminoBusqueda) {
+        const categoriaTerm = "";
+        $.ajax({
+            url: '/Producto/Buscar', // Reemplaza con la URL real de la acción del controlador
+            type: 'POST',
+            data: { searchTerm: terminoBusqueda, categoriaTerm: categoriaTerm },
+            success: function (response) {
+                // Maneja la respuesta exitosa del controlador
+                // Actualiza la tabla usando los datos recibidos
+                $("#resultados").html(response);
+            },
+            error: function (error) {
+                // Maneja el error durante la solicitud AJAX
+                console.error('Error enviando término de búsqueda:', error);
+            }
+        });
+    }
 </script>

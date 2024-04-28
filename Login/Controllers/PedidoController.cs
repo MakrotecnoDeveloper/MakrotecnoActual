@@ -195,18 +195,26 @@ namespace Plataforma.Controllers
             // Fase 2
             int id_venta = await _pedidoServicio.VentaInsertada(cod_factura, ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
             // Fase 3
-            await Ganancias(id_venta, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
-            return RedirectToAction("Index");
-        }
-        public async Task Ganancias(int id_venta, int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda)
-        {
             int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
+            Console.WriteLine(ventaMakrotecno);
             int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
+            //Console.WriteLine(gananciaMaria);
             int gananciaVictor = gananciaMakrotecno - gananciaMaria;
             int gananciaTeresa = (int)(ventaTienda * 0.15);
             int gananciaRecargas = (int)(ventaRecarga * 0.056);
             int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
             await _pedidoServicio.GananciaInsertada(id_venta, gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+            return RedirectToAction("Index");
+        }
+        public IActionResult VisualizarGanancia()
+        {
+            var traerGanancia = _pedidoServicio.TraerGanancias();
+            return View(traerGanancia);
+        }
+        public IActionResult EliminarProdPorId(int id)
+        {
+            _pedidoServicio.EliminarPedido(id);
+            return RedirectToAction("Index");
         }
     }
 }

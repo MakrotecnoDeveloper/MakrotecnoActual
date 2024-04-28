@@ -99,7 +99,7 @@
                     fila.appendChild(celda);
                 });
                 // Enlace 1 - Editar Producto
-                var enlace1 = crearEnlace(`/Pedido/VisualizarPedidoPorId?id=${perfil.cod_factura}`, 'fas fa-pencil-alt');
+                var enlace1 = crearEnlace(`/Pedido/EliminarProdPorId?id=${perfil.cod_pedido}`, 'fas fa-pencil-alt');
                 // Agregar enlaces a una celda
                 var acciones = document.createElement('td');
                 acciones.appendChild(enlace1);

@@ -28,7 +28,7 @@
                         </div>
                         <!-- /.card-header -->
                         <!-- Formulario -->
-                        <form role="form" action="EditarProducto" method="POST">
+                        <form role="form" asp-controller="Producto" asp-action="EditarProducto" method="POST">
                             <div class="card-body">
                                 @foreach (var producto in Model)
                                 {

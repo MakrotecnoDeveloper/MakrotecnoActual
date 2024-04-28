@@ -43,42 +43,44 @@ namespace Plataforma.Controllers
 
             return Json(new { success = false });
         }
+        [Authorize]
         [HttpPost]
         public IActionResult Buscar(string searchTerm, string categoriaTerm)
         {
+            if (string.IsNullOrEmpty(searchTerm)) {
+                searchTerm = "";
+            }else
+            {
+                categoriaTerm = "";
+            }
             var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            //Console.WriteLine(productosEncontrados);
-            if (productosEncontrados.Any())
-            {
-                // Oculta la tabla de productos y muestra la tabla temporal
-                return PartialView("_TablaProductos", productosEncontrados);
-            }
-            else
-            {
-                // Producto no encontrado, maneja la lógica adecuada
-                ViewBag.Mensaje = "Producto no encontrado";
-                return PartialView("_Mensaje");
-            }
+            return PartialView("_TablaProductos", productosEncontrados);
         }
         public IActionResult Editar(string id)
         {
             string categoriaTerm = "";
             var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
+            foreach (var producto in editarProducto)
+            {
+                // Realiza acciones con cada producto, por ejemplo:
+                Console.WriteLine($"ID: {producto.Cod_Producto}, Nombre: {producto.NombreProducto}");
+            }
             if (editarProducto.Any())
             {
                 // Oculta la tabla de productos y muestra la tabla temporal
-                return View("Editar", editarProducto);
+                return View(editarProducto);
             }
             else
             {
                 // Producto no encontrado, maneja la lógica adecuada
-                ViewBag.Mensaje = "Producto no encontrado";
-                return View("_Mensaje");
+                Console.WriteLine("No hay productos con ese codigo referenciado");
+                return View("Index");
             }
         }
         [HttpPost]
         public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
         {
+            Console.WriteLine(codigo + nombreProducto + valorNeto + valorVenta + cantidad + categoria + idEmpresa);
             // Llama al método EditarProducto del servicio de productos
             _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, cantidad, categoria, idEmpresa);
 
