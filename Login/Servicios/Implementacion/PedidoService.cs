@@ -13,6 +13,11 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext = dbContext;
         }
+        public List<Factura> ObtenerFacturasFechaDescendente()
+        {
+            var facturasOrdenadas = _dbContext.Factura.OrderByDescending(f => f.fechaVenta).ToList();
+            return facturasOrdenadas;
+        }
         public List<Factura> ObtenerFacturas()
         {
             return _dbContext.Factura.ToList();
@@ -210,6 +215,10 @@ namespace Plataforma.Servicios.Implementacion
                 Console.WriteLine("El producto no existe.");
                 // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
             }
+        }
+        public List<Ventas> TraerVentas()
+        {
+            return _dbContext.Ventas.ToList();
         }
     }
 }

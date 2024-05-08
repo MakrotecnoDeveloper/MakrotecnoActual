@@ -1,0 +1,148 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<div class="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-4">
+                <h1>Reportes</h1><br />
+                <button class="report-btn" data-type="ventaTotal">Ventas Total</button><br />
+                <button class="report-btn" data-type="ventaMakrotecno">Venta Makrotecno</button><br />
+                <button class="report-btn" data-type="netoMakrotecno">Neto Makrotecno</button><br />
+                <button class="report-btn" data-type="ventaRecargas">Venta Recargas</button><br />
+                <button class="report-btn" data-type="ventaTienda">Venta Tienda</button>
+                <h2>Ganancias</h2>
+                <button class="report-btn" data-type="gananciaMakrotecno">Ganancias Makrotecno</button><br />
+                <button class="report-btn" data-type="gananciaTotal">Ganancia General</button><br />
+                <button class="report-btn" data-type="gananciaMaria">Ganancias Maria</button><br />
+                <button class="report-btn" data-type="gananciaVictor">Ganancias Victor</button><br />
+                <button class="report-btn" data-type="gananciaTeresa">Ganancias Teresa</button>
+            </div>
+            <div class="col-4">
+                <h2>Fechas de Reporte</h2><br />
+                <input type="date" id="fechaDesde" /><br />
+                <input type="date" id="fechaHasta" />
+            </div>
+            <div class="col-4">
+                <button id="generar">Generar</button>
+            </div>
+            <div class="col-1"></div>
+            <div class="col-10" id="resultado"></div>
+            <div class="col-1"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var reportType; // Variable para almacenar el tipo de reporte seleccionado
+        var fechaDesde; // Variable para almacenar la fecha desde
+        var fechaHasta; // Variable para almacenar la fecha hasta
+
+        $(".report-btn").click(function () {
+            reportType = $(this).data("type"); // Guarda el tipo de reporte seleccionado
+        });
+
+        $("#fechaDesde").change(function () {
+            fechaDesde = $(this).val(); // Guarda la fecha desde seleccionada
+        });
+
+        $("#fechaHasta").change(function () {
+            fechaHasta = $(this).val(); // Guarda la fecha hasta seleccionada
+        });
+
+        $("#generar").click(function () {
+            // Verifica si todas las variables están definidas antes de enviar la solicitud
+            console.log(reportType + fechaDesde + fechaHasta);
+            if (reportType && fechaDesde && fechaHasta) {
+                $.ajax({
+                    url: '/Reporte/GenerarReporte',
+                    type: 'GET',
+                    data: {
+                        fechaInicio: fechaDesde,
+                        fechaFin: fechaHasta,
+                        tipoReporte: reportType
+                    },
+                    success: function (data) {
+                        // Agregar el enlace para descargar el archivo Excel
+                        var excelLink = '<a href="/Reporte/GenerarExcel?fechaInicio=' + fechaDesde + '&fechaFin=' + fechaHasta + '&tipoReporte=' + reportType + '"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Descargar Excel</a>';
+
+                        // Insertar el enlace justo arriba del encabezado de la tabla
+                        var table = '<table class="table">' +
+                            '<thead>' +
+                            '<tr>' +
+                            '<th colspan="2">' + excelLink + '</th>' +
+                            '</tr>' +
+                            '<tr>' +
+                            '<th>Fecha Factura</th>' +
+                            '<th>Total</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody>';
+                        // Iterar sobre los datos y agregar filas a la tabla
+                        data.forEach(function (item) {
+                            table += '<tr>';
+                            table += '<td>' + item.fechaFactura + '</td>';
+
+                            // Mostrar el total correspondiente según el tipo de reporte
+                            switch (reportType) {
+                                case "ventaTotal":
+                                    table += '<td>' + item.totalVentas + '</td>';
+                                    break;
+                                case "ventaMakrotecno":
+                                    table += '<td>' + item.totalMakrotecno + '</td>';
+                                    break;
+                                case "netoMakrotecno":
+                                    table += '<td>' + item.totalNetoMakrotecno + '</td>';
+                                    break;
+                                case "ventaRecargas":
+                                    table += '<td>' + item.totalRecargas + '</td>';
+                                    break;
+                                case "ventaTienda":
+                                    table += '<td>' + item.totalTienda + '</td>';
+                                    break;
+                                case "gananciaMakrotecno":
+                                    table += '<td>' + item.totalGananciaMakrotecno + '</td>';
+                                    break;
+                                case "gananciaTotal":
+                                    table += '<td>' + item.totalGananciaTotal + '</td>';
+                                    break;
+                                case "gananciaMaria":
+                                    table += '<td>' + item.totalGananciaMaria + '</td>';
+                                    break;
+                                case "gananciaVictor":
+                                    table += '<td>' + item.totalGananciaVictor + '</td>';
+                                    break;
+                                case "gananciaTeresa":
+                                    table += '<td>' + item.totalGananciaTeresa + '</td>';
+                                    break;
+                                // Agrega más casos según los tipos de reporte necesarios
+                                default:
+                                    // Mostrar un mensaje de error si el tipo de reporte no es válido
+                                    table += '<td>Error: Tipo de reporte no válido</td>';
+                                    break;
+                            }
+
+                            table += '</tr>';
+                        });
+
+                        // Cerrar la tabla
+                        table += '</tbody></table>';
+
+                        // Insertar la tabla en el div "resultado"
+                        $("#resultado").html(table);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText); // Maneja el error si la solicitud falla
+                    }
+                });
+            } else {
+                console.error("Por favor selecciona el tipo de reporte y las fechas desde y hasta.");
+            }
+        });
+    });
+</script>

@@ -1,6 +1,6 @@
-﻿@model List<Ganancias>
+﻿@model List<Ventas>
 @{
-    ViewData["Title"] = "VisualizarGanancia";
+    ViewData["Title"] = "VisualizarFactura";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,35 +11,37 @@
             <div class="col-xs-12">
                 <div class="box">
                     <div class="box-header">
-                        <h3 class="box-title">Tabla de Ganancias</h3>
+                        <h3 class="box-title">Tabla de Ventas</h3>
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
                         @if (Model != null && Model.Count > 0)
                         {
-                            <table id="gananciasTable" class="table table-bordered table-striped table-responsive">
+                            <table id="ventasTable" class="table table-bordered table-striped table-responsive">
                                 <thead>
                                     <tr>
-                                        <th>ID Ganancias</th>
                                         <th>ID Venta</th>
-                                        <th>Ganancia Makrotecno</th>
-                                        <th>Ganancia Total</th>
-                                        <th>Ganancia Maria</th>
-                                        <th>Ganancia Victor</th>
-                                        <th>Ganancia Teresa</th>
+                                        <th>Cod Factura</th>
+                                        <th>Venta Total</th>
+                                        <th>Venta Makrotecno</th>
+                                        <th>Neto Makrotecno</th>
+                                        <th>Venta Recargas</th>
+                                        <th>Venta Tienda</th>
+                                        <th>Venta Pasivos</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var ganancia in Model)
+                                    @foreach (var ventas in Model)
                                     {
                                         <tr>
-                                            <td>@ganancia.id_ganancias</td>
-                                            <td>@ganancia.id_venta</td>
-                                            <td>@ganancia.gananciaMakrotecno</td>
-                                            <td>@ganancia.gananciaTotal</td>
-                                            <td>@ganancia.gananciaMaria</td>
-                                            <td>@ganancia.gananciaVictor</td>
-                                            <td>@ganancia.gananciaTeresa</td>
+                                            <td>@ventas.id_venta</td>
+                                            <td>@ventas.cod_factura</td>
+                                            <td>@ventas.ventaTotal</td>
+                                            <td>@ventas.ventaMakrotecno</td>
+                                            <td>@ventas.netoMakrotecno</td>
+                                            <td>@ventas.ventaRecargas</td>
+                                            <td>@ventas.ventaTienda</td>
+                                            <td>@ventas.ventaPasivos</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -61,3 +63,4 @@
     <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
+

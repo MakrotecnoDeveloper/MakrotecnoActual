@@ -19,7 +19,7 @@ namespace Plataforma.Controllers
         public IActionResult Index()
         {
             _pedidoServicio.ActualizarEstadoFacturas();
-            var facturas = _pedidoServicio.ObtenerFacturas();
+            var facturas = _pedidoServicio.ObtenerFacturasFechaDescendente();
             return View(facturas);
         }
         public IActionResult AgregarFactura()
@@ -184,14 +184,14 @@ namespace Plataforma.Controllers
             return View("AgregarGanancia");
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarVentas(int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        public async Task<IActionResult> InsertarVentas(int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTotal, int ventapasivos)
         {
-            int ventaTotal = ventaMakrotecno + ventaRecarga + ventaTienda;
             // Fase 1
             if (ventapasivos > 0)
             {
                 ventaTotal = ventaTotal - ventapasivos;
             }
+            int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;
             // Fase 2
             int id_venta = await _pedidoServicio.VentaInsertada(cod_factura, ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
             // Fase 3
@@ -215,6 +215,11 @@ namespace Plataforma.Controllers
         {
             _pedidoServicio.EliminarPedido(id);
             return RedirectToAction("Index");
+        }
+        public IActionResult VisualizarFactura()
+        {
+            var traerVentas = _pedidoServicio.TraerVentas();
+            return View(traerVentas);
         }
     }
 }

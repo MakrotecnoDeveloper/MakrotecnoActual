@@ -5,6 +5,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
     {
+        List<Factura> ObtenerFacturasFechaDescendente();
         List<Factura> ObtenerFacturas();
         void ActualizarEstadoFacturas();
         IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado);
@@ -22,5 +23,6 @@ namespace Plataforma.Servicios.Contrato
         Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal);
         List<Ganancias> TraerGanancias();
         void EliminarPedido(int id);
+        List<Ventas> TraerVentas();
     }
 }
