@@ -1,0 +1,89 @@
+﻿@model List<Empleado>
+@{
+    ViewData["Title"] = "Editar Empleado";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Contenido principal -->
+<div class="content-wrapper">
+    <!-- Contenido del encabezado -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Editar Empleado</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario -->
+    <section class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Editar Informacion del Empleado</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- Formulario -->
+                        <form role="form" asp-controller="Usuario" asp-action="EditarEmpleado" method="POST">
+                            <div class="card-body">
+                                @foreach (var empleado in Model)
+                                {
+                                <div class="form-group">
+                                    <label for="cedula">Cedula</label>
+                                    <input type="number" class="form-control" id="cedula" name="cedula" value="@empleado.Cedula">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nombre">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" value="@empleado.Nombre">
+                                </div>
+                                <div class="form-group">
+                                    <label for="apellido">Apellido</label>
+                                    <input type="text" class="form-control" id="apellido" name="apellido" value="@empleado.Apellido">
+                                </div>
+                                <div class="form-group">
+                                    <label for="genero">Género</label>
+                                    <select class="form-control" id="genero" name="genero">
+                                            <option value="@empleado.Genero">@empleado.Genero</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="correo">Correo Electrónico</label>
+                                    <input type="email" class="form-control" id="correo" value="empleado.Correo" name="correo">
+                                </div>
+                                <div class="form-group">
+                                    <label for="genero">RH</label>
+                                    <select class="form-control" id="rh" name="rh">
+                                        <option value="@empleado.Rh">@empleado.Rh</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="celular">Celular</label>
+                                    <input type="tel" class="form-control" id="celular" value="@empleado.Celular" name="celular">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contrasena">Contraseña</label>
+                                    <input type="password" class="form-control" id="contrasena" value="@empleado.Contrasena" name="contrasena">
+                                </div>
+                                }
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer justify-content-end">
+                                <button type="submit" class="btn btn-primary">Editar Empleado</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->

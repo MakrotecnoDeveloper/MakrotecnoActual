@@ -32,8 +32,23 @@ namespace Plataforma.Controllers
         {
             try
             {
-                _pedidoServicio.CrearFactura(cedula_cliente, cedula_empleado, fechaVenta, estado);
-                return RedirectToAction("Index");
+                if(cedula_cliente > 0)
+                {
+                    if(fechaVenta != DateTime.MinValue)
+                    {
+                        _pedidoServicio.CrearFactura(cedula_cliente, cedula_empleado, fechaVenta, estado);
+                        return RedirectToAction("Index");
+                    }else
+                    {
+                        Console.WriteLine("Error A2: La fecha no es un dato valido, verificar nuevamente.");
+                        return RedirectToAction("Index");
+                    }
+                }else
+                {
+                    Console.WriteLine("Error A1: La cedula del cliente esta vacia, escribala."); 
+                    return RedirectToAction("Index");
+                }
+                
             }
             catch (Exception ex)
             {

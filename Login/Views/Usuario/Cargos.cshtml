@@ -1,0 +1,47 @@
+﻿@model List<TipoCargo>
+@{
+    ViewData["Title"] = "Gestion de Cargos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Contenido principal -->
+<div class="content-wrapper">
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Agregar Cargos</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-8">
+                <h1>Gestion de Cargos</h1>
+            </div>
+            <div class="col-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID Tipo</th>
+                            <th>Nombre del Cargo</th>
+                            <th>Descripción del Cargo</th>
+                            <th>ID Empresa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tipoCargo in Model)
+                        {
+                            <tr>
+                                <td>@tipoCargo.id_tipo</td>
+                                <td>@tipoCargo.nombreCargo</td>
+                                <td>@tipoCargo.descripcionCargo</td>
+                                <td>@tipoCargo.id_empresa</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

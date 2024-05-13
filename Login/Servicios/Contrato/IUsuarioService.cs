@@ -10,5 +10,8 @@ namespace Plataforma.Servicios.Contrato
         //el segundo metodo guarda usuarios
         Task<Empleado> SaveUsuario(Empleado modelo);
         IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
+        List<Empleado> BuscarUsuario(int id);
+        void EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
+        List<TipoCargo> ObtenerCargos();
     }
 }
