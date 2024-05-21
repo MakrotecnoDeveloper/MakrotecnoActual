@@ -1,41 +1,43 @@
-﻿@model List<TipoCargo>
+﻿@model List<Empresas>
 @{
-    ViewData["Title"] = "Gestion de Cargos";
+    ViewData["Title"] = "Empresas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- Contenido principal -->
+<h1>Empresas</h1>
 <div class="content-wrapper">
     <div class="container">
         <div class="row">
             <div class="col-4">
                 <ul class="nav">
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Usuario" asp-action="FormCargos">Agregar Cargos</a>
+                        <a class="nav-link" asp-controller="Usuario" asp-action="FormEmpresas">Agregar Empresa</a>
                     </li>
                 </ul>
             </div>
             <div class="col-8">
-                <h1>Gestion de Cargos</h1>
+                <h1>Compañias asociadas</h1>
             </div>
             <div class="col-12">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID Tipo</th>
-                            <th>Nombre del Cargo</th>
-                            <th>Descripción del Cargo</th>
                             <th>ID Empresa</th>
+                            <th>Empresa</th>
+                            <th>Pais</th>
+                            <th>Direccion</th>
+                            <th>Telefono</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var tipoCargo in Model)
+                        @foreach (var empresas in Model)
                         {
                             <tr>
-                                <td>@tipoCargo.id_tipo</td>
-                                <td>@tipoCargo.nombreCargo</td>
-                                <td>@tipoCargo.descripcionCargo</td>
-                                <td>@tipoCargo.id_empresa</td>
+                                <td>@empresas.id_empresa</td>
+                                <td>@empresas.nombre</td>
+                                <td>@empresas.pais</td>
+                                <td>@empresas.direccion</td>
+                                <td>@empresas.telefono</td>
                             </tr>
                         }
                     </tbody>
@@ -44,4 +46,3 @@
         </div>
     </div>
 </div>
-

@@ -1,0 +1,64 @@
+﻿@model List<Sede>
+@{
+    ViewData["Title"] = "Sedes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Sedes</h1>
+<div class="content-wrapper">
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Usuario" asp-action="FormSedes">Agregar Sede</a>
+                    </li>
+                </ul>
+                <form id="selectEmpresaForm">
+                    <div class="form-group">
+                        <label for="selectEmpresa">Seleccione una empresa:</label>
+                        <select class="form-control" id="selectEmpresa" name="selectEmpresa">
+                            <option value="">Seleccione una empresa</option>
+                            @foreach (var sede in Model)
+                            {
+                                <option value="@sede.id_empresa">@sede.id_empresa</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ver Sedes</button>
+                </form>
+            </div>
+            <div class="col-8" id="sedesContainer">
+                <!-- Aquí se mostrarán las sedes asociadas a la empresa seleccionada -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Agregar un evento al formulario para manejar la selección de empresa
+    document.getElementById('selectEmpresaForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevenir el envío del formulario por defecto
+
+        // Obtener el valor seleccionado del select
+        var selectedEmpresaId = document.getElementById('selectEmpresa').value;
+
+        // Filtrar las sedes asociadas a la empresa seleccionada
+        var sedesAsociadas = @Html.Raw(Json.Serialize(Model));
+        console.log(sedesAsociadas);
+        var sedesEmpresaSeleccionada = sedesAsociadas.filter(function (sede) {
+            return sede.id_empresa === selectedEmpresaId;
+        });
+
+        // Mostrar las sedes en el contenedor
+        document.getElementById('sedesContainer').innerHTML = '<h1>Sedes asociadas a la empresa con ID: ' + selectedEmpresaId + '</h1>';
+
+        sedesEmpresaSeleccionada.forEach(function (sede) {
+            document.getElementById('sedesContainer').innerHTML += '<p>ID Sede: ' + sede.id_sede + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Nombre de la Sede: ' + sede.nombreSede + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Ciudad: ' + sede.ciudad + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Dirección: ' + sede.direccion + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Teléfono: ' + sede.telefono + '</p>';
+        });
+    });
+</script>

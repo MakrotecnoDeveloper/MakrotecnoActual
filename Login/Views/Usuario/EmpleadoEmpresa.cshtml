@@ -1,0 +1,36 @@
+﻿@model List<Empresas>
+@{
+    ViewData["Title"] = "EmpleadoEmpresa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container">
+        <h2>Lista de Empresas</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id Empresa</th>
+                    <th>Nombre</th>
+                    <th>País</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Proceso</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var empresa in Model)
+                {
+                    <tr>
+                        <td>@empresa.id_empresa</td>
+                        <td>@empresa.nombre</td>
+                        <td>@empresa.pais</td>
+                        <td>@empresa.direccion</td>
+                        <td>@empresa.telefono</td>
+                        <td><a asp-controller="Usuario" asp-action="FormEmpleadoEmpresa" asp-route-id_empresa="@empresa.id_empresa">Agregar Empleado</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

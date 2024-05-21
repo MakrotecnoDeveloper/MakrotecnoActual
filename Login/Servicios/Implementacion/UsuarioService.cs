@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -115,6 +116,87 @@ namespace Plataforma.Servicios.Implementacion
         public List<TipoCargo> ObtenerCargos()
         {
             return _dbContext.TipoCargo.ToList();
+        }
+        public List<Empresas> ObtenerEmpresas()
+        {
+            return _dbContext.Empresas.ToList();
+        }
+        public IEnumerable<TipoCargo> InsertarCargos(string nombreCargo, string descripcionCargo, string id_empresa)
+        {
+            var cargoExistente = _dbContext.TipoCargo.FirstOrDefault(p => p.nombreCargo == nombreCargo);
+            if (cargoExistente != null)
+            {
+                Console.WriteLine("Ya existe este cargo");
+            }
+            var nuevoCargo = new TipoCargo
+            {
+                nombreCargo = nombreCargo,
+                descripcionCargo = descripcionCargo,
+                id_empresa = id_empresa
+            };
+            _dbContext.TipoCargo.Add(nuevoCargo);
+            _dbContext.SaveChanges();
+            return _dbContext.TipoCargo.ToList();
+        }
+        public IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
+        {
+            var empresaExiste = _dbContext.Empresas.FirstOrDefault(p => p.id_empresa == nit);
+            if(empresaExiste != null)
+            {
+                Console.WriteLine("Ya existe la empresa");
+            }
+            var direccion = calle + " # " + carrera + ", " + ciudad + " - " + departamento;
+            var celular = indicativo + " " + numero;
+            var nuevaEmpresa = new Empresas
+            {
+                id_empresa = nit,
+                nombre = nombreEmpresa,
+                pais = pais,
+                direccion = direccion,
+                telefono = celular
+            };
+            _dbContext.Empresas.Add(nuevaEmpresa);
+            _dbContext.SaveChanges();
+            return _dbContext.Empresas.ToList();
+        }
+        public List<Sede> ObtenerSedes()
+        {
+            return _dbContext.Sede.ToList();
+        }
+        public IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
+        {
+            var sedeExiste = _dbContext.Sede.FirstOrDefault(p => p.nombreSede == nombreSede);
+            if (sedeExiste != null)
+            {
+                Console.WriteLine("Ya existe la sede");
+            }
+            var nuevaSede = new Sede
+            {
+                id_empresa = id_empresa,
+                nombreSede = nombreSede,
+                ciudad = ciudad,
+                direccion = direccion,
+                telefono = telefono
+            };
+            _dbContext.Sede.Add(nuevaSede);
+            _dbContext.SaveChanges();
+            return _dbContext.Sede.ToList();
+        }
+        public IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string idEmpresa, int cedula)
+        {
+            var empleadoExisteEmpresaExiste = _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.id_empresa == idEmpresa && ee.cedula == cedula);
+            if (empleadoExisteEmpresaExiste != null)
+            {
+                Console.WriteLine("Ya existe la relación entre este empleado y esta empresa.");
+            }
+            var nuevoEmpleadoEmpresa = new EmpleadoEmpresa
+            {
+                id_empresa = idEmpresa,
+                cedula = cedula
+            };
+            _dbContext.EmpleadoEmpresa.Add(nuevoEmpleadoEmpresa);
+            _dbContext.SaveChanges();
+            return _dbContext.EmpleadoEmpresa.ToList();
         }
     }
 }

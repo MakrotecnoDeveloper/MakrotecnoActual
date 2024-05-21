@@ -1,0 +1,29 @@
+﻿@model List<Empleado>
+@{
+    ViewData["Title"] = "FormEmpleadoEmpresa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="content-wrapper">
+    <div class="container">
+        <h2>Sincronizacion Empleado-Empresa</h2>
+        <form role="form" asp-controller="Usuario" asp-action="InsertarEE" method="POST">
+            <div class="form-group">
+                <label for="idEmpresa">Empresa</label>
+                <input type="text" class="form-control" name="idEmpresa" id="idEmpresa" value="@ViewBag.id_empresa">
+            </div>
+            <div class="form-group">
+                <label for="cedula">Seleccionar Empleado</label>
+                <select class="form-control" id="cedula" name="cedula" required>
+                    <option value="">Seleccionar Empleado</option>
+                    @foreach (var empleado in Model)
+                    {
+                        <option value="@empleado.Cedula">@empleado.Nombre @empleado.Apellido</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Sincronizar</button>
+        </form>
+    </div>
+</div>

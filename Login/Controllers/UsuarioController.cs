@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Plataforma.Controllers
 {
@@ -63,5 +64,98 @@ namespace Plataforma.Controllers
             var cargos = _usuarioService.ObtenerCargos();
             return View(cargos);
         }
+        public IActionResult FormCargos()
+        {
+            var empresas = _usuarioService.ObtenerEmpresas();
+            return View(empresas);
+        }
+        [HttpPost]
+        public IActionResult InsertarTabla(string nombreCargo, string descripcionCargo, string id_empresa)
+        {
+            try
+            {
+                var insertarCargo = _usuarioService.InsertarCargos(nombreCargo, descripcionCargo, id_empresa);
+                return RedirectToAction("Cargos");
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
+                return View("Error", ex.Message);
+            }
+        }
+        public IActionResult Empresas()
+        {
+            var empresas = _usuarioService.ObtenerEmpresas();
+            return View(empresas);
+        }
+        public IActionResult FormEmpresas()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
+        {
+            try
+            {
+                var insertarEmpresa = _usuarioService.InsertarEmpresa(nit, nombreEmpresa, pais, calle, carrera, ciudad, departamento, indicativo, numero);
+                return RedirectToAction("Empresas");
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
+                return View("Error", ex.Message);
+            }
+        }
+        public IActionResult Sedes()
+        {
+            var empresas = _usuarioService.ObtenerSedes();
+            return View(empresas);
+        }
+        public IActionResult FormSedes()
+        {
+            var empresas = _usuarioService.ObtenerEmpresas();
+            return View(empresas);
+        }
+        [HttpPost]
+        public IActionResult InsertarSedes(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
+        {
+            try
+            {
+                var insertarSede = _usuarioService.InsertarSede(id_empresa, nombreSede, ciudad, direccion, telefono);
+                return RedirectToAction("Sedes");
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
+                return View("Error", ex.Message);
+            }
+        }
+        public IActionResult EmpleadoEmpresa()
+        {
+            var empresas = _usuarioService.ObtenerEmpresas();
+            return View(empresas);
+        }
+        [HttpGet]
+        public IActionResult FormEmpleadoEmpresa(string id_empresa)
+        {
+            var empleado = _usuarioService.ObtenerUsuarios();
+            ViewBag.id_empresa = id_empresa;
+            return View(empleado);
+        }
+        [HttpPost]
+        public IActionResult InsertarEE(string idEmpresa, int cedula)
+        {
+            try
+            {
+                var insertarEmpleadoEmpresa = _usuarioService.InsertarEmpleadoEmpresa(idEmpresa, cedula);
+                return RedirectToAction("EmpleadoEmpresa");
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
+                return View("Error", ex.Message);
+            }
+        }
+
     }
 }

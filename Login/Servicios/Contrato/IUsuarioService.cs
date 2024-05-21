@@ -13,5 +13,11 @@ namespace Plataforma.Servicios.Contrato
         List<Empleado> BuscarUsuario(int id);
         void EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
         List<TipoCargo> ObtenerCargos();
+        List<Empresas> ObtenerEmpresas();
+        IEnumerable<TipoCargo> InsertarCargos(string nombreCargo, string descripcionCargo, string id_empresa);
+        IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero);
+        List<Sede> ObtenerSedes();
+        IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono);
+        IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string idEmpresa, int cedula);
     }
 }

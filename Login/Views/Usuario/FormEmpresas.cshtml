@@ -1,0 +1,77 @@
+﻿
+@{
+    ViewData["Title"] = "Insertar Empresa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>FormEmpresas</h1>
+
+<div class="content-wrapper">
+    <div class="container">
+        <form role="form" asp-controller="Usuario" asp-action="InsertarEmpresa" method="POST">
+            <div class="form-group">
+                <label for="nit">NIT de la Empresa</label>
+                <input type="text" class="form-control" id="nit" name="nit" placeholder="NIT de la empresa ej: xxxxxxxxxxx-x" required>
+            </div>
+            <div class="form-group">
+                <label for="nombreEmpresa">Nombre de la empresa</label>
+                <input type="text" class="form-control" id="nombreEmpresa" name="nombreEmpresa" placeholder="Ingrese el nombre de la empresa" required>
+            </div>
+            <div class="form-group">
+                <label for="pais">País</label>
+                <select class="form-control" id="pais" name="pais" required>
+                    <option value="">Seleccione un país</option>
+                </select>
+                <small id="paisHelp" class="form-text text-muted">Seleccione un país de la lista.</small>
+            </div>
+
+            <script>
+                // Fetch de la lista de países desde el servicio RestCountries
+                fetch('https://restcountries.com/v3.1/all')
+                    .then(response => response.json())
+                    .then(data => {
+                        const selectElement = document.getElementById('pais');
+
+                        // Iterar sobre los datos y agregar opciones al select
+                        data.forEach(country => {
+                            const option = document.createElement('option');
+                            option.value = country.name.common;
+                            option.text = country.name.common;
+                            selectElement.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error al obtener la lista de países:', error));
+            </script>
+            <div class="form-group">
+                <label for="direccion">Dirección de la empresa</label>
+                <div class="direccion-container">
+                    <input type="text" id="calle" name="calle" placeholder="Calle" required>
+                    <input type="text" id="carrera" name="carrera" placeholder="Carrera" required>
+                    <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad" required>
+                    <input type="text" id="departamento" name="departamento" placeholder="Departamento" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="direccion">Telefono</label>
+                <div class="direccion-container">
+                    <input type="text" id="indicativo" name="indicativo" placeholder="Indicativo" required>
+                    <input type="text" id="numero" name="numero" placeholder="Numero" required>
+                </div>
+            </div>
+            <style>
+                .direccion-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                }
+
+                    .direccion-container input[type="text"] {
+                        flex: 1;
+                        margin-right: 5px;
+                        margin-bottom: 5px;
+                    }
+            </style>
+            <button type="submit" class="btn btn-primary">Guardar Cargo</button>
+        </form>
+    </div>
+</div>

@@ -20,6 +20,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Ganancias> Ganancias { get; set; }
     public DbSet<TipoCargo> TipoCargo { get; set; }
     public DbSet<Empresas> Empresas { get; set; }
+    public DbSet<Sede> Sede { get; set; }
+    public DbSet<EmpleadoEmpresa> EmpleadoEmpresa { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +35,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Ganancias>().HasKey(id => id.id_ganancias);
         modelBuilder.Entity<TipoCargo>().HasKey(it => it.id_tipo);
         modelBuilder.Entity<Empresas>().HasKey(ie => ie.id_empresa);
+        modelBuilder.Entity<Sede>().HasKey(sede => sede.id_sede);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasKey(ie => ie.id_empleadoE);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
@@ -41,5 +45,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Ventas>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
         modelBuilder.Entity<Ganancias>().HasOne<Ventas>().WithMany().HasForeignKey(f => f.id_venta);
         modelBuilder.Entity<TipoCargo>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
+        modelBuilder.Entity<Sede>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
     }
 }
