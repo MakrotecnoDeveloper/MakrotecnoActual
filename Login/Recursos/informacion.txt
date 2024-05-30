@@ -54,3 +54,31 @@ public IEnumerable Metodo(propiedades)
 var llamarAsyncrono = await _dbService.MetodoAsync(propiedades);
 return llamadaAsyncrono;
 }
+
+
+
+Forma de hacer un ajax de manera mas elegante
+<script>
+    const cedulaForm = document.getElementById('cedulaForm');
+
+    cedulaForm.addEventListener('submit', (event) => {
+        event.preventDefault(); // Prevent default form submission
+
+        const cedula = document.getElementById('cedula').value;
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'ValidarCedula', true); // Replace with your server URL
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Process the server response (e.g., display a message)
+                console.log('Cédula enviada correctamente:', xhr.responseText);
+            } else {
+                console.error('Error al enviar la cédula:', xhr.statusText);
+            }
+        };
+
+        xhr.send(`cedula=${cedula}`); // Send the Cédula data
+    });
+</script>

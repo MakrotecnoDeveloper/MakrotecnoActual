@@ -59,6 +59,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 //establece una ruta predeterminada para la aplicaci�n web
 app.MapControllerRoute(
     name: "default",

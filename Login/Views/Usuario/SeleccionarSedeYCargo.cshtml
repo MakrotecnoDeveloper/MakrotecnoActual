@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewData["Title"] = "SeleccionarSedeYCargo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var cedula = ViewBag.Cedula;
+    var idEmpresa = ViewBag.IdEmpresa;
+    var sedes = ViewBag.Sedes as List<Sede>;
+    var cargos = ViewBag.Cargos as List<TipoCargo>;
+}
+
+<div class="content-wrapper justify-content-center">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card rounded-lg shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        Seleccione la Sede
+                    </div>
+                    <div class="card-body">
+                        <form id="sedeCargoForm" method="post" action="/Usuario/GuardarSedeYCargo">
+                            <input type="hidden" name="Cedula" value="@cedula" />
+                            <input type="hidden" name="IdEmpresa" value="@idEmpresa" />
+
+                            <div class="form-group">
+                                <label for="Sede">Seleccione la Sede:</label>
+                                <select id="Sede" name="IdSede" class="form-control">
+                                    @foreach (var sede in sedes)
+                                    {
+                                        <option value="@sede.id_sede">@sede.nombreSede</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Cargo">Seleccione el Cargo:</label>
+                                <select id="Cargo" name="IdCargo" class="form-control">
+                                    @foreach (var cargo in cargos)
+                                    {
+                                        <option value="@cargo.id_tipo">@cargo.descripcionCargo</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

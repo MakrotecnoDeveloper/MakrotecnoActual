@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Login.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -47,6 +50,22 @@ namespace Plataforma.Controllers
             {
                 // Producto no encontrado, maneja la lógica adecuada
                 Console.WriteLine("No hay productos con ese codigo referenciado");
+                return View("Index");
+            }
+        }
+        public IActionResult FormEmpleadoCompania(int cedula)
+        {
+            var empresaEncontrada = _usuarioService.ObtenerEmpresas();
+            if (empresaEncontrada.Any())
+            {
+                ViewBag.cedula = cedula;
+                // Oculta la tabla de productos y muestra la tabla temporal
+                return View(empresaEncontrada);
+            }
+            else
+            {
+                // Producto no encontrado, maneja la lógica adecuada
+                Console.WriteLine("No hay empresas anexadas al sistema");
                 return View("Index");
             }
         }
@@ -156,6 +175,59 @@ namespace Plataforma.Controllers
                 return View("Error", ex.Message);
             }
         }
+        public IActionResult EmpleadoSedes()
+        {
+            var empresaSedeViewModel = _usuarioService.EmpleadoSede();
+            return View(empresaSedeViewModel);
+        }
+        public IActionResult ValidarCedula(int cedula)
+        {
+            var empleado = _usuarioService.ValidarCedula(cedula);
+            if (empleado == null)
+            {
+                return NotFound();
+            }
 
+            string idEmpresa = _usuarioService.ObtenerIdEmpresa(cedula);
+            if (string.IsNullOrEmpty(idEmpresa))
+            {
+                return NotFound();
+            }
+
+            var sede = _usuarioService.ObtenerSedePorEmpleado(cedula);
+            var sedes = _usuarioService.ObtenerSedes(idEmpresa);
+            var cargos = _usuarioService.ObtenerCargos(idEmpresa);
+
+            if (sede == null)
+            {
+                ViewBag.Cedula = cedula;
+                ViewBag.IdEmpresa = idEmpresa;
+                ViewBag.Sedes = sedes;
+                ViewBag.Cargos = cargos;
+                return View("SeleccionarSedeYCargo");
+            }
+            else
+            {
+                // Aquí puedes manejar el caso cuando la cédula ya está asociada a una sede
+                ViewBag.Cedula = cedula;
+                ViewBag.Sede = sede;
+                return View("SedeYaAsociada");
+            }
+        }
+        [HttpPost]
+        public IActionResult GuardarSedeYCargo(int cedula, int idSede, int idCargo)
+        {
+            var ingresarSedeCargo = _usuarioService.InsertarSedeEmpleado(cedula, idSede, idCargo);
+            return View("Index");
+        }
+
+        [HttpGet]
+        public JsonResult GetSedes(string empresaId)
+        {
+            var sedes = _usuarioService.GetSedesByEmpresaId(empresaId);
+            return Json(sedes);
+        }
+        /*[HttpPost]
+        public IActionResult FormEmpleadoSede()*/
     }
 }

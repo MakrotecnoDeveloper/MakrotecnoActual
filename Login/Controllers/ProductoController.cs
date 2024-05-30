@@ -105,5 +105,12 @@ namespace Plataforma.Controllers
             _productoservice.EliminarProducto(id);
             return RedirectToAction("Index");
         }
+        public IActionResult VisualizarProducto(string id)
+        {
+            string categoriaTerm = "";
+            string searchTerm = id;
+            var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
+            return View(traerProductos);
+        }
     }
 }

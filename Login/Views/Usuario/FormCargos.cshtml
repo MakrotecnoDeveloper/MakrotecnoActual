@@ -4,10 +4,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>FormCargos</h1>
+
 
 <div class="content-wrapper">
     <div class="container">
+        <h1>Formulario para Agregar Cargo</h1>
         <form role="form" asp-controller="Usuario" asp-action="InsertarTabla" method="POST">
             <div class="form-group">
                 <label for="nombreCargo">Nombre del Cargo</label>
@@ -27,7 +28,7 @@
                     }
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar Cargo</button>
+            <button type="submit" class="btn btn-primary">Agregar Cargo</button>
         </form>
     </div>
 </div>

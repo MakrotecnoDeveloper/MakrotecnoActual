@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Login.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -197,6 +199,108 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.EmpleadoEmpresa.Add(nuevoEmpleadoEmpresa);
             _dbContext.SaveChanges();
             return _dbContext.EmpleadoEmpresa.ToList();
+        }
+
+        public EmpleadoSedeViewModel? EmpleadoSede()
+        {
+            var empleados = _dbContext.Empleado.ToList();
+            var empresas = _dbContext.Empresas.ToList();
+            var sedes = _dbContext.Sede.ToList();
+            var cargos = _dbContext.TipoCargo.ToList();
+            var sedeEmpleados = _dbContext.Sedeempleado.ToList();
+            var empleadoEmpresas = _dbContext.EmpleadoEmpresa.ToList();
+
+            if (empleados != null && empresas != null && sedes != null && cargos != null && sedeEmpleados != null && empleadoEmpresas != null)
+            {
+                var empleadoConSedeYCargo = sedeEmpleados
+                    .Select(se =>
+                    {
+                        var empleado = empleados.FirstOrDefault(e => e.Cedula == se.cedula);
+                        var sede = sedes.FirstOrDefault(s => s.id_sede == se.id_sede);
+                        var cargo = cargos.FirstOrDefault(c => c.id_tipo == se.id_cargo);
+                        var empresa = empleadoEmpresas
+                            .Where(ee => ee.cedula == se.cedula)
+                            .Join(empresas, ee => ee.id_empresa, emp => emp.id_empresa, (ee, emp) => emp)
+                            .FirstOrDefault();
+
+                        return new EmpleadoConSedeYEmpresa
+                        {
+                            Empleado = empleado,
+                            Sede = sede,
+                            Empresa = empresa,
+                            TipoCargo = cargo
+                        };
+                    })
+                    .Where(e => e.Empleado != null && e.Sede != null && e.Empresa != null && e.TipoCargo != null)
+                    .ToList();
+
+                return new EmpleadoSedeViewModel
+                {
+                    Empleados = empleados,
+                    Empresas = empresas,
+                    Sedes = sedes,
+                    EmpleadoConSedeYEmpresas = empleadoConSedeYCargo
+                };
+            }
+
+            return null;
+        }
+        public List<Sede> GetSedesByEmpresaId(string empresaId)
+        {
+            var sedes = _dbContext.Sede
+             .Where(s => s.id_empresa == empresaId)
+             .Select(s => new Sede
+             {
+                 id_sede = s.id_sede,
+                 nombreSede = s.nombreSede
+             })
+             .ToList();
+
+            return sedes;
+        }
+        public Empleado ValidarCedula(int cedula)
+        {
+            var empleado = _dbContext.Empleado.FirstOrDefault(e => e.Cedula == cedula);
+            return empleado;
+        }
+        public string? ObtenerIdEmpresa(int cedula)
+        {
+            var empleadoEmpresa = _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.cedula == cedula);
+            return empleadoEmpresa?.id_empresa;
+        }
+        public List<Sede> ObtenerSedes(string idEmpresa)
+        {
+            return _dbContext.Sede.Where(s => s.id_empresa == idEmpresa).ToList();
+        }
+
+        public Sede ObtenerSedePorEmpleado(int cedula)
+        {
+            var empleadoSede = _dbContext.Sedeempleado.FirstOrDefault(es => es.cedula == cedula);
+            if (empleadoSede == null)
+            {
+                return null;
+            }
+
+            // Obtener la sede correspondiente usando el id_sede
+            var sede = _dbContext.Sede.FirstOrDefault(s => s.id_sede == empleadoSede.id_sede);
+            return sede;
+        }
+        public List<TipoCargo> ObtenerCargos(string idEmpresa)
+        {
+            return _dbContext.TipoCargo.Where(c => c.id_empresa == idEmpresa).ToList();
+        }
+        public List<Sedeempleado> InsertarSedeEmpleado(int cedula, int idSede, int idCargo)
+        {
+            var sedeEmpleado = new Sedeempleado
+            {
+                cedula = cedula,
+                id_sede = idSede,
+                id_cargo = idCargo
+            };
+
+            _dbContext.Sedeempleado.Add(sedeEmpleado);
+            _dbContext.SaveChanges();
+            return _dbContext.Sedeempleado.ToList();
         }
     }
 }

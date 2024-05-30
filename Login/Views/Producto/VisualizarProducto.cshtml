@@ -1,0 +1,50 @@
+﻿@model List<Producto>
+@{
+    ViewData["Title"] = "Visualizar Producto";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper justify-content-center">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card rounded-lg shadow-sm mt-4">
+                    <div class="card-header bg-primary text-white">
+                        @foreach (var productos in Model)
+                        {
+                            <h3>Visualizar Producto @productos.NombreProducto</h3>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <div class="container">
+                            <table>
+                                <thead>
+                                    <th>Nombre</th>
+                                    <th>Valor Venta</th>
+                                    <th>Foto</th>
+                                </thead>
+                                <tbody>
+                                    @foreach (var producto in Model)
+                                    {
+                                        <tr>
+                                            <td>@producto.NombreProducto</td>
+                                            <td>@producto.ValorVentaProducto</td>
+                                            <td>
+                                                <img src="@Url.Content($"~/img/Productos/{producto.Categoria}/{producto.Cod_Producto}.png")" alt="@producto.NombreProducto" />
+                                            </td>
+                                            <td>
+                                                <img src="@Url.Content($"~/img/Productos/{producto.Categoria}/{producto.Cod_Producto}.png")"
+                                                     alt="@producto.NombreProducto"
+                                                     onerror="this.onerror=null;this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

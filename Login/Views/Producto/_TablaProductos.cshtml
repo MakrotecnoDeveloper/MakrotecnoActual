@@ -1,29 +1,18 @@
 ﻿@model List<Producto>
 
 <table class="table">
-    <thead>
-        <tr>
-            <th>Codigo</th>
-            <th>Producto</th>
-            <th>Stock</th>
-            <th>Neto</th>
-            <th>Venta</th>
-            <th>Compañia</th>
-            <th>Categoria</th>
-        </tr>
-    </thead>
     <tbody>
         @foreach (var producto in Model)
         {
             <tr>
                 <td>@producto.Cod_Producto</td>
                 <td>@producto.NombreProducto</td>
-                <td>@producto.CantidadProducto</td>
                 <td>@producto.ValorNetoProducto</td>
                 <td>@producto.ValorVentaProducto</td>
-                <td>@producto.ID_Empresa</td>
+                <td>@producto.CantidadProducto</td>
                 <td>@producto.Categoria</td>
-                <td><a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto">Editar</a></td>
+                <td>@producto.ID_Empresa</td>
+                <td><a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto">Editar</a> <a asp-controller="Producto" asp-action="VisualizarProducto" asp-route-id="@producto.Cod_Producto">Visualizar</a></td>
             </tr>
         }
     </tbody>

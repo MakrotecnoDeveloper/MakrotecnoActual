@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Login.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Plataforma.Models;
@@ -22,6 +23,7 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Empresas> Empresas { get; set; }
     public DbSet<Sede> Sede { get; set; }
     public DbSet<EmpleadoEmpresa> EmpleadoEmpresa { get; set; }
+    public DbSet<Sedeempleado> Sedeempleado { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +39,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Empresas>().HasKey(ie => ie.id_empresa);
         modelBuilder.Entity<Sede>().HasKey(sede => sede.id_sede);
         modelBuilder.Entity<EmpleadoEmpresa>().HasKey(ie => ie.id_empleadoE);
+        modelBuilder.Entity<Sedeempleado>().HasKey(ise => ise.id_sedeEmpleado);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
@@ -48,5 +51,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Sede>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
         modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
         modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
+        modelBuilder.Entity<Sedeempleado>().HasOne<Sede>().WithMany().HasForeignKey(f => f.id_sede);
+        modelBuilder.Entity<Sedeempleado>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
+        modelBuilder.Entity<Sedeempleado>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.id_cargo);
     }
 }

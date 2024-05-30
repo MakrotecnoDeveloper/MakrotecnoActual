@@ -1,4 +1,5 @@
 ﻿//establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
+using Login.Models;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
@@ -19,5 +20,13 @@ namespace Plataforma.Servicios.Contrato
         List<Sede> ObtenerSedes();
         IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono);
         IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string idEmpresa, int cedula);
+        EmpleadoSedeViewModel? EmpleadoSede();
+        List<Sede> GetSedesByEmpresaId(string empresaId);
+        Empleado ValidarCedula(int cedula);
+        string? ObtenerIdEmpresa(int cedula);
+        List<Sede> ObtenerSedes(string idEmpresa);
+        Sede ObtenerSedePorEmpleado(int cedula);
+        List<TipoCargo> ObtenerCargos(string idEmpresa);
+        List<Sedeempleado> InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
     }
 }

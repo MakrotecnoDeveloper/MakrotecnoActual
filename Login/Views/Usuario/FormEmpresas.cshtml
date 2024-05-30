@@ -4,10 +4,9 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>FormEmpresas</h1>
-
 <div class="content-wrapper">
     <div class="container">
+        <h1>Formulario para Agregar Compañia</h1>
         <form role="form" asp-controller="Usuario" asp-action="InsertarEmpresa" method="POST">
             <div class="form-group">
                 <label for="nit">NIT de la Empresa</label>
@@ -71,7 +70,7 @@
                         margin-bottom: 5px;
                     }
             </style>
-            <button type="submit" class="btn btn-primary">Guardar Cargo</button>
+            <button type="submit" class="btn btn-primary">Agregar Empresa</button>
         </form>
     </div>
 </div>
