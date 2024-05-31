@@ -154,17 +154,17 @@
             });
 
             // Enlace 1 - Editar Producto
-            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-pencil-alt');
-            // Enlace 2 - Agregar Stock
-            var enlace2 = crearEnlaceStock(perfil.cod_Producto);
+            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-edit');
             // Enlace 3 - Eliminar Producto
             var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
+            // Enlace 4 = Visualizar Producto
+            var enlace4 = crearEnlace(`/Producto/VisualizarProducto?id=${perfil.cod_Producto}`, 'fas fa-eye');
 
             // Agregar enlaces a una celda
             var acciones = document.createElement('td');
             acciones.appendChild(enlace1);
-            acciones.appendChild(enlace2);
             acciones.appendChild(enlace3);
+            acciones.appendChild(enlace4);
             fila.appendChild(acciones);
 
             // Agregar la fila a la tabla
@@ -189,45 +189,6 @@
         enlace.onclick = function () {
             window.location.href = this.href;
             return false; // Prevenir el comportamiento predeterminado del enlace
-        };
-        return enlace;
-    }
-
-    function crearEnlaceStock(codProducto) {
-        var enlace = document.createElement('button');
-        var icono = document.createElement('i');
-        icono.classList.add('fas', 'fa-plus-circle', 'icono-enlace');
-        enlace.appendChild(icono);
-        enlace.onclick = function () {
-            var eliminarAgregar = prompt("Que proceso vas a realizar, Eliminar o Agregar un producto PD: Para Agregar escribe 1, para Borrar el 2");
-            if(eliminarAgregar == 1){
-                var cantidad = prompt("Ingrese la cantidad de stock a actualizar:", "");
-                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
-                    // Verificar si la cantidad es un número válido
-                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
-                        // Construir la URL con la cantidad proporcionada
-                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
-                        // Redirigir a la nueva URL
-                        window.location.href = nuevaUrl;
-                    } else {
-                        alert("Por favor, ingrese una cantidad válida.");
-                    }
-                }
-            }
-            if(eliminarAgregar == 2){
-                var cantidad = prompt("Ingrese la cantidad de stock a eliminar:", "");
-                if (cantidad !== null && cantidad.trim() !== "" && cantidad.length > 0) {
-                    // Verificar si la cantidad es un número válido
-                    if (!isNaN(parseFloat(cantidad)) && isFinite(cantidad)) {
-                        // Construir la URL con la cantidad proporcionada
-                        var nuevaUrl = `/Producto/Stock?id=${codProducto}&cantidad=${cantidad}&opcion=${eliminarAgregar}`;
-                        // Redirigir a la nueva URL
-                        window.location.href = nuevaUrl;
-                    } else {
-                        alert("Por favor, ingrese una cantidad válida.");
-                    }
-                }
-            }
         };
         return enlace;
     }

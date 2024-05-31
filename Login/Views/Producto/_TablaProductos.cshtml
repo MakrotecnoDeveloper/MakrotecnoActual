@@ -12,7 +12,17 @@
                 <td>@producto.CantidadProducto</td>
                 <td>@producto.Categoria</td>
                 <td>@producto.ID_Empresa</td>
-                <td><a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto">Editar</a> <a asp-controller="Producto" asp-action="VisualizarProducto" asp-route-id="@producto.Cod_Producto">Visualizar</a></td>
+                <td>
+                    <a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a asp-controller="Producto" asp-action="Eliminar" asp-route-id="@producto.Cod_Producto" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                    <a asp-controller="Producto" asp-action="VisualizarProducto" asp-route-id="@producto.Cod_Producto" title="Visualizar">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </td>
             </tr>
         }
     </tbody>
