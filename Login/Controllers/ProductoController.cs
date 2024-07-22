@@ -17,6 +17,7 @@ namespace Plataforma.Controllers
         {
             _productoservice = productoservice;
         }
+        [AuthorizeRole(1)]
         public IActionResult Index()
         {
             var productos = _productoservice.ObtenerProductos();
@@ -44,7 +45,7 @@ namespace Plataforma.Controllers
             return Json(new { success = false });
         }
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         public IActionResult Buscar(string searchTerm, string categoriaTerm)
         {
             if (string.IsNullOrEmpty(searchTerm)) {
@@ -54,6 +55,34 @@ namespace Plataforma.Controllers
                 categoriaTerm = "";
             }
             var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
+            return PartialView("_TablaProductos", productosEncontrados);
+        }
+        [HttpGet]
+        public IActionResult BuscarSinStock(string searchTerm, string categoriaTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = "";
+            }
+            else
+            {
+                categoriaTerm = "";
+            }
+            var productosSinStock = _productoservice.SinStock(searchTerm, categoriaTerm);
+            return PartialView("_TablaProductos", productosSinStock);
+        }
+        [HttpGet]
+        public IActionResult BuscarProximosSinStock(string searchTerm, string categoriaTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = "";
+            }
+            else
+            {
+                categoriaTerm = "";
+            }
+            var productosEncontrados = _productoservice.BuscarProSinStock(searchTerm, categoriaTerm);
             return PartialView("_TablaProductos", productosEncontrados);
         }
         public IActionResult Editar(string id)
@@ -111,6 +140,52 @@ namespace Plataforma.Controllers
             string searchTerm = id;
             var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
             return View(traerProductos);
+        }
+        /*Visualizacion de  Recargas de Plataformas */
+        public IActionResult formPlataforma()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult insertPlataforma(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
+        { 
+            if(string.IsNullOrEmpty(plataforma) || string.IsNullOrEmpty(descripcion) || valorventa <= 0 || valorneto <= 0 || fechaInipago == DateTime.MinValue || fechaFinpago == DateTime.MinValue || cantidad <= 0 || string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(contrasena) || cedula <= 0 || estado <= 0)
+            {
+                var mensaje = "Error: Hay campos sin informacion digitada, revisar todo lo llenado.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }else
+            {
+                _productoservice.inserPlataformaService(plataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
+                return View("formPlataforma");
+            }
+        }
+        public async Task<IActionResult> formInserClienPlatf()
+        {
+            var traerPlataformas = await _productoservice.traerPlataformasExistentes();
+            foreach(var plataformas in traerPlataformas)
+            {
+                int idPlataforma = plataformas.idPlataforma;
+                if(idPlataforma > 0)
+                {
+                    TempData["idplataform"] = idPlataforma;
+                }else
+                {
+                    idPlataforma = 1;
+                    TempData["idplataform"] = idPlataforma;
+                }
+            }
+            return View(traerPlataformas);
+        }
+        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
+        {
+            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idplataforma, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado);
+            return View("formInserClienPlatf");
+        }
+        public IActionResult insertInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave)
+        {
+            _productoservice.servicioInsertarInfoCuentaClientPlatf(idCliPltf, perfil, clave);
+            return View("formInserClienPlatf");
         }
     }
 }

@@ -1,9 +1,7 @@
-﻿
-@{
+﻿@{
     Layout = null;
 }
 
-<!DOCTYPE html>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,214 +20,249 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/resume.min.css" />
     <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
     <!--<link rel="icon" type="image/jpg" href="~/favicon.ico" />-->
+    <style>
+        .card {
+            transition: transform 0.2s;
+            margin: 10px 0; /* Reduce margin to save space */
+            padding: 10px; /* Reduce padding to save space */
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+
+        .contact-info img {
+            max-width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+
+            .contact-form button:hover {
+                background-color: #0056b3;
+            }
+
+        .navbar-brand img {
+            max-width: 80px;
+        }
+
+        .slogan {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        /* Ajustar el ancho del contenedor principal */
+        .container {
+            max-width: 960px; /* Puedes ajustar este valor según sea necesario */
+        }
+    </style>
 </head>
 <body id="page-top">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
-        <a class="navbar-brand js-scroll-trigger" href="#page-top">
-            <span class="d-block d-lg-none">Makro Tecno</span>
-            <span class="d-none d-lg-block">
-                <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="~/img/Logo.png" alt="">
-            </span>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" href="#inicio">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" href="#nosotros">Nosotros</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" href="http://portafolio.makrotecno.net/">Portafolio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" href="#contacto">Contacto</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" asp-controller="Home" asp-action="Login">Portal</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <!--     <p><a asp-controller="Home" asp-action="Login">Ingresar</a></p>-->
-    <div class="container-fluid p-0">
-
-        <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="inicio">
-            <div class="w-100">
-                <h1 class="mb-0 name_sitio">Makro Tecno</h1>
-                <h3 class="lead mb-5 slogan">¡Tecnologia a tu alcance!</h3>
-            </div>
-        </section>
-
-        <hr class="m-0">
-
-        <section class="resume-section p-3 p-lg-5 d-flex justify-content-center" id="nosotros">
-            <!-- Mantenimiento -->
-            <!-- <div class="w-100">
-               <div class="row">
-                 <div class="col-12 col-md-4 text-center">
-                   <div class="card" style="width: 15rem;">
-                     <img src="<?php echo RUTA . '/public/img/Home/CUADRO3.png';?>" class="card-img-top" alt="...">
-                     <div class="card-body">
-                     <p class="card-text">MakroTecno, es un proyecto virtual creado en el año 2018 con la finalidad de atender algunas necesidades del sector informatico y apoyar ideas emprendedoras.</p>
-                     </div>
-                   </div>
-                 </div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4 text-center">
-                   <div class="card" style="width: 15rem;">
-                     <img src="<?php echo RUTA . '/public/img/Home/CUADRO1.png';?>" class="card-img-top" alt="...">
-                     <div class="card-body">
-                     <p class="card-text">Nuestra mision es lograr reduccion de tiempo, confiabilidad, precios competitivos, y productos garantizados para nuestros clientes.</p>
-                     </div>
-                   </div>
-                 </div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4"></div>
-                 <div class="col-12 col-md-4 text-center">
-                   <div class="card" style="width: 15rem;">
-                     <img src="<?php echo RUTA . '/public/img/Home/CUADRO2.png';?>" class="card-img-top" alt="...">
-                     <div class="card-body">
-                     <p class="card-text">Ser la compañia lider en desarrollo de proyectos de tecnologia y automatizacion a nivel nacional, donde sigamos demostrando nuestro trabajo con equidad y excelencia.</p>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div> -->
-        </section>
-
-        <hr class="m-0">
-
-        <section class="p-3 p-lg-5 d-flex align-items-center" id="frases_celebres">
-            <div class="w-100">
-                <div class="row">
-                    <div class="col-12 col-md-6 imgdiseño1">
-                        <i class="fa-5x fas fa-people-carry"></i>
-                        <p>Makrotecno tiene como fin la distribucion, comercializacion de accesorios tecnologicos, ayudando a disminuir tiempos y permitiendo mas flexibilizacion a nuestros clientes.</p>
-                    </div>
-                    <div class="col-12 col-md-6 imgdiseño1">
-                        <i class="fa-5x fas fa-exclamation"></i>
-                        <p>Si tiene alguna queja, inquietud o necesita reportar algun caso en el cual usted ha sido victima de algun delito informatico, por favor reportelo al correo soporte@makrotecno.net</p>
-                    </div>
+    <div class="content-wrapper">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+                <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                    <span class="d-block d-lg-none">Makro Tecno</span>
+                    <span class="d-none d-lg-block">
+                        <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="~/img/Logo.png" alt="">
+                    </span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link js-scroll-trigger" href="#inicio">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-scroll-trigger" href="#nosotros">Nosotros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-scroll-trigger" href="http://portafolio.makrotecno.net/">Portafolio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-scroll-trigger" href="#contacto">Contacto</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link js-scroll-trigger" asp-controller="Home" asp-action="Login">Portal</a>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </section>
+            </nav>
 
-        <hr class="m-0">
+            <div class="container-fluid p-0">
 
-        <section class="p-lg-5 d-flex align-items-center" id="contacto">
-            <div class="w-100">
-                <div class="row justify-content-center contacts">
-                    <div class="col-md-3 contactanos text-center">
-                        <div class="contact-info">
-                            <img src="https://image.ibb.co/kUASdV/contact-image.png" alt="image" />
-                            <h2>Contacto</h2>
-                            <h4>Quejas, dudas, reclamos y solicitudes.</h4>
-                        </div>
+                <section class="resume-section p-3 p-lg-5 d-flex align-items-center" id="inicio">
+                    <div class="w-100 text-center">
+                        <h1 class="mb-0 name_sitio">Makro Tecno</h1>
+                        <h3 class="lead mb-5 slogan">¡Tecnologia a tu alcance!</h3>
                     </div>
-                    <div class="col-md-9 formulario_contacto">
-                        <div class="contact-form">
-                            <div class="form-group">
-                                <label class="control-label col-sm-2" for="fname">Nombre:</label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="fname" name="fname">
+                </section>
+
+                <hr class="m-0">
+
+                <section class="resume-section p-3 p-lg-5 d-flex justify-content-center align-items-center" id="nosotros" style="min-height: 100vh;">
+                    <div class="w-100">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text">Makrotecno nace apartir de la necesidad de las personas por conseguir accesorios tecnologicos, brindandoles la alternativa de conseguir sus productos de manera rapida, eficiente y con precios favorables.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="control-label col-sm-2" for="lname">Apellido:</label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="lname" name="lname">
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text">Nuestra mision es ofrecerte accesorios de tecnologia con el fin de ahorrarte tiempo y ser un puente para tus necesidades.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="control-label col-sm-2" for="email">Correo:</label>
-                                <div class="col-sm-10">
-                                    <input type="email" class="form-control" id="email" name="email">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label col-sm-2" for="comment">Comentario:</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" rows="5" id="comment"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-group archivo_adjunto">
-                                <label class="control-label col-sm-2" for="comment">Adjuntar</label>
-                                <div class="col-sm-10">
-                                    <input type="file" name="file">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-sm-offset-2 col-sm-10">
-                                    <button type="submit" class="btn btn-default">Enviar</button>
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text">Nuestra vision para el año 2030, es llegar a todo el Valle del Cauca y aumentar nuestra gama de accesorios tecnologicos.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
+                </section>
 
-    </div>
+                <hr class="m-0">
 
-    <!-- Bootstrap core JavaScript -->
-    <!--<script src="vendor/jquery/jquery.min.js"></script>-->
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+                <section class="p-3 p-lg-5 d-flex align-items-center" id="frases_celebres">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col-12 col-md-6 text-center">
+                                <i class="fa-5x fas fa-people-carry mb-3"></i>
+                                <p>Makrotecno tiene como fin la distribucion, comercializacion de accesorios tecnologicos, ayudando a disminuir tiempos y permitiendo mas flexibilizacion a nuestros clientes.</p>
+                            </div>
+                            <div class="col-12 col-md-6 text-center">
+                                <i class="fa-5x fas fa-exclamation mb-3"></i>
+                                <p>Si tiene alguna queja, inquietud o necesita reportar algun caso en el cual usted ha sido victima de algun delito informatico, por favor reportelo al correo soporte@makrotecno.net</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-    <!-- Plugin JavaScript -->
-    <script src="~/lib/jquery-easing/jquery.easing.min.js"></script>
+                <hr class="m-0">
 
-    <!-- Custom scripts for this template -->
-    <script src="~/js/resume.js"></script>
-
-    <!--FOOTER-->
-    <div class="app-wrapper-footer">
-        <div class="app-footer">
-            <div class="app-footer__inner">
-                <div class="app-footer-left">
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a href="javascript:void(0);" class="nav-link">
-                                Footer Link 1
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="javascript:void(0);" class="nav-link">
-                                Footer Link 2
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="app-footer-right">
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a href="javascript:void(0);" class="nav-link">
-                                Footer Link 3
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="javascript:void(0);" class="nav-link">
-                                <div class="badge bg-success me-1 ms-0">
-                                    <small>NEW</small>
+                <section class="p-lg-5 d-flex align-items-center" id="contacto">
+                    <div class="w-100">
+                        <div class="row justify-content-center contacts">
+                            <div class="col-md-3 contactanos text-center">
+                                <div class="contact-info">
+                                    <img src="https://image.ibb.co/kUASdV/contact-image.png" alt="image" />
+                                    <h2>Contacto</h2>
+                                    <h4>Quejas, dudas, reclamos y solicitudes.</h4>
                                 </div>
-                                Footer Link 4
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                            </div>
+                            <div class="col-md-9 formulario_contacto">
+                                <div class="contact-form">
+                                    <div class="form-group row">
+                                        <label class="control-label col-sm-2" for="fname">Nombre:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="fname" name="fname">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="control-label col-sm-2" for="lname">Apellido:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="lname" name="lname">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="control-label col-sm-2" for="email">Correo:</label>
+                                        <div class="col-sm-10">
+                                            <input type="email" class="form-control" id="email" name="email">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="control-label col-sm-2" for="comment">Comentario:</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" rows="5" id="comment"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row archivo_adjunto">
+                                        <label class="control-label col-sm-2" for="comment">Adjuntar</label>
+                                        <div class="col-sm-10">
+                                            <input type="file" class="form-control" id="fichero">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button type="submit" class="btn btn-primary">Enviar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </div>
+
+            <!-- Bootstrap core JavaScript -->
+            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+            <!-- Plugin JavaScript -->
+            <script src="~/lib/jquery-easing/jquery.easing.min.js"></script>
+
+            <!-- Custom scripts for this template -->
+            <script src="~/js/resume.js"></script>
+            <!-- FOOTER-->
+            <!-- FOOTER -->
+            <footer class="bg-dark text-white pt-4">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                            <h5 class="text-uppercase">Enlaces útiles</h5>
+                            <ul class="list-unstyled">
+                                <li>
+                                    <a href="#!" class="text-white">Footer Link 1</a>
+                                </li>
+                                <li>
+                                    <a href="#!" class="text-white">Footer Link 2</a>
+                                </li>
+                                <li>
+                                    <a href="#!" class="text-white">Footer Link 3</a>
+                                </li>
+                                <li>
+                                    <a href="#!" class="text-white">Footer Link 4</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                            <h5 class="text-uppercase">Contacto</h5>
+                            <p>
+                                Dirección: Calle 33E # 25-11<br>
+                                Teléfono: +57 318 531 3379<br>
+                                Email: makrotecnocomercio@gmail.com
+                            </p>
+                        </div>
+                        <div class="col-lg-4 col-md-12 mb-4 mb-md-0">
+                            <h5 class="text-uppercase">Ubicación</h5>
+                            <!-- Aquí se inserta el script del mapa de Google -->
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3982.650970142374!2d-76.51065182527614!3d3.4348313513306303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e30a76597bc4a7d%3A0x4af277e7656f9c62!2sMakrotecno!5e0!3m2!1ses-419!2sco!4v1717456172294!5m2!1ses-419!2sco" width="250" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-dark text-center py-3 mt-3">
+                    <small>&copy; 2024 Makro Tecno. Todos los derechos reservados.</small>
+                </div>
+            </footer>
+            <!-- FIN FOOTER-->
         </div>
-        <script type="text/javascript" src="~/js/main.js"></script>
     </div>
     </div>
-    </div>
-    <!-- FIN MENU -->
 </body>
 </html>

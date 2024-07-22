@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Plataforma.Models;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Servicios.Contrato;
+using System.Data;
 using System.Security.Claims;
 
 namespace Plataforma.Controllers
@@ -35,50 +36,87 @@ namespace Plataforma.Controllers
 		{
 			if (correo == null || password == null)
 			{
-				return View("Error/SinDatos");
-			}
+                var mensaje = "No mando informacion alguna, revisar nuevamente.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
 			else
 			{
+
 				var validarUsuarioTask = _usuarioService.GetUsuarios(correo, password);
 				var validarUsuario = await validarUsuarioTask; // Espera a que la tarea se complete
 
-				if (validarUsuario != null)
+                if (validarUsuario != null)
 				{
-				var claims = new List<Claim>() {
-				new Claim("Cedula", validarUsuario.Cedula.ToString()),
-				new Claim("Nombre", validarUsuario.Nombre),
-				new Claim("Apellido", validarUsuario.Apellido),
-				new Claim("Genero", validarUsuario.Genero),
-				new Claim("Correo", validarUsuario.Correo),
-				new Claim("RH", validarUsuario.Rh),
-				new Claim("Celular", validarUsuario.Celular),
-				new Claim("Contrasena", validarUsuario.Contrasena),
-				};
-
-					var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-					var principal = new ClaimsPrincipal(identity);
-
-					await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
-						new AuthenticationProperties()
+					var claims = new List<Claim>() {
+					new Claim("Cedula", validarUsuario.Cedula.ToString()),
+					new Claim("Nombre", validarUsuario.Nombre),
+					new Claim("Apellido", validarUsuario.Apellido),
+					new Claim("Genero", validarUsuario.Genero),
+					new Claim("Correo", validarUsuario.Correo),
+					new Claim("RH", validarUsuario.Rh),
+					new Claim("Celular", validarUsuario.Celular),
+					new Claim("Contrasena", validarUsuario.Contrasena),
+					};
+                    int rolEmpleado = _usuarioService.ObtenerRolPermisos(validarUsuario.Cedula);
+					if(rolEmpleado > 0)
+					{
+                        claims.Add(new Claim("Rol", rolEmpleado.ToString()));
+						string nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
+						if(nombreCargo != null)
 						{
-							ExpiresUtc = false == true ? DateTime.UtcNow.AddMonths(2) : DateTime.UtcNow.AddMinutes(60),
-							AllowRefresh = true,
-							IsPersistent = false
-						});
+                            claims.Add(new Claim("NombreRol", nombreCargo));
+                        }else
+                        {
+                            var mensaje = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                    }else
+                    {
+                        var mensaje = "Error: No tiene un cargo (ID) asignado en el Sistema Gestor de Empleados (SGE)";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+						var principal = new ClaimsPrincipal(identity);
 
-					// Redirige a la acción "Index" del controlador "Inicio"
-					return RedirectToAction("Index", "Inicio");
+						await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+							new AuthenticationProperties()
+							{
+								ExpiresUtc = DateTime.UtcNow.AddMinutes(60),
+								AllowRefresh = true,
+								IsPersistent = false
+							});
+					int cedulaEmpleado = validarUsuario.Cedula;
+					string correoEmpleado = validarUsuario.Correo;
+					int estado = 1;
+                    var logins = await _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado);
+                    // Redirige a la acción "Index" del controlador "Inicio"
+                    return RedirectToAction("Index", "Inicio");
 				}
 				else
 				{
-					return View("Error/ProblemasDatos");
-				}
+                    var mensaje = "Error: Correo o Contraseña no existe, validar informacion nuevamente.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }
 			}
 		}
-		public IActionResult Logout()
-        {
-            return View();
-        }
-        
-    }
+		[Authorize]
+		public async Task<IActionResult> Logout()
+		{
+            var cedula = User.FindFirst("Cedula")?.Value;
+            var correoEmpleado = User.FindFirst("Correo")?.Value;
+            int estado = 0;
+            if (int.TryParse(cedula, out int cedulaEmpleado) && !string.IsNullOrEmpty(correoEmpleado))
+            {
+                var logins = await _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado);
+            }
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+			return RedirectToAction("Login", "Home");
+		}
+
+	}
 }

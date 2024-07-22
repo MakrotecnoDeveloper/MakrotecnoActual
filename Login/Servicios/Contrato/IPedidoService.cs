@@ -5,6 +5,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
     {
+        List<Producto> GetProdutos(string cod_producto);
         List<Factura> ObtenerFacturasFechaDescendente();
         List<Factura> ObtenerFacturas();
         void ActualizarEstadoFacturas();

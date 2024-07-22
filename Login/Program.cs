@@ -5,9 +5,20 @@ using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//configura la lectura de variables de entorno
+builder.Host.ConfigureAppConfiguration((context, config) =>
+{
+	config.AddEnvironmentVariables();
+    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+          .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+});
+
 
 // configura los servicios de MVC (Model-View-Controller) en la aplicaci�n web
 builder.Services.AddControllersWithViews();
@@ -46,13 +57,18 @@ builder.Services.AddControllersWithViews(options =>
             }
         );
 });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
+    Console.WriteLine("Esta en modo Produccion");
     //configuran middleware para manejar excepciones y servir archivos est�ticos, respectivamente.
     app.UseExceptionHandler("/Home/Error");
+}else
+{
+    Console.WriteLine("Esta en modo Pruebas");
 }
 app.UseStaticFiles();
 //establecen el middleware para enrutamiento, autenticaci�n y autorizaci�n, respectivamente

@@ -3,275 +3,188 @@
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<style>
-    .icono-enlace {
-        display: inline-block;
-        vertical-align: middle; /* Centrar verticalmente */
-        margin-right: 10px; /* Agregar espacio entre iconos */
-        font-size: 20px; /* Tamaño de fuente del icono */
-    }
-</style>
-<div class="content-wrapper" id="tablaProductosContainer">
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="text-center">Productos</h1>
-            <div class="table-responsive justify-content-center">
-                <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
-                        <thead style="background-color: #002d72;" class="text-white">
-                        <tr>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Codigo</p>
-                                    </div>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Producto</p>
-                                    </div>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Neto</p>
-                                    </div>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Venta</p>
-                                    </div>
-                                </div>
-                            </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Stock</p>
-                                    </div>
-                                </div>
-                            </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Categoria</p>
-                                        </div>
-                                        <div class="col-12">
-                                            <form id="formCategoria">
-                                                <select class="filtro-select" id="categoriaTerm" name="celula" onchange="handleCategorySelection(this)">
-                                                    <option></option>
-                                                    @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
-                                                    {
-                                                        <option name="@categoria">@categoria</option>
-                                                    }
-                                                </select>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </th>
-                            <th scope="col">
-                                <div class="input-group mb-3">
-                                    <div class="col-12">
-                                        <p>Compañia</p>
-                                    </div>
-                                </div>
-                            </th>
-                            <th scope="col" class="text-center">
-                                <div class="container">
-                                    <div class="row">
-                                        <div class="col-12">
-                                                <form id="formBusqueda">
-                                                    <label for="searchTerm">Buscar:</label>
-                                                    <input type="text" id="searchTerm" name="searchTerm" />
-                                                    <button type="button" id="btnBuscar" onclick="handleProductCodeSearch()">Buscar</button>
-                                                </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <!--Lista de Usuarios-->
-                    <tbody id="resultados" class="listaUsuarios">
-                    </tbody>
-                </table>
+<div class="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-md-1">
+                <style>
+                    .vertical-nav {
+                        position: fixed;
+                        background-color: #343a40;
+                        color: white;
+                        padding-top: 20px;
+                    }
+
+                        .vertical-nav .nav-link {
+                            color: white;
+                            padding: 15px;
+                            font-size: 1.1em;
+                        }
+
+                            .vertical-nav .nav-link:hover {
+                                background-color: #495057;
+                            }
+
+                            .vertical-nav .nav-link.active {
+                                background-color: #007bff;
+                            }
+
+                    .search-box {
+                        display: none;
+                        width: 300px;
+                        background-color: #f1f1f1;
+                        box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+                        padding: 20px;
+                    }
+
+                        .search-box.active {
+                            display: block;
+                        }
+
+                    .form-group {
+                        margin-bottom: 15px;
+                    }
+
+                    .results-box {
+                        display: none;
+                        margin-top: 20px;
+                    }
+
+                        .results-box.active {
+                            display: block;
+                        }
+                </style>
+                <nav class="vertical-nav">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="search-product-btn" data-toggle="tooltip" data-placement="right" title="Buscar Producto"><i class="fas fa-search"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="sinstock-product-btn" data-toggle="tooltip" data-placement="right" title="Productos sin stock"><i class="fas fa-exclamation-circle"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="proxsinstock-product-btn" data-toggle="tooltip" data-placement="right" title="Productos proximos sin stock"><i class="fas fa-bell"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-12 col-md-11">
+                <div class="search-box" id="search-box">
+                    <h2>Buscar Producto</h2>
+                    <div class="form-group">
+                        <label for="product-code">Código del Producto:</label>
+                        <input type="text" id="product-code" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Categoría:</label>
+                        <select id="category" class="form-control">
+                            <option value="">Seleccione una categoría</option>
+                            @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
+                            {
+                                <option value="@categoria">@categoria</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="button" id="search-btn" class="btn btn-primary">Buscar</button>
+                    <button type="button" id="close-search-box" class="btn btn-secondary">Cerrar</button>
+                </div>
+                <div class="results-box" id="results-box">
+                    <h2>Resultados de la búsqueda</h2>
+                    <div id="results"></div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-    <div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
-        <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
-        <span id="pagina-actual" class="text-white">Página 1</span>
-        <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
-    </div>
-</div>
-
 
 <script>
-    var paginaActual = 1;
-    var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
-    var totalPerfiles = @Model.Count(); // Obtén el total de perfiles desde el modelo
-
-    function cambiarPagina(direccion) {
-        paginaActual += direccion;
-        mostrarPerfiles();
-    }
-
-    function mostrarPerfiles() {
-        var perfiles = @Html.Raw(Json.Serialize(Model));
-        var inicio = (paginaActual - 1) * perfilesPorPagina;
-        var fin = inicio + perfilesPorPagina;
-        var perfilesPagina = perfiles.slice(inicio, fin);
-        actualizarTabla(perfilesPagina);
-        actualizarPaginacion();
-    }
-
-    function actualizarTabla(perfiles) {
-        var resultados = document.getElementById('resultados');
-        resultados.innerHTML = '';
-
-        perfiles.forEach(perfil => {
-            var fila = document.createElement('tr');
-            fila.className = 'perfil-fila';
-            var html = `<td>${perfil.cod_Producto}</td>`;
-            html += `<td>${perfil.nombreProducto}</td>`;
-            html += `<td>${perfil.valorNetoProducto}</td>`;
-            html += `<td>${perfil.valorVentaProducto}</td>`;
-            html += `<td>${perfil.cantidadProducto}</td>`;
-            html += `<td>${perfil.categoria}</td>`;
-            html += `<td>${perfil.iD_Empresa}</td>`;
-
-            // Crear celdas para cada propiedad del perfil
-            var propiedades = ['cod_Producto', 'nombreProducto', 'valorNetoProducto', 'valorVentaProducto', 'cantidadProducto', 'categoria', 'iD_Empresa'];
-            propiedades.forEach(propiedad => {
-                var celda = document.createElement('td');
-                celda.textContent = perfil[propiedad];
-                fila.appendChild(celda);
-            });
-
-            // Enlace 1 - Editar Producto
-            var enlace1 = crearEnlace(`/Producto/Editar?id=${perfil.cod_Producto}`, 'fas fa-edit');
-            // Enlace 3 - Eliminar Producto
-            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
-            // Enlace 4 = Visualizar Producto
-            var enlace4 = crearEnlace(`/Producto/VisualizarProducto?id=${perfil.cod_Producto}`, 'fas fa-eye');
-
-            // Agregar enlaces a una celda
-            var acciones = document.createElement('td');
-            acciones.appendChild(enlace1);
-            acciones.appendChild(enlace3);
-            acciones.appendChild(enlace4);
-            fila.appendChild(acciones);
-
-            // Agregar la fila a la tabla
-            resultados.appendChild(fila);
-        });
-    }
-
-    function crearEnlace(href, iconoClass) {
-        var enlace = document.createElement('a');
-        enlace.href = href;
-        var icono = document.createElement('i');
-
-        icono.classList.add('icono-enlace');
-
-        // Separar las clases y agregarlas individualmente
-        var clases = iconoClass.split(' ');
-        clases.forEach(clase => {
-            icono.classList.add(clase);
-        });
-
-        enlace.appendChild(icono);
-        enlace.onclick = function () {
-            window.location.href = this.href;
-            return false; // Prevenir el comportamiento predeterminado del enlace
-        };
-        return enlace;
-    }
-    //fin funciones
-
-    function actualizarPaginacion() {
-        var paginaActualElement = document.getElementById('pagina-actual');
-        paginaActualElement.textContent = `Página ${paginaActual}`;
-
-        var botonAnterior = document.getElementById('botonAnterior');
-        var botonSiguiente = document.getElementById('botonSiguiente');
-
-        botonAnterior.disabled = paginaActual <= 1;
-        botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
-    }
-
-    mostrarPerfiles();
-
-
-    // Script para manejar la búsqueda asíncrona
-/*
     $(document).ready(function () {
-        $("#btnBuscar").click(function () {
-            var searchTerm = $("#searchTerm").val();
-            console.log(searchTerm);
-            var categoriaTerm = $("#categoriaTerm").val();
-            console.log(categoriaTerm);
-            $.post("/Producto/Buscar",
-                { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
-                function (data) {
-                    $("#resultados").html(data);
-                });
-            });
-        $("#volverBtn").click(function () {
-            window.location.href = '/Inicio/ListarUsuarios';
+        var n = 0;
+        $('#search-product-btn').on('click', function () {
+            $('#search-box').addClass('active');
+            $('#results-box').removeClass('active');
+            $('#results').html('');
+            n = 1;
+        });
+        $('#sinstock-product-btn').on('click', function () {
+            $('#search-box').addClass('active');
+            $('#results-box').removeClass('active');
+            $('#results').html('');
+            n = 2;
+        });
+        $('#proxsinstock-product-btn').on('click', function () {
+            $('#search-box').addClass('active');
+            $('#results-box').removeClass('active');
+            $('#results').html('');
+            n = 3;
+        });
+
+        $('#close-search-box').on('click', function () {
+            $('#search-box').removeClass('active');
+        });
+
+        $('#search-btn').on('click', function () {
+            var searchTerm = $('#product-code').val();
+            var categoriaTerm = $('#category').val();
+            switch (n) {
+                case 1:
+                    $.ajax({
+                        url: '@Url.Action("Buscar", "Producto")',
+                        type: 'GET',
+                        data: {
+                            searchTerm: searchTerm,
+                            categoriaTerm: categoriaTerm
+                        },
+                        success: function (data) {
+                            $('#search-box').removeClass('active');
+                            $('#results-box').addClass('active');
+                            $('#results').html(data);
+                        },
+                        error: function () {
+                            $('#results').append('<div>Error al buscar productos.</div>');
+                        }
+                    });
+                    break;
+                case 2:
+                    $.ajax({
+                        url: '@Url.Action("BuscarSinStock", "Producto")',
+                        type: 'GET',
+                        data: {
+                            searchTerm: searchTerm,
+                            categoriaTerm: categoriaTerm
+                        },
+                        success: function (data) {
+                            $('#search-box').removeClass('active');
+                            $('#results-box').addClass('active');
+                            $('#results').html(data);
+                        },
+                        error: function () {
+                            $('#results').append('<div>Error al buscar productos.</div>');
+                        }
+                    });
+                    break;
+                case 3:
+                    $.ajax({
+                        url: '@Url.Action("BuscarProximosSinStock", "Producto")',
+                        type: 'GET',
+                        data: {
+                            searchTerm: searchTerm,
+                            categoriaTerm: categoriaTerm
+                        },
+                        success: function (data) {
+                            $('#search-box').removeClass('active');
+                            $('#results-box').addClass('active');
+                            $('#results').html(data);
+                        },
+                        error: function () {
+                            $('#results').append('<div>Error al buscar productos.</div>');
+                        }
+                    });
+                    break;
+                default:
+                    console.log("No ha seleccionado una opcion");
+                    break;
+            }
         });
     });
-    */
-
-    function handleCategorySelection(selectElement) {
-        const categoriaSeleccionada = selectElement.value;
-        // Envía la categoría seleccionada al controlador usando AJAX
-        sendSelectedCategoryToController(categoriaSeleccionada);
-    }
-
-    function handleProductCodeSearch() {
-        const terminoBusqueda = document.getElementById('searchTerm').value;
-        // Envía el término de búsqueda al controlador usando AJAX
-        sendSearchTermToController(terminoBusqueda);
-    }
-
-    function sendSelectedCategoryToController(categoriaSeleccionada) {
-        const searchTerm = "";
-        $.ajax({
-            url: '/Producto/Buscar', // Reemplaza con la URL real de la acción del controlador
-            type: 'POST',
-            data: { searchTerm: searchTerm, categoriaTerm: categoriaSeleccionada },
-            success: function (response) {
-                // Maneja la respuesta exitosa del controlador
-                // Actualiza la tabla usando los datos recibidos
-                $("#resultados").html(response);
-            },
-            error: function (error) {
-                // Maneja el error durante la solicitud AJAX
-                console.error('Error enviando categoría:', error);
-            }
-        });
-    }
-    function sendSearchTermToController(terminoBusqueda) {
-        const categoriaTerm = "";
-        $.ajax({
-            url: '/Producto/Buscar', // Reemplaza con la URL real de la acción del controlador
-            type: 'POST',
-            data: { searchTerm: terminoBusqueda, categoriaTerm: categoriaTerm },
-            success: function (response) {
-                // Maneja la respuesta exitosa del controlador
-                // Actualiza la tabla usando los datos recibidos
-                $("#resultados").html(response);
-            },
-            error: function (error) {
-                // Maneja el error durante la solicitud AJAX
-                console.error('Error enviando término de búsqueda:', error);
-            }
-        });
-    }
 </script>

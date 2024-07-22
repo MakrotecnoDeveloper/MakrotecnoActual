@@ -1,0 +1,108 @@
+﻿@model List<Plataformas>;
+@{
+    ViewData["Title"] = "formInserClienPlatf";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var cedulaClaim = User.FindFirst("Cedula")?.Value;
+    int cedula = int.Parse(cedulaClaim);
+    var idplataforma = TempData["idplataform"] as int?;
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="mb-4">Agregar Venta de Cliente de Plataforma</h2>
+        <form role="form" asp-controller="Producto" asp-action="insertVentClientPltf" method="POST">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="nombrecliente">Nombre Cliente</label>
+                    <input type="text" class="form-control" id="nombrecliente" name="nombrecliente">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="celularcliente">Celular Cliente</label>
+                    <input type="text" class="form-control" id="celularcliente" name="celularcliente">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="correo">Correo</label>
+                    <input type="email" class="form-control" id="correo" name="correo">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="contrasena">Contraseña</label>
+                    <input type="password" class="form-control" id="contrasena" name="contrasena">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="idPlataforma">Plataforma</label>
+                <select class="form-control" id="idPlataforma" name="idPlataforma">
+                    @foreach (var plataforma in Model)
+                    {
+                        <option value="@plataforma.idPlataforma">@plataforma.descripcion</option>
+                    }
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" class="form-control" id="cantidad" name="cantidad">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="ppm">PPM</label>
+                    <select class="form-control" id="ppm" name="ppm">
+                        <option value="Pantalla">Pantalla</option>
+                        <option value="Perfil">Perfil</option>
+                        <option value="Meses">Meses</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="fecIniPlat">Fecha Inicio Plataforma</label>
+                    <input type="date" class="form-control" id="fecIniPlat" name="fecIniPlat">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="fecFinPlat">Fecha Fin Plataforma</label>
+                    <input type="date" class="form-control" id="fecFinPlat" name="fecFinPlat">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="valorventa">Valor Venta</label>
+                    <input type="number" class="form-control" id="valorventa" name="valorventa">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="valorneto">Valor Neto</label>
+                    <input type="number" class="form-control" id="valorneto" name="valorneto">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="cedula">Cédula</label>
+                    <input type="number" class="form-control" id="cedula" name="cedula" value="@cedula">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="estado">Estado</label>
+                    <input type="number" class="form-control" id="estado" name="estado">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Venta</button>
+        </form>
+        <form role="form" asp-controller="Producto" asp-action="insertInfoCuentaClientPlatf" method="POST">
+            <h4 class="mt-4">Información de la Cuenta</h4>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="idCliPltf">ID Cliente Plataforma</label>
+                    <input type="number" class="form-control" id="idCliPltf" name="idCliPltf" value="@idplataforma" readonly>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="perfil">Perfil</label>
+                    <input type="text" class="form-control" id="perfil" name="perfil">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="clave">Clave</label>
+                    <input type="password" class="form-control" id="clave" name="clave">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Cuenta</button>
+        </form>
+    </div>
+</div>

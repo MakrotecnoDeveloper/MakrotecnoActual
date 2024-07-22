@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -61,6 +62,52 @@ namespace Plataforma.Servicios.Implementacion
                 Console.WriteLine("Categoria");
                 var consulta = _dbContext.Productos.Where(p => p.Categoria == categoriaTerm).ToList();
                 return consulta;
+            }
+            else
+            {
+                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
+                return new List<Producto>();
+            }
+        }
+        public List<Producto> SinStock(string searchTerm, string categoriaTerm)
+        {
+
+            // Lógica para buscar productos por el nombre o la categoría
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var productosSinStock = _dbContext.Productos
+                    .Where(p => p.Cod_Producto == searchTerm && p.CantidadProducto == 0)
+                    .ToList();
+                return productosSinStock;
+            }
+            else if (!string.IsNullOrEmpty(categoriaTerm))
+            {
+                var productosSinStock = _dbContext.Productos
+                    .Where(p => p.Categoria == categoriaTerm && p.CantidadProducto == 0)
+                    .ToList();
+                return productosSinStock;
+            }
+            else
+            {
+                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
+                return new List<Producto>();
+            }
+        }
+        public List<Producto> BuscarProSinStock(string searchTerm, string categoriaTerm)
+        {
+
+            // Lógica para buscar productos por el nombre o la categoría
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                Console.WriteLine("searchTerm");
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Cod_Producto == searchTerm).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                return productosProximosSinStock;
+            }
+            else if (!string.IsNullOrEmpty(categoriaTerm))
+            {
+                Console.WriteLine("Categoria");
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Categoria == categoriaTerm).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                return productosProximosSinStock;
             }
             else
             {
@@ -207,6 +254,64 @@ namespace Plataforma.Servicios.Implementacion
         }
 
         //a
+        public void inserPlataformaService(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
+        {
+            var nuevaPlataforma = new Plataformas
+            {
+                plataforma = plataforma,
+                descripcion = descripcion,
+                valorVenta = valorventa,
+                valorNeto = valorneto,
+                fechaIniPago = fechaInipago,
+                fechaFinPago = fechaFinpago,
+                cantidad = cantidad,
+                correo = correo,
+                contrasena = contrasena,
+                cedulaEmpleado = cedula,
+                estado = estado
+            };
 
+            // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
+            _dbContext.Plataformas.Add(nuevaPlataforma);
+            _dbContext.SaveChanges();
+        }
+        public async Task<List<Plataformas>> traerPlataformasExistentes()
+        {
+            return await _dbContext.Plataformas.ToListAsync();
+        }
+        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
+        {
+            var nuevoVentClientPltf = new ClientesPlataforma
+            {
+                nombreCliente = nombrecliente,
+                celularCliente = celularcliente,
+                correo = correo,
+                clave = contrasena,
+                idPlataforma = idplataforma,
+                cantidad = cantidad,
+                ppm = ppm,
+                fechaIniPago = feciniplat,
+                fechaFinPago = fecfinplat,
+                valorVenta = valorventa,
+                valorNeto = valorneto,
+                cedulaEmpleado = cedula,
+                estado = estado
+            };
+
+            // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
+            _dbContext.ClientesPlataforma.Add(nuevoVentClientPltf);
+            _dbContext.SaveChanges();
+        }
+        public void servicioInsertarInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave)
+        {
+            var nuevaInfoClientPlatf = new VentPlatClient
+            {
+                idCliPltf = idCliPltf,
+                perfil = perfil,
+                clave = clave
+            };
+            _dbContext.VentPlatClient.Add(nuevaInfoClientPlatf);
+            _dbContext.SaveChanges();
+        }
     }
 }

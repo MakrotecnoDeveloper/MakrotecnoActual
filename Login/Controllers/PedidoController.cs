@@ -30,8 +30,6 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado)
         {
-            try
-            {
                 if(cedula_cliente > 0)
                 {
                     if(fechaVenta != DateTime.MinValue)
@@ -40,21 +38,17 @@ namespace Plataforma.Controllers
                         return RedirectToAction("Index");
                     }else
                     {
-                        Console.WriteLine("Error A2: La fecha no es un dato valido, verificar nuevamente.");
-                        return RedirectToAction("Index");
+                        var mensaje = "Error A2: La fecha no es un dato valido, verificar nuevamente.";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
                     }
                 }else
                 {
-                    Console.WriteLine("Error A1: La cedula del cliente esta vacia, escribala."); 
-                    return RedirectToAction("Index");
+                    var mensaje = "Error A1: La cedula del cliente esta vacia, escribala.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
                 }
                 
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
-            }
         }
         [HttpGet]
         public IActionResult CrearPedido(int id)
@@ -76,9 +70,9 @@ namespace Plataforma.Controllers
             }
             else
             {
-                // Factura no encontrada, mostrar un mensaje de error
-                ViewBag.Mensaje = "Factura no encontrada";
-                return View("_Mensaje");
+                var mensaje = "Error: Factura no encontrada.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
             }
         }
         public IActionResult AutocompletarCodigosProducto(string codigo)
@@ -101,11 +95,48 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
         {
-            // Llamada al servicio para insertar el pedido en la base de datos
-            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, estado);
+            
+            if (string.IsNullOrEmpty(cod_producto))
+            {
+                var mensaje = "Error: El código del producto no puede ser nulo o vacío.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            if (stock > 0 && vneto > 0 && vventa > 0 && !string.IsNullOrEmpty(estado))
+            {
+                var validarExisProd = _pedidoServicio.GetProdutos(cod_producto);
+                if (validarExisProd != null)
+                {
+                    // Llamada al servicio para insertar el pedido en la base de datos
+                    foreach (var producto in validarExisProd)
+                    {
+                        if (producto.CantidadProducto <= 0)
+                        {
+                            var mensaje = "Error: El producto no tiene stock para continuar la venta.";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                        else
+                        {
+                            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, estado);
+                        }
+                    }
+                    // Redireccionar a la vista Index
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    var mensaje = "Error: Producto no existe.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }
+            }else
+            {
+                var mensaje = "No puede haber espacios vacios entre campos.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
 
-            // Redireccionar a la vista Index
-            return RedirectToAction("Index");
         }
         public async Task<IActionResult> Facturas(int page = 1, int pageSize = 10)
         {

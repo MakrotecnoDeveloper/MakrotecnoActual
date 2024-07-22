@@ -92,47 +92,7 @@
 <!-- /.content-wrapper -->
 
 <script>
-    // Manejar clic del botón "Mostrar Formulario"
-    /*document.getElementById('btnMostrarFormulario').addEventListener('click', function() {
-        document.getElementById('divAgregarProductos').style.display = 'block'; // Mostrar el formulario de cantidad de productos
-    });*/
-
-
-
     $(document).ready(function () {
-        // Manejar clic del botón "Aceptar" en el formulario de cantidad de productos
-        /*$('#btnAceptar').on('click', function () {
-            /*var cantidad = parseInt($('#cantidadProductos').val());
-            var formHtml = '';
-
-            for (var i = 0; i < cantidad; i++) {
-                formHtml += `
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="codfact${i}">Codigo del Producto ${i + 1}</label>
-                        <input type="text" class="form-control codigoProducto" id="codfact${i}" placeholder="Ingrese el codigo del producto">
-                        <div class="opcionesCodigosProducto"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="vneto${i}">Valor Neto ${i + 1}</label>
-                        <input type="number" class="form-control vneto" id="vneto${i}" placeholder="Ingrese valor Neto">
-                    </div>
-                    <div class="form-group">
-                        <label for="vventa${i}">Valor Venta ${i + 1}</label>
-                        <input type="number" class="form-control vventa" id="vventa${i}" placeholder="Ingrese valor Venta">
-                    </div>
-                    <div class="form-group">
-                        <label for="stock${i}">Cantidad a vender ${i + 1}</label>
-                        <input type="number" class="form-control stock" id="stock${i}" placeholder="Cantidad producto">
-                    </div>
-                </div>
-                `;
-            }
-
-            // Insertar el formulario de productos dinámico
-            $('#productForm').append(formHtml + '<button type="button" class="btn btn-primary" id="btnAgregar">Agregar Producto(s)</button>');
-        });*/
-
         // Manejar cambios en el campo de código de producto dinámico
         $(document).on('input', '.codigoProducto', function () {
             var codigo = $(this).val();

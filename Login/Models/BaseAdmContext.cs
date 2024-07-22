@@ -24,6 +24,10 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Sede> Sede { get; set; }
     public DbSet<EmpleadoEmpresa> EmpleadoEmpresa { get; set; }
     public DbSet<Sedeempleado> Sedeempleado { get; set; }
+    public DbSet<logsLogin> LogsLogin { get; set; }
+    public DbSet<Plataformas> Plataformas { get; set; }
+    public DbSet<ClientesPlataforma> ClientesPlataforma { get; set; }
+    public DbSet<VentPlatClient> VentPlatClient { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +44,10 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Sede>().HasKey(sede => sede.id_sede);
         modelBuilder.Entity<EmpleadoEmpresa>().HasKey(ie => ie.id_empleadoE);
         modelBuilder.Entity<Sedeempleado>().HasKey(ise => ise.id_sedeEmpleado);
+        modelBuilder.Entity<logsLogin>().HasKey(ise => ise.Id_log);
+        modelBuilder.Entity<Plataformas>().HasKey(ip => ip.idPlataforma);
+        modelBuilder.Entity<ClientesPlataforma>().HasKey(icp => icp.idCliPltf);
+        modelBuilder.Entity<VentPlatClient>().HasKey(iv => iv.idVenta);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
@@ -54,5 +62,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Sedeempleado>().HasOne<Sede>().WithMany().HasForeignKey(f => f.id_sede);
         modelBuilder.Entity<Sedeempleado>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
         modelBuilder.Entity<Sedeempleado>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.id_cargo);
+        modelBuilder.Entity<Plataformas>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedulaEmpleado);
+        modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.idPlataforma);
+        modelBuilder.Entity<VentPlatClient>().HasOne<ClientesPlataforma>().WithMany().HasForeignKey(f => f.idCliPltf);
     }
 }

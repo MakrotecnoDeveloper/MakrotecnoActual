@@ -58,7 +58,7 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="index3.html" class="nav-link">Home</a>
+                <a asp-controller="Home" asp-action="Logout" class="nav-link">Logout</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="#" class="nav-link">Contact</a>
@@ -274,9 +274,33 @@
                                     </a>
                                     <ul class="nav nav-treeview">
                                         <li class="nav-item">
-                                            <a href="../Inicio/index3.cshtml" class="nav-link">
+                                            <a asp-controller="Producto" asp-action="formPlataforma" class="nav-link">
                                                 <i class="far fa-circle nav-icon"></i>
-                                                <p>Vinculacion EE</p>
+                                                <p>Crear Plataforma</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a asp-controller="Producto" asp-action="formInserClienPlatf" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Visualizar Cuentas</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a asp-controller="Usuario" asp-action="EmpleadoSedes" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Visualizar Plataforma</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a asp-controller="Usuario" asp-action="EmpleadoSedes" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Cuentas</p>
                                             </a>
                                         </li>
                                     </ul>

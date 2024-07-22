@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Plataforma.Servicios.Implementacion
@@ -18,6 +19,44 @@ namespace Plataforma.Servicios.Implementacion
         public List<Empleado> ObtenerUsuarios()
         {
             return _dbContext.Empleado.ToList();
+        }
+        public int ObtenerRolPermisos(int cedula)
+        {
+            var idCargo = _dbContext.Sedeempleado
+                     .Where(se => se.cedula == cedula)
+                     .Select(se => se.id_cargo)
+                     .FirstOrDefault();
+            return idCargo;
+        }
+        public string ObtenerNombreRolPermisos(int rolEmpleado)
+        {
+            var nombreCargo = _dbContext.TipoCargo
+                         .Where(tc => tc.id_tipo == rolEmpleado)
+                         .Select(tc => tc.nombreCargo) // Asegúrate de que "NombreCargo" es el nombre del campo que deseas
+                         .FirstOrDefault();
+            return nombreCargo;
+        }
+        public Sedeempleado ObtenerSedeEmpleadoPorCedula(int cedulaEmpleado)
+        {
+            return _dbContext.Sedeempleado.FirstOrDefault(se => se.cedula == cedulaEmpleado);
+        }
+        public async Task<logsLogin> InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado)
+        {
+            var utcNow = DateTime.UtcNow;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+            var localDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
+            var login = new logsLogin
+            {
+                Cedula = cedulaEmpleado,
+                Correo = correoEmpleado,
+                Fecha = localDateTime,
+                Estado = estado // Sesión activa
+            };
+            // Guardar información de sesión en la base de datos
+            _dbContext.LogsLogin.Add(login);
+            await _dbContext.SaveChangesAsync();
+
+            return login;
         }
         public async Task<Empleado> GetUsuarios(string correo, string password)
         {
@@ -301,6 +340,88 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.Sedeempleado.Add(sedeEmpleado);
             _dbContext.SaveChanges();
             return _dbContext.Sedeempleado.ToList();
+        }
+        public List<FacProuserViewModel> TraerFactXDia(Claim cedulaClaim)
+        {
+            // Definir las fechas de inicio y fin
+            DateTime fecha = DateTime.UtcNow.Date;
+            DateTime fechaInicio = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            DateTime fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
+
+            // Consulta LINQ para contar las facturas
+            int totalFacturas = _dbContext.Factura
+                .Where(f => f.fechaVenta == fecha)
+                .Count();
+
+            //Total venta por dia
+            decimal sumaValorVenta = (from pedido in _dbContext.Pedidos
+                                  join factura in _dbContext.Factura
+                                  on pedido.cod_factura equals factura.cod_factura
+                                  where factura.fechaVenta == fecha
+                                      select pedido.valorVenta).Sum();
+
+            //Total Empleados en el sistema
+            int totalEmpleados = _dbContext.Empleado.Count();
+
+            //Total productos
+            int totalProductos = _dbContext.Productos.Count();
+
+            //Grafico Donut
+            // Consulta LINQ para obtener los productos más vendidos del mes
+            var productosMasVendidos = (from pedido in _dbContext.Pedidos
+                                        join factura in _dbContext.Factura
+                                        on pedido.cod_factura equals factura.cod_factura
+                                        join producto in _dbContext.Productos
+                                        on pedido.cod_producto equals producto.Cod_Producto
+                                        where factura.fechaVenta >= fechaInicio && factura.fechaVenta <= fechaFin
+                                        group pedido by new { pedido.cod_producto, producto.NombreProducto } into grouped
+                                        orderby grouped.Sum(p => p.cantidad) descending
+                                        select new ProductoMasVendidoViewModel
+                                        {
+                                            NombreProducto = grouped.Key.NombreProducto,
+                                            CantidadVendida = grouped.Sum(p => p.cantidad)
+                                        }).Take(5).ToList();
+
+            //Traer rol del usuario
+            string rolEmpleado = string.Empty;
+            int cedula = 0;
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out cedula))
+            {
+                var rolEmpleadoResult = (from se in _dbContext.Sedeempleado
+                                         join tc in _dbContext.TipoCargo
+                                         on se.id_cargo equals tc.id_tipo
+                                         where se.cedula == cedula
+                                         select tc.nombreCargo).FirstOrDefault();
+
+                if (rolEmpleadoResult != null)
+                {
+                    rolEmpleado = rolEmpleadoResult;
+                }
+                else
+                {
+                    // Manejar el caso en que no se encuentra el empleado
+                    Console.WriteLine("El empleado no fue encontrado.");
+                }
+            }
+            else
+            {
+                // Manejar el caso en que el claim no existe o la conversión falla
+                Console.WriteLine("El claim 'Cedula' no existe o la conversión falló.");
+            }
+
+            // Crear el ViewModel con la suma total
+            FacProuserViewModel viewModel = new FacProuserViewModel
+            {
+                TotalSumaCodFactura = totalFacturas,
+                TotalVentaDia = sumaValorVenta,
+                TotalEmpleados = totalEmpleados,
+                TotalProductos = totalProductos,
+                ProductosMasVendidos = productosMasVendidos,
+                RolEmpleado = rolEmpleado
+            };
+
+            // Devolver una lista con el ViewModel
+            return new List<FacProuserViewModel> { viewModel };
         }
     }
 }

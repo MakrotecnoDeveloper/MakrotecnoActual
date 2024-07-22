@@ -1,9 +1,12 @@
-﻿
+﻿@model Login.Models.FacProuserViewModel
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
     string nombre;
     var nombreClaim = User.FindFirst("Nombre");
+    var rolClaim = User.FindFirst("Rol")?.Value;
+    var NombreRolClaim = User.FindFirst("NombreRol")?.Value;
+    var productosMasVendidos = Model.ProductosMasVendidos;
     if (nombreClaim != null && nombreClaim.Value != null)
     {
         nombre = nombreClaim.Value;
@@ -14,133 +17,121 @@
     }
 }
 
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
+
+    <!-- Card para manejo del titulo y el nombre del empleado-->
     <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0">Dashboard</h1>
-                    <h1>Hola señor @nombre</h1>
-                </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Dashboard v1</li>
-                    </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+                    <h1>Usuario Autenticado: @nombre Cargo: @NombreRolClaim RolId = @rolClaim</h1>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- /.content-header -->
-    <!-- Main content -->
+    <!-- Card para manejo del titulo y el nombre del empleado-->
+
     <section class="content">
         <div class="container-fluid">
-            <!-- Small boxes (Stat box) -->
+
+            <!-- Card para manejo de estadisticas -->
             <div class="row">
                 <div class="col-lg-3 col-6">
-                    <!-- small box -->
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>150</h3>
+                            <h3>@Model.TotalSumaCodFactura</h3>
 
-                            <p>Ventas Mensuales</p>
+                            <p>Facturas Realizadas en el dia</p>
                         </div>
                         <div class="icon">
                             <i class="ion ion-bag"></i>
                         </div>
-                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-                <!-- ./col -->
                 <div class="col-lg-3 col-6">
-                    <!-- small box -->
                     <div class="small-box bg-success">
                         <div class="inner">
-                            <h3>53<sup style="font-size: 20px">%</sup></h3>
+                            <h3>$@Model.TotalVentaDia</h3>
 
-                            <p>Bounce Rate</p>
+                            <p>Valor Venta en el dia</p>
                         </div>
                         <div class="icon">
                             <i class="ion ion-stats-bars"></i>
                         </div>
-                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-                <!-- ./col -->
                 <div class="col-lg-3 col-6">
-                    <!-- small box -->
                     <div class="small-box bg-warning">
                         <div class="inner">
-                            <h3>44</h3>
+                            <h3>@Model.TotalEmpleados</h3>
 
-                            <p>User Registrations</p>
+                            <p>Miembros en el Sistema</p>
                         </div>
                         <div class="icon">
                             <i class="ion ion-person-add"></i>
                         </div>
-                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-                <!-- ./col -->
                 <div class="col-lg-3 col-6">
-                    <!-- small box -->
                     <div class="small-box bg-danger">
                         <div class="inner">
-                            <h3>65</h3>
+                            <h3>@Model.TotalProductos</h3>
 
-                            <p>Unique Visitors</p>
+                            <p>Productos Existentes</p>
                         </div>
                         <div class="icon">
                             <i class="ion ion-pie-graph"></i>
                         </div>
-                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-                <!-- ./col -->
             </div>
-            <!-- /.row -->
-            <!-- Main row -->
+            <!-- Card para manejo de estadisticas -->
+
             <div class="row">
-                <!-- Left col -->
                 <section class="col-lg-7 connectedSortable">
-                    <!-- Custom tabs (Charts with tabs)-->
                     <div class="card">
+
+                        <!-- Producto que mas se venden -->
                         <div class="card-header">
                             <h3 class="card-title">
                                 <i class="fas fa-chart-pie mr-1"></i>
-                                Sales
+                                Productos que más se venden
                             </h3>
                             <div class="card-tools">
                                 <ul class="nav nav-pills ml-auto">
                                     <li class="nav-item">
-                                        <a class="nav-link active" href="#revenue-chart" data-toggle="tab">Area</a>
+                                        <a class="nav-link active" href="#revenue-chart" data-toggle="tab">Categoría</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="#sales-chart" data-toggle="tab">Donut</a>
+                                        <a class="nav-link" href="#sales-chart" data-toggle="tab">Grafico</a>
                                     </li>
                                 </ul>
                             </div>
-                        </div><!-- /.card-header -->
-                        <div class="card-body">
-                            <div class="tab-content p-0">
-                                <!-- Morris chart - Sales -->
-                                <div class="chart tab-pane active" id="revenue-chart"
-                                     style="position: relative; height: 300px;">
-                                    <canvas id="revenue-chart-canvas" height="300" style="height: 300px;"></canvas>
-                                </div>
-                                <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
-                                    <canvas id="sales-chart-canvas" height="300" style="height: 300px;"></canvas>
-                                </div>
+                        </div>
+                        <div class="tab-content p-0">
+                            <div class="tab-pane active" id="revenue-chart" style="position: relative;">
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var producto in productosMasVendidos)
+                                    {
+                                        <li class="list-group-item">
+                                            @producto.NombreProducto - @producto.CantidadVendida ventas
+                                        </li>
+                                    }
+                                </ul>
                             </div>
-                        </div><!-- /.card-body -->
+                            <div class="tab-pane" id="sales-chart" style="position: relative;">
+                                <canvas id="productosMasVendidosChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Producto que mas se venden -->
+
                     </div>
-                    <!-- /.card -->
-                    <!-- DIRECT CHAT -->
+
+
                     <div class="card direct-chat direct-chat-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Direct Chat</h3>
+                            <h3 class="card-title">Chat de Soporte</h3>
 
                             <div class="card-tools">
                                 <span title="3 New Messages" class="badge badge-primary">3</span>
@@ -332,6 +323,8 @@
                             </form>
                         </div>
                         <!-- /.card-footer-->
+
+
                     </div>
                     <!--/.direct-chat -->
                     <!-- TO DO List -->
@@ -609,5 +602,43 @@
         </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ctx = document.getElementById('productosMasVendidosChart').getContext('2d');
+            var productosMasVendidosChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(productosMasVendidos.Select(p => p.NombreProducto))),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(productosMasVendidos.Select(p => p.CantidadVendida))),
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ],
+                        hoverBackgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: 'top',
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        });
+    </script>
 </div>
 <!-- /.content-wrapper -->

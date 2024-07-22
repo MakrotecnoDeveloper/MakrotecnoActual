@@ -2,11 +2,16 @@
 using Login.Models;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
     {
         List<Empleado> ObtenerUsuarios();
+        int ObtenerRolPermisos(int cedula);
+        string ObtenerNombreRolPermisos(int rolEmpleado);
+        Sedeempleado ObtenerSedeEmpleadoPorCedula(int cedulaEmpleado);
+        Task<logsLogin> InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado);
         Task<Empleado> GetUsuarios(string correo, string password);
         //el segundo metodo guarda usuarios
         Task<Empleado> SaveUsuario(Empleado modelo);
@@ -28,5 +33,6 @@ namespace Plataforma.Servicios.Contrato
         Sede ObtenerSedePorEmpleado(int cedula);
         List<TipoCargo> ObtenerCargos(string idEmpresa);
         List<Sedeempleado> InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
+        List<FacProuserViewModel> TraerFactXDia(Claim cedulaClaim);
     }
 }

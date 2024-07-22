@@ -13,6 +13,19 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext = dbContext;
         }
+        public List<Producto> GetProdutos(string cod_producto)
+        {
+            // Verifica si el código de producto existe en la base de datos
+            var productoExiste = _dbContext.Productos.Any(p => p.Cod_Producto == cod_producto);
+
+            if (!productoExiste)
+            {
+                return null;
+            }
+
+            // Si el código de producto es válido, retorna la lista de productos
+            return _dbContext.Productos.Where(p => p.Cod_Producto == cod_producto).ToList();
+        }
         public List<Factura> ObtenerFacturasFechaDescendente()
         {
             var facturasOrdenadas = _dbContext.Factura.OrderByDescending(f => f.fechaVenta).ToList();

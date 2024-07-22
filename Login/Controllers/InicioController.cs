@@ -13,7 +13,10 @@ namespace Plataforma.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            var cedulaClaim = User.FindFirst("Cedula");
+            var totalFactXDia = _usuarioService.TraerFactXDia(cedulaClaim);
+            var viewModel = totalFactXDia.FirstOrDefault();
+            return View(viewModel);
         }
         [HttpPost]
         public async Task<IActionResult> ListarUsuarios(string correo, string password)

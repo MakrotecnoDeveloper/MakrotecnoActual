@@ -5,3 +5,6 @@
 5. Dependiendo de la solicitud que se haya registrado, se llama a Servicios el cual tiene:
 IUsuarioService -> establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
 UsuarioService -> proporciona la lógica concreta para llevar a cabo esas operaciones.
+
+
+//"cadenaSQL": "server=192.168.1.60;port=3307;database=u655007811_tienda;user=root;password=ecRQFhIOLZiU7OFv;"

@@ -12,76 +12,71 @@
   <script src="~/js/customPlataforma.js"></script>
 </head>
 <body>
-<style>
-    /* FORM LOGIN/REGISTRO */
-.class-login {
-  height:100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.login-page {
-  width: 360px;
-}
- 
-.login-form {
-   box-shadow: 0 0 27px 0 rgba(84, 84, 84, 0.62);
-}
- 
-.login-form-header {
-   padding-top: 16px;
-}
- 
-.login-from-row {
-   padding-top: 16px;
-   padding-bottom: 16px;
-}
- 
-.login-form-font-header {
-   font-size:30px; 
-   font-weight: bold;
-}
- 
-.login-form-font-header span {
-   color: #007C9B;
-}
-/* FIN */
-  </style>
-<div class="app-main__outer">
-	<div class="app-main__inner">
-    	<!-- FORM LOGIN/REGISTRO -->
-		<div class="container class-login">
-			<div class="row text-center login-page">
-				<div class="col-md-12 login-form">
-				  <form asp-controller="Home" asp-action="Login" method="POST">
-					<div class="row">
-		    			<div class="col-md-12 login-form-header">
-		       				<p class="login-form-font-header">Makro<span>tecno</span><p>
-		    			</div>
+	<style>
+		/* Background image (replace with URL from step 1) */
+		body {
+			background-image: url("https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+			background-size: cover;
+			background-position: center;
+			height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		/* Login form styling (using Bootstrap) */
+		.login-form {
+			width: 360px;
+			padding: 30px;
+			background-color: #fff;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+		}
+
+		.login-form-header {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+
+		.login-form-font-header {
+			font-size: 30px;
+			font-weight: bold;
+		}
+
+			.login-form-font-header span {
+				color: #007bff; /* Bootstrap primary color */
+			}
+
+		.login-from-row {
+			margin-bottom: 15px;
+		}
+	</style>
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-md-6 login-form">
+				<form asp-controller="Home" asp-action="Login" method="POST">
+					<div class="row login-form-header">
+						<p class="login-form-font-header">Makro<span>tecno</span></p>
 					</div>
-					<div class="row">
-		   				<div class="col-md-12 login-from-row">
-				   <input type="text" name="correo" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Correo">
-		   				</div>
+					<div class="row login-from-row">
+						<div class="col-md-12">
+							<input type="text" name="correo" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Correo">
+						</div>
 					</div>
-					<div class="row">
-		   				<div class="col-md-12 login-from-row">
-				   <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Contraseña">
-		   				</div>
+					<div class="row login-from-row">
+						<div class="col-md-12">
+							<input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Contraseña">
+						</div>
 					</div>
-					<div class="row">
-		   				<div class="col-md-12 login-from-row">
-		      				<button class="btn btn-info">Entrar</button>
-		   				</div>
+					<div class="row login-from-row">
+						<div class="col-md-12">
+							<button class="btn btn-primary">Entrar</button>
+						</div>
 					</div>
-				  </form>
-				</div>
+				</form>
 			</div>
-		  </div>
-		<!-- FIN DEL FORM -->
+		</div>
 	</div>
-</div>
 	<script>
 		$("btnLogin").click(function () {
 			event.preventDefault();

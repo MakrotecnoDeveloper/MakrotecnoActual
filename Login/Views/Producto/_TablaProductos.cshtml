@@ -1,6 +1,18 @@
 ﻿@model List<Producto>
 
 <table class="table">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Descripcion</th>
+            <th>Valor Neto</th>
+            <th>Valor de Venta</th>
+            <th>Cantidad</th>
+            <th>Categoría</th>
+            <th>Empresa</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
     <tbody>
         @foreach (var producto in Model)
         {
