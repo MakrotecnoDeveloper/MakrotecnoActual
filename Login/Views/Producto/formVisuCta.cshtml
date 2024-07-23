@@ -1,0 +1,44 @@
+﻿@model List<VentPlatClient>
+
+@{
+    ViewData["Title"] = "formVisuPlatf";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="mb-4">Listado de Plataformas</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>ID Asignacion</th>
+                        <th>ID Plataforma-Cliente</th>
+                        <th>Perfil</th>
+                        <th>Clave</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var clientes in Model)
+                    {
+                        <tr>
+                            <td>@clientes.idVenta</td>
+                            <td>@clientes.idCliPltf</td>
+                            <td>@clientes.perfil</td>
+                            <td>@clientes.clave</td>
+                            <td>
+                                <a href="@Url.Action("Edit", "Producto", new { id = clientes.idVenta })" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="@Url.Action("Delete", "Producto", new { id = clientes.idVenta })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar este cliente?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

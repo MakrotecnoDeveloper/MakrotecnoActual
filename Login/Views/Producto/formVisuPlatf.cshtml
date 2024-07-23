@@ -1,0 +1,58 @@
+﻿@model List<Plataformas>
+
+@{
+    ViewData["Title"] = "formVisuPlatf";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="mb-4">Listado de Plataformas</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Plataforma</th>
+                        <th>Descripción</th>
+                        <th>Valor Venta</th>
+                        <th>Valor Neto</th>
+                        <th>Fecha Ini Pago</th>
+                        <th>Fecha Fin Pago</th>
+                        <th>Cantidad</th>
+                        <th>Correo</th>
+                        <th>Contraseña</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var plataforma in Model)
+                    {
+                        <tr>
+                            <td>@plataforma.idPlataforma</td>
+                            <td>@plataforma.plataforma</td>
+                            <td>@plataforma.descripcion</td>
+                            <td>@plataforma.valorVenta</td>
+                            <td>@plataforma.valorNeto</td>
+                            <td>@plataforma.fechaIniPago.ToString("yyyy-MM-dd")</td>
+                            <td>@plataforma.fechaFinPago.ToString("yyyy-MM-dd")</td>
+                            <td>@plataforma.cantidad</td>
+                            <td>@plataforma.correo</td>
+                            <td>@plataforma.contrasena</td>
+                            <td>@plataforma.estado</td>
+                            <td>
+                                <a href="@Url.Action("Edit", "Producto", new { id = plataforma.idPlataforma })" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="@Url.Action("Delete", "Producto", new { id = plataforma.idPlataforma })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar esta plataforma?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

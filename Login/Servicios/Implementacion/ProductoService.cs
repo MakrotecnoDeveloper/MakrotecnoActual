@@ -275,9 +275,13 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.Plataformas.Add(nuevaPlataforma);
             _dbContext.SaveChanges();
         }
-        public async Task<List<Plataformas>> traerPlataformasExistentes()
+        public List<Plataformas> traerPlataformasExistentes()
         {
-            return await _dbContext.Plataformas.ToListAsync();
+            return _dbContext.Plataformas.ToList();
+        }
+        public List<VentPlatClient> traerCtaClientPlatfExistentes()
+        {
+            return _dbContext.VentPlatClient.ToList();
         }
         public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
         {

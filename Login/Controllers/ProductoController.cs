@@ -160,32 +160,42 @@ namespace Plataforma.Controllers
                 return View("formPlataforma");
             }
         }
-        public async Task<IActionResult> formInserClienPlatf()
+        public IActionResult formInserClienPlatf()
         {
-            var traerPlataformas = await _productoservice.traerPlataformasExistentes();
-            foreach(var plataformas in traerPlataformas)
+            var traerPlataformas = _productoservice.traerPlataformasExistentes();
+            if (traerPlataformas == null || !traerPlataformas.Any())
             {
-                int idPlataforma = plataformas.idPlataforma;
-                if(idPlataforma > 0)
-                {
-                    TempData["idplataform"] = idPlataforma;
-                }else
-                {
-                    idPlataforma = 1;
-                    TempData["idplataform"] = idPlataforma;
-                }
+                traerPlataformas = new List<Plataformas>();
             }
             return View(traerPlataformas);
         }
         public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
         {
             _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idplataforma, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado);
-            return View("formInserClienPlatf");
+            return RedirectToAction("formInserClienPlatf", "Producto");
         }
         public IActionResult insertInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave)
         {
             _productoservice.servicioInsertarInfoCuentaClientPlatf(idCliPltf, perfil, clave);
-            return View("formInserClienPlatf");
+            return RedirectToAction("formInserClienPlatf", "Producto");
+        }
+        public IActionResult formVisuPlatf()
+        {
+            var traerPlataformas = _productoservice.traerPlataformasExistentes();
+            if (traerPlataformas == null || !traerPlataformas.Any())
+            {
+                traerPlataformas = new List<Plataformas>();
+            }
+            return View(traerPlataformas);
+        }
+        public IActionResult formVisuCta()
+        {
+            var traerClientAll = _productoservice.traerCtaClientPlatfExistentes();
+            if (traerClientAll == null || !traerClientAll.Any())
+            {
+                traerClientAll = new List<VentPlatClient>();
+            }
+            return View(traerClientAll);
         }
     }
 }
