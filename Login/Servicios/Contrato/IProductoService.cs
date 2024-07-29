@@ -17,8 +17,8 @@ namespace Plataforma.Servicios.Contrato
         void EliminarProducto(string id);
         void inserPlataformaService(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
         List<Plataformas> traerPlataformasExistentes();
-        List<VentPlatClient> traerCtaClientPlatfExistentes();
-        void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado);
-        void servicioInsertarInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave);
+        List<ClientePlataformaDTO> TraerCtaClientPlatfExistentes();
+        void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
+        Task ActualizarCliente(int estado, int id);
     }
 }

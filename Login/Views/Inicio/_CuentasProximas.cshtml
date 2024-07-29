@@ -1,0 +1,19 @@
+﻿@model List<ClientesPlataforma>
+
+<div class="mt-2">
+    @if (Model.Any())
+    {
+        <ul class="list-group">
+            @foreach (var cuenta in Model)
+            {
+                <li class="list-group-item">
+                    <strong>@cuenta.nombreCliente</strong> - Vence el @cuenta.fechaFinPago.ToString("dd/MM/yyyy")
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No hay cuentas próximas a vencer.</p>
+    }
+</div>

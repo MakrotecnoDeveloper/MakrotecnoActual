@@ -1,4 +1,4 @@
-﻿@model List<VentPlatClient>
+﻿@model List<ClientePlataformaDTO>
 
 @{
     ViewData["Title"] = "formVisuPlatf";
@@ -7,32 +7,53 @@
 
 <div class="content-wrapper">
     <div class="container mt-5">
-        <h2 class="mb-4">Listado de Plataformas</h2>
+        <h2 class="mb-4">Informacion Cuentas</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
                 <thead class="thead-dark">
                     <tr>
                         <th>ID Asignacion</th>
-                        <th>ID Plataforma-Cliente</th>
+                        <th>Correo</th>
+                        <th>Contraseña</th>
                         <th>Perfil</th>
-                        <th>Clave</th>
+                        <th>Clave Perfil</th>
+                        <th>Celular</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var clientes in Model)
                     {
+                        string whatsappMessage = $"*---| Cuenta {clientes.Plataforma} |---*%0A" +
+                        $"- Correo: {clientes.CorreoPlataforma}%0A" +
+                        $"- Contraseña: {clientes.ClavePlataforma}%0A" +
+                        $"- Perfil: {clientes.NombreCliente}%0A" +
+                        $"- Clave Perfil: {clientes.ClavePerfil}%0A" +
+                        $"- Fecha Inicio: {clientes.FechaIni:dd/MM/yyyy}%0A" +
+                        $"- Fecha Fin: {clientes.FechaFin:dd/MM/yyyy}";
+
                         <tr>
-                            <td>@clientes.idVenta</td>
-                            <td>@clientes.idCliPltf</td>
-                            <td>@clientes.perfil</td>
-                            <td>@clientes.clave</td>
+                            <td>@clientes.IdClientePlataforma</td>
+                            <td>@clientes.CorreoPlataforma</td>
+                            <td>@clientes.ClavePlataforma</td>
+                            <td>@clientes.NombreCliente</td>
+                            <td>@clientes.ClavePerfil</td>
+                            <td>@clientes.Celular</td>
+                            <td>@clientes.FechaIni.ToString("dd/MM/yyyy")</td>
+                            <td>@clientes.FechaFin.ToString("dd/MM/yyyy")</td>
+                            <td>@clientes.Estado</td>
                             <td>
-                                <a href="@Url.Action("Edit", "Producto", new { id = clientes.idVenta })" class="btn btn-sm btn-warning">
+                                <a href="#" onclick="editarEstado(@clientes.Estado, @clientes.IdClientePlataforma); return false;" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="@Url.Action("Delete", "Producto", new { id = clientes.idVenta })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar este cliente?');">
+                                <a href="@Url.Action("Delete", "Producto", new { id = clientes.IdClientePlataforma })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar este cliente?');">
                                     <i class="fas fa-trash-alt"></i>
+                                </a>
+                                <a href="https://wa.me/@clientes.Celular?text=@whatsappMessage" class="btn btn-sm btn-success" target="_blank">
+                                    <i class="fab fa-whatsapp"></i>
                                 </a>
                             </td>
                         </tr>
@@ -42,3 +63,35 @@
         </div>
     </div>
 </div>
+
+<script>
+    function editarEstado(idClientePlataforma) {
+        // Mostrar el cuadro de diálogo para que el usuario ingrese el nuevo estado
+        var nuevoEstado = prompt("Ingrese el nuevo estado:");
+
+        // Verificar que el usuario haya ingresado un estado
+        if (nuevoEstado !== null && nuevoEstado.trim() !== "") {
+            // Enviar los datos al controlador mediante una solicitud AJAX
+            $.ajax({
+                url: '@Url.Action("EditarEstadoCta", "Producto")',
+                type: 'POST',
+                data: {
+                    id: idClientePlataforma,
+                    estado: nuevoEstado
+                },
+                success: function (response) {
+                    // Manejar la respuesta del servidor si es necesario
+                    alert("Estado actualizado exitosamente.");
+                    // Opcional: Puedes actualizar la página o la parte de la interfaz de usuario aquí
+                },
+                error: function (xhr, status, error) {
+                    // Manejar errores aquí
+                    alert("Hubo un error al actualizar el estado.");
+                }
+            });
+        } else {
+            alert("El estado no puede estar vacío.");
+        }
+    }
+
+</script>

@@ -1,5 +1,6 @@
 ﻿//establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
 using Login.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using System.Security.Claims;
@@ -34,5 +35,6 @@ namespace Plataforma.Servicios.Contrato
         List<TipoCargo> ObtenerCargos(string idEmpresa);
         List<Sedeempleado> InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
         List<FacProuserViewModel> TraerFactXDia(Claim cedulaClaim);
+        Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma);
     }
 }

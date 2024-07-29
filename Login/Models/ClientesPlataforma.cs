@@ -18,4 +18,5 @@ namespace Plataforma.Models;
         public int valorNeto { get; set; }
         public int cedulaEmpleado { get; set; }
         public int estado {  get; set; }
+        public string clavePerfil { get; set; }
     }

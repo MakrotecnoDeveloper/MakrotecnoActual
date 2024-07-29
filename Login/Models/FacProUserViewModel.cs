@@ -10,5 +10,6 @@ namespace Login.Models
         public int TotalProductos { get; set; }
         public List<ProductoMasVendidoViewModel> ProductosMasVendidos { get; set; }
         public string RolEmpleado { get; set; }
+        public List<Plataformas> Plataformas { get; set; }
     }
 }

@@ -169,14 +169,9 @@ namespace Plataforma.Controllers
             }
             return View(traerPlataformas);
         }
-        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
+        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idplataforma, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado);
-            return RedirectToAction("formInserClienPlatf", "Producto");
-        }
-        public IActionResult insertInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave)
-        {
-            _productoservice.servicioInsertarInfoCuentaClientPlatf(idCliPltf, perfil, clave);
+            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idplataforma, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
             return RedirectToAction("formInserClienPlatf", "Producto");
         }
         public IActionResult formVisuPlatf()
@@ -190,12 +185,19 @@ namespace Plataforma.Controllers
         }
         public IActionResult formVisuCta()
         {
-            var traerClientAll = _productoservice.traerCtaClientPlatfExistentes();
+            var traerClientAll = _productoservice.TraerCtaClientPlatfExistentes();
             if (traerClientAll == null || !traerClientAll.Any())
             {
-                traerClientAll = new List<VentPlatClient>();
+                traerClientAll = new List<ClientePlataformaDTO>();
             }
             return View(traerClientAll);
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditarEstadoCta(int id, int estado)
+        {
+                // Actualizar el estado del cliente
+                await _productoservice.ActualizarCliente(estado, id);
+                return Json(new { success = true });
         }
     }
 }

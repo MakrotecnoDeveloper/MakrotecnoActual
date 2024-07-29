@@ -409,6 +409,9 @@ namespace Plataforma.Servicios.Implementacion
                 Console.WriteLine("El claim 'Cedula' no existe o la conversión falló.");
             }
 
+            //Traer Plataformas
+            var plataformas = _dbContext.Plataformas.ToList();
+
             // Crear el ViewModel con la suma total
             FacProuserViewModel viewModel = new FacProuserViewModel
             {
@@ -417,11 +420,21 @@ namespace Plataforma.Servicios.Implementacion
                 TotalEmpleados = totalEmpleados,
                 TotalProductos = totalProductos,
                 ProductosMasVendidos = productosMasVendidos,
-                RolEmpleado = rolEmpleado
+                RolEmpleado = rolEmpleado,
+                Plataformas = plataformas
             };
 
             // Devolver una lista con el ViewModel
             return new List<FacProuserViewModel> { viewModel };
+        }
+        public async Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma)
+        {
+            var fechaActual = DateTime.Now;
+            var cuentasProximas = await _dbContext.ClientesPlataforma
+                .Where(cp => cp.idPlataforma == idPlataforma && cp.fechaFinPago <= fechaActual.AddDays(5))
+                .ToListAsync();
+
+            return cuentasProximas;
         }
     }
 }

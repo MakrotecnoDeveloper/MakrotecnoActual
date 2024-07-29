@@ -1,5 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Mysqlx.Cursor;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -279,43 +281,97 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Plataformas.ToList();
         }
-        public List<VentPlatClient> traerCtaClientPlatfExistentes()
+        public List<ClientePlataformaDTO> TraerCtaClientPlatfExistentes()
         {
-            return _dbContext.VentPlatClient.ToList();
-        }
-        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado)
-        {
-            var nuevoVentClientPltf = new ClientesPlataforma
-            {
-                nombreCliente = nombrecliente,
-                celularCliente = celularcliente,
-                correo = correo,
-                clave = contrasena,
-                idPlataforma = idplataforma,
-                cantidad = cantidad,
-                ppm = ppm,
-                fechaIniPago = feciniplat,
-                fechaFinPago = fecfinplat,
-                valorVenta = valorventa,
-                valorNeto = valorneto,
-                cedulaEmpleado = cedula,
-                estado = estado
-            };
+            var resultado = (from cp in _dbContext.ClientesPlataforma
+                             join p in _dbContext.Plataformas on cp.idPlataforma equals p.idPlataforma
+                             select new ClientePlataformaDTO
+                             {
+                                 IdClientePlataforma = cp.idPlataforma,
+                                 CorreoPlataforma = p.correo,
+                                 ClavePlataforma = p.contrasena,
+                                 NombreCliente = cp.nombreCliente,
+                                 ClavePerfil = cp.clavePerfil,
+                                 Celular = cp.celularCliente,
+                                 FechaIni = cp.fechaIniPago,
+                                 FechaFin = cp.fechaFinPago,
+                                 Plataforma = p.plataforma,
+                                 Estado = cp.estado
+                             }).ToList();
 
-            // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
-            _dbContext.ClientesPlataforma.Add(nuevoVentClientPltf);
-            _dbContext.SaveChanges();
+            return resultado;
         }
-        public void servicioInsertarInfoCuentaClientPlatf(int idCliPltf, string perfil, string clave)
+        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            var nuevaInfoClientPlatf = new VentPlatClient
+            var plataforma = _dbContext.Plataformas.SingleOrDefault(p => p.idPlataforma == idplataforma);
+            if (plataforma != null)
             {
-                idCliPltf = idCliPltf,
-                perfil = perfil,
-                clave = clave
-            };
-            _dbContext.VentPlatClient.Add(nuevaInfoClientPlatf);
-            _dbContext.SaveChanges();
+                // Si la plataforma existe, actualizar el campo cantidad
+                int cantidadActual = plataforma.cantidad;
+                int cantidadNueva = cantidadActual - cantidad;
+                if (cantidadNueva < 0)
+                {
+                    Console.WriteLine("La plataforma no tiene esa cantidad de espacios disponibles");
+                }else
+                {
+                    //agregar cuenta
+                    var nuevoVentClientPltf = new ClientesPlataforma
+                    {
+                        nombreCliente = nombrecliente,
+                        celularCliente = celularcliente,
+                        correo = correo,
+                        clave = contrasena,
+                        idPlataforma = idplataforma,
+                        cantidad = cantidad,
+                        ppm = ppm,
+                        fechaIniPago = feciniplat,
+                        fechaFinPago = fecfinplat,
+                        valorVenta = valorventa,
+                        valorNeto = valorneto,
+                        cedulaEmpleado = cedula,
+                        estado = estado,
+                        clavePerfil = clave,
+                    };
+
+                    // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
+                    _dbContext.ClientesPlataforma.Add(nuevoVentClientPltf);
+                    _dbContext.SaveChanges();
+
+                    //cantidad
+                    plataforma.cantidad = cantidadNueva;
+                    // Guardar los cambios en la base de datos
+                    _dbContext.SaveChanges();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Plataforma no encontrada.");
+            }
+        }
+        public async Task ActualizarCliente(int estado, int id)
+        {
+            // Buscar la plataforma en la base de datos
+            var plataforma = await _dbContext.Plataformas
+                .SingleOrDefaultAsync(p => p.idPlataforma == id);
+            if (plataforma != null)
+            {
+                // Si la plataforma existe, actualizar el campo cantidad
+                int cantidadActual = plataforma.cantidad;
+                int cantidadReducida = 1; // Este es el valor que quieres reducir
+                int cantidadNueva = cantidadActual + cantidadReducida;
+
+                // Asignar la nueva cantidad a la plataforma
+                plataforma.cantidad = cantidadNueva;
+
+                // Guardar los cambios en la base de datos
+                await _dbContext.SaveChangesAsync();
+            }
+            var clientePlataforma = await _dbContext.ClientesPlataforma.FirstOrDefaultAsync(c => c.idPlataforma == id);
+            if( clientePlataforma != null )
+            {
+                int estadoNuevo = estado;
+                await _dbContext.SaveChangesAsync();
+            }
         }
     }
 }

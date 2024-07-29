@@ -16,7 +16,11 @@
                     <label for="nombrecliente">Nombre Cliente</label>
                     <input type="text" class="form-control" id="nombrecliente" name="nombrecliente">
                 </div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-4">
+                    <label for="clave">Clave Perfil</label>
+                    <input type="password" class="form-control" id="clave" name="clave">
+                </div>
+                <div class="form-group col-md-2">
                     <label for="celularcliente">Celular Cliente</label>
                     <input type="text" class="form-control" id="celularcliente" name="celularcliente">
                 </div>
@@ -92,29 +96,6 @@
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Registrar Venta</button>
-        </form>
-
-        <h4 class="mt-4">Información de la Cuenta</h4>
-        <form role="form" asp-controller="Producto" asp-action="insertInfoCuentaClientPlatf" method="POST">
-            <div class="form-row">
-                <div class="form-group col-md-4">
-                    <label for="idCliPltf">ID Cliente Plataforma</label>
-                    @if (Model != null && Model.Any())
-                    {
-                        var lastItem = Model.Last();
-                        <input type="number" class="form-control" id="idCliPltf" name="idCliPltf" value="@lastItem.idPlataforma">
-                    }
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="perfil">Perfil</label>
-                    <input type="text" class="form-control" id="perfil" name="perfil">
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="clave">Clave</label>
-                    <input type="password" class="form-control" id="clave" name="clave">
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrar Cuenta</button>
         </form>
     </div>
 </div>

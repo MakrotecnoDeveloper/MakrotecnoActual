@@ -18,6 +18,12 @@ namespace Plataforma.Controllers
             var viewModel = totalFactXDia.FirstOrDefault();
             return View(viewModel);
         }
+        [HttpGet]
+        public async Task<IActionResult> CuentasProximas(int id)
+        {
+            var cuentasProximas = await _usuarioService.ObtenerCuentasProximas(id);
+            return PartialView("_CuentasProximas", cuentasProximas);
+        }
         [HttpPost]
         public async Task<IActionResult> ListarUsuarios(string correo, string password)
         {
