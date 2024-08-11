@@ -166,10 +166,6 @@ namespace Plataforma.Controllers
             {
                 facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
             }
-            else if (estado == "Completado")
-            {
-                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
-            }
             else if (estado == "Cerrado")
             {
                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);

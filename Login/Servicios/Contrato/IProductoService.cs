@@ -19,6 +19,7 @@ namespace Plataforma.Servicios.Contrato
         List<Plataformas> traerPlataformasExistentes();
         List<ClientePlataformaDTO> TraerCtaClientPlatfExistentes();
         void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
-        Task ActualizarCliente(int estado, int id);
+        Task ActualizarCliente(int id, int estado, int idCliente);
+        List<Producto> traerProductosXCategoria(string categoria);
     }
 }

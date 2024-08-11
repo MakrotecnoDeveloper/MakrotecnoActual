@@ -12,6 +12,7 @@
             <table class="table table-bordered table-striped table-hover">
                 <thead class="thead-dark">
                     <tr>
+                        <th>ID Cliente</th>
                         <th>ID Asignacion</th>
                         <th>Correo</th>
                         <th>Contraseña</th>
@@ -36,6 +37,7 @@
                         $"- Fecha Fin: {clientes.FechaFin:dd/MM/yyyy}";
 
                         <tr>
+                            <td>@clientes.idCliente</td>
                             <td>@clientes.IdClientePlataforma</td>
                             <td>@clientes.CorreoPlataforma</td>
                             <td>@clientes.ClavePlataforma</td>
@@ -46,7 +48,7 @@
                             <td>@clientes.FechaFin.ToString("dd/MM/yyyy")</td>
                             <td>@clientes.Estado</td>
                             <td>
-                                <a href="#" onclick="editarEstado(@clientes.Estado, @clientes.IdClientePlataforma); return false;" class="btn btn-sm btn-warning">
+                                <a href="#" onclick="editarEstado(@clientes.IdClientePlataforma, '@clientes.Estado', @clientes.idCliente); return false;" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="@Url.Action("Delete", "Producto", new { id = clientes.IdClientePlataforma })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar este cliente?');">
@@ -65,9 +67,11 @@
 </div>
 
 <script>
-    function editarEstado(idClientePlataforma) {
+    function editarEstado(idClientePlataforma, estado, idCliente) {
+        console.log(idCliente); // Debería mostrar el idCliente correctamente
+
         // Mostrar el cuadro de diálogo para que el usuario ingrese el nuevo estado
-        var nuevoEstado = prompt("Ingrese el nuevo estado:");
+        var nuevoEstado = prompt("Ingrese el nuevo estado:", estado);
 
         // Verificar que el usuario haya ingresado un estado
         if (nuevoEstado !== null && nuevoEstado.trim() !== "") {
@@ -77,7 +81,8 @@
                 type: 'POST',
                 data: {
                     id: idClientePlataforma,
-                    estado: nuevoEstado
+                    estado: nuevoEstado,
+                    idCliente: idCliente
                 },
                 success: function (response) {
                     // Manejar la respuesta del servidor si es necesario

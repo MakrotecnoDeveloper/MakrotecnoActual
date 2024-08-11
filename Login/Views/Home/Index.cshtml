@@ -12,14 +12,13 @@
     <meta name="author" content="">
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
     <!-- Custom fonts for this template -->
     <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet">
     <link rel="stylesheet" href="~/AdminLTE/plugins/fontawesome-free/css/all.min.css">
     <!-- Custom styles for this template -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/resume.min.css" />
-    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
-    <!--<link rel="icon" type="image/jpg" href="~/favicon.ico" />-->
     <style>
         .card {
             transition: transform 0.2s;
@@ -86,7 +85,7 @@
                             <a class="nav-link js-scroll-trigger" href="#nosotros">Nosotros</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link js-scroll-trigger" href="http://portafolio.makrotecno.net/">Portafolio</a>
+                            <a class="nav-link js-scroll-trigger" href="#portfServicios">Portafolio</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link js-scroll-trigger" href="#contacto">Contacto</a>
@@ -156,6 +155,74 @@
 
                 <hr class="m-0">
 
+                <section class="p-3 p-lg-5 d-flex align-items-center" id="portfServicios">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="text-center">Portafolio de Servicios</h2>
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#infoModal">Ver más</button>
+                            </div>
+                            <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="infoModalLabel">Información Adicional</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-center" style="font-size: 1.2em;">Para ver más productos de nuestro catálogo, presiona <a href="Producto/productosExistentesVenta" class="fw-bold text-info">AQUÍ</a>.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="card" style="width: 15rem;">
+                                    <img class="card-img-top" src="~/img/Logo.png" alt="Card image cap">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Cargadores</h5>
+                                        <p class="card-text">Seccion de cargadores para celular, con soporte para carros y motos, powerbanks y demas..</p>
+                                    </div>
+                                    <div class="card-body">
+                                        <a href="#" class="card-link">Visualizar</a>
+                                        <a href="#" class="card-link">Solicitar Informacion</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="card" style="width: 15rem;">
+                                    <img class="card-img-top" src="~/img/Logo.png" alt="Card image cap">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Cables de datos</h5>
+                                        <p class="card-text">Seccion de cargadores para celular, con soporte para carros y motos, powerbanks y demas..</p>
+                                    </div>
+                                    <div class="card-body">
+                                        <a href="#" class="card-link">Visualizar</a>
+                                        <a href="#" class="card-link">Solicitar Informacion</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="card" style="width: 15rem;">
+                                    <img class="card-img-top" src="~/img/Logo.png" alt="Card image cap">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Audifonos</h5>
+                                        <p class="card-text">Seccion de cargadores para celular, con soporte para carros y motos, powerbanks y demas..</p>
+                                    </div>
+                                    <div class="card-body">
+                                        <a href="#" class="card-link">Visualizar</a>
+                                        <a href="#" class="card-link">Solicitar Informacion</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="m-0">
+
                 <section class="p-lg-5 d-flex align-items-center" id="contacto">
                     <div class="w-100">
                         <div class="row justify-content-center contacts">
@@ -210,15 +277,6 @@
                 </section>
 
             </div>
-
-            <!-- Bootstrap core JavaScript -->
-            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-            <!-- Plugin JavaScript -->
-            <script src="~/lib/jquery-easing/jquery.easing.min.js"></script>
-
-            <!-- Custom scripts for this template -->
-            <script src="~/js/resume.js"></script>
             <!-- FOOTER-->
             <!-- FOOTER -->
             <footer class="bg-dark text-white pt-4">
@@ -263,6 +321,15 @@
             <!-- FIN FOOTER-->
         </div>
     </div>
-    </div>
+    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="~/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/js/resume.js"></script>
+    <!-- Plugin JavaScript -->
+    
+
+    <!-- Custom scripts for this template -->
+    
 </body>
 </html>

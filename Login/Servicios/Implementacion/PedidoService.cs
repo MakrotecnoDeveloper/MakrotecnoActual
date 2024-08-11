@@ -38,7 +38,7 @@ namespace Plataforma.Servicios.Implementacion
         public void ActualizarEstadoFacturas()
         {
             var facturasCompletadas = _dbContext.Factura
-                .Where(f => f.estado == "Pagado" && f.fechaVenta.AddDays(7) <= DateTime.Now)
+                .Where(f => f.estado == "Proceso" && f.fechaVenta.AddDays(7) <= DateTime.Now)
                 .ToList();
 
             foreach (var factura in facturasCompletadas)
@@ -144,6 +144,7 @@ namespace Plataforma.Servicios.Implementacion
         {
             return await _dbContext.Factura
                 .Where(f => f.estado == estado)
+                .OrderByDescending(f => f.fechaVenta)
                 .ToListAsync();
         }
         public async Task<List<Pedidos>> VisualizarPedidoPorId(int id)

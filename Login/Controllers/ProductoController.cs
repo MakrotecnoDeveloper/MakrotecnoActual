@@ -193,11 +193,23 @@ namespace Plataforma.Controllers
             return View(traerClientAll);
         }
         [HttpPost]
-        public async Task<IActionResult> EditarEstadoCta(int id, int estado)
+        public async Task<IActionResult> EditarEstadoCta(int id, int estado, int idCliente)
         {
+            //Console.WriteLine("El usuario: " + id + " Tiene el nuevo estado: " + estado);
                 // Actualizar el estado del cliente
-                await _productoservice.ActualizarCliente(estado, id);
+                await _productoservice.ActualizarCliente(id, estado, idCliente);
                 return Json(new { success = true });
+        }
+        //Visualizar productos existentes para vender en la pagina inicial
+        public IActionResult productosExistentesVenta()
+        {
+            var traerProductosExistentes = _productoservice.ObtenerProductos();
+            return View("../Home/productosExistentesVenta", traerProductosExistentes);
+        }
+        public IActionResult traerProductoXCategoria(string categoria)
+        {
+            var productosTraidos = _productoservice.traerProductosXCategoria(categoria);
+            return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
     }
 }

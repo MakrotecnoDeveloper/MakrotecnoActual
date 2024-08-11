@@ -3,6 +3,7 @@
 namespace Plataforma.Models;
     public class ClientePlataformaDTO
     {
+        public int idCliente { get; set; }
         public int IdClientePlataforma { get; set; }
         public string NombreCliente { get; set; }
         public string CorreoPlataforma { get; set; }

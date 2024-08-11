@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Plataforma.Models.Producto>
+<div class="container">
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var producto in Model)
+            {
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="producto-item card h-100">
+                        <img src="@Url.Content($"~/img/Productos/{producto.Categoria}/{producto.Cod_Producto}.png")"
+                             alt="@producto.NombreProducto"
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.NombreProducto</h5>
+                            <p class="card-text">Categoría: @producto.Categoria</p>
+                            <p class="card-text">Precio: @producto.ValorVentaProducto</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p>No hay productos disponibles en esta categoría.</p>
+            </div>
+        }
+    </div>
+    <div id="errorMessages"></div>
+    <script>
+        // Manejar errores de carga de imagen
+        $('img').on('error', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.src = '@Url.Content("~/img/Productos/nodisponible.png")';
+        });
+    </script>
+</div>
