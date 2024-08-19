@@ -27,15 +27,15 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult RegistrarDBEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
-            try
+            if(_usuarioService.validarEmpleado(cedula))
             {
-                var empleados = _usuarioService.RegistrarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
+                var mensaje = "Error: Ya existe un empleado con la misma cédula";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }else
+            {
+                _usuarioService.RegistrarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
                 return RedirectToAction("RegistrarEmpleado");
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
             }
         }
         public IActionResult Editar(int id)
@@ -43,14 +43,13 @@ namespace Plataforma.Controllers
             var usuarioEncontrado = _usuarioService.BuscarUsuario(id);
             if (usuarioEncontrado.Any())
             {
-                // Oculta la tabla de productos y muestra la tabla temporal
                 return View(usuarioEncontrado);
             }
             else
             {
-                // Producto no encontrado, maneja la lógica adecuada
-                Console.WriteLine("No hay productos con ese codigo referenciado");
-                return View("Index");
+                var mensaje = "Error: No hay productos con ese codigo referenciado";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
             }
         }
         public IActionResult FormEmpleadoCompania(int cedula)
@@ -59,24 +58,28 @@ namespace Plataforma.Controllers
             if (empresaEncontrada.Any())
             {
                 ViewBag.cedula = cedula;
-                // Oculta la tabla de productos y muestra la tabla temporal
                 return View(empresaEncontrada);
             }
             else
             {
-                // Producto no encontrado, maneja la lógica adecuada
-                Console.WriteLine("No hay empresas anexadas al sistema");
-                return View("Index");
+                var mensaje = "Error: No hay empresas anexadas al sistema";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
             }
         }
         [HttpPost]
         public IActionResult EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
-            // Llama al método EditarProducto del servicio de productos
-            _usuarioService.EditarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
-
-            // Redirige a la acción que deseas después de editar el producto
-            return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos
+            if (cedula < 0 || nombre == null || apellido == null || genero == null || correo == null || rh == null || celular == null || contrasena == null)
+            {
+                var mensaje = "Error: Todos los campos deben tener un valor. No se permiten valores nulos.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }else
+            {
+                _usuarioService.EditarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
+                return RedirectToAction("Index");
+            }
         }
         public IActionResult Cargos()
         {
@@ -91,16 +94,8 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarTabla(string nombreCargo, string descripcionCargo, string id_empresa)
         {
-            try
-            {
-                var insertarCargo = _usuarioService.InsertarCargos(nombreCargo, descripcionCargo, id_empresa);
+                _usuarioService.InsertarCargos(nombreCargo, descripcionCargo, id_empresa);
                 return RedirectToAction("Cargos");
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
-            }
         }
         public IActionResult Empresas()
         {
@@ -114,16 +109,8 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
         {
-            try
-            {
-                var insertarEmpresa = _usuarioService.InsertarEmpresa(nit, nombreEmpresa, pais, calle, carrera, ciudad, departamento, indicativo, numero);
+                _usuarioService.InsertarEmpresa(nit, nombreEmpresa, pais, calle, carrera, ciudad, departamento, indicativo, numero);
                 return RedirectToAction("Empresas");
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
-            }
         }
         public IActionResult Sedes()
         {
@@ -138,16 +125,8 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarSedes(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
         {
-            try
-            {
                 var insertarSede = _usuarioService.InsertarSede(id_empresa, nombreSede, ciudad, direccion, telefono);
                 return RedirectToAction("Sedes");
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
-            }
         }
         public IActionResult EmpleadoEmpresa()
         {
@@ -162,18 +141,10 @@ namespace Plataforma.Controllers
             return View(empleado);
         }
         [HttpPost]
-        public IActionResult InsertarEE(string idEmpresa, int cedula)
+        public IActionResult InsertarEE(string id_empresa, int cedula)
         {
-            try
-            {
-                var insertarEmpleadoEmpresa = _usuarioService.InsertarEmpleadoEmpresa(idEmpresa, cedula);
-                return RedirectToAction("EmpleadoEmpresa");
-            }
-            catch (Exception ex)
-            {
-                // Manejar la excepción, por ejemplo, podrías devolver una vista de error con un mensaje personalizado.
-                return View("Error", ex.Message);
-            }
+                _usuarioService.InsertarEmpleadoEmpresa(id_empresa, cedula);
+                return RedirectToAction("Index");
         }
         public IActionResult EmpleadoSedes()
         {
@@ -183,42 +154,50 @@ namespace Plataforma.Controllers
         public IActionResult ValidarCedula(int cedula)
         {
             var empleado = _usuarioService.ValidarCedula(cedula);
-            if (empleado == null)
+            if (empleado != null)
             {
-                return NotFound();
-            }
+                //Dato no existe
+                string? idEmpresa = _usuarioService.ObtenerIdEmpresa(cedula);
+                if (string.IsNullOrEmpty(idEmpresa))
+                {
+                    var mensaje = "Error: La cedula " + cedula + " No esta sincronizado con una empresa";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }else
+                {
+                    var sede = _usuarioService.ObtenerSedePorEmpleado(cedula);
+                    var sedes = _usuarioService.ObtenerSedes(idEmpresa);
+                    var cargos = _usuarioService.ObtenerCargos(idEmpresa);
 
-            string idEmpresa = _usuarioService.ObtenerIdEmpresa(cedula);
-            if (string.IsNullOrEmpty(idEmpresa))
-            {
-                return NotFound();
-            }
+                    if (sede == true)
+                    {
+                        ViewBag.Cedula = cedula;
+                        ViewBag.IdEmpresa = idEmpresa;
+                        ViewBag.Sedes = sedes;
+                        ViewBag.Cargos = cargos;
+                        return View("SeleccionarSedeYCargo");
+                    }
+                    else
+                    {
+                        var mensaje = "Error: La cedula ya tiene sede asignada.";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                }
 
-            var sede = _usuarioService.ObtenerSedePorEmpleado(cedula);
-            var sedes = _usuarioService.ObtenerSedes(idEmpresa);
-            var cargos = _usuarioService.ObtenerCargos(idEmpresa);
-
-            if (sede == null)
-            {
-                ViewBag.Cedula = cedula;
-                ViewBag.IdEmpresa = idEmpresa;
-                ViewBag.Sedes = sedes;
-                ViewBag.Cargos = cargos;
-                return View("SeleccionarSedeYCargo");
             }
             else
             {
-                // Aquí puedes manejar el caso cuando la cédula ya está asociada a una sede
-                ViewBag.Cedula = cedula;
-                ViewBag.Sede = sede;
-                return View("SedeYaAsociada");
+                var mensaje = "Error: No existe el empleado";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
             }
         }
         [HttpPost]
         public IActionResult GuardarSedeYCargo(int cedula, int idSede, int idCargo)
         {
-            var ingresarSedeCargo = _usuarioService.InsertarSedeEmpleado(cedula, idSede, idCargo);
-            return View("Index");
+            _usuarioService.InsertarSedeEmpleado(cedula, idSede, idCargo);
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -227,7 +206,5 @@ namespace Plataforma.Controllers
             var sedes = _usuarioService.GetSedesByEmpresaId(empresaId);
             return Json(sedes);
         }
-        /*[HttpPost]
-        public IActionResult FormEmpleadoSede()*/
     }
 }

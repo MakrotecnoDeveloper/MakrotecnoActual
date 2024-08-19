@@ -5,9 +5,6 @@ using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +18,7 @@ builder.Host.ConfigureAppConfiguration((context, config) =>
 
 
 // configura los servicios de MVC (Model-View-Controller) en la aplicaci�n web
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 

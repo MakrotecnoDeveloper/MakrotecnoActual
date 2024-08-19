@@ -148,11 +148,8 @@
                 fila.appendChild(celda);
             });
 
-            // Enlace 1 - Editar Producto
             var enlace1 = crearEnlace(`/Usuario/Editar?id=${perfil.cedula}`, 'fas fa-pencil-alt');
-            // Enlace 2 - Agregar Stock
             var enlace2 = crearEnlace(`/Usuario/FormEmpleadoCompania?cedula=${perfil.cedula}`, 'fas fa-pencil-alt');
-            // Enlace 3 - Eliminar Producto
             var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
 
             // Agregar enlaces a una celda

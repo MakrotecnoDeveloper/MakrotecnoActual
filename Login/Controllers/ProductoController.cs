@@ -107,11 +107,10 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
+        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa, int estado)
         {
-            Console.WriteLine(codigo + nombreProducto + valorNeto + valorVenta + cantidad + categoria + idEmpresa);
             // Llama al método EditarProducto del servicio de productos
-            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, cantidad, categoria, idEmpresa);
+            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, cantidad, categoria, idEmpresa, estado);
 
             // Redirige a la acción que deseas después de editar el producto
             return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos

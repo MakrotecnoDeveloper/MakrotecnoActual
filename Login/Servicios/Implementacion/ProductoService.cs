@@ -33,7 +33,8 @@ namespace Plataforma.Servicios.Implementacion
                     ValorNetoProducto = valor_neto,
                     ValorVentaProducto = valor_unitario,
                     ID_Empresa = id_empresa,
-                    Categoria = categorias
+                    Categoria = categorias,
+                    estado = 1
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -191,7 +192,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa)
+        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa, int estado)
         {
 
             if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
@@ -211,6 +212,7 @@ namespace Plataforma.Servicios.Implementacion
                 producto.ValorVentaProducto = valorVenta;
                 producto.ID_Empresa = idEmpresa;
                 producto.Categoria = categoria;
+                producto.estado = estado;
                 try
                 {
                     _dbContext.SaveChanges();
@@ -374,7 +376,7 @@ namespace Plataforma.Servicios.Implementacion
         public List<Producto> traerProductosXCategoria(string categoria)
         {
             var productos = _dbContext.Productos
-               .Where(p => p.Categoria == categoria)
+               .Where(p => p.Categoria == categoria && p.estado == 1)
                .ToList();
             return productos;
         }

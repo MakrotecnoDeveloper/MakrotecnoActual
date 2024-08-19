@@ -184,6 +184,7 @@ namespace Plataforma.Controllers
 
         public async Task<IActionResult> VerPedidoPorId(int id)
         {
+            Console.WriteLine("Este es el ID del pedido: ", id);
             // Obtener el pedido o la lista de pedidos por su ID
             List<Pedidos> pedidos = await _pedidoServicio.VisualizarPedidoPorId(id);
 

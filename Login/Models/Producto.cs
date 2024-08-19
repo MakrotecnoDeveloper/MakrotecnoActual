@@ -12,5 +12,6 @@ namespace Plataforma.Models
         public float ValorVentaProducto { get; set; }
         public string? ID_Empresa { get; set; }
         public string? Categoria { get; set; }
+        public int estado {  get; set; }
     }
 }

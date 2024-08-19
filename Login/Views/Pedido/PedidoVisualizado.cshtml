@@ -101,7 +101,8 @@
                 // Verificar si el estado es "Completado" o "Proceso"
                 if (perfil.estado === "Proceso") {
                     // Enlace 1 - Editar Producto
-                    var enlace1 = crearEnlace(`/Pedido/CrearPedido?id=${perfil.cod_factura}`, 'fas fa-pencil-alt');
+                    console.log(perfil.cod_factura);
+                    var enlace1 = crearEnlace(`/Pedido/VerPedidoPorId?id=${perfil.cod_factura}`, 'fas fa-pencil-alt');
 
                     // Agregar enlaces a una celda
                     var acciones = document.createElement('td');

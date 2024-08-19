@@ -3,6 +3,7 @@
     <div class="row">
         @if (Model != null && Model.Any())
         {
+            <h2 class="text-center my-4">Categoría: @Model.First().Categoria</h2>
             @foreach (var producto in Model)
             {
                 <div class="col-md-4 col-sm-6 mb-4">
@@ -13,8 +14,17 @@
                              onerror="this.onerror=null;this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
                         <div class="card-body">
                             <h5 class="card-title">@producto.NombreProducto</h5>
+                            <p class="card-text">Codigo: @producto.Cod_Producto</p>
                             <p class="card-text">Categoría: @producto.Categoria</p>
                             <p class="card-text">Precio: @producto.ValorVentaProducto</p>
+                            @if (producto.CantidadProducto <= 0)
+                            {
+                                <p class="text-danger font-weight-bold">Agotado</p>
+                            }
+                            else
+                            {
+                                <p class="text-success font-weight-bold">Disponible</p>
+                            }
                         </div>
                     </div>
                 </div>
