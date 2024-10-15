@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Login.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -107,6 +108,10 @@ namespace Plataforma.Servicios.Implementacion
         {
             // Implementa la lógica para buscar la factura en la base de datos
             return _dbContext.Factura.FirstOrDefault(f => f.cod_factura == id);
+        }
+        public Sedeempleado BuscarPdvPorCedula(int cedula)
+        {
+            return _dbContext.Sedeempleado.FirstOrDefault(s => s.cedula == cedula);
         }
         public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
         {

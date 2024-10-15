@@ -13,7 +13,7 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> BuscarProSinStock(string searchTerm, string categoriaTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
-        void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa, int estado);
+        void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado);
         void EliminarProducto(string id);
         void inserPlataformaService(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
         List<Plataformas> traerPlataformasExistentes();
@@ -21,5 +21,7 @@ namespace Plataforma.Servicios.Contrato
         void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
         Task ActualizarCliente(int id, int estado, int idCliente);
         List<Producto> traerProductosXCategoria(string categoria);
+        Task<List<string>> BuscarProductosAsync(string consulta);
+        Task<string> GenerarRespuestaAsync(string consulta, List<string> productos);
     }
 }

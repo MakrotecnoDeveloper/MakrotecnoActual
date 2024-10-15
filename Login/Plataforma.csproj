@@ -17,6 +17,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.12" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="OpenAI" Version="1.11.0" />
   </ItemGroup>
 
   <ItemGroup>

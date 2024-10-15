@@ -1,5 +1,6 @@
 ﻿using Login.Models;
 using Microsoft.EntityFrameworkCore;
+using OpenAI_API.Moderation;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using System.Security.Claims;
@@ -77,16 +78,36 @@ namespace Plataforma.Servicios.Implementacion
 
             return login;
         }
-        public async Task<Empleado> GetUsuarios(string correo, string password)
+        public Empleado GetUsuarios(int cedula, string password)
         {
-            Empleado? usuario_encontrando = await _dbContext.Empleado.Where(u => u.Correo == correo && u.Contrasena == password).FirstOrDefaultAsync();
+            Empleado? usuario_encontrando = _dbContext.Empleado.Where(u => u.Cedula == cedula && u.Contrasena == password).FirstOrDefault();
             if (usuario_encontrando == null)
             {
-                throw new Exception("No se encontró ningún usuario con las credenciales especificadas.");
+                return null;
             }
 
             return usuario_encontrando;
         }
+        public List<Infopdv> funValidarPDV(int cedula)
+        {
+			// Primero, buscamos al empleado en la tabla sedeempleado
+			var idSede = _dbContext.Sedeempleado
+	        .Where(se => se.cedula == cedula)
+	        .Select(se => se.id_sede)
+	        .FirstOrDefault();
+			// Verificamos si el empleado fue encontrado
+			if (idSede <= 0)
+			{
+				return new List<Infopdv>();
+			}
+			// Ahora, usamos el id_sede para buscar las PDVs en la tabla infopdv
+			var pdvs = _dbContext.Infopdv
+	        .Where(p => p.Id_Sede == idSede)
+	        .ToList();
+			// Retornamos la lista de PDVs asociadas a esa sede
+			return pdvs;
+
+		}
         public async Task<Empleado> SaveUsuario(Empleado modelo)
         {
             _dbContext.Empleado.Add(modelo);
@@ -340,7 +361,7 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return true;
         }
-        public List<FacProuserViewModel> TraerFactXDia(Claim cedulaClaim)
+        public List<FacProuserViewModel> TraerFactXDia(int cedula)
         {
             DateTime fecha = DateTime.UtcNow.Date;
             //DateTime fechaInicio = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
@@ -372,9 +393,6 @@ namespace Plataforma.Servicios.Implementacion
                                         }).Take(5).ToList();
 
             string rolEmpleado = string.Empty;
-            int cedula = 0;
-            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out cedula))
-            {
                 var rolEmpleadoResult = (from se in _dbContext.Sedeempleado
                                          join tc in _dbContext.TipoCargo
                                          on se.id_cargo equals tc.id_tipo
@@ -388,12 +406,8 @@ namespace Plataforma.Servicios.Implementacion
                 else
                 {
                     throw new Exception("Empleado no encontrado  (TFXD)");
+
                 }
-            }
-            else
-            {
-                throw new Exception("El claim 'Cedula' no existe o la conversión falló.");
-            }
 
             //Traer Plataformas
             var plataformas = _dbContext.Plataformas.ToList();
@@ -421,6 +435,113 @@ namespace Plataforma.Servicios.Implementacion
                 .ToListAsync();
 
             return cuentasProximas;
+        }
+        public List<Producto> ProductosAbarrotes()
+        {
+            return _dbContext.Productos
+                     .Where(c => c.Categoria == "Abarrotes" && c.estado == 1)
+                     .OrderBy(c => c.NombreProducto)
+                     .ToList();
+        }
+        public async Task<bool> ActualizarProductoAsync(string id, string campo, string newVal)
+        {
+            try
+            {
+                // Obtener el producto a actualizar
+                var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == id);
+
+                if (producto == null)
+                {
+                    return false;
+                }
+
+                // Usar reflexión para asignar el nuevo valor al campo específico
+                var property = producto.GetType().GetProperty(campo);
+                if (property != null)
+                {
+                    property.SetValue(producto, Convert.ChangeType(newVal, property.PropertyType));
+                }
+
+                // Guardar cambios en la base de datos
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Loguear o manejar la excepción según sea necesario
+                return false;
+            }
+        }
+        public async Task<bool> insertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
+        {
+            var productosObtenidos = _dbContext.Productos.Where(c => c.Categoria == "Abarrotes").OrderBy(c => c.NombreProducto).ToList();
+            var codigosNumericos = productosObtenidos
+            .Select(p => {
+                int numero;
+                bool isNumeric = int.TryParse(p.Cod_Producto, out numero);
+                return new { Producto = p, Numero = isNumeric ? (int?)numero : null };
+            })
+            .Where(p => p.Numero.HasValue)
+            .Select(p => p.Numero.Value)
+            .ToList();
+            int nuevoCodigo = codigosNumericos.Count > 0 ? codigosNumericos.Max() + 1 : 1;
+            string nuevoCodigoStr = nuevoCodigo.ToString();
+            var nuevoProductoInventario = new Producto
+            {
+                Cod_Producto = nuevoCodigoStr,
+                NombreProducto = nombreProducto,
+                CantidadProducto = cantidadProducto,
+                ValorNetoProducto = valorNetoProductoFloat,
+                ValorVentaProducto = valorVentaProductoFloat,
+                valorUnidad = valorUnidadInt,
+                ID_Empresa = id_empresa,
+                Categoria = categoria,
+                estado = estado,
+                Ubicacion = ubicacion
+            };
+            _dbContext.Productos.Add(nuevoProductoInventario);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> eliminarProductoXIdAsync(string id)
+        {
+            // Buscamos el producto con el ID dado
+            var producto = await _dbContext.Productos.FirstOrDefaultAsync(c => c.Cod_Producto == id);
+
+            if (producto != null)
+            {
+                // Modificamos el campo Estado a 1
+                producto.estado = 0;
+
+                // Guardamos los cambios en la base de datos
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+
+            // Retorna falso si no se encuentra el producto
+            return false;
+        }
+        public Infopdv seleccionarNombrePDV(int selectedPDV)
+        {
+            return _dbContext.Infopdv.FirstOrDefault(p => p.Id == selectedPDV);
+        }
+        public Syncpdv ValidarExistenteIdPDV(int idPDV)
+        {
+            return _dbContext.Syncpdv.FirstOrDefault(s => s.Id == idPDV);
+        }
+        public Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV)
+        {
+            var nuevoEstadoPDV = new Syncpdv
+            {
+                Id = idPDV,
+                estado = estadopdv,
+                fechaEstado = DateTime.Now
+            };
+            _dbContext.Syncpdv.Add(nuevoEstadoPDV);
+            _dbContext.SaveChanges();
+            return nuevoEstadoPDV;
         }
     }
 }

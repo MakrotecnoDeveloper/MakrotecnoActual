@@ -1,12 +1,8 @@
-﻿using Login.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
-using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
@@ -107,10 +103,10 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa, int estado)
+        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado)
         {
             // Llama al método EditarProducto del servicio de productos
-            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, cantidad, categoria, idEmpresa, estado);
+            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, valorUnidad, cantidad, categoria, idEmpresa, estado);
 
             // Redirige a la acción que deseas después de editar el producto
             return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos
@@ -209,6 +205,46 @@ namespace Plataforma.Controllers
         {
             var productosTraidos = _productoservice.traerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
+        }
+
+        /*CHATGPT*/
+        [HttpGet]
+        public IActionResult Chat()
+        {
+            return View(new ChatViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MsjChatGPT(string Mensaje)
+        {
+            if (string.IsNullOrEmpty(Mensaje))
+            {
+                return BadRequest("El mensaje no puede estar vacío.");
+            }
+
+            try
+            {
+                // Buscar productos basados en el mensaje
+                var productos = await _productoservice.BuscarProductosAsync(Mensaje);
+
+                // Generar una respuesta usando OpenAI
+                var respuesta = await _productoservice.GenerarRespuestaAsync(Mensaje, productos);
+
+                // Crear un modelo para la vista parcial
+                var model = new ChatViewModel
+                {
+                    Mensaje = Mensaje,
+                    Respuesta = respuesta
+                };
+
+                // Devolver la vista parcial con la respuesta generada
+                return PartialView("_ChatMessages", model);
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+            }
         }
     }
 }

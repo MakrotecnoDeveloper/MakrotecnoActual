@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Mysqlx.Cursor;
+using MySql.Data.MySqlClient;
+using OpenAI_API;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -12,9 +11,14 @@ namespace Plataforma.Servicios.Implementacion
     {
         //variable de solo lectura para referenciar la base de datos
         private readonly BaseAdmContext _dbContext;
-        public ProductoService(BaseAdmContext dbContext)
+        private readonly OpenAIAPI _openAIAPI;
+        private readonly string _connectionString;
+        public ProductoService(BaseAdmContext dbContext, IConfiguration configuration)
         {
+            _connectionString = configuration.GetConnectionString("cadenaSQL");
             _dbContext = dbContext;
+            var apiKey = configuration["OpenAI:ApiKey"];
+            _openAIAPI = new OpenAIAPI(apiKey);
         }
         public List<Producto> ObtenerProductos()
         {
@@ -24,6 +28,9 @@ namespace Plataforma.Servicios.Implementacion
         {
             try
             {
+                int valorUnidad = 0;
+                int estado = 1;
+                string Ubicacion = "Web";
                 // Crear un nuevo objeto Producto con los parámetros proporcionados
                 var nuevoProducto = new Producto
                 {
@@ -32,9 +39,11 @@ namespace Plataforma.Servicios.Implementacion
                     CantidadProducto = stock,
                     ValorNetoProducto = valor_neto,
                     ValorVentaProducto = valor_unitario,
+                    valorUnidad = valorUnidad,
                     ID_Empresa = id_empresa,
                     Categoria = categorias,
-                    estado = 1
+                    estado = estado,
+                    Ubicacion = Ubicacion
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -192,7 +201,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int cantidad, string categoria, string idEmpresa, int estado)
+        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado)
         {
 
             if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
@@ -210,6 +219,7 @@ namespace Plataforma.Servicios.Implementacion
                 producto.CantidadProducto = cantidad;
                 producto.ValorNetoProducto = valorNeto;
                 producto.ValorVentaProducto = valorVenta;
+                producto.valorUnidad = valorUnidad;
                 producto.ID_Empresa = idEmpresa;
                 producto.Categoria = categoria;
                 producto.estado = estado;
@@ -379,6 +389,60 @@ namespace Plataforma.Servicios.Implementacion
                .Where(p => p.Categoria == categoria && p.estado == 1)
                .ToList();
             return productos;
+        }
+
+
+        /*Metodos con OpenAI*/
+        // Método para buscar productos en la base de datos
+        public async Task<List<string>> BuscarProductosAsync(string consulta)
+        {
+            var productos = new List<string>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Buscar productos que coincidan con la consulta del usuario
+                string query = "SELECT nombreProducto FROM Productos WHERE nombreProducto LIKE @consulta";
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@consulta", "%" + consulta + "%");
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            productos.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+
+            return productos;
+        }
+
+        // Método para generar una respuesta con OpenAI
+        public async Task<string> GenerarRespuestaAsync(string consulta, List<string> productos)
+        {
+            string prompt;
+
+            if (productos.Count > 0)
+            {
+                // Si hay productos encontrados, genera una respuesta basada en ellos
+                prompt = $"El usuario está buscando '{consulta}'. Estos son los productos que coinciden: {string.Join(", ", productos)}.";
+            }
+            else
+            {
+                // Si no se encontraron productos, pregunta a OpenAI cómo responder
+                prompt = $"El usuario está buscando '{consulta}', pero no se encontraron productos coincidentes. Proporcione una respuesta general sobre productos relacionados.";
+            }
+
+            var completion = await _openAIAPI.Completions.CreateCompletionAsync(new OpenAI_API.Completions.CompletionRequest
+            {
+                Prompt = prompt,
+                MaxTokens = 150
+            });
+
+            return completion.Completions[0].Text.Trim();
         }
     }
 }

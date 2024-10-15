@@ -1,0 +1,13 @@
+﻿@model Plataforma.Models.ChatViewModel
+
+<div class="chat-message">
+    @if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <p><strong>Usuario:</strong> @Model.Mensaje</p>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Respuesta))
+    {
+        <p><strong>Chatbot:</strong> @Model.Respuesta</p>
+    }
+</div>

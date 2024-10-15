@@ -10,8 +10,10 @@ namespace Plataforma.Models
         public int CantidadProducto { get; set; }
         public float ValorNetoProducto { get; set; }
         public float ValorVentaProducto { get; set; }
+        public int valorUnidad {  get; set; }
         public string? ID_Empresa { get; set; }
         public string? Categoria { get; set; }
         public int estado {  get; set; }
+        public string? Ubicacion { get; set; }
     }
 }

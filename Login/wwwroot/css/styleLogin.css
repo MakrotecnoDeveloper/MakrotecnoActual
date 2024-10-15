@@ -1,0 +1,37 @@
+﻿/* Background image (replace with URL from step 1) */
+body {
+    background-image: url("https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Login form styling (using Bootstrap) */
+.login-form {
+    width: 360px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-form-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-form-font-header {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+    .login-form-font-header span {
+        color: #007bff; /* Bootstrap primary color */
+    }
+
+.login-from-row {
+    margin-bottom: 15px;
+}

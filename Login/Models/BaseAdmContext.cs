@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Login.Models;
+﻿using Login.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Plataforma.Models;
@@ -28,6 +26,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Plataformas> Plataformas { get; set; }
     public DbSet<ClientesPlataforma> ClientesPlataforma { get; set; }
     public DbSet<VentPlatClient> VentPlatClient { get; set; }
+    public DbSet<Infopdv> Infopdv { get; set; }
+    public DbSet<Syncpdv> Syncpdv { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +48,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Plataformas>().HasKey(ip => ip.idPlataforma);
         modelBuilder.Entity<ClientesPlataforma>().HasKey(icp => icp.idCliPltf);
         modelBuilder.Entity<VentPlatClient>().HasKey(iv => iv.idVenta);
+        modelBuilder.Entity<Infopdv>().HasKey(iv => iv.Id);
+        modelBuilder.Entity<Syncpdv>().HasKey(ds => ds.Idsync);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
@@ -65,5 +67,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Plataformas>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedulaEmpleado);
         modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.idPlataforma);
         modelBuilder.Entity<VentPlatClient>().HasOne<ClientesPlataforma>().WithMany().HasForeignKey(f => f.idCliPltf);
+        modelBuilder.Entity<Infopdv>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_Empresa);
+        modelBuilder.Entity<Infopdv>().HasOne<Sede>().WithMany().HasForeignKey(f => f.Id_Sede);
+        modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.Id);
     }
 }

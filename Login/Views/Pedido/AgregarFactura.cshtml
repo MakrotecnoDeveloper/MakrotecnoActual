@@ -21,7 +21,7 @@
                     </div>
                     <!-- /.box-header -->
                     <!-- form start -->
-                    <form role="form" method="post" asp-controller="Pedido" asp-action="CrearFactura">
+                    <form role="form" method="post" asp-controller="Pedido" asp-action="CrearFactura" id="formCrearFactura">
                         <div class="box-body">
                                 <div class="form-group">
                                     <label for="cedula_cliente">Cédula del Cliente</label>
@@ -46,7 +46,7 @@
                         <!-- /.box-body -->
 
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary">Agregar Factura</button>
+                            <button type="submit" class="btn btn-primary" id="btnCrearFactura">Agregar Factura</button>
                         </div>
                     </form>
                 </div>

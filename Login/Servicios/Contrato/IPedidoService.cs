@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Login.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
@@ -16,6 +17,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura);
         Task<int> ObtenerCantidadTotalFacturasAsync();
         Factura BuscarFacturaPorId(int id);
+        Sedeempleado BuscarPdvPorCedula(int cedula);
         void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado);
         Task<List<Factura>> VisualizarPedido(string estado);
         Task<List<Pedidos>> VisualizarPedidoPorId(int id);

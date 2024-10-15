@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Login.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -57,12 +58,21 @@ namespace Plataforma.Controllers
             if (factura != null)
             {
                 var productos = _productoservice.ObtenerProductos();
+                var cedulaClaim = User.FindFirst("Cedula")?.Value;
+                Sedeempleado buscarpdv = null;
+                if (int.TryParse(cedulaClaim, out int cedula))
+                {
+                    // Si la conversión es exitosa, llama al servicio para buscar por cédula
+                    buscarpdv = _pedidoServicio.BuscarPdvPorCedula(cedula);
 
+                    // Puedes usar 'buscarpdv' como necesites
+                }
                 // Crear el objeto ViewModel y asignar los valores
                 var viewModel = new PedidoViewModel
                 {
                     Factura = factura,
-                    Productos = productos
+                    Productos = productos,
+                    Sedeempleado = buscarpdv
                 };
 
                 // Pasar el ViewModel a la vista

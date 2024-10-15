@@ -26,7 +26,18 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0">Dashboard</h1>
-                    <h1>Usuario Autenticado: @nombre Cargo: @NombreRolClaim RolId = @rolClaim</h1>
+                    <span>Usuario Autenticado: @nombre</span><hr />
+                    <span>Cargo: @NombreRolClaim</span><hr />
+                    <span>Nombre de la PDV: @ViewBag.NombrePDV</span><hr />
+                    <span>RolId = @rolClaim</span><hr />
+                    <form id="estadoPDVForm">
+                        <select name="estadopdv" id="estadopdv">
+                            <option value="1">Apertura</option>
+                            <option value="0">Cierre</option>
+                        </select>
+                        <input type="hidden" value="@ViewBag.IdPDV" name="idPDV" id="idPDV">
+                        <button type="submit">Enviar</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -422,6 +433,7 @@
         </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+    @section scripts{
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var ctx = document.getElementById('productosMasVendidosChart').getContext('2d');
@@ -483,6 +495,36 @@
                 }
             });
         });
+
+            //Codigo para cambiar estado de PDV en el Inicio/Index
+            $(document).ready(function () {
+                $('#estadoPDVForm').submit(function (event) {
+                    event.preventDefault(); // Evita que el formulario se envíe de manera tradicional
+
+                    var estadoPDV = $('#estadopdv').val(); // Obtiene el valor seleccionado
+                    var idPDV = $('#idPDV').val();
+
+                    $.ajax({
+                        url: '@Url.Action("EstadoPDV", "Inicio")', // URL a la que se envía la solicitud
+                        type: 'POST',
+                        data: { estadopdv: estadoPDV, idPDV: idPDV }, // Datos a enviar
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message); // Muestra el mensaje de éxito
+                            }else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Maneja el error aquí
+                            //$('#resultado').html('Error: ' + error);
+                            alert("Error cambiando el estado del PDV");
+                        }
+                    });
+                });
+            });
+            //Fin Codigo
     </script>
+    }
 </div>
 <!-- /.content-wrapper -->

@@ -1,6 +1,4 @@
 ﻿//Representacion de la tabla Usuario de la base de datos
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Plataforma.Models;

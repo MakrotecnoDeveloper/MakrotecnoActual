@@ -13,10 +13,11 @@ namespace Plataforma.Servicios.Contrato
         string ObtenerNombreRolPermisos(int rolEmpleado);
         Sedeempleado ObtenerSedeEmpleadoPorCedula(int cedulaEmpleado);
         Task<logsLogin> InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado);
-        Task<Empleado> GetUsuarios(string correo, string password);
+        Empleado GetUsuarios(int cedula, string password);
         //el segundo metodo guarda usuarios
         Task<Empleado> SaveUsuario(Empleado modelo);
-        bool validarEmpleado(int cedula);
+		List<Infopdv> funValidarPDV(int cedula);
+		bool validarEmpleado(int cedula);
         IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
         List<Empleado> BuscarUsuario(int id);
         void EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
@@ -35,7 +36,14 @@ namespace Plataforma.Servicios.Contrato
         bool ObtenerSedePorEmpleado(int cedula);
         List<TipoCargo> ObtenerCargos(string idEmpresa);
         bool InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
-        List<FacProuserViewModel> TraerFactXDia(Claim cedulaClaim);
+        List<FacProuserViewModel> TraerFactXDia(int cedula);
         Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma);
+        List<Producto> ProductosAbarrotes();
+        Task<bool> ActualizarProductoAsync(string id, string campo, string newVal);
+        Task<bool> insertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion);
+        Task<bool> eliminarProductoXIdAsync(string id);
+        Infopdv seleccionarNombrePDV(int selectedPDV);
+        Syncpdv ValidarExistenteIdPDV(int idPDV);
+        Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV);
     }
 }
