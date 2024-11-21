@@ -1,58 +1,178 @@
 ﻿@model List<Plataformas>
-
 @{
     ViewData["Title"] = "formVisuPlatf";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content-wrapper">
-    <div class="container mt-5">
-        <h2 class="mb-4">Listado de Plataformas</h2>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Plataforma</th>
-                        <th>Descripción</th>
-                        <th>Valor Venta</th>
-                        <th>Valor Neto</th>
-                        <th>Fecha Ini Pago</th>
-                        <th>Fecha Fin Pago</th>
-                        <th>Cantidad</th>
-                        <th>Correo</th>
-                        <th>Contraseña</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var plataforma in Model)
-                    {
-                        <tr>
-                            <td>@plataforma.idPlataforma</td>
-                            <td>@plataforma.plataforma</td>
-                            <td>@plataforma.descripcion</td>
-                            <td>@plataforma.valorVenta</td>
-                            <td>@plataforma.valorNeto</td>
-                            <td>@plataforma.fechaIniPago.ToString("yyyy-MM-dd")</td>
-                            <td>@plataforma.fechaFinPago.ToString("yyyy-MM-dd")</td>
-                            <td>@plataforma.cantidad</td>
-                            <td>@plataforma.correo</td>
-                            <td>@plataforma.contrasena</td>
-                            <td>@plataforma.estado</td>
-                            <td>
-                                <a href="@Url.Action("Edit", "Producto", new { id = plataforma.idPlataforma })" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="@Url.Action("Delete", "Producto", new { id = plataforma.idPlataforma })" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar esta plataforma?');">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <div class="container">
+        <div class="row">
+
+            <div class="col-12">
+                <div id="contCuentasActivas">
+                    <select id="tiposPlataformas" class="form-control">
+                        <option value="">Seleccione Plataforma</option>
+                        @foreach (var plataforma in Model)
+                        {
+                            <option value="@plataforma.IdPlataforma">@plataforma.NombrePltf</option>
+                        }
+                    </select>
+
+                    <select id="ctaActivasPlataformas" class="form-control" disabled>
+                        <option value="">Seleccione suscripcion</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12">
+                <div id="contenedorDatos">
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <script>
+        // Cuando cambia la selección en el primer select
+        document.getElementById('tiposPlataformas').addEventListener('change', async function (event) {
+            const plataformaId = event.target.value;
+            if (!plataformaId) {
+                return;
+            }
+
+            // Limpiar y habilitar el segundo select
+            const ctaActivasPlataformas = document.getElementById('ctaActivasPlataformas');
+            ctaActivasPlataformas.innerHTML = "<option> Cargando...</option>";
+            ctaActivasPlataformas.disabled = true;
+
+            // Hacer la consulta asincrónica para obtener las suscripciones activas para la plataforma seleccionada
+            const response = await fetch(`/Producto/GetSuscripcionesActivas?plataformaId=${plataformaId}`);
+            const suscripciones = await response.json();
+            // Llenar el select de suscripciones
+            ctaActivasPlataformas.innerHTML = "<option value=''>Seleccione suscripción</option>";
+            suscripciones.forEach(suscripcion => {
+                const option = document.createElement('option');
+                option.value = suscripcion.idPltfSuscripcion;
+                option.textContent = suscripcion.descripcion;
+                ctaActivasPlataformas.appendChild(option);
+            });
+
+            ctaActivasPlataformas.disabled = false;
+        });
+
+        // Cuando se selecciona una suscripción
+        document.getElementById('ctaActivasPlataformas').addEventListener('change', async function (event) {
+            const suscripcionId = event.target.value;
+            if (!suscripcionId) {
+                return;
+            }
+
+            // Hacer la consulta asincrónica para obtener los datos de la suscripción y clientes
+            const response = await fetch(`/Producto/GetDatosPlataforma?suscripcionId=${suscripcionId}`);
+            const datos = await response.json();
+            console.log(datos);
+            // Llenar el contenedor de datos con la tabla
+            const contenedorDatos = document.getElementById('contenedorDatos');
+            contenedorDatos.innerHTML = '';
+
+            const tabla = document.createElement('table');
+            tabla.className = 'table table-bordered';
+            tabla.innerHTML = `
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Plataforma</th>
+                                        <th>Descripción</th>
+                                        <th>Fecha Ini Pago</th>
+                                        <th>Fecha Fin Pago</th>
+                                        <th>Cantidad</th>
+                                        <th>Correo</th>
+                                        <th>Contraseña</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                        <tbody>
+                                    ${datos.map(plataformasstr => {
+                return `
+                                            <tr>
+                                                <td>${plataformasstr.idCliente}</td>
+                                                <td>${plataformasstr.idClientePlataforma}</td>
+                                                <td>${plataformasstr.nombreCliente}</td>
+                                                <td>${plataformasstr.fechaIni}</td>
+                                                <td>${plataformasstr.fechaFin}</td>
+                                                <td>${plataformasstr.plataforma}</td>
+                                                <td>${plataformasstr.correoPlataforma}</td>
+                                                <td>${plataformasstr.clavePlataforma}</td>
+                                                <td>${plataformasstr.estado}</td>
+                                                <td>${new Date(plataformasstr.fechaIni).toLocaleDateString()}</td>
+                                                <td>${new Date(plataformasstr.fechaFin).toLocaleDateString()}</td>
+                                                <td>${plataformasstr.estado ? 'Activo' : 'Inactivo'}</td>
+                                                <td>
+                                                    <button class="btn btn-warning btn-sm" onclick="editarEstado(${plataformasstr.idClientePlataforma}, ${plataformasstr.estado}, ${plataformasstr.idCliente})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${plataformasstr.idCliente})">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>`;
+            }).join('')}
+                                </tbody>
+
+                            `;
+            contenedorDatos.appendChild(tabla);
+        });
+
+
+        //Acciones btn
+        function editarEstado(idClientePlataforma, estado, idCliente) {
+
+            // Mostrar el cuadro de diálogo para que el usuario ingrese el nuevo estado
+            var nuevoEstado = prompt("Ingrese el nuevo estado:", estado);
+
+            // Verificar que el usuario haya ingresado un estado
+            if (nuevoEstado !== null && nuevoEstado.trim() !== "") {
+                // Enviar los datos al controlador mediante una solicitud AJAX
+                $.ajax({
+                    url: '@Url.Action("EditarEstadoCta", "Producto")',
+                    type: 'POST',
+                    data: {
+                        id: idClientePlataforma,
+                        estado: nuevoEstado,
+                        idCliente: idCliente
+                    },
+                    success: function (response) {
+                        // Manejar la respuesta del servidor si es necesario
+                        alert("Estado actualizado exitosamente.");
+                        // Opcional: Puedes actualizar la página o la parte de la interfaz de usuario aquí
+                    },
+                    error: function (xhr, status, error) {
+                        // Manejar errores aquí
+                        alert("Hubo un error al actualizar el estado.");
+                    }
+                });
+            } else {
+                alert("El estado no puede estar vacío.");
+            }
+        }
+
+        function eliminarCliente(idClientePlataforma) {
+            if (confirm('¿Está seguro que desea eliminar este cliente?')) {
+                fetch(`/Producto/Delete?id=${idClientePlataforma}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Cliente eliminado con éxito.');
+                            location.reload(); // Refresca la tabla
+                        } else {
+                            alert('Error al eliminar el cliente.');
+                        }
+                    });
+            }
+        }
+
+    </script>
+}
+
+

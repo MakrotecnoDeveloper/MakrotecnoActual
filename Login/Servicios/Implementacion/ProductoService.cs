@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using OpenAI_API;
@@ -23,6 +24,12 @@ namespace Plataforma.Servicios.Implementacion
         public List<Producto> ObtenerProductos()
         {
             return _dbContext.Productos.ToList();
+        }
+        public List<Producto> ObtenerProductosInventarioWeb()
+        {
+            return _dbContext.Productos
+                    .Where(p => !new[] { "Abarrotes", "Selecciona la Categoria", "Support" }.Contains(p.Categoria))
+                    .ToList();
         }
         public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias)
         {
@@ -268,11 +275,11 @@ namespace Plataforma.Servicios.Implementacion
         }
 
         //a
-        public void inserPlataformaService(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
+        public void inserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
         {
-            var nuevaPlataforma = new Plataformas
+            var nuevaPlataforma = new Plataformasuscripcion
             {
-                plataforma = plataforma,
+                idPlataforma = idPlataforma,
                 descripcion = descripcion,
                 valorVenta = valorventa,
                 valorNeto = valorneto,
@@ -286,36 +293,94 @@ namespace Plataforma.Servicios.Implementacion
             };
 
             // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
-            _dbContext.Plataformas.Add(nuevaPlataforma);
+            _dbContext.Plataformasuscripcion.Add(nuevaPlataforma);
             _dbContext.SaveChanges();
         }
         public List<Plataformas> traerPlataformasExistentes()
         {
             return _dbContext.Plataformas.ToList();
         }
-        public List<ClientePlataformaDTO> TraerCtaClientPlatfExistentes()
+        public List<Plataformasuscripcion> SuscripcionesActivas()
         {
-            var resultado = (from cp in _dbContext.ClientesPlataforma
-                             join p in _dbContext.Plataformas on cp.idPlataforma equals p.idPlataforma
-                             select new ClientePlataformaDTO
-                             {
-                                 idCliente = cp.idCliPltf,
-                                 IdClientePlataforma = cp.idPlataforma,
-                                 CorreoPlataforma = p.correo,
-                                 ClavePlataforma = p.contrasena,
-                                 NombreCliente = cp.nombreCliente,
-                                 ClavePerfil = cp.clavePerfil,
-                                 Celular = cp.celularCliente,
-                                 FechaIni = cp.fechaIniPago,
-                                 FechaFin = cp.fechaFinPago,
-                                 Plataforma = p.plataforma,
-                                 Estado = cp.estado
-                             }).ToList();
-            return resultado;
+            return _dbContext.Plataformasuscripcion.ToList();
         }
-        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        public async Task<List<Plataformasuscripcion>> ObtenerSuscripcionesActivas(int plataformaId)
         {
-            var plataforma = _dbContext.Plataformas.SingleOrDefault(p => p.idPlataforma == idplataforma);
+            // Consultar las suscripciones activas para una plataforma específica
+            var suscripciones = await _dbContext.Plataformasuscripcion
+                .Where(s => s.estado == 1 && s.idPlataforma == plataformaId)
+                .ToListAsync();
+
+            return suscripciones;
+        }
+        public async Task<List<ClientePlataformaDTO>> ObtenerDatosSuscripcion(int suscripcionId)
+        {
+            var datos = await _dbContext.ClientesPlataforma
+                .Where(cp => cp.idPltfSuscripcion == suscripcionId && cp.estado == 1)
+                .Join(_dbContext.Plataformasuscripcion,
+                    cp => cp.idPltfSuscripcion,
+                    ps => ps.idPltfSuscripcion,
+                    (cp, ps) => new ClientePlataformaDTO
+                    {
+                        idCliente = cp.idCliPltf,
+                        IdClientePlataforma = ps.idPlataforma,
+                        NombreCliente = cp.nombreCliente,
+                        CorreoPlataforma = cp.correo,
+                        ClavePlataforma = ps.contrasena,
+                        ClavePerfil = cp.clavePerfil,
+                        Celular = cp.celularCliente,
+                        FechaIni = cp.fechaIniPago,
+                        FechaFin = cp.fechaFinPago,
+                        Plataforma = ps.idPlataforma,
+                        NombrePlataforma = ps.descripcion,
+                        Estado = cp.estado
+                    })
+                .ToListAsync();
+
+            return datos;
+        }
+        public async Task<List<ClientePlataformaDTO>> ObtenerDatosPlataforma(int suscripcionId)
+        {
+            var datos = await _dbContext.Plataformasuscripcion
+                .Where(ps => ps.idPltfSuscripcion == suscripcionId && ps.estado == 1)
+                .Select(ps => new ClientePlataformaDTO
+                {
+                    idCliente = ps.idPltfSuscripcion,
+                    IdClientePlataforma = ps.idPlataforma,
+                    NombreCliente = ps.descripcion,
+                    CorreoPlataforma = ps.correo,
+                    ClavePlataforma = ps.contrasena,
+                    FechaIni = ps.fechaIniPago,
+                    FechaFin = ps.fechaFinPago,
+                    Plataforma = ps.cantidad,
+                    Estado = ps.estado
+                })
+            .ToListAsync();
+
+            return datos;
+        }
+        public async Task<bool> EliminarClienteAsync(int idClientePlataforma)
+        {
+            try
+            {
+                var cliente = await _dbContext.ClientesPlataforma.FindAsync(idClientePlataforma);
+                if (cliente == null)
+                {
+                    return false; // Cliente no encontrado
+                }
+
+                _dbContext.ClientesPlataforma.Remove(cliente);
+                await _dbContext.SaveChangesAsync();
+                return true; // Eliminado con éxito
+            }
+            catch (Exception)
+            {
+                return false; // Manejo de errores
+            }
+        }
+        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        {
+            var plataforma = _dbContext.Plataformasuscripcion.SingleOrDefault(p => p.idPltfSuscripcion == idPltfSuscripcion);
             if (plataforma != null)
             {
                 // Si la plataforma existe, actualizar el campo cantidad
@@ -333,7 +398,7 @@ namespace Plataforma.Servicios.Implementacion
                         celularCliente = celularcliente,
                         correo = correo,
                         clave = contrasena,
-                        idPlataforma = idplataforma,
+                        idPltfSuscripcion = idPltfSuscripcion,
                         cantidad = cantidad,
                         ppm = ppm,
                         fechaIniPago = feciniplat,
@@ -363,7 +428,7 @@ namespace Plataforma.Servicios.Implementacion
         public async Task ActualizarCliente(int id, int estado, int idCliente)
         {
             // Buscar la plataforma en la base de datos
-            var plataforma = await _dbContext.Plataformas.SingleOrDefaultAsync(p => p.idPlataforma == id);
+            var plataforma = await _dbContext.Plataformasuscripcion.SingleOrDefaultAsync(p => p.idPlataforma == id);
             if (plataforma != null)
             {
                 // Si la plataforma existe, actualizar el campo cantidad

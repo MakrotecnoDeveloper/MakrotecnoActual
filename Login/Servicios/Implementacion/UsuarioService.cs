@@ -1,15 +1,12 @@
 ﻿using Login.Models;
 using Microsoft.EntityFrameworkCore;
-using OpenAI_API.Moderation;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using System.Security.Claims;
 
 namespace Plataforma.Servicios.Implementacion
 {
     public class UsuarioService : IUsuarioService
     {
-        //variable de solo lectura para referenciar la base de datos
         private readonly BaseAdmContext _dbContext;
         public UsuarioService(BaseAdmContext dbContext)
         {
@@ -21,64 +18,55 @@ namespace Plataforma.Servicios.Implementacion
         }
         public int ObtenerRolPermisos(int cedula)
         {
-            var idCargo = _dbContext.Sedeempleado
+            return _dbContext.Sedeempleado
                      .Where(se => se.cedula == cedula)
                      .Select(se => se.id_cargo)
                      .FirstOrDefault();
-            if (idCargo < 0)
-            {
-                throw new Exception("El Usuario no tiene una sede y un rol sincronizado.");
-            }
-            else
-            {
-                return idCargo;
-            }
         }
-        public string ObtenerNombreRolPermisos(int rolEmpleado)
+        public string? ObtenerNombreRolPermisos(int rolEmpleado)
         {
-            var nombreCargo = _dbContext.TipoCargo
+            return _dbContext.TipoCargo
                          .Where(tc => tc.id_tipo == rolEmpleado)
                          .Select(tc => tc.nombreCargo)
                          .FirstOrDefault();
-            if(nombreCargo == null)
-            {
-                throw new Exception("No tiene creado un cargo para dicha empresa.");
-            }
-            else
-            {
-                return nombreCargo;
-            }
         }
-        public Sedeempleado ObtenerSedeEmpleadoPorCedula(int cedulaEmpleado)
+        public int TraerUltimoIDPdv(int cedulaEmpleado)
         {
-            var valorSedeEmpleadoCedula = _dbContext.Sedeempleado.FirstOrDefault(se => se.cedula == cedulaEmpleado);
-            if(valorSedeEmpleadoCedula != null)
-            {
-                return valorSedeEmpleadoCedula;
-            }else
-            {
-                throw new Exception("El empleado no tiene conexion con una sede y cargo, porfavor crearla.");
-            }
+            return _dbContext.LogsLogin
+            .Where(ce => ce.Cedula == cedulaEmpleado)
+            .OrderByDescending(ce => ce.Id_log)
+            .Select(ce => ce.InfopdvId)
+            .FirstOrDefault();
         }
-        public async Task<logsLogin> InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado)
+        public LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV)
         {
             var utcNow = DateTime.UtcNow;
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
             var localDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
-            var login = new logsLogin
+
+            var login = new LogsLogin
             {
                 Cedula = cedulaEmpleado,
                 Correo = correoEmpleado,
                 Fecha = localDateTime,
-                Estado = estado // Sesión activa
+                Estado = estado,
+                InfopdvId = idPDV
             };
-            // Guardar información de sesión en la base de datos
-            _dbContext.LogsLogin.Add(login);
-            await _dbContext.SaveChangesAsync();
 
-            return login;
+                _dbContext.LogsLogin.Add(login);
+                var result = _dbContext.SaveChanges();
+
+                if (result > 0)
+                {
+                    return login;
+                }
+                else
+                {
+                    return null;
+                }
         }
-        public Empleado GetUsuarios(int cedula, string password)
+
+        public Empleado? GetUsuarios(int cedula, string password)
         {
             Empleado? usuario_encontrando = _dbContext.Empleado.Where(u => u.Cedula == cedula && u.Contrasena == password).FirstOrDefault();
             if (usuario_encontrando == null)
@@ -88,24 +76,22 @@ namespace Plataforma.Servicios.Implementacion
 
             return usuario_encontrando;
         }
-        public List<Infopdv> funValidarPDV(int cedula)
+        public List<Infopdv> FunValidarPDV(int cedula)
         {
-			// Primero, buscamos al empleado en la tabla sedeempleado
+
 			var idSede = _dbContext.Sedeempleado
 	        .Where(se => se.cedula == cedula)
 	        .Select(se => se.id_sede)
 	        .FirstOrDefault();
-			// Verificamos si el empleado fue encontrado
+
 			if (idSede <= 0)
 			{
 				return new List<Infopdv>();
 			}
-			// Ahora, usamos el id_sede para buscar las PDVs en la tabla infopdv
-			var pdvs = _dbContext.Infopdv
+
+			return _dbContext.Infopdv
 	        .Where(p => p.Id_Sede == idSede)
 	        .ToList();
-			// Retornamos la lista de PDVs asociadas a esa sede
-			return pdvs;
 
 		}
         public async Task<Empleado> SaveUsuario(Empleado modelo)
@@ -114,7 +100,7 @@ namespace Plataforma.Servicios.Implementacion
             await _dbContext.SaveChangesAsync();
             return modelo;
         }
-        public bool validarEmpleado(int cedula)
+        public bool ValidarEmpleado(int cedula)
         {
             var empleadoExistente = _dbContext.Empleado.FirstOrDefault(p => p.Cedula == cedula);
             return empleadoExistente != null;
@@ -148,11 +134,8 @@ namespace Plataforma.Servicios.Implementacion
                 return new List<Empleado>();
             }
         }
-        public void EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
+        public void EditarEmpleado(Empleado empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
-            var empleado = _dbContext.Empleado.FirstOrDefault(p => p.Cedula == cedula);
-            if (empleado != null)
-            {
                 empleado.Cedula = cedula;
                 empleado.Nombre = nombre;
                 empleado.Apellido = apellido;
@@ -161,19 +144,7 @@ namespace Plataforma.Servicios.Implementacion
                 empleado.Rh = rh;
                 empleado.Celular = celular;
                 empleado.Contrasena = contrasena;
-                try
-                {
-                    _dbContext.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Error al guardar los cambios en la base de datos: " + ex.Message);
-                }
-            }
-            else
-            {
-                throw new Exception("El empleado no existe");
-            }
+                _dbContext.SaveChanges();
         }
         public List<TipoCargo> ObtenerCargos()
         {
@@ -183,13 +154,12 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Empresas.ToList();
         }
+        public TipoCargo? ValidarCargo(string nombreCargo)
+        {
+            return _dbContext.TipoCargo.FirstOrDefault(p => p.nombreCargo == nombreCargo);
+        }
         public IEnumerable<TipoCargo> InsertarCargos(string nombreCargo, string descripcionCargo, string id_empresa)
         {
-            var cargoExistente = _dbContext.TipoCargo.FirstOrDefault(p => p.nombreCargo == nombreCargo);
-            if (cargoExistente != null)
-            {
-                throw new Exception("Ya existe este cargo");
-            }
             var nuevoCargo = new TipoCargo
             {
                 nombreCargo = nombreCargo,
@@ -200,13 +170,12 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return _dbContext.TipoCargo.ToList();
         }
+        public Empresas? ValidarExistenciaEmpresa(string nit)
+        {
+            return _dbContext.Empresas.FirstOrDefault(p => p.id_empresa == nit);
+        }
         public IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
         {
-            var empresaExiste = _dbContext.Empresas.FirstOrDefault(p => p.id_empresa == nit);
-            if(empresaExiste != null)
-            {
-                throw new Exception("Ya existe la empresa");
-            }
             var direccion = calle + " # " + carrera + ", " + ciudad + " - " + departamento;
             var celular = indicativo + " " + numero;
             var nuevaEmpresa = new Empresas
@@ -225,13 +194,12 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Sede.ToList();
         }
+        public Sede? ValidarExistenciaSede(string nombreSede)
+        {
+            return _dbContext.Sede.FirstOrDefault(p => p.nombreSede == nombreSede);
+        }
         public IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
         {
-            var sedeExiste = _dbContext.Sede.FirstOrDefault(p => p.nombreSede == nombreSede);
-            if (sedeExiste != null)
-            {
-                throw new Exception("Ya existe la sede");
-            }
             var nuevaSede = new Sede
             {
                 id_empresa = id_empresa,
@@ -244,14 +212,12 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return _dbContext.Sede.ToList();
         }
+        public EmpleadoEmpresa? ValidarExisEmpleadoEmpresa(string id_empresa, int cedula)
+        {
+            return _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.id_empresa == id_empresa && ee.cedula == cedula);
+        }
         public IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string id_empresa, int cedula)
         {
-            var empleadoExisteEmpresaExiste = _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.id_empresa == id_empresa && ee.cedula == cedula);
-            if (empleadoExisteEmpresaExiste != null)
-            {
-                throw new Exception("Ya existe la relación entre este empleado y esta empresa.");
-            }
-            Console.WriteLine("La empresa con IDEmpresa: " + id_empresa);
             var nuevoEmpleadoEmpresa = new EmpleadoEmpresa
             {
                 id_empresa = id_empresa,
@@ -261,7 +227,6 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return _dbContext.EmpleadoEmpresa.ToList();
         }
-
         public EmpleadoSedeViewModel? EmpleadoSede()
         {
             var empleados = _dbContext.Empleado.ToList();
@@ -306,7 +271,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<Sede> GetSedesByEmpresaId(string empresaId)
         {
-            var sedes = _dbContext.Sede
+            return _dbContext.Sede
              .Where(s => s.id_empresa == empresaId)
              .Select(s => new Sede
              {
@@ -314,18 +279,17 @@ namespace Plataforma.Servicios.Implementacion
                  nombreSede = s.nombreSede
              })
              .ToList();
-
-            return sedes;
         }
-        public Empleado ValidarCedula(int cedula)
+        public Empleado? ValidarCedula(int cedula)
         {
-            var empleado = _dbContext.Empleado.FirstOrDefault(e => e.Cedula == cedula);
-            return empleado ?? throw new Exception("Empleado no encontrado (VC)");
+            return _dbContext.Empleado.FirstOrDefault(e => e.Cedula == cedula);
         }
         public string? ObtenerIdEmpresa(int cedula)
         {
-            var empleadoEmpresa = _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.cedula == cedula);
-            return empleadoEmpresa?.id_empresa;
+            return _dbContext.EmpleadoEmpresa
+                .Where(ee => ee.cedula == cedula)
+                .Select(ee => ee.id_empresa)
+                .FirstOrDefault();
         }
         public List<Sede> ObtenerSedes(string idEmpresa)
         {
@@ -361,36 +325,29 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return true;
         }
-        public List<FacProuserViewModel> TraerFactXDia(int cedula)
+        public List<FacProuserViewModel> TraerFactXDia(int cedula, int idPDVActual)
         {
             DateTime fecha = DateTime.UtcNow.Date;
-            //DateTime fechaInicio = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             DateTime fechaInicio = new(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             DateTime fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
 
             int totalFacturas = _dbContext.Factura
                 .Where(f => f.fechaVenta == fecha)
                 .Count();
-            decimal sumaValorVenta = (from pedido in _dbContext.Pedidos
-                                  join factura in _dbContext.Factura
-                                  on pedido.cod_factura equals factura.cod_factura
-                                  where factura.fechaVenta == fecha
-                                      select pedido.valorVenta).Sum();
+
+            decimal sumaValorVenta = _dbContext.Pedidos
+            .Join(
+                _dbContext.Factura,
+                pedido => pedido.cod_factura,
+                factura => factura.cod_factura,
+                (pedido, factura) => new { pedido, factura })
+            .Where(x => x.factura.fechaVenta == fecha)
+            .Sum(x => (decimal?)x.pedido.valorVenta) ?? 0;
+
+
             int totalEmpleados = _dbContext.Empleado.Count();
+
             int totalProductos = _dbContext.Productos.Count();
-            var productosMasVendidos = (from pedido in _dbContext.Pedidos
-                                        join factura in _dbContext.Factura
-                                        on pedido.cod_factura equals factura.cod_factura
-                                        join producto in _dbContext.Productos
-                                        on pedido.cod_producto equals producto.Cod_Producto
-                                        where factura.fechaVenta >= fechaInicio && factura.fechaVenta <= fechaFin
-                                        group pedido by new { pedido.cod_producto, producto.NombreProducto } into grouped
-                                        orderby grouped.Sum(p => p.cantidad) descending
-                                        select new ProductoMasVendidoViewModel
-                                        {
-                                            NombreProducto = grouped.Key.NombreProducto,
-                                            CantidadVendida = grouped.Sum(p => p.cantidad)
-                                        }).Take(5).ToList();
 
             string rolEmpleado = string.Empty;
                 var rolEmpleadoResult = (from se in _dbContext.Sedeempleado
@@ -405,33 +362,33 @@ namespace Plataforma.Servicios.Implementacion
                 }
                 else
                 {
-                    throw new Exception("Empleado no encontrado  (TFXD)");
+                    rolEmpleado = "No asignado";
 
                 }
 
-            //Traer Plataformas
-            var plataformas = _dbContext.Plataformas.ToList();
+            string? traerNombrePDV = _dbContext.Infopdv
+          .Where(ce => ce.InfopdvId == idPDVActual)
+          .Select(ce => ce.Name)
+          .FirstOrDefault();
 
-            // Crear el ViewModel con la suma total
             FacProuserViewModel viewModel = new()
             {
                 TotalSumaCodFactura = totalFacturas,
                 TotalVentaDia = sumaValorVenta,
                 TotalEmpleados = totalEmpleados,
                 TotalProductos = totalProductos,
-                ProductosMasVendidos = productosMasVendidos,
                 RolEmpleado = rolEmpleado,
-                Plataformas = plataformas
+                IdPDV = idPDVActual,
+                NombrePDV = traerNombrePDV
             };
 
-            // Devolver una lista con el ViewModel
             return new List<FacProuserViewModel> { viewModel };
         }
         public async Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma)
         {
             var fechaActual = DateTime.Now;
             var cuentasProximas = await _dbContext.ClientesPlataforma
-                .Where(cp => cp.idPlataforma == idPlataforma && cp.fechaFinPago <= fechaActual.AddDays(5))
+                .Where(cp => cp.idPltfSuscripcion == idPlataforma && cp.fechaFinPago <= fechaActual.AddDays(5))
                 .ToListAsync();
 
             return cuentasProximas;
@@ -445,9 +402,6 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<bool> ActualizarProductoAsync(string id, string campo, string newVal)
         {
-            try
-            {
-                // Obtener el producto a actualizar
                 var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == id);
 
                 if (producto == null)
@@ -455,34 +409,22 @@ namespace Plataforma.Servicios.Implementacion
                     return false;
                 }
 
-                // Usar reflexión para asignar el nuevo valor al campo específico
                 var property = producto.GetType().GetProperty(campo);
-                if (property != null)
-                {
-                    property.SetValue(producto, Convert.ChangeType(newVal, property.PropertyType));
-                }
+                property?.SetValue(producto, Convert.ChangeType(newVal, property.PropertyType));
 
-                // Guardar cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
                 return true;
-            }
-            catch (Exception ex)
-            {
-                // Loguear o manejar la excepción según sea necesario
-                return false;
-            }
         }
-        public async Task<bool> insertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
+        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
         {
             var productosObtenidos = _dbContext.Productos.Where(c => c.Categoria == "Abarrotes").OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
             .Select(p => {
-                int numero;
-                bool isNumeric = int.TryParse(p.Cod_Producto, out numero);
+                bool isNumeric = int.TryParse(p.Cod_Producto, out int numero);
                 return new { Producto = p, Numero = isNumeric ? (int?)numero : null };
             })
             .Where(p => p.Numero.HasValue)
-            .Select(p => p.Numero.Value)
+            .Select(p => p.Numero.GetValueOrDefault())
             .ToList();
             int nuevoCodigo = codigosNumericos.Count > 0 ? codigosNumericos.Max() + 1 : 1;
             string nuevoCodigoStr = nuevoCodigo.ToString();
@@ -504,40 +446,42 @@ namespace Plataforma.Servicios.Implementacion
             return true;
         }
 
-        public async Task<bool> eliminarProductoXIdAsync(string id)
+        public async Task<bool> EliminarProductoXIdAsync(string id)
         {
-            // Buscamos el producto con el ID dado
             var producto = await _dbContext.Productos.FirstOrDefaultAsync(c => c.Cod_Producto == id);
 
             if (producto != null)
             {
-                // Modificamos el campo Estado a 1
                 producto.estado = 0;
 
-                // Guardamos los cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
 
                 return true;
             }
 
-            // Retorna falso si no se encuentra el producto
             return false;
         }
-        public Infopdv seleccionarNombrePDV(int selectedPDV)
+        public Infopdv? SeleccionarNombrePDV(int selectedPDV)
         {
-            return _dbContext.Infopdv.FirstOrDefault(p => p.Id == selectedPDV);
+            return _dbContext.Infopdv.FirstOrDefault(p => p.InfopdvId == selectedPDV);
         }
-        public Syncpdv ValidarExistenteIdPDV(int idPDV)
+        public int? ValidarExistenteIdPDV(int idPDV, int cedula)
         {
-            return _dbContext.Syncpdv.FirstOrDefault(s => s.Id == idPDV);
+            return _dbContext.Syncpdv
+                .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
+                .OrderByDescending(s => s.Idsync)
+                .Select(s => s.estado)
+                .FirstOrDefault();
         }
-        public Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV)
+        public Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV, int cedula)
         {
+            Console.WriteLine("La cedula del trabajador es: " + cedula);
             var nuevoEstadoPDV = new Syncpdv
             {
-                Id = idPDV,
+                InfopdvId = idPDV,
                 estado = estadopdv,
-                fechaEstado = DateTime.Now
+                fechaEstado = DateTime.Now,
+                Cedula = cedula
             };
             _dbContext.Syncpdv.Add(nuevoEstadoPDV);
             _dbContext.SaveChanges();

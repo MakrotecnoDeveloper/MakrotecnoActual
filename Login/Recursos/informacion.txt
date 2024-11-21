@@ -82,3 +82,9 @@ Forma de hacer un ajax de manera mas elegante
         xhr.send(`cedula=${cedula}`); // Send the Cédula data
     });
 </script>
+
+
+
+v2
+Se cambio nombre del campo Id de la tabla  infopdv a "InfopdvId", por lo tanto se cambio ese nombre en las llaves foraneas
+como lo son: en las tablas logslogin, pedidos, syncpdv

@@ -506,10 +506,6 @@
                         </li>
                         <li class="nav-header">GESTION HISTORICOS</li>
                         <li class="nav-item">
-                            @{
-                                // Generar la URL base usando los atributos HTML Helpers de ASP.NET Core
-                                var url2 = Url.Action("FormGanancia", "Pedido");
-                            }
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>
@@ -519,15 +515,21 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="@($"{url2}?estado=Proceso")">
+                                    <a asp-controller="Pedido" asp-action="AgregarGanancia" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Agregar Ganancia</p>
+                                        <p>Recogida</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a asp-controller="Pedido" asp-action="VisualizarGanancia" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ver Ganancias</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Pedido" asp-action="ProcesoRecogida" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Recogida</p>
                                     </a>
                                 </li>
                             </ul>

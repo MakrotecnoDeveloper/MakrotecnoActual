@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using System.Data;
+
 using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly IUsuarioService _usuarioService;
@@ -27,33 +26,41 @@ namespace Plataforma.Controllers
         {
             return View();
         }
-        [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
+        [HttpPost]
 		public IActionResult ValidarPDV(int cedula, string password)
 		{
-            if(password == null || cedula < 0) 
+            if(string.IsNullOrWhiteSpace(password) || cedula <= 0) 
             {
                 var mensaje = "Error: No ingreso usuario y/o contraseña, revisar porfavor. (SGE)";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
-			var varValidarPDV = _usuarioService.funValidarPDV(cedula);
-
-			// Almacenar cedula y password temporalmente
-			ViewBag.Cedula = cedula;
-			ViewBag.Password = password;
-
-			return View(varValidarPDV); // Pasamos las PDV obtenidas a la vista
-		}
-		[HttpPost]
-        public IActionResult validacionLogin(int cedula, string password, int selectedPDV)
-        {
             var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
             if (validarUsuario != null)
-			{
+            {
+                var varValidarPDV = _usuarioService.FunValidarPDV(cedula);
+
+                ViewBag.Cedula = cedula;
+                ViewBag.Password = password;
+
+                return View(varValidarPDV);
+            }else
+            {
+                var mensaje = "Error: Correo o Contraseña no existe, validar informacion nuevamente.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+                
+
+		}
+        [HttpPost]
+        public IActionResult validacionLogin(int cedula, string password, int selectedPDV)
+        {
+                var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
 				var claims = new List<Claim>() {
 					new Claim("Cedula", validarUsuario.Cedula.ToString()),
 					new Claim("Nombre", validarUsuario.Nombre),
@@ -99,49 +106,42 @@ namespace Plataforma.Controllers
 				int cedulaEmpleado = validarUsuario.Cedula;
 				string correoEmpleado = validarUsuario.Correo;
 				int estado = 1;
-                var varNombrePDV = _usuarioService.seleccionarNombrePDV(selectedPDV);
-                // Asignar el nombre al ViewBag si el objeto no es nulo
-                if (varNombrePDV != null)
-                {
-                    // Acceder a la propiedad 'Name' del objeto varNombrePDV
-                    TempData["NombrePDV"] = varNombrePDV.Name;
-                    TempData["IdPDV"] = varNombrePDV.Id;
-                }
-                else
-                {
-                    TempData["NombrePDV"] = "PDV no encontrada";
-                }
-                _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado);
+                var varNombrePDV = _usuarioService.SeleccionarNombrePDV(selectedPDV);
+                int idPDV = varNombrePDV.InfopdvId;
+                _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado, idPDV);
                 return RedirectToAction("Index", "Inicio");
-			}
-			else
-			{
-				var mensaje = "Error: Correo o Contraseña no existe, validar informacion nuevamente.";
-				TempData["ErrorMessage"] = mensaje;
-				return RedirectToAction("Error", "Errores");
-			}
 		}
 		[Authorize]
-		public async Task<IActionResult> Logout()
+		public IActionResult Logout()
 		{
             var cedula = User.FindFirst("Cedula")?.Value;
             var correoEmpleado = User.FindFirst("Correo")?.Value;
             int estado = 0;
             if (int.TryParse(cedula, out int cedulaEmpleado) && !string.IsNullOrEmpty(correoEmpleado))
             {
-                var logins = await _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado);
+                var idPDV = _usuarioService.TraerUltimoIDPdv(cedulaEmpleado);
+                if(idPDV <= 0)
+                {
+                    var mensaje = "Error: No hay inicio de sesion para esta PDV";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }else
+                {
+                    Console.WriteLine("Se va a ingresar el cierre de sesion");
+                    _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado, idPDV);
+                }
             }
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
 			return RedirectToAction("Login", "Home");
 		}
-        public IActionResult InventarioTienda()
+        public IActionResult StocksTienda()
         {
             var traerProductosAbarrotes = _usuarioService.ProductosAbarrotes();
             return View(traerProductosAbarrotes);
         }
         [HttpPost]
-        public async Task<IActionResult> modificarProInventario(string id, string campo, string newVal)
+        public async Task<IActionResult> ModificarProInventario(string id, string campo, string newVal)
         {
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(campo) || string.IsNullOrEmpty(newVal))
             {
@@ -150,7 +150,7 @@ namespace Plataforma.Controllers
 
             try
             {
-                // Llamar al servicio para actualizar el valor
+
                 bool resultado = await _usuarioService.ActualizarProductoAsync(id, campo, newVal);
 
                 if (resultado)
@@ -164,17 +164,17 @@ namespace Plataforma.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de excepciones
+
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
         [HttpPost]
-        public async Task<IActionResult> insertarProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
+        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
         {
             try
             {
-                // Llamar al servicio para actualizar el valor
-                bool resultado = await _usuarioService.insertProInventario(nombreProducto, cantidadProducto, valorNetoProductoFloat, valorVentaProductoFloat, valorUnidadInt, id_empresa, categoria, estado, ubicacion);
+
+                bool resultado = await _usuarioService.InsertProInventario(nombreProducto, cantidadProducto, valorNetoProductoFloat, valorVentaProductoFloat, valorUnidadInt, id_empresa, categoria, estado, ubicacion);
 
                 if (resultado)
                 {
@@ -187,18 +187,16 @@ namespace Plataforma.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de excepciones
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> eliminarProductoXID(string id)
+        public async Task<IActionResult> EliminarProductoXID(string id)
         {
             try
             {
-                // Llamar al servicio para actualizar el valor
-                bool resultado = await _usuarioService.eliminarProductoXIdAsync(id);
+                bool resultado = await _usuarioService.EliminarProductoXIdAsync(id);
 
                 if (resultado)
                 {
@@ -211,7 +209,6 @@ namespace Plataforma.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de excepciones
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }

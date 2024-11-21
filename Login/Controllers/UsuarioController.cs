@@ -1,10 +1,6 @@
-﻿using Login.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using Plataforma.Servicios.Implementacion;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Plataforma.Controllers
 {
@@ -27,7 +23,7 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult RegistrarDBEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
-            if(_usuarioService.validarEmpleado(cedula))
+            if(_usuarioService.ValidarEmpleado(cedula))
             {
                 var mensaje = "Error: Ya existe un empleado con la misma cédula";
                 TempData["ErrorMessage"] = mensaje;
@@ -77,8 +73,17 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }else
             {
-                _usuarioService.EditarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
-                return RedirectToAction("Index");
+                var empleado = _usuarioService.GetUsuarios(cedula, contrasena);
+                if(empleado == null)
+                {
+                    var mensaje = "Error: Empleado no existe.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }else
+                {
+                    _usuarioService.EditarEmpleado(empleado, cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
+                    return RedirectToAction("Index");
+                }
             }
         }
         public IActionResult Cargos()
@@ -94,8 +99,17 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarTabla(string nombreCargo, string descripcionCargo, string id_empresa)
         {
-                _usuarioService.InsertarCargos(nombreCargo, descripcionCargo, id_empresa);
-                return RedirectToAction("Cargos");
+                var insertCargo = _usuarioService.ValidarCargo(nombreCargo);
+                if(insertCargo != null)
+                {
+                    var mensaje = "Error: Ya existe este cargo.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }else
+                {
+                    _usuarioService.InsertarCargos(nombreCargo, descripcionCargo, id_empresa);
+                    return RedirectToAction("Cargos");
+                }
         }
         public IActionResult Empresas()
         {
@@ -109,8 +123,17 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
         {
+            var verificarExisEmpresa = _usuarioService.ValidarExistenciaEmpresa(nit);
+            if(verificarExisEmpresa != null)
+            {
+                var mensaje = "Error: Ya existe esta empresa.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }else
+            {
                 _usuarioService.InsertarEmpresa(nit, nombreEmpresa, pais, calle, carrera, ciudad, departamento, indicativo, numero);
                 return RedirectToAction("Empresas");
+            }
         }
         public IActionResult Sedes()
         {
@@ -125,8 +148,17 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarSedes(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
         {
+            var verificarExisSede = _usuarioService.ValidarExistenciaSede(nombreSede);
+            if(verificarExisSede != null)
+            {
+                var mensaje = "Error: Ya existe esta sede.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }else
+            {
                 var insertarSede = _usuarioService.InsertarSede(id_empresa, nombreSede, ciudad, direccion, telefono);
                 return RedirectToAction("Sedes");
+            }
         }
         public IActionResult EmpleadoEmpresa()
         {
@@ -143,8 +175,18 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult InsertarEE(string id_empresa, int cedula)
         {
+            var ValidarExisEmpleadoEmpresa = _usuarioService.ValidarExisEmpleadoEmpresa(id_empresa, cedula);
+            if(ValidarExisEmpleadoEmpresa != null)
+            {
+                var mensaje = "Error: Ya existe la relación entre este empleado y esta empresa.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            else
+            {
                 _usuarioService.InsertarEmpleadoEmpresa(id_empresa, cedula);
                 return RedirectToAction("Index");
+            }
         }
         public IActionResult EmpleadoSedes()
         {
@@ -156,7 +198,6 @@ namespace Plataforma.Controllers
             var empleado = _usuarioService.ValidarCedula(cedula);
             if (empleado != null)
             {
-                //Dato no existe
                 string? idEmpresa = _usuarioService.ObtenerIdEmpresa(cedula);
                 if (string.IsNullOrEmpty(idEmpresa))
                 {

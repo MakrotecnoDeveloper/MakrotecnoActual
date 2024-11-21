@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -12,36 +12,38 @@ namespace Plataforma.Controllers
         {
             _usuarioService = usuarioService;
         }
+        [Authorize]
         public IActionResult Index()
         {
             var cedulaClaim = User.FindFirst("Cedula");
-            int cedula = 0;
-            if(cedulaClaim != null && int.TryParse(cedulaClaim.Value, out cedula)) 
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                var totalFactXDia = _usuarioService.TraerFactXDia(cedula);
-
-                ViewBag.NombrePDV = TempData["NombrePDV"] ?? "No hay nombre de PDV disponible";
-                ViewBag.IdPDV = TempData["IdPDV"];
+                int idPDVActual = _usuarioService.TraerUltimoIDPdv(cedula);
+                var totalFactXDia = _usuarioService.TraerFactXDia(cedula, idPDVActual);
                 var viewModel = totalFactXDia.FirstOrDefault();
                 return View(viewModel);
-            }else {
+            }
+            else
+            {
                 var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
-            
+
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> CuentasProximas(int id)
         {
             var cuentasProximas = await _usuarioService.ObtenerCuentasProximas(id);
             return PartialView("_CuentasProximas", cuentasProximas);
         }
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ListarUsuarios(int cedula, string password)
+        public IActionResult ListarUsuarios(int cedula, string password)
         {
             Empleado usuario_buscar = _usuarioService.GetUsuarios(cedula, password);
-            if(usuario_buscar == null)
+            if (usuario_buscar == null)
             {
                 var mensaje = "No se encontró ningún usuario con las credenciales especificadas. (SGE)";
                 TempData["ErrorMessage"] = mensaje;
@@ -49,52 +51,51 @@ namespace Plataforma.Controllers
             }
             return View(usuario_buscar);
         }
+        [Authorize]
         [HttpPost]
         public JsonResult EstadoPDV(int estadopdv, int idPDV)
         {
-            // Validar si estadopdv es 0, 1 o 2
-            if (estadopdv < 0 || estadopdv > 2)
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                var mensaje = "El estado del PDV debe ser 0, 1 o 2.";
-                return Json(new { success = false, message = mensaje });
-            }
-            var syncPDV = _usuarioService.ValidarExistenteIdPDV(idPDV);
-            // Comprobar si el idPDV existe en la tabla SyncPDV
-
-            if (syncPDV != null)
-            {
-                // Validar el estado actual
-                if (syncPDV.estado == 1 && estadopdv == 1)
+                //Console.WriteLine("Punto de Venta: " + idPDV + " Estado del punto de venta: " + estadopdv);
+                if (estadopdv < 0 || estadopdv > 2)
                 {
-                    var mensaje = "Ya hay una apertura de PDV registrada en el sistema.";
+                    var mensaje = "El estado del PDV debe ser 0, 1 o 2.";
                     return Json(new { success = false, message = mensaje });
                 }
-                else if (syncPDV.estado == 0 && estadopdv == 0)
+                var estado = _usuarioService.ValidarExistenteIdPDV(idPDV, cedula);
+                Console.WriteLine("Punto de Venta: " + idPDV + " Estado ultimo asignado: " +  estado);
+                if (estado != null)
                 {
-                    var mensaje = "Ya hay un cierre de PDV registrado en el sistema.";
-                    return Json(new { success = false, message = mensaje });
+                    if (estado == 1 && estadopdv == 1)
+                    {
+                        var mensaje = "Ya hay una apertura de PDV registrada en el sistema.";
+                        return Json(new { success = false, message = mensaje });
+                    }
+                    else if (estado == 0 && estadopdv == 0)
+                    {
+                        var mensaje = "Ya hay un cierre de PDV registrado en el sistema.";
+                        return Json(new { success = false, message = mensaje });
+                    }
+                    else if (estado == 2 && estadopdv == 2)
+                    {
+                        var mensaje = "El PDV ya está en mantenimiento.";
+                        return Json(new { success = false, message = mensaje });
+                    }
                 }
-                else if (syncPDV.estado == 2 && estadopdv == 2)
-                {
-                    var mensaje = "El PDV ya está en mantenimiento.";
-                    return Json(new { success = false, message = mensaje });
-                }
+                    var agregarEstadoPDV = _usuarioService.AgregarEstadoPDV(estadopdv, idPDV, cedula);
+                    if (agregarEstadoPDV == null)
+                    {
+                        var mensaje = "Error al actualizar el estado del PDV.";
+                        return Json(new { success = false, message = mensaje });
+                    }
+                    else
+                    {
+                        return Json(new { success = true, message = "Estado del PDV actualizado correctamente." });
+                    }
             }
-
-            // Si no hay conflictos, procede a agregar o actualizar el estado
-            var agregarEstadoPDV = _usuarioService.AgregarEstadoPDV(estadopdv, idPDV);
-
-            if (agregarEstadoPDV == null)
-            {
-                var mensaje = "Error al actualizar el estado del PDV.";
-                return Json(new { success = false, message = mensaje });
-            }
-            else
-            {
-                return Json(new { success = true, message = "Estado del PDV actualizado correctamente." });
-            }
-
-            
+            return null;
         }
     }
 }

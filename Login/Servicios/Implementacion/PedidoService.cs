@@ -109,11 +109,31 @@ namespace Plataforma.Servicios.Implementacion
             // Implementa la lógica para buscar la factura en la base de datos
             return _dbContext.Factura.FirstOrDefault(f => f.cod_factura == id);
         }
-        public Sedeempleado BuscarPdvPorCedula(int cedula)
+        public int? BuscarIdSedePorCedula(int cedula)
         {
-            return _dbContext.Sedeempleado.FirstOrDefault(s => s.cedula == cedula);
+            // Busca el primer registro que coincida con la cédula y devuelve el id_sede
+            return _dbContext.Sedeempleado
+                .Where(s => s.cedula == cedula)
+                .Select(s => s.id_sede)
+                .FirstOrDefault();
         }
-        public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
+        public int? BuscarIdPDVPorIdSede(int buscarIdSede)
+        {
+            return _dbContext.Infopdv
+                .Where(s => s.Id_Sede == buscarIdSede)
+                .Select(s => s.InfopdvId)
+                .FirstOrDefault();
+        }
+        public int? BuscarEstadoPDVPorIdPDV(int buscarIdPDV)
+        {
+            // Busca el primer registro que coincida con la cédula y devuelve el id_sede
+            return _dbContext.Syncpdv
+            .Where(s => s.InfopdvId == buscarIdPDV)
+            .OrderByDescending(s => s.fechaEstado)  // Cambia 'fecha_creacion' por el campo correcto
+            .Select(s => s.estado)
+            .FirstOrDefault();
+        }
+        public void InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, DateTime fechaIngreso, string tpventa, int idpdv)
         {
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
             if (producto != null)
@@ -132,10 +152,23 @@ namespace Plataforma.Servicios.Implementacion
                         cantidad = stock,
                         valorNeto = vneto,
                         valorVenta = vventa,
-                        estado = estado
+                        estado = tpventa,
+                        InfopdvId = idpdv,
+                        fechaIngreso = fechaIngreso
                     };
 
                     _dbContext.Pedidos.Add(pedido);
+                    _dbContext.SaveChanges();
+
+                    //Inserccion en la tabla GananciaPedido
+                    int codPedidoGenerado = pedido.cod_pedido;
+                    int ganancia = vventa - vneto;
+                    var gananciaPedido = new GananciaPedido
+                    {
+                        cod_pedido = codPedidoGenerado,
+                        ganancia = ganancia
+                    };
+                    _dbContext.GananciaPedido.Add(gananciaPedido);
                     _dbContext.SaveChanges();
                 }
                 else
@@ -173,33 +206,35 @@ namespace Plataforma.Servicios.Implementacion
             var vventaTotal = pedidos.Sum(p => p.valorVenta);
             return pedidos;
         }
-        public async Task<int> VentaInsertada(int cod_factura, int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        public async Task<int> VentaInsertada(int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
         {
+            DateTime fechaActual = DateTime.Now;
             var ventas = new Ventas
             {
-                cod_factura = cod_factura,
                 ventaTotal = ventaTotal,
                 ventaMakrotecno = ventaMakrotecno,
                 netoMakrotecno = netoMakrotecno,
                 ventaRecargas = ventaRecarga,
                 ventaTienda = ventaTienda,
-                ventaPasivos = ventapasivos
+                ventaPasivos = ventapasivos,
+                fechaVenta = fechaActual
             };
 
             _dbContext.Ventas.Add(ventas);
             _dbContext.SaveChanges();
             return ventas.id_venta;
         }
-        public async Task GananciaInsertada(int id_venta, int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
+        public async Task GananciaInsertada(int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
         {
+            DateTime fechaActual = DateTime.Now;
             var ganancia = new Ganancias
             {
-                id_venta = id_venta,
                 gananciaMakrotecno = gananciaMakrotecno,
                 gananciaTotal = gananciaTotal,
                 gananciaMaria = gananciaMaria,
                 gananciaVictor = gananciaVictor,
-                gananciaTeresa = gananciaTeresa
+                gananciaTeresa = gananciaTeresa,
+                fechaGanancia = fechaActual
             };
             _dbContext.Ganancias.Add(ganancia);
             _dbContext.SaveChanges();
@@ -238,6 +273,68 @@ namespace Plataforma.Servicios.Implementacion
         public List<Ventas> TraerVentas()
         {
             return _dbContext.Ventas.ToList();
+        }
+        public decimal SumarGananciasDelDia(DateTime fecha)
+        {
+            var sumaGanancias = (from ganancia in _dbContext.GananciaPedido
+                                 join pedido in _dbContext.Pedidos
+                                 on ganancia.cod_pedido equals pedido.cod_pedido
+                                 join factura in _dbContext.Factura
+                                 on pedido.cod_factura equals factura.cod_factura
+                                 where factura.fechaVenta.Date == fecha.Date
+                                 select ganancia.ganancia)
+                                 .Sum();
+
+            return (decimal)sumaGanancias;
+        }
+
+        public decimal SumarNetoDelDia(DateTime fecha)
+        {
+            var sumaValorNeto = (from pedido in _dbContext.Pedidos
+                                 join factura in _dbContext.Factura
+                                 on pedido.cod_factura equals factura.cod_factura
+                                 where factura.fechaVenta.Date == fecha.Date
+                                 select pedido.valorNeto)
+                         .Sum();
+
+            return sumaValorNeto;
+        }
+
+        public decimal SumarVVentaDelDia(DateTime fecha)
+        {
+            var sumaValorVenta = (from pedido in _dbContext.Pedidos
+                                 join factura in _dbContext.Factura
+                                 on pedido.cod_factura equals factura.cod_factura
+                                 where factura.fechaVenta.Date == fecha.Date
+                                 select pedido.valorVenta)
+                         .Sum();
+
+            return sumaValorVenta;
+        }
+        public int? ValidarEstadoPDV(int? traerIdPDVLogsLogin)
+        {
+            var today = DateTime.Today;
+             return _dbContext.Syncpdv
+            .Where(s => s.InfopdvId == traerIdPDVLogsLogin && s.fechaEstado.Date == today)
+            .OrderByDescending(s => s.Idsync)
+            .Select(s => s.estado)
+            .FirstOrDefault();
+        }
+        public int TraerUltimoIDPdv(int cedulaEmpleado)
+        {
+            return _dbContext.LogsLogin
+            .Where(ce => ce.Cedula == cedulaEmpleado)
+            .OrderByDescending(ce => ce.Id_log)
+            .Select(ce => ce.InfopdvId)
+            .FirstOrDefault();
+        }
+        public int? ValidarExistenteIdPDV(int idPDV, int cedula)
+        {
+            return _dbContext.Syncpdv
+                .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
+                .OrderByDescending(s => s.Idsync)
+                .Select(s => s.estado)
+                .FirstOrDefault();
         }
     }
 }

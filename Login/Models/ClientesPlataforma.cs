@@ -9,7 +9,7 @@ namespace Plataforma.Models;
         public string celularCliente { get; set; }
         public string correo {  get; set; }
         public string clave { get; set; }
-        public int idPlataforma { get; set; }
+        public int idPltfSuscripcion { get; set; }
         public int cantidad { get; set; }
         public string ppm { get; set; }
         public DateTime fechaIniPago { get; set; }

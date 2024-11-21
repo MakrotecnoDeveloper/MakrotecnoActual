@@ -9,5 +9,5 @@ public partial class PedidoViewModel
 {
     public Factura Factura { get; set; }
     public List<Producto> Productos { get; set; }
-    public Sedeempleado Sedeempleado { get; set; }
+    public int? EstadoPDV { get; set; }
 }

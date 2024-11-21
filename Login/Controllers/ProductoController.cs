@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
@@ -13,7 +14,6 @@ namespace Plataforma.Controllers
         {
             _productoservice = productoservice;
         }
-        [AuthorizeRole(1)]
         public IActionResult Index()
         {
             var productos = _productoservice.ObtenerProductos();
@@ -139,66 +139,84 @@ namespace Plataforma.Controllers
         /*Visualizacion de  Recargas de Plataformas */
         public IActionResult formPlataforma()
         {
-            return View();
+            var traerPlataformasExistentes = _productoservice.traerPlataformasExistentes();
+            return View(traerPlataformasExistentes);
         }
         [HttpPost]
-        public IActionResult insertPlataforma(string plataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
-        { 
-            if(string.IsNullOrEmpty(plataforma) || string.IsNullOrEmpty(descripcion) || valorventa <= 0 || valorneto <= 0 || fechaInipago == DateTime.MinValue || fechaFinpago == DateTime.MinValue || cantidad <= 0 || string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(contrasena) || cedula <= 0 || estado <= 0)
+        public IActionResult insertPlataforma(int idPlataforma, string plataformas, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
+        {
+            if(string.IsNullOrEmpty(descripcion) || valorventa <= 0 || valorneto <= 0 || fechaInipago == DateTime.MinValue || fechaFinpago == DateTime.MinValue || cantidad <= 0 || string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(contrasena) || cedula <= 0 || estado <= 0)
             {
                 var mensaje = "Error: Hay campos sin informacion digitada, revisar todo lo llenado.";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }else
             {
-                _productoservice.inserPlataformaService(plataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
+                _productoservice.inserPlataformaService(idPlataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
                 return View("formPlataforma");
             }
         }
         public IActionResult formInserClienPlatf()
         {
-            var traerPlataformas = _productoservice.traerPlataformasExistentes();
-            if (traerPlataformas == null || !traerPlataformas.Any())
-            {
-                traerPlataformas = new List<Plataformas>();
-            }
+            var traerPlataformas = _productoservice.SuscripcionesActivas();
             return View(traerPlataformas);
         }
-        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idplataforma, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idplataforma, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
+            DateTime feciniplat = DateTime.Now; 
+            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
             return RedirectToAction("formInserClienPlatf", "Producto");
         }
         public IActionResult formVisuPlatf()
         {
-            var traerPlataformas = _productoservice.traerPlataformasExistentes();
-            if (traerPlataformas == null || !traerPlataformas.Any())
-            {
-                traerPlataformas = new List<Plataformas>();
-            }
-            return View(traerPlataformas);
+            var searchPlataform = _productoservice.traerPlataformasExistentes();
+            return View(searchPlataform);
         }
         public IActionResult formVisuCta()
         {
-            var traerClientAll = _productoservice.TraerCtaClientPlatfExistentes();
-            if (traerClientAll == null || !traerClientAll.Any())
+            var searchPlataform = _productoservice.traerPlataformasExistentes();
+            return View(searchPlataform);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetSuscripcionesActivas(int plataformaId)
+        {
+                var suscripciones = await _productoservice.ObtenerSuscripcionesActivas(plataformaId);
+                return Json(suscripciones);
+        }
+
+        // Obtener datos de clientes relacionados con una suscripción
+        [HttpGet]
+        public async Task<IActionResult> GetDatosSuscripcion(int suscripcionId)
+        {
+            var datos = await _productoservice.ObtenerDatosSuscripcion(suscripcionId);
+            return Json(datos);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetDatosPlataforma(int suscripcionId)
+        {
+            var datos = await _productoservice.ObtenerDatosPlataforma(suscripcionId);
+            return Json(datos);
+        }
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var resultado = await _productoservice.EliminarClienteAsync(id);
+            if (resultado)
             {
-                traerClientAll = new List<ClientePlataformaDTO>();
+                return Ok(new { message = "Cliente eliminado con éxito." });
             }
-            return View(traerClientAll);
+            return BadRequest(new { message = "Error al eliminar el cliente o cliente no encontrado." });
         }
         [HttpPost]
         public async Task<IActionResult> EditarEstadoCta(int id, int estado, int idCliente)
         {
-            //Console.WriteLine("El usuario: " + id + " Tiene el nuevo estado: " + estado);
-                // Actualizar el estado del cliente
                 await _productoservice.ActualizarCliente(id, estado, idCliente);
                 return Json(new { success = true });
         }
         //Visualizar productos existentes para vender en la pagina inicial
         public IActionResult productosExistentesVenta()
         {
-            var traerProductosExistentes = _productoservice.ObtenerProductos();
+            var traerProductosExistentes = _productoservice.ObtenerProductosInventarioWeb();
             return View("../Home/productosExistentesVenta", traerProductosExistentes);
         }
         public IActionResult traerProductoXCategoria(string categoria)
@@ -246,5 +264,6 @@ namespace Plataforma.Controllers
                 return StatusCode(500, "Error interno del servidor: " + ex.Message);
             }
         }
+
     }
 }

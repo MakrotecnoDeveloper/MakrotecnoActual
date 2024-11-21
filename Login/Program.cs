@@ -21,6 +21,9 @@ builder.Host.ConfigureAppConfiguration((context, config) =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddFile(builder.Configuration.GetSection("Logging:File"));
 
 //Configura el contexto de la base de datos en la aplicacion, osea la variable cadenaSQL que se asigna en appsettings.json
 builder.Services.AddDbContext<BaseAdmContext>(options =>

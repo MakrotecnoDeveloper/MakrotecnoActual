@@ -1,10 +1,10 @@
-﻿using Login.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using Plataforma.Servicios.Implementacion;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Plataforma.Controllers
 {
@@ -12,10 +12,12 @@ namespace Plataforma.Controllers
     {
         private readonly IPedidoService _pedidoServicio;
         private readonly IProductoService _productoservice;
-        public PedidoController(IPedidoService pedidoServicio, IProductoService productoservice)
+        private readonly ILogger<HomeController> _logger;
+        public PedidoController(IPedidoService pedidoServicio, IProductoService productoservice, ILogger<HomeController> logger)
         {
             _pedidoServicio = pedidoServicio;
             _productoservice = productoservice;
+            _logger = logger;
         }
         public IActionResult Index()
         {
@@ -25,12 +27,44 @@ namespace Plataforma.Controllers
         }
         public IActionResult AgregarFactura()
         {
-            var productos = _pedidoServicio.ObtenerFacturas();
-            return View(productos);
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+                var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+                if (estado != null)
+                {
+                    if (estado == 1)
+                    {
+                        var productos = _pedidoServicio.ObtenerFacturas();
+                        return View(productos);
+                    }
+                    else if (estado == 0)
+                    {
+                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    else if (estado == 2)
+                    {
+                        var mensaje = "Error B10: PDV esta en mantenimiento";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                }
+            }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            return RedirectToAction("Index");
         }
         [HttpPost]
-        public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado)
+        public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, string estado)
         {
+            DateTime fechaVenta = DateTime.Now;
                 if(cedula_cliente > 0)
                 {
                     if(fechaVenta != DateTime.MinValue)
@@ -54,36 +88,59 @@ namespace Plataforma.Controllers
         [HttpGet]
         public IActionResult CrearPedido(int id)
         {
-            var factura = _pedidoServicio.BuscarFacturaPorId(id);
-            if (factura != null)
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                var productos = _productoservice.ObtenerProductos();
-                var cedulaClaim = User.FindFirst("Cedula")?.Value;
-                Sedeempleado buscarpdv = null;
-                if (int.TryParse(cedulaClaim, out int cedula))
+                int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+                var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+                if (estado != null)
                 {
-                    // Si la conversión es exitosa, llama al servicio para buscar por cédula
-                    buscarpdv = _pedidoServicio.BuscarPdvPorCedula(cedula);
+                    if (estado == 1)
+                    {
+                        var factura = _pedidoServicio.BuscarFacturaPorId(id);
+                        if(factura != null)
+                        {
+                            var productos = _productoservice.ObtenerProductos();
+                            // Crear el objeto ViewModel y asignar los valores
+                            var viewModel = new PedidoViewModel
+                            {
+                                Factura = factura,
+                                Productos = productos,
+                                EstadoPDV = idPDV
+                            };
 
-                    // Puedes usar 'buscarpdv' como necesites
+                            // Pasar el ViewModel a la vista
+                            return View(viewModel);
+
+                        }
+                        else
+                        {
+                            var mensaje = "Error: Factura no encontrada.";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                    }
+                    else if (estado == 0)
+                    {
+                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    else if (estado == 2)
+                    {
+                        var mensaje = "Error B10: PDV esta en mantenimiento";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
                 }
-                // Crear el objeto ViewModel y asignar los valores
-                var viewModel = new PedidoViewModel
-                {
-                    Factura = factura,
-                    Productos = productos,
-                    Sedeempleado = buscarpdv
-                };
-
-                // Pasar el ViewModel a la vista
-                return View(viewModel);
             }
             else
             {
-                var mensaje = "Error: Factura no encontrada.";
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
+            return RedirectToAction("Index");
         }
         public IActionResult AutocompletarCodigosProducto(string codigo)
         {
@@ -103,50 +160,83 @@ namespace Plataforma.Controllers
             return NotFound();
         }
         [HttpPost]
-        public IActionResult InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string estado)
+        public IActionResult InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string tpventa, int idpdv)
         {
-            
-            if (string.IsNullOrEmpty(cod_producto))
+            DateTime fechaIngreso = DateTime.Now;
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                var mensaje = "Error: El código del producto no puede ser nulo o vacío.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-            if (stock > 0 && vneto > 0 && vventa > 0 && !string.IsNullOrEmpty(estado))
-            {
-                var validarExisProd = _pedidoServicio.GetProdutos(cod_producto);
-                if (validarExisProd != null)
+                int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+                var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+                if (estado != null)
                 {
-                    // Llamada al servicio para insertar el pedido en la base de datos
-                    foreach (var producto in validarExisProd)
+                    if (estado == 1)
                     {
-                        if (producto.CantidadProducto <= 0)
+                        if (string.IsNullOrEmpty(cod_producto))
                         {
-                            var mensaje = "Error: El producto no tiene stock para continuar la venta.";
+                            var mensaje = "Error: El código del producto no puede ser nulo o vacío.";
                             TempData["ErrorMessage"] = mensaje;
                             return RedirectToAction("Error", "Errores");
-                        }
-                        else
+                        }else
                         {
-                            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, estado);
+                            if (stock > 0 && vneto > 0 && vventa > 0 && !string.IsNullOrEmpty(tpventa))
+                            {
+                                var validarExisProd = _pedidoServicio.GetProdutos(cod_producto);
+                                if (validarExisProd != null)
+                                {
+                                    // Llamada al servicio para insertar el pedido en la base de datos
+                                    foreach (var producto in validarExisProd)
+                                    {
+                                        if (producto.CantidadProducto <= 0)
+                                        {
+                                            var mensaje = "Error: El producto no tiene stock para continuar la venta.";
+                                            TempData["ErrorMessage"] = mensaje;
+                                            return RedirectToAction("Error", "Errores");
+                                        }
+                                        else
+                                        {
+                                            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, fechaIngreso, tpventa, idpdv);
+                                        }
+                                    }
+                                    // Redireccionar a la vista Index
+                                    return RedirectToAction("Index");
+                                }
+                                else
+                                {
+                                    var mensaje = "Error: Producto no existe.";
+                                    TempData["ErrorMessage"] = mensaje;
+                                    return RedirectToAction("Error", "Errores");
+                                }
+                            }
+                            else
+                            {
+                                var mensaje = "No puede haber espacios vacios entre campos.";
+                                TempData["ErrorMessage"] = mensaje;
+                                return RedirectToAction("Error", "Errores");
+                            }
                         }
                     }
-                    // Redireccionar a la vista Index
-                    return RedirectToAction("Index");
+                    else if (estado == 0)
+                    {
+                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    else if (estado == 2)
+                    {
+                        var mensaje = "Error B10: PDV esta en mantenimiento";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
                 }
-                else
-                {
-                    var mensaje = "Error: Producto no existe.";
-                    TempData["ErrorMessage"] = mensaje;
-                    return RedirectToAction("Error", "Errores");
-                }
-            }else
+            }
+            else
             {
-                var mensaje = "No puede haber espacios vacios entre campos.";
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
-
+            return RedirectToAction("Index");
         }
         public async Task<IActionResult> Facturas(int page = 1, int pageSize = 10)
         {
@@ -214,30 +304,22 @@ namespace Plataforma.Controllers
                 return View("VerPedido", pedidos);
             }
         }
-        public async Task<IActionResult> FormGanancia(string estado)
+        public async Task<IActionResult> FormGanancia()
         {
-            List<Factura> facturasEncontradas = null;
-            if (estado == "Proceso")
-            {
-                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
-            }
-            return View("Ganancia", facturasEncontradas);
+            return View("Ganancia");
         }
-        public async Task<IActionResult> VerGananciaPorId(int id)
+        public async Task<IActionResult> AgregarGanancia()
         {
-            //Fase 1: ID de la factura
-            ViewBag.Id = id;
-            //Fase 2: Venta Neto-Venta
-            var productosValores = await _pedidoServicio.traerValorProductos(id);
-            decimal totalVneto = productosValores.Sum(p => p.valorNeto);
-            decimal totalVventa = productosValores.Sum(p => p.valorVenta);
+            DateTime fecha = DateTime.Now;
+            decimal traerGananciaXFecha = _pedidoServicio.SumarGananciasDelDia(fecha);
+            decimal totalVneto = _pedidoServicio.SumarNetoDelDia(fecha);
+            decimal totalVventa = _pedidoServicio.SumarVVentaDelDia(fecha);
             ViewBag.TotalVneto = totalVneto;
             ViewBag.TotalVventa = totalVventa;
-            //Fase 3: Retorno a la vista
-            return View("AgregarGanancia");
+            return View();
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarVentas(int cod_factura, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTotal, int ventapasivos)
+        public async Task<IActionResult> InsertarVentas(int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTotal, int ventapasivos)
         {
             // Fase 1
             if (ventapasivos > 0)
@@ -246,7 +328,7 @@ namespace Plataforma.Controllers
             }
             int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;
             // Fase 2
-            int id_venta = await _pedidoServicio.VentaInsertada(cod_factura, ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
+            int id_venta = await _pedidoServicio.VentaInsertada(ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
             // Fase 3
             int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
             Console.WriteLine(ventaMakrotecno);
@@ -256,7 +338,7 @@ namespace Plataforma.Controllers
             int gananciaTeresa = (int)(ventaTienda * 0.15);
             int gananciaRecargas = (int)(ventaRecarga * 0.056);
             int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
-            await _pedidoServicio.GananciaInsertada(id_venta, gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+            await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
             return RedirectToAction("Index");
         }
         public IActionResult VisualizarGanancia()
@@ -273,6 +355,10 @@ namespace Plataforma.Controllers
         {
             var traerVentas = _pedidoServicio.TraerVentas();
             return View(traerVentas);
+        }
+        public IActionResult ProcesoRecogida()
+        {
+            return View();
         }
     }
 }

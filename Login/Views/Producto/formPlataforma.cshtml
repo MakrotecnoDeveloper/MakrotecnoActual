@@ -1,4 +1,4 @@
-﻿
+﻿@model List<Plataformas>
 @{
     ViewData["Title"] = "formPlataforma";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -12,7 +12,20 @@
         <form role="form" asp-controller="Producto" asp-action="insertPlataforma" method="POST">
             <div class="form-group">
                 <label for="plataforma">Plataforma</label>
-                <input type="text" class="form-control" id="plataforma" name="plataforma" required>
+                <select class="form-control" id="idPlataforma" name="idPlataforma">
+                    <option>Selecciona la plataforma</option>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var plataforma in Model)
+                        {
+                            <option value="@plataforma.IdPlataforma">@plataforma.NombrePltf</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">No hay plataformas disponibles</option>
+                    }
+                </select>
             </div>
             <div class="form-group">
                 <label for="descripcion">Descripción</label>

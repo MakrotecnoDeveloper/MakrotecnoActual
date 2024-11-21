@@ -8,8 +8,8 @@ namespace Login.Models
         public decimal TotalVentaDia { get; set; }
         public int TotalEmpleados { get; set; }
         public int TotalProductos { get; set; }
-        public List<ProductoMasVendidoViewModel> ProductosMasVendidos { get; set; }
         public string RolEmpleado { get; set; }
-        public List<Plataformas> Plataformas { get; set; }
+        public int IdPDV { get; set; }
+        public string? NombrePDV { get; set; }
     }
 }

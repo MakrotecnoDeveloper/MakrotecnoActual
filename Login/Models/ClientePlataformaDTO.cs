@@ -12,6 +12,7 @@ namespace Plataforma.Models;
         public string Celular {  get; set; }
         public DateTime FechaIni {  get; set; }
         public DateTime FechaFin { get; set; }
-        public string Plataforma { get; set; }
+        public int Plataforma { get; set; }
+        public string NombrePlataforma { get; set; }
         public int Estado { get; set; }
     }

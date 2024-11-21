@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<Plataforma.Models.Producto>
+@using System.Net;
 <div class="container">
     <div class="row">
         @if (Model != null && Model.Any())
@@ -6,6 +7,7 @@
             <h2 class="text-center my-4">Categoría: @Model.First().Categoria</h2>
             @foreach (var producto in Model)
             {
+                var mensajeWhatsApp = WebUtility.UrlEncode($"!Hola¡ Estoy interesado en un producto! Código: {producto.Cod_Producto}");
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="producto-item card h-100">
                         <img src="@Url.Content($"~/img/Productos/{producto.Categoria}/{producto.Cod_Producto}.png")"
@@ -24,6 +26,13 @@
                             else
                             {
                                 <p class="text-success font-weight-bold">Disponible</p>
+                                <p>
+                                    Más Información:
+                                    <a href="https://wa.me/573185313379?text=@mensajeWhatsApp"
+                                       target="_blank">
+                                        WhatsApp
+                                    </a>
+                                </p>
                             }
                         </div>
                     </div>

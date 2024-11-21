@@ -2,7 +2,7 @@
 
 namespace Plataforma.Models;
 
-public partial class logsLogin
+public partial class LogsLogin
 {
     [Key]
     public int Id_log { get; set; }
@@ -10,4 +10,5 @@ public partial class logsLogin
     public string Correo { get; set; }
     public DateTime Fecha { get; set; }
     public int Estado { get; set; } // 1 para activo, 0 para inactivo
+    public int InfopdvId {  get; set; }
 }

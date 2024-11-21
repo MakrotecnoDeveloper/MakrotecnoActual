@@ -14,4 +14,6 @@ public partial class Pedidos
     public int valorNeto { get; set; }
     public int valorVenta { get; set; }
     public string? estado { get; set; }
+    public int InfopdvId { get; set; }
+    public DateTime fechaIngreso { get; set; }
 }
