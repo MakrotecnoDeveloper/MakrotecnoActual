@@ -71,7 +71,6 @@
             // Hacer la consulta asincrónica para obtener los datos de la suscripción y clientes
             const response = await fetch(`/Producto/GetDatosSuscripcion?suscripcionId=${suscripcionId}`);
             const datos = await response.json();
-            console.log(datos);
             // Llenar el contenedor de datos con la tabla
             const contenedorDatos = document.getElementById('contenedorDatos');
             contenedorDatos.innerHTML = '';
@@ -97,7 +96,7 @@
                         </thead>
                                 <tbody>
                             ${datos.map(cliente => {
-                const whatsappMessage = encodeURIComponent(`*---| Cuenta ${cliente.plataforma} |---*\n` +
+                const whatsappMessage = encodeURIComponent(`*---| Cuenta ${cliente.nombrePlataforma} |---*\n` +
                     `- Correo: ${cliente.correoPlataforma}\n` +
                     `- Contraseña: ${cliente.clavePlataforma}\n` +
                     `- Perfil: ${cliente.nombreCliente}\n` +
@@ -108,7 +107,7 @@
                 return `
                                     <tr>
                                         <td>${cliente.idCliente}</td>
-                                        <td>${cliente.idClientePlataforma}</td>
+                                        <td>${cliente.idPltfSuscripcion}</td>
                                         <td>${cliente.correoPlataforma}</td>
                                         <td>${cliente.clavePlataforma}</td>
                                         <td>${cliente.nombreCliente}</td>
@@ -118,7 +117,7 @@
                                         <td>${new Date(cliente.fechaFin).toLocaleDateString()}</td>
                                         <td>${cliente.estado ? 'Activo' : 'Inactivo'}</td>
                                         <td>
-                                            <button class="btn btn-warning btn-sm" onclick="editarEstado(${cliente.idClientePlataforma}, ${cliente.estado}, ${cliente.idCliente})">
+                                            <button class="btn btn-warning btn-sm" onclick="editarEstado(${cliente.idPltfSuscripcion}, ${cliente.estado}, ${cliente.idCliente})">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${cliente.idCliente})">
@@ -139,7 +138,6 @@
 
         //Acciones btn
         function editarEstado(idClientePlataforma, estado, idCliente) {
-            console.log(idCliente); // Debería mostrar el idCliente correctamente
 
             // Mostrar el cuadro de diálogo para que el usuario ingrese el nuevo estado
             var nuevoEstado = prompt("Ingrese el nuevo estado:", estado);

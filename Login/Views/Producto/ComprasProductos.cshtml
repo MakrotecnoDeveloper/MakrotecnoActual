@@ -1,0 +1,103 @@
+﻿@model Login.Models.ProveedorProductosViewModel
+@{
+    ViewData["Title"] = "ComprasProductos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+         <h2 class="mb-4">Agregar Compra de Producto</h2>
+        <!-- Formulario -->
+        <form method="post" asp-action="GuardarHistoricoCompra">
+            <!-- Campo Nit (Select) -->
+            <div class="form-group">
+                <label for="nit">NIT</label>
+                <select class="form-control" id="nit" name="nit" required>
+                    <option value="">Seleccione un NIT</option>
+                    @foreach (var proveedor in Model.Proveedores)
+                    {
+                        <option value="@proveedor.nit">@proveedor.nit - @proveedor.razonSocial</option>
+                    }
+                </select>
+            </div>
+
+           <!-- Campo Código de Producto (Select) -->
+            <div class="form-group">
+                <label for="cod_producto">Código de Producto</label>
+                <select class="form-control" id="cod_producto" name="cod_producto" required>
+                    <option value="">Seleccione un Producto</option>
+                    @foreach (var producto in Model.Producto)
+                    {
+                        <option value="@producto.Cod_Producto">@producto.Cod_Producto - @producto.NombreProducto</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Campo Valor Unitario -->
+            <div class="form-group">
+                <label for="valorU">Valor Unitario</label>
+                <input type="number" step="0.01" class="form-control" id="valorU" name="valorU" required />
+            </div>
+
+            <!-- Campo Stock -->
+            <div class="form-group">
+                <label for="stock">Stock</label>
+                <input type="number" step="0.01" class="form-control" id="stock" name="stock" required />
+            </div>
+
+            <!-- Campo Valor Total -->
+            <div class="form-group">
+                <label for="valorTotal">Valor Total</label>
+                <input type="number" step="0.01" class="form-control" id="valorTotal" name="valorTotal" required />
+            </div>
+
+            <!-- Campo Fecha Registro -->
+            <div class="form-group">
+                <label for="fechaRegistro">Fecha de Registro</label>
+                <input type="datetime-local" class="form-control" id="fechaRegistro" name="fechaRegistro" required />
+            </div>
+
+            <!-- Campo Estado -->
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <select class="form-control" id="estado" name="estado" required>
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+            </div>
+
+            <!-- Campo Factura -->
+            <div class="form-group">
+                <label for="cod_factura">Cod Factura</label>
+                <input type="number" class="form-control" id="cod_factura" value="@Model.Cod_Factura"  name="cod_factura" />
+            </div>
+
+            <!-- Botón de Enviar -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    // Cuando el valor unitario o la cantidad cambien, calcular el valor total
+    $(document).ready(function () {
+        function calcularValorTotal() {
+            var valorU = parseFloat($('#valorU').val()) || 0;
+            var cantidad = parseFloat($('#stock').val()) || 0;
+            var valorTotal = valorU * cantidad;
+            $('#valorTotal').val(valorTotal.toFixed(2)); // Mostrar el resultado con dos decimales
+        }
+
+        // Llamar la función calcularValorTotal cada vez que el valor unitario o la cantidad cambien
+        $('#valorU, #stock').on('input', function () {
+            calcularValorTotal();
+        });
+
+        // Inicializar el valor total al cargar la página
+        calcularValorTotal();
+    });
+</script>

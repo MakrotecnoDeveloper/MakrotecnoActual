@@ -487,5 +487,62 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return nuevoEstadoPDV;
         }
+        public bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente)
+        {
+
+            var cliente = new Cliente
+            {
+                cedulaCliente = cedulaCliente,
+                nombreCliente = nombreCliente,
+                empresaCliente = empresaCliente,
+                ciudadCliente = ciudadCliente,
+                telefonoCliente = telefonoCliente
+            };
+
+            _dbContext.Cliente.Add(cliente);
+            var result = _dbContext.SaveChanges();
+
+            if (result > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public List<Cliente> ServVisuaCliente()
+        {
+            var clientes = _dbContext.Cliente.ToList();
+            return clientes;
+        }
+        public bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo)
+        {
+            var proveedor = new Proveedores
+            {
+                nit = nit,
+                razonSocial = razonSocial,
+                direccion = direccion,
+                celular = celular,
+                correo = correo
+            };
+
+            _dbContext.Proveedores.Add(proveedor);
+            var result = _dbContext.SaveChanges();
+
+            if (result > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public List<Proveedores> ServVisuaProveedor()
+        {
+            var proveedores = _dbContext.Proveedores.ToList();
+            return proveedores;
+        }
     }
 }

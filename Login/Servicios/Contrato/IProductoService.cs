@@ -1,7 +1,5 @@
 ﻿//establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
+using Login.Models;
 using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
@@ -29,5 +27,9 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> traerProductosXCategoria(string categoria);
         Task<List<string>> BuscarProductosAsync(string consulta);
         Task<string> GenerarRespuestaAsync(string consulta, List<string> productos);
+        ProveedorProductosViewModel TraerProveedorProductos(int cedula);
+        bool HistoricoCompra(HistoricoCompras historicoCompra);
+        List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula);
+        DetallesFacturaViewModel ObtenerDetallesFactura(int codFactura);
     }
 }

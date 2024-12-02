@@ -10,7 +10,7 @@ namespace Plataforma.Servicios.Contrato
         List<Factura> ObtenerFacturasFechaDescendente();
         List<Factura> ObtenerFacturas();
         void ActualizarEstadoFacturas();
-        IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado);
+        IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado, string tpfactura);
         List<string> ObtenerCodigosProductosAutocompletado(string codigo);
         Task<Producto> ObtenerInfoProductoAsync(string codigoProducto);
         Task<List<Factura>> ObtenerFacturasAsync(int pagina, int pageSize);

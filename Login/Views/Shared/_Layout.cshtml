@@ -307,6 +307,41 @@
                                 </li>
                         </ul>
                     </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Cliente/Proveedores
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a asp-controller="Usuario" asp-action="FormCrearCliente" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Crear Clientes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Usuario" asp-action="TblVisuCliente" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Visualizar Clientes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Usuario" asp-action="FormCrearProveedor" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Crear Proveedor</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Usuario" asp-action="TblVisuProveedor" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Visualizar Proveedor</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     <li class="nav-header">GESTION ADMINISTRATIVA</li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
@@ -417,9 +452,15 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a asp-controller="Inicio" asp-action="Index" class="nav-link">
+                                    <a asp-controller="Producto" asp-action="ComprasProductos" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Historico Inventario</p>
+                                        <p>Historico Compras</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Producto" asp-action="VisualizarCompras" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ver Compras</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">

@@ -247,5 +247,65 @@ namespace Plataforma.Controllers
             var sedes = _usuarioService.GetSedesByEmpresaId(empresaId);
             return Json(sedes);
         }
+        public IActionResult FormCrearCliente() 
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddCliente(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente)
+        {
+            var validacionInserClient = _usuarioService.InsertAddClient(cedulaCliente, nombreCliente, empresaCliente, ciudadCliente, telefonoCliente);
+            if(validacionInserClient)
+            {
+                return RedirectToAction("FormCrearCliente");
+            }
+            else
+            {
+                var mensaje = "Error: Se presento problemas con la informacion suministrada.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+        }
+        public IActionResult FormCrearProveedor()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddProveedor(string nit, string razonSocial, string direccion, string celular, string correo)
+        {
+            var validacionInserProveedor = _usuarioService.InsertAddProveedor(nit, razonSocial, direccion, celular, correo);
+            if (validacionInserProveedor)
+            {
+                return RedirectToAction("FormCrearProveedor");
+            }
+            else
+            {
+                var mensaje = "Error: Se presento problemas con la informacion suministrada.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+        }
+        public IActionResult TblVisuCliente()
+        {
+            var visualizarClientes = _usuarioService.ServVisuaCliente();
+            if(visualizarClientes == null || !visualizarClientes.Any())
+            {
+                var mensaje = "Error: No se encontraron clientes";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            return View(visualizarClientes);
+        }
+        public IActionResult TblVisuProveedor()
+        {
+            var visualizarClientes = _usuarioService.ServVisuaProveedor();
+            if (visualizarClientes == null || !visualizarClientes.Any())
+            {
+                var mensaje = "Error: No se encontraron clientes";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            return View(visualizarClientes);
+        }
     }
 }

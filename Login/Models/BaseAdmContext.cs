@@ -29,6 +29,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Syncpdv> Syncpdv { get; set; }
     public DbSet<GananciaPedido> GananciaPedido { get; set; }
     public DbSet<Plataformas> Plataformas { get; set; }
+    public DbSet<Proveedores> Proveedores { get; set; }
+    public DbSet<HistoricoCompras> HistoricoCompras { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,6 +54,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Syncpdv>().HasKey(ds => ds.Idsync);
         modelBuilder.Entity<GananciaPedido>().HasKey(ds => ds.idGP);
         modelBuilder.Entity<Plataformas>().HasKey(iptlf => iptlf.IdPlataforma);
+        modelBuilder.Entity<Proveedores>().HasKey(prvd => prvd.idProveedor);
+        modelBuilder.Entity<HistoricoCompras>().HasKey(prvd => prvd.IdHC);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
@@ -74,5 +78,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<GananciaPedido>().HasOne<Pedidos>().WithMany().HasForeignKey(f => f.cod_pedido);
+        modelBuilder.Entity<HistoricoCompras>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_Producto);
+        modelBuilder.Entity<HistoricoCompras>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
     }
 }

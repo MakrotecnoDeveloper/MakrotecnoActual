@@ -1,0 +1,44 @@
+﻿
+@{
+    ViewData["Title"] = "FormCrearCliente";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title">Agregar Cliente</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="AddCliente" asp-controller="Usuario">
+                    <div class="mb-3">
+                        <label for="cedulaCliente" class="form-label">Cédula del Cliente</label>
+                        <input type="number" class="form-control" id="cedulaCliente" name="cedulaCliente" required placeholder="Ingrese la cédula del cliente" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombreCliente" class="form-label">Nombre del Cliente</label>
+                        <input type="text" class="form-control" id="nombreCliente" name="nombreCliente" required placeholder="Ingrese el nombre del cliente" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="empresaCliente" class="form-label">Empresa del Cliente</label>
+                        <input type="text" class="form-control" id="empresaCliente" name="empresaCliente" placeholder="Ingrese el nombre de la empresa" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="ciudadCliente" class="form-label">Ciudad del Cliente</label>
+                        <input type="text" class="form-control" id="ciudadCliente" name="ciudadCliente" required placeholder="Ingrese la ciudad del cliente" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefonoCliente" class="form-label">Teléfono del Cliente</label>
+                        <input type="text" class="form-control" id="telefonoCliente" name="telefonoCliente" required placeholder="Ingrese el teléfono del cliente" />
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Guardar Cliente</button>
+                        <a href="/" class="btn btn-secondary btn-lg">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

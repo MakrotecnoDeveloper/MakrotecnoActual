@@ -15,4 +15,5 @@ namespace Plataforma.Models;
         public int Plataforma { get; set; }
         public string NombrePlataforma { get; set; }
         public int Estado { get; set; }
+        public int idPltfSuscripcion { get; set; }
     }

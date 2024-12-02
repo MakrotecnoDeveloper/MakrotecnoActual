@@ -44,5 +44,9 @@ namespace Plataforma.Servicios.Contrato
         Infopdv? SeleccionarNombrePDV(int selectedPDV);
         int? ValidarExistenteIdPDV(int idPDV, int cedula);
         Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV, int cedula);
+        bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente);
+        List<Cliente> ServVisuaCliente();
+        bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo);
+        List<Proveedores> ServVisuaProveedor();
     }
 }

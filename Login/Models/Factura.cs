@@ -12,4 +12,5 @@ public partial class Factura
     public int cedula { get; set; }
     public DateTime fechaVenta { get; set; }
     public string? estado { get; set; }
+    public string? TipoFactura { get; set; }
 }

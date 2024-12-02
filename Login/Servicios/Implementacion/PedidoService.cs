@@ -49,7 +49,7 @@ namespace Plataforma.Servicios.Implementacion
 
             _dbContext.SaveChanges();
         }
-        public IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado)
+        public IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado, string tpfactura)
         {
             // Crear una nueva instancia de Empleado
             var nuevaFactura = new Factura
@@ -57,7 +57,8 @@ namespace Plataforma.Servicios.Implementacion
                 cedula_cliente = cedula_cliente,
                 cedula = cedula_empleado,
                 fechaVenta = fechaVenta,
-                estado = estado
+                estado = estado,
+                TipoFactura = tpfactura
             };
 
             // Agregar el nuevo empleado al contexto de la base de datos

@@ -161,9 +161,8 @@ namespace Plataforma.Controllers
             var traerPlataformas = _productoservice.SuscripcionesActivas();
             return View(traerPlataformas);
         }
-        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            DateTime feciniplat = DateTime.Now; 
             _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
             return RedirectToAction("formInserClienPlatf", "Producto");
         }
@@ -210,6 +209,7 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarEstadoCta(int id, int estado, int idCliente)
         {
+            Console.WriteLine("IDCLIENTEPLATAFORMA: " + id + " ESTADO: " + estado + " IDCLIENTE " + idCliente);
                 await _productoservice.ActualizarCliente(id, estado, idCliente);
                 return Json(new { success = true });
         }
@@ -224,45 +224,83 @@ namespace Plataforma.Controllers
             var productosTraidos = _productoservice.traerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
-
-        /*CHATGPT*/
-        [HttpGet]
-        public IActionResult Chat()
+        public IActionResult ComprasProductos()
         {
-            return View(new ChatViewModel());
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                var proveedorProducto = _productoservice.TraerProveedorProductos(cedula);
+                return View(proveedorProducto);
+            }else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+                
         }
-
         [HttpPost]
-        public async Task<IActionResult> MsjChatGPT(string Mensaje)
+        public IActionResult GuardarHistoricoCompra(HistoricoCompras historicoCompra)
         {
-            if (string.IsNullOrEmpty(Mensaje))
+            if (ModelState.IsValid)
             {
-                return BadRequest("El mensaje no puede estar vacío.");
-            }
-
-            try
-            {
-                // Buscar productos basados en el mensaje
-                var productos = await _productoservice.BuscarProductosAsync(Mensaje);
-
-                // Generar una respuesta usando OpenAI
-                var respuesta = await _productoservice.GenerarRespuestaAsync(Mensaje, productos);
-
-                // Crear un modelo para la vista parcial
-                var model = new ChatViewModel
+                var guardarHC = _productoservice.HistoricoCompra(historicoCompra);
+                if (guardarHC)
                 {
-                    Mensaje = Mensaje,
-                    Respuesta = respuesta
-                };
-
-                // Devolver la vista parcial con la respuesta generada
-                return PartialView("_ChatMessages", model);
+                    return RedirectToAction("ComprasProductos");
+                }
+                else
+                {
+                    var mensaje = "El proceso fallo en alguna parte del codigo, revisar COD: 001";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }
             }
-            catch (Exception ex)
+            return View("ComprasProductos");
+        }
+        public IActionResult VisualizarCompras()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult BuscarFactXFecha(DateTime fechaEscoger)
+        {
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                // Manejo de excepciones
-                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+                var facturas = _productoservice.ObtenerFacturasPorFechaYUsuario(fechaEscoger, cedula);
+
+                // Transformar las facturas a un objeto más ligero si es necesario
+                var result = facturas.Select(f => new
+                {
+                    codFactura = f.cod_factura,
+                    fechaVenta = f.fechaVenta.ToShortDateString() // Formatear la fecha
+                });
+
+                return Json(result);
             }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+                
+        }
+        [HttpGet]
+        public IActionResult ObtenerDetallesFactura(int codFactura)
+        {
+            var detallesFactura = _productoservice.ObtenerDetallesFactura(codFactura); // Llama al servicio para obtener los detalles
+
+            if (detallesFactura == null)
+            {
+                var mensaje = "Resultado Null, revisar datos.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // Devuelve la vista parcial con los detalles de la factura
+            return PartialView("_DetallesFactura", detallesFactura);
         }
 
     }

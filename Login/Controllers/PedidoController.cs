@@ -62,15 +62,22 @@ namespace Plataforma.Controllers
             return RedirectToAction("Index");
         }
         [HttpPost]
-        public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, string estado)
+        public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, string estado, string tpfactura)
         {
             DateTime fechaVenta = DateTime.Now;
                 if(cedula_cliente > 0)
                 {
                     if(fechaVenta != DateTime.MinValue)
                     {
-                        _pedidoServicio.CrearFactura(cedula_cliente, cedula_empleado, fechaVenta, estado);
-                        return RedirectToAction("Index");
+                        _pedidoServicio.CrearFactura(cedula_cliente, cedula_empleado, fechaVenta, estado, tpfactura);
+                        if(tpfactura == "Compra")
+                        {
+                            return RedirectToAction("ComprasProductos", "Producto");
+                        }else 
+                        { 
+                            return RedirectToAction("Index");
+                        }
+                            
                     }else
                     {
                         var mensaje = "Error A2: La fecha no es un dato valido, verificar nuevamente.";
@@ -327,15 +334,15 @@ namespace Plataforma.Controllers
                 ventaTotal = ventaTotal - ventapasivos;
             }
             int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;
+            int gananciaTeresa = (int)(ventaTienda * 0.15);
+            ventaTienda -= gananciaTeresa;
             // Fase 2
             int id_venta = await _pedidoServicio.VentaInsertada(ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
             // Fase 3
             int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
-            Console.WriteLine(ventaMakrotecno);
             int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
             //Console.WriteLine(gananciaMaria);
             int gananciaVictor = gananciaMakrotecno - gananciaMaria;
-            int gananciaTeresa = (int)(ventaTienda * 0.15);
             int gananciaRecargas = (int)(ventaRecarga * 0.056);
             int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
             await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);

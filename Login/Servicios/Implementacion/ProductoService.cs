@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Login.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
@@ -325,7 +325,7 @@ namespace Plataforma.Servicios.Implementacion
                         idCliente = cp.idCliPltf,
                         IdClientePlataforma = ps.idPlataforma,
                         NombreCliente = cp.nombreCliente,
-                        CorreoPlataforma = cp.correo,
+                        CorreoPlataforma = ps.correo,
                         ClavePlataforma = ps.contrasena,
                         ClavePerfil = cp.clavePerfil,
                         Celular = cp.celularCliente,
@@ -333,7 +333,8 @@ namespace Plataforma.Servicios.Implementacion
                         FechaFin = cp.fechaFinPago,
                         Plataforma = ps.idPlataforma,
                         NombrePlataforma = ps.descripcion,
-                        Estado = cp.estado
+                        Estado = cp.estado,
+                        idPltfSuscripcion = cp.idPltfSuscripcion
                     })
                 .ToListAsync();
 
@@ -428,7 +429,7 @@ namespace Plataforma.Servicios.Implementacion
         public async Task ActualizarCliente(int id, int estado, int idCliente)
         {
             // Buscar la plataforma en la base de datos
-            var plataforma = await _dbContext.Plataformasuscripcion.SingleOrDefaultAsync(p => p.idPlataforma == id);
+            var plataforma = await _dbContext.Plataformasuscripcion.SingleOrDefaultAsync(p => p.idPltfSuscripcion == id);
             if (plataforma != null)
             {
                 // Si la plataforma existe, actualizar el campo cantidad
@@ -508,6 +509,77 @@ namespace Plataforma.Servicios.Implementacion
             });
 
             return completion.Completions[0].Text.Trim();
+        }
+        public ProveedorProductosViewModel TraerProveedorProductos(int cedula)
+        {
+            var consultarProveedor = _dbContext.Proveedores.ToList();
+            var consultarProductos = _dbContext.Productos.ToList();
+            int facturaReciente = _dbContext.Factura
+            .Where(f => f.cedula == cedula && f.TipoFactura == "Compra")
+            .OrderByDescending(f => f.cod_factura)
+            .Select(f => f.cod_factura) // Seleccionar solo el campo idFactura
+            .FirstOrDefault(); // Devuelve 0 si no hay resultados
+            var provProdViewModel = new ProveedorProductosViewModel
+            {
+                Proveedores = consultarProveedor,
+                Producto = consultarProductos,
+                Cod_Factura = facturaReciente
+            };
+            return provProdViewModel;
+        }
+        public bool HistoricoCompra(HistoricoCompras historicoCompra)
+        {
+                _dbContext.HistoricoCompras.Add(historicoCompra);
+                _dbContext.SaveChanges();
+
+            var producto = _dbContext.Productos
+                         .FirstOrDefault(p => p.Cod_Producto == historicoCompra.Cod_Producto);
+
+            if (producto != null)
+            {
+                // Paso 3: Sumar el stock recibido con el stock actual del producto
+                producto.CantidadProducto += historicoCompra.Stock;
+
+                // Paso 4: Guardar los cambios en la tabla Productos
+                _dbContext.SaveChanges();
+            }
+            else
+            {
+                // Si no se encuentra el producto, podrías manejarlo de alguna forma, por ejemplo:
+                return false;
+            }
+
+            return true;
+        }
+        public List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula)
+        {
+            return _dbContext.Factura
+                .Where(f => f.fechaVenta.Date == fecha.Date && f.cedula == cedula && f.TipoFactura == "Compra")
+                .ToList();
+        }
+        // Método para obtener los detalles de la factura seleccionada
+        public DetallesFacturaViewModel ObtenerDetallesFactura(int codFactura)
+        {
+            var factura = _dbContext.Factura
+                .Where(f => f.cod_factura == codFactura)
+                .FirstOrDefault();
+
+            var compras = _dbContext.HistoricoCompras
+                .Where(h => h.cod_factura == codFactura)
+                .ToList();
+
+            if (factura == null || compras.Count == 0)
+            {
+                return null;
+            }
+
+            var model = new DetallesFacturaViewModel
+            {
+                Factura = factura,
+                Compras = compras
+            };
+
+            return model;
         }
     }
 }

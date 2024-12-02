@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "VisualizarCompras";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header text-center bg-primary text-white">
+                        <h3>Visualización de Compras</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" asp-action="BuscarFactXFecha" asp-asp-controller="Producto">
+                            <div class="mb-3">
+                                <label for="fechaEscoger" class="form-label">Escoger fecha a visualizar factura de compra</label>
+                                <input type="date" class="form-control" id="fechaEscoger" name="fechaEscoger" required onchange="buscarFacturas()">
+                            </div>
+                        </form>
+
+                        <div id="facturasSelectContainer"></div> <!-- Aquí se carga el select con las facturas -->
+
+                        <div id="detallesFactura"></div> <!-- Aquí se muestran los detalles de la factura -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function buscarFacturas() {
+        const fecha = $('#fechaEscoger').val();
+
+        if (fecha) {
+            $.ajax({
+                url: '/Producto/BuscarFactXFecha',  // Esta acción obtendrá las facturas por fecha
+                type: 'POST',
+                data: { fechaEscoger: fecha },
+                success: function (data) {
+                    // Limpiar el contenedor antes de agregar el nuevo select
+                    $('#facturasSelectContainer').empty();
+
+                    if (data && data.length > 0) {
+                        // Crear un select y rellenarlo con las facturas
+                        const select = $('<select class="form-select" id="facturaSelect"></select>');
+                        select.append('<option value="">Seleccione una factura</option>');
+
+                        data.forEach(factura => {
+                            select.append(`<option value="${factura.codFactura}">Factura ${factura.codFactura} - ${factura.fechaVenta}</option>`);
+                        });
+
+                        // Agregar el select al contenedor
+                        $('#facturasSelectContainer').append(select);
+
+                        // Agregar el evento onchange para que al seleccionar una factura se carguen los detalles
+                        $('#facturaSelect').change(function () {
+                            cargarDetallesFactura($(this).val());  // Llama a la función para cargar los detalles de la factura
+                        });
+                    } else {
+                        $('#facturasSelectContainer').html('<p>No se encontraron facturas para la fecha seleccionada.</p>');
+                    }
+                },
+                error: function () {
+                    alert('Ocurrió un error al obtener las facturas.');
+                }
+            });
+        } else {
+            alert('Por favor, selecciona una fecha válida.');
+        }
+    }
+
+    // Función para cargar los detalles de la factura seleccionada
+    function cargarDetallesFactura(codFactura) {
+        if (codFactura) {
+            $.ajax({
+                url: '/Producto/ObtenerDetallesFactura',  // Acción del controlador para obtener detalles de la factura
+                type: 'GET',
+                data: { codFactura: codFactura },
+                success: function (data) {
+                    // Muestra los detalles de la factura en el contenedor
+                    $('#detallesFactura').html(data);
+                },
+                error: function () {
+                    alert('Ocurrió un error al cargar los detalles de la factura.');
+                }
+            });
+        }
+    }
+</script>
+

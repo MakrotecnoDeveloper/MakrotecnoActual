@@ -1,0 +1,42 @@
+﻿@model List<Cliente>
+@{
+    ViewData["Title"] = "TblVisuCliente";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+    <h2>Lista de Clientes</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">No se encontraron clientes.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Empresa</th>
+                    <th>Ciudad</th>
+                    <th>Teléfono</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model)
+                {
+                    <tr>
+                        <td>@cliente.cedulaCliente</td>
+                        <td>@cliente.nombreCliente</td>
+                        <td>@cliente.empresaCliente</td>
+                        <td>@cliente.ciudadCliente</td>
+                        <td>@cliente.telefonoCliente</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+</div>

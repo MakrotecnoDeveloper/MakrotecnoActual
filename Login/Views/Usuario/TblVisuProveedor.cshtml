@@ -1,0 +1,42 @@
+﻿@model List<Proveedores>
+@{
+    ViewData["Title"] = "TblVisuProveedor";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+    <h2>Lista de Proveedores</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">No se encontraron proveedores.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>NIT</th>
+                    <th>Razon Social</th>
+                    <th>Direccion</th>
+                    <th>Celular</th>
+                    <th>Correo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proveedor in Model)
+                {
+                    <tr>
+                        <td>@proveedor.nit</td>
+                        <td>@proveedor.razonSocial</td>
+                        <td>@proveedor.direccion</td>
+                        <td>@proveedor.celular</td>
+                        <td>@proveedor.correo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+</div>
