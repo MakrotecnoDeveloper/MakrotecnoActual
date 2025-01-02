@@ -1,5 +1,4 @@
-﻿using Login.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Plataforma.Models;
 
@@ -31,54 +30,59 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Plataformas> Plataformas { get; set; }
     public DbSet<Proveedores> Proveedores { get; set; }
     public DbSet<HistoricoCompras> HistoricoCompras { get; set; }
+    public DbSet<Servicio> Servicio { get; set; }
+    public DbSet<CategoriaProductos> CategoriaProductos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //Llaves Primarias
         modelBuilder.Entity<Empleado>().HasKey(e => e.Cedula);
         modelBuilder.Entity<Producto>().HasKey(e => e.Cod_Producto);
-        modelBuilder.Entity<Factura>().HasKey(e => e.cod_factura);
-        modelBuilder.Entity<Cliente>().HasKey(c => c.cedulaCliente);
-        modelBuilder.Entity<Pedidos>().HasKey(cp => cp.cod_pedido);
-        modelBuilder.Entity<Ventas>().HasKey(cv => cv.id_venta);
-        modelBuilder.Entity<Ganancias>().HasKey(id => id.id_ganancias);
-        modelBuilder.Entity<TipoCargo>().HasKey(it => it.id_tipo);
-        modelBuilder.Entity<Empresas>().HasKey(ie => ie.id_empresa);
-        modelBuilder.Entity<Sede>().HasKey(sede => sede.id_sede);
-        modelBuilder.Entity<EmpleadoEmpresa>().HasKey(ie => ie.id_empleadoE);
-        modelBuilder.Entity<Sedeempleado>().HasKey(ise => ise.id_sedeEmpleado);
+        modelBuilder.Entity<Factura>().HasKey(e => e.Cod_factura);
+        modelBuilder.Entity<Cliente>().HasKey(c => c.CedulaCliente);
+        modelBuilder.Entity<Pedidos>().HasKey(cp => cp.Cod_pedido);
+        modelBuilder.Entity<Ventas>().HasKey(cv => cv.Id_venta);
+        modelBuilder.Entity<Ganancias>().HasKey(id => id.Id_ganancias);
+        modelBuilder.Entity<TipoCargo>().HasKey(it => it.Id_tipo);
+        modelBuilder.Entity<Empresas>().HasKey(ie => ie.Id_empresa);
+        modelBuilder.Entity<Sede>().HasKey(sede => sede.Id_sede);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasKey(ie => ie.Id_empleadoE);
+        modelBuilder.Entity<Sedeempleado>().HasKey(ise => ise.Id_sedeEmpleado);
         modelBuilder.Entity<LogsLogin>().HasKey(ise => ise.Id_log);
-        modelBuilder.Entity<Plataformasuscripcion>().HasKey(ip => ip.idPltfSuscripcion);
-        modelBuilder.Entity<ClientesPlataforma>().HasKey(icp => icp.idCliPltf);
+        modelBuilder.Entity<Plataformasuscripcion>().HasKey(ip => ip.IdPltfSuscripcion);
+        modelBuilder.Entity<ClientesPlataforma>().HasKey(icp => icp.IdCliPltf);
         modelBuilder.Entity<Infopdv>().HasKey(iv => iv.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasKey(ds => ds.Idsync);
-        modelBuilder.Entity<GananciaPedido>().HasKey(ds => ds.idGP);
+        modelBuilder.Entity<GananciaPedido>().HasKey(ds => ds.IdGP);
         modelBuilder.Entity<Plataformas>().HasKey(iptlf => iptlf.IdPlataforma);
-        modelBuilder.Entity<Proveedores>().HasKey(prvd => prvd.idProveedor);
+        modelBuilder.Entity<Proveedores>().HasKey(prvd => prvd.IdProveedor);
         modelBuilder.Entity<HistoricoCompras>().HasKey(prvd => prvd.IdHC);
+        modelBuilder.Entity<Servicio>().HasKey(idser => idser.IdServicio);
+        modelBuilder.Entity<CategoriaProductos>().HasKey(idcapro => idcapro.IdCateProducto);
         //Llaves foraneas
-        modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.cedula_cliente);
-        modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
-        modelBuilder.Entity<Pedidos>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
-        modelBuilder.Entity<Pedidos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.cod_producto);
+        modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.Cedula_cliente);
+        modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
+        modelBuilder.Entity<Pedidos>().HasOne<Factura>().WithMany().HasForeignKey(f => f.Cod_factura);
+        modelBuilder.Entity<Pedidos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_producto);
         modelBuilder.Entity<Pedidos>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
-        modelBuilder.Entity<TipoCargo>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
-        modelBuilder.Entity<Sede>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
-        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
-        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.id_empresa);
-        modelBuilder.Entity<Sedeempleado>().HasOne<Sede>().WithMany().HasForeignKey(f => f.id_sede);
-        modelBuilder.Entity<Sedeempleado>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedula);
-        modelBuilder.Entity<Sedeempleado>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.id_cargo);
-        modelBuilder.Entity<Plataformasuscripcion>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.cedulaEmpleado);
-        modelBuilder.Entity<Plataformasuscripcion>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.idPlataforma);
+        modelBuilder.Entity<TipoCargo>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_empresa);
+        modelBuilder.Entity<Sede>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_empresa);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
+        modelBuilder.Entity<EmpleadoEmpresa>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_empresa);
+        modelBuilder.Entity<Sedeempleado>().HasOne<Sede>().WithMany().HasForeignKey(f => f.Id_sede);
+        modelBuilder.Entity<Sedeempleado>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
+        modelBuilder.Entity<Sedeempleado>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_cargo);
+        modelBuilder.Entity<Plataformasuscripcion>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.CedulaEmpleado);
+        modelBuilder.Entity<Plataformasuscripcion>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.IdPlataforma);
         modelBuilder.Entity<LogsLogin>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
-        modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformasuscripcion>().WithMany().HasForeignKey(f => f.idPltfSuscripcion);
+        modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformasuscripcion>().WithMany().HasForeignKey(f => f.IdPltfSuscripcion);
         modelBuilder.Entity<Infopdv>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_Empresa);
         modelBuilder.Entity<Infopdv>().HasOne<Sede>().WithMany().HasForeignKey(f => f.Id_Sede);
         modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
-        modelBuilder.Entity<GananciaPedido>().HasOne<Pedidos>().WithMany().HasForeignKey(f => f.cod_pedido);
+        modelBuilder.Entity<GananciaPedido>().HasOne<Pedidos>().WithMany().HasForeignKey(f => f.Cod_pedido);
         modelBuilder.Entity<HistoricoCompras>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_Producto);
         modelBuilder.Entity<HistoricoCompras>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
+        modelBuilder.Entity<CategoriaProductos>().HasOne<Servicio>().WithMany().HasForeignKey(f => f.IdServicio);
     }
 }

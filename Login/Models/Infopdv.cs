@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Plataforma.Models;
-
-public partial class Infopdv
+public class Infopdv
 {
     [Key]
     public int InfopdvId { get; set; }

@@ -71,7 +71,6 @@
             // Hacer la consulta asincrónica para obtener los datos de la suscripción y clientes
             const response = await fetch(`/Producto/GetDatosPlataforma?suscripcionId=${suscripcionId}`);
             const datos = await response.json();
-            console.log(datos);
             // Llenar el contenedor de datos con la tabla
             const contenedorDatos = document.getElementById('contenedorDatos');
             contenedorDatos.innerHTML = '';

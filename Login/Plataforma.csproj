@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\AdminLTE\" />
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>

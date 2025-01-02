@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Plataforma.Servicios.Implementacion;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Plataforma.Controllers
 {

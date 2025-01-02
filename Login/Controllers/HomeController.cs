@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Net.Mail;
 
 using System.Security.Claims;
 
@@ -19,7 +21,8 @@ namespace Plataforma.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var TraerServicios = _usuarioService.ServTraerServicios();
+            return View(TraerServicios);
         }
 
         public IActionResult Privacy()
@@ -42,12 +45,30 @@ namespace Plataforma.Controllers
             var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
             if (validarUsuario != null)
             {
-                var varValidarPDV = _usuarioService.FunValidarPDV(cedula);
+                var validarDispoSede = _usuarioService.ServValidarDisponSede(cedula);
+                if (!validarDispoSede)
+                {
+                    var mensaje = "Error: Empleado no se encuentra configurado.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }else
+                {
+                    var varValidarPDV = _usuarioService.FunValidarPDV(cedula);
+                    if(varValidarPDV.Any())
+                    {
+                        ViewBag.Cedula = cedula;
+                        ViewBag.Password = password;
 
-                ViewBag.Cedula = cedula;
-                ViewBag.Password = password;
+                        return View(varValidarPDV);
+                    }else
+                    {
+                        var mensaje = "Error: No hay puntos de venta configurados con esta sede.";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
 
-                return View(varValidarPDV);
+                    
+                }
             }else
             {
                 var mensaje = "Error: Correo o Contraseña no existe, validar informacion nuevamente.";
@@ -58,7 +79,7 @@ namespace Plataforma.Controllers
 
 		}
         [HttpPost]
-        public IActionResult validacionLogin(int cedula, string password, int selectedPDV)
+        public IActionResult ValidacionLogin(int cedula, string password, int selectedPDV)
         {
                 var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
 				var claims = new List<Claim>() {
@@ -211,6 +232,79 @@ namespace Plataforma.Controllers
             {
                 return StatusCode(500, $"Error: {ex.Message}");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendContactMessage(ContactFormModel model)
+        {
+                // Procesar el archivo adjunto
+                string attachmentPath = null;
+                if (model.Attachment != null)
+                {
+                    string uploadsFolder = Path.Combine("wwwroot", "uploads");
+                    Directory.CreateDirectory(uploadsFolder);
+                    attachmentPath = Path.Combine(uploadsFolder, Path.GetFileName(model.Attachment.FileName));
+
+                    using (var stream = new FileStream(attachmentPath, FileMode.Create))
+                    {
+                        await model.Attachment.CopyToAsync(stream);
+                    }
+                }
+
+                // Enviar correo
+                using (var mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress("pruebasp714@gmail.com");
+                    mailMessage.To.Add("makrotecnocomercio@gmail.com");
+                    mailMessage.Subject = "Nuevo mensaje de contacto";
+                    mailMessage.Body = $"Nombre: {model.FirstName} {model.LastName}\nCorreo: {model.Email}\nMensaje:\n{model.Message}";
+                    if (attachmentPath != null)
+                    {
+                        if(model.Attachment.Length > 5 * 1024 * 1024) 
+                        {
+                            var mensaje = "El archivo no debe superar los 5 MB";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                        else
+                        {
+                            string fileExtension = Path.GetExtension(model.Attachment.FileName).ToLowerInvariant();
+                            if(fileExtension != ".pdf") 
+                            {
+                                var mensaje = "Solo se permiten archivos PDF";
+                                TempData["ErrorMessage"] = mensaje;
+                                return RedirectToAction("Error", "Errores");
+                            }else
+                            {
+                                using(var stream = new MemoryStream())
+                                {
+                                    await model.Attachment.CopyToAsync(stream);
+                                    byte[] fileBytes = stream.ToArray();
+                                    if(!(fileBytes.Length > 4 && fileBytes[0] == 0x25 && fileBytes[1] == 0x50 && fileBytes[2] == 0x44 && fileBytes[3] == 0x46))
+                                    { 
+                                        var mensaje = "El archivo no es un PDF Valido";
+                                        TempData["ErrorMessage"] = mensaje;
+                                        return RedirectToAction("Error", "Errores");
+                                    }else
+                                    {
+                                        mailMessage.Attachments.Add(new Attachment(attachmentPath));
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+
+                    using (var smtpClient = new SmtpClient("smtp.gmail.com"))
+                    {
+                        smtpClient.Credentials = new System.Net.NetworkCredential("pruebasp714@gmail.com", "rhccjuoouoeobuac");
+                        smtpClient.EnableSsl = true;
+                        await smtpClient.SendMailAsync(mailMessage);
+                    }
+                }
+
+                TempData["SuccessMessage"] = "¡Mensaje enviado correctamente!";
+                return RedirectToAction("Index");
         }
 
 

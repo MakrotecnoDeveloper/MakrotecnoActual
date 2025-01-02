@@ -1,7 +1,4 @@
-﻿using Login.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Plataforma.Models;
+﻿using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService

@@ -27,7 +27,7 @@
                                 <select id="Sede" name="IdSede" class="form-control">
                                     @foreach (var sede in sedes)
                                     {
-                                        <option value="@sede.id_sede">@sede.nombreSede</option>
+                                        <option value="@sede.Id_sede">@sede.NombreSede</option>
                                     }
                                 </select>
                             </div>
@@ -37,7 +37,7 @@
                                 <select id="Cargo" name="IdCargo" class="form-control">
                                     @foreach (var cargo in cargos)
                                     {
-                                        <option value="@cargo.id_tipo">@cargo.descripcionCargo</option>
+                                        <option value="@cargo.Id_tipo">@cargo.DescripcionCargo</option>
                                     }
                                 </select>
                             </div>

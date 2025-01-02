@@ -1,5 +1,4 @@
-﻿using Login.Models;
-using Plataforma.Models;
+﻿using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
@@ -8,6 +7,7 @@ namespace Plataforma.Servicios.Contrato
         int ObtenerRolPermisos(int cedula);
         string? ObtenerNombreRolPermisos(int rolEmpleado);
         int TraerUltimoIDPdv(int cedulaEmpleado);
+        bool ServValidarDisponSede(int cedula);
         LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV);
         Empleado? GetUsuarios(int cedula, string password);
         Task<Empleado> SaveUsuario(Empleado modelo);
@@ -35,7 +35,7 @@ namespace Plataforma.Servicios.Contrato
         bool ObtenerSedePorEmpleado(int cedula);
         List<TipoCargo> ObtenerCargos(string idEmpresa);
         bool InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
-        List<FacProuserViewModel> TraerFactXDia(int cedula, int traerIdNombrePDVActual);
+        List<FacProUserViewModel> TraerFactXDia(int cedula, int traerIdNombrePDVActual);
         Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma);
         List<Producto> ProductosAbarrotes();
         Task<bool> ActualizarProductoAsync(string id, string campo, string newVal);
@@ -48,5 +48,6 @@ namespace Plataforma.Servicios.Contrato
         List<Cliente> ServVisuaCliente();
         bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo);
         List<Proveedores> ServVisuaProveedor();
+        List<Servicio> ServTraerServicios();
     }
 }

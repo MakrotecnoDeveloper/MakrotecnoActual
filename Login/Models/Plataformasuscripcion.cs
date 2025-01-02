@@ -1,19 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Plataforma.Models;
-    public class Plataformasuscripcion
-    {
-        [Key]
-        public int idPltfSuscripcion {  get; set; }
-        public int idPlataforma { get; set; }
-        public string descripcion { get; set; }
-        public int valorVenta {  get; set; }
-        public int valorNeto { get; set; }
-        public DateTime fechaIniPago { get; set; }
-        public DateTime fechaFinPago { get; set; }
-        public int cantidad { get; set; }
-        public string correo { get; set; }
-        public string contrasena { get; set; }
-        public int cedulaEmpleado { get; set; }
-        public int estado { get; set; }
-    }
+public class Plataformasuscripcion
+{
+    [Key]
+        public int IdPltfSuscripcion {  get; set; }
+        public int IdPlataforma { get; set; }
+        public string? Descripcion { get; set; }
+        public int ValorVenta {  get; set; }
+        public int ValorNeto { get; set; }
+        public DateTime FechaIniPago { get; set; }
+        public DateTime FechaFinPago { get; set; }
+        public int Cantidad { get; set; }
+        public string? Correo { get; set; }
+        public string? Contrasena { get; set; }
+        public int CedulaEmpleado { get; set; }
+        public int Estado { get; set; }
+}

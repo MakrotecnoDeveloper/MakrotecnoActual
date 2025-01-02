@@ -1,0 +1,134 @@
+.card {
+    transition: transform 0.2s;
+    margin: 10px 0; /* Reduce margin to save space */
+    padding: 10px; /* Reduce padding to save space */
+}
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+.contact-info img {
+    max-width: 100px;
+    margin-bottom: 20px;
+}
+
+.contact-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.contact-form button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+}
+
+    .contact-form button:hover {
+        background-color: #0056b3;
+    }
+
+.navbar-brand img {
+    max-width: 80px;
+}
+
+.slogan {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+/* Ajustar el ancho del contenedor principal */
+.container {
+    max-width: 960px; /* Puedes ajustar este valor según sea necesario */
+}
+/* Contenedor para las imágenes divididas */
+.split-images {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid #ddd;
+}
+
+/* Imagen izquierda */
+.left-img {
+    height: 100%;
+    width: 50%;
+    object-fit: cover;
+    position: absolute;
+    left: 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%, 0 100%);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Imagen derecha */
+.right-img {
+    height: 100%;
+    width: 50%;
+    object-fit: cover;
+    position: absolute;
+    right: 0;
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 0 100%);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Efecto hover para dar dinamismo */
+.split-images:hover .left-img {
+    transform: translateX(-5%);
+}
+
+.split-images:hover .right-img {
+    transform: translateX(5%);
+}
+
+/* Tarjeta para mantener estructura */
+.card {
+    overflow: hidden;
+}
+#navbarSupportedContent {
+    max-height: 80vh; /* Ajusta esto según tus necesidades */
+    overflow-y: auto;
+}
+/* Estilo del contenedor del menú */
+.menu-horizontal-wrapper .menu-horizontal {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Activa el desplazamiento horizontal */
+    scrollbar-width: thin; /* Estilo de scroll para navegadores que soportan */
+    scrollbar-color: #6c757d transparent;
+    max-width: 100%; /* Ajusta el ancho al contenedor */
+    padding: 10px 0;
+}
+
+    /* Estilo para el scroll en navegadores Webkit */
+    .menu-horizontal-wrapper .menu-horizontal::-webkit-scrollbar {
+        height: 8px; /* Altura del scroll */
+    }
+
+    .menu-horizontal-wrapper .menu-horizontal::-webkit-scrollbar-thumb {
+        background: #6c757d; /* Color del thumb */
+        border-radius: 4px;
+    }
+
+    .menu-horizontal-wrapper .menu-horizontal::-webkit-scrollbar-track {
+        background: transparent; /* Fondo del track */
+    }
+
+/* Estilo de los elementos del menú */
+.menu-horizontal-wrapper .nav-item {
+    list-style: none;
+}
+
+.menu-horizontal-wrapper .nav-link {
+    white-space: nowrap; /* Evita el salto de línea */
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: #343a40;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+    .menu-horizontal-wrapper .nav-link:hover {
+        background-color: #495057;
+        text-decoration: none;
+    }

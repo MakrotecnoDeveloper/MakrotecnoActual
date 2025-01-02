@@ -1,5 +1,4 @@
-﻿using Login.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -19,15 +18,15 @@ namespace Plataforma.Servicios.Implementacion
         public int ObtenerRolPermisos(int cedula)
         {
             return _dbContext.Sedeempleado
-                     .Where(se => se.cedula == cedula)
-                     .Select(se => se.id_cargo)
+                     .Where(se => se.Cedula == cedula)
+                     .Select(se => se.Id_cargo)
                      .FirstOrDefault();
         }
         public string? ObtenerNombreRolPermisos(int rolEmpleado)
         {
             return _dbContext.TipoCargo
-                         .Where(tc => tc.id_tipo == rolEmpleado)
-                         .Select(tc => tc.nombreCargo)
+                         .Where(tc => tc.Id_tipo == rolEmpleado)
+                         .Select(tc => tc.NombreCargo)
                          .FirstOrDefault();
         }
         public int TraerUltimoIDPdv(int cedulaEmpleado)
@@ -37,6 +36,11 @@ namespace Plataforma.Servicios.Implementacion
             .OrderByDescending(ce => ce.Id_log)
             .Select(ce => ce.InfopdvId)
             .FirstOrDefault();
+        }
+        public bool ServValidarDisponSede(int cedula)
+        {
+            var empleadoExistente = _dbContext.Sedeempleado.FirstOrDefault(ced => ced.Cedula == cedula);
+            return empleadoExistente != null;
         }
         public LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV)
         {
@@ -80,8 +84,8 @@ namespace Plataforma.Servicios.Implementacion
         {
 
 			var idSede = _dbContext.Sedeempleado
-	        .Where(se => se.cedula == cedula)
-	        .Select(se => se.id_sede)
+	        .Where(se => se.Cedula == cedula)
+	        .Select(se => se.Id_sede)
 	        .FirstOrDefault();
 
 			if (idSede <= 0)
@@ -92,8 +96,9 @@ namespace Plataforma.Servicios.Implementacion
 			return _dbContext.Infopdv
 	        .Where(p => p.Id_Sede == idSede)
 	        .ToList();
+            
 
-		}
+        }
         public async Task<Empleado> SaveUsuario(Empleado modelo)
         {
             _dbContext.Empleado.Add(modelo);
@@ -156,15 +161,15 @@ namespace Plataforma.Servicios.Implementacion
         }
         public TipoCargo? ValidarCargo(string nombreCargo)
         {
-            return _dbContext.TipoCargo.FirstOrDefault(p => p.nombreCargo == nombreCargo);
+            return _dbContext.TipoCargo.FirstOrDefault(p => p.NombreCargo == nombreCargo);
         }
         public IEnumerable<TipoCargo> InsertarCargos(string nombreCargo, string descripcionCargo, string id_empresa)
         {
             var nuevoCargo = new TipoCargo
             {
-                nombreCargo = nombreCargo,
-                descripcionCargo = descripcionCargo,
-                id_empresa = id_empresa
+                NombreCargo = nombreCargo,
+                DescripcionCargo = descripcionCargo,
+                Id_empresa = id_empresa
             };
             _dbContext.TipoCargo.Add(nuevoCargo);
             _dbContext.SaveChanges();
@@ -172,7 +177,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public Empresas? ValidarExistenciaEmpresa(string nit)
         {
-            return _dbContext.Empresas.FirstOrDefault(p => p.id_empresa == nit);
+            return _dbContext.Empresas.FirstOrDefault(p => p.Id_empresa == nit);
         }
         public IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
         {
@@ -180,11 +185,11 @@ namespace Plataforma.Servicios.Implementacion
             var celular = indicativo + " " + numero;
             var nuevaEmpresa = new Empresas
             {
-                id_empresa = nit,
-                nombre = nombreEmpresa,
-                pais = pais,
-                direccion = direccion,
-                telefono = celular
+                Id_empresa = nit,
+                Nombre = nombreEmpresa,
+                Pais = pais,
+                Direccion = direccion,
+                Telefono = celular
             };
             _dbContext.Empresas.Add(nuevaEmpresa);
             _dbContext.SaveChanges();
@@ -196,17 +201,17 @@ namespace Plataforma.Servicios.Implementacion
         }
         public Sede? ValidarExistenciaSede(string nombreSede)
         {
-            return _dbContext.Sede.FirstOrDefault(p => p.nombreSede == nombreSede);
+            return _dbContext.Sede.FirstOrDefault(p => p.NombreSede == nombreSede);
         }
         public IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
         {
             var nuevaSede = new Sede
             {
-                id_empresa = id_empresa,
-                nombreSede = nombreSede,
-                ciudad = ciudad,
-                direccion = direccion,
-                telefono = telefono
+                Id_empresa = id_empresa,
+                NombreSede = nombreSede,
+                Ciudad = ciudad,
+                Direccion = direccion,
+                Telefono = telefono
             };
             _dbContext.Sede.Add(nuevaSede);
             _dbContext.SaveChanges();
@@ -214,14 +219,14 @@ namespace Plataforma.Servicios.Implementacion
         }
         public EmpleadoEmpresa? ValidarExisEmpleadoEmpresa(string id_empresa, int cedula)
         {
-            return _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.id_empresa == id_empresa && ee.cedula == cedula);
+            return _dbContext.EmpleadoEmpresa.FirstOrDefault(ee => ee.Id_empresa == id_empresa && ee.Cedula == cedula);
         }
         public IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string id_empresa, int cedula)
         {
             var nuevoEmpleadoEmpresa = new EmpleadoEmpresa
             {
-                id_empresa = id_empresa,
-                cedula = cedula
+                Id_empresa = id_empresa,
+                Cedula = cedula
             };
             _dbContext.EmpleadoEmpresa.Add(nuevoEmpleadoEmpresa);
             _dbContext.SaveChanges();
@@ -241,12 +246,12 @@ namespace Plataforma.Servicios.Implementacion
                 var empleadoConSedeYCargo = sedeEmpleados
                     .Select(se =>
                     {
-                        var empleado = empleados.FirstOrDefault(e => e.Cedula == se.cedula);
-                        var sede = sedes.FirstOrDefault(s => s.id_sede == se.id_sede);
-                        var cargo = cargos.FirstOrDefault(c => c.id_tipo == se.id_cargo);
+                        var empleado = empleados.FirstOrDefault(e => e.Cedula == se.Cedula);
+                        var sede = sedes.FirstOrDefault(s => s.Id_sede == se.Id_sede);
+                        var cargo = cargos.FirstOrDefault(c => c.Id_tipo == se.Id_cargo);
                         var empresa = empleadoEmpresas
-                            .Where(ee => ee.cedula == se.cedula)
-                            .Join(empresas, ee => ee.id_empresa, emp => emp.id_empresa, (ee, emp) => emp)
+                            .Where(ee => ee.Cedula == se.Cedula)
+                            .Join(empresas, ee => ee.Id_empresa, emp => emp.Id_empresa, (ee, emp) => emp)
                             .FirstOrDefault();
 
                         return new EmpleadoConSedeYEmpresa
@@ -272,11 +277,11 @@ namespace Plataforma.Servicios.Implementacion
         public List<Sede> GetSedesByEmpresaId(string empresaId)
         {
             return _dbContext.Sede
-             .Where(s => s.id_empresa == empresaId)
+             .Where(s => s.Id_empresa == empresaId)
              .Select(s => new Sede
              {
-                 id_sede = s.id_sede,
-                 nombreSede = s.nombreSede
+                 Id_sede = s.Id_sede,
+                 NombreSede = s.NombreSede
              })
              .ToList();
         }
@@ -287,19 +292,19 @@ namespace Plataforma.Servicios.Implementacion
         public string? ObtenerIdEmpresa(int cedula)
         {
             return _dbContext.EmpleadoEmpresa
-                .Where(ee => ee.cedula == cedula)
-                .Select(ee => ee.id_empresa)
+                .Where(ee => ee.Cedula == cedula)
+                .Select(ee => ee.Id_empresa)
                 .FirstOrDefault();
         }
         public List<Sede> ObtenerSedes(string idEmpresa)
         {
-            return _dbContext.Sede.Where(s => s.id_empresa == idEmpresa).ToList();
+            return _dbContext.Sede.Where(s => s.Id_empresa == idEmpresa).ToList();
         }
 
         public bool ObtenerSedePorEmpleado(int cedula)
         {
             // Buscar el registro en Sedeempleado basado en la cédula
-            var empleadoSede = _dbContext.Sedeempleado.FirstOrDefault(es => es.cedula == cedula);
+            var empleadoSede = _dbContext.Sedeempleado.FirstOrDefault(es => es.Cedula == cedula);
             if(empleadoSede == null)
             {
                 return true;
@@ -310,39 +315,39 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<TipoCargo> ObtenerCargos(string idEmpresa)
         {
-            return _dbContext.TipoCargo.Where(c => c.id_empresa == idEmpresa).ToList();
+            return _dbContext.TipoCargo.Where(c => c.Id_empresa == idEmpresa).ToList();
         }
         public bool InsertarSedeEmpleado(int cedula, int idSede, int idCargo)
         {
             var sedeEmpleado = new Sedeempleado
             {
-                cedula = cedula,
-                id_sede = idSede,
-                id_cargo = idCargo
+                Cedula = cedula,
+                Id_sede = idSede,
+                Id_cargo = idCargo
             };
 
             _dbContext.Sedeempleado.Add(sedeEmpleado);
             _dbContext.SaveChanges();
             return true;
         }
-        public List<FacProuserViewModel> TraerFactXDia(int cedula, int idPDVActual)
+        public List<FacProUserViewModel> TraerFactXDia(int cedula, int idPDVActual)
         {
             DateTime fecha = DateTime.UtcNow.Date;
             DateTime fechaInicio = new(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             DateTime fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
 
             int totalFacturas = _dbContext.Factura
-                .Where(f => f.fechaVenta == fecha)
+                .Where(f => f.FechaVenta == fecha)
                 .Count();
 
             decimal sumaValorVenta = _dbContext.Pedidos
             .Join(
                 _dbContext.Factura,
-                pedido => pedido.cod_factura,
-                factura => factura.cod_factura,
+                pedido => pedido.Cod_factura,
+                factura => factura.Cod_factura,
                 (pedido, factura) => new { pedido, factura })
-            .Where(x => x.factura.fechaVenta == fecha)
-            .Sum(x => (decimal?)x.pedido.valorVenta) ?? 0;
+            .Where(x => x.factura.FechaVenta == fecha)
+            .Sum(x => (decimal?)x.pedido.ValorVenta) ?? 0;
 
 
             int totalEmpleados = _dbContext.Empleado.Count();
@@ -352,9 +357,9 @@ namespace Plataforma.Servicios.Implementacion
             string rolEmpleado = string.Empty;
                 var rolEmpleadoResult = (from se in _dbContext.Sedeempleado
                                          join tc in _dbContext.TipoCargo
-                                         on se.id_cargo equals tc.id_tipo
-                                         where se.cedula == cedula
-                                         select tc.nombreCargo).FirstOrDefault();
+                                         on se.Id_cargo equals tc.Id_tipo
+                                         where se.Cedula == cedula
+                                         select tc.NombreCargo).FirstOrDefault();
 
                 if (rolEmpleadoResult != null)
                 {
@@ -371,7 +376,7 @@ namespace Plataforma.Servicios.Implementacion
           .Select(ce => ce.Name)
           .FirstOrDefault();
 
-            FacProuserViewModel viewModel = new()
+            FacProUserViewModel viewModel = new()
             {
                 TotalSumaCodFactura = totalFacturas,
                 TotalVentaDia = sumaValorVenta,
@@ -382,13 +387,13 @@ namespace Plataforma.Servicios.Implementacion
                 NombrePDV = traerNombrePDV
             };
 
-            return new List<FacProuserViewModel> { viewModel };
+            return new List<FacProUserViewModel> { viewModel };
         }
         public async Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma)
         {
             var fechaActual = DateTime.Now;
             var cuentasProximas = await _dbContext.ClientesPlataforma
-                .Where(cp => cp.idPltfSuscripcion == idPlataforma && cp.fechaFinPago <= fechaActual.AddDays(5))
+                .Where(cp => cp.IdPltfSuscripcion == idPlataforma && cp.FechaFinPago <= fechaActual.AddDays(5))
                 .ToListAsync();
 
             return cuentasProximas;
@@ -396,7 +401,7 @@ namespace Plataforma.Servicios.Implementacion
         public List<Producto> ProductosAbarrotes()
         {
             return _dbContext.Productos
-                     .Where(c => c.Categoria == "Abarrotes" && c.estado == 1)
+                     .Where(c => c.Categoria == "Abarrotes" && c.Estado == 1)
                      .OrderBy(c => c.NombreProducto)
                      .ToList();
         }
@@ -435,10 +440,10 @@ namespace Plataforma.Servicios.Implementacion
                 CantidadProducto = cantidadProducto,
                 ValorNetoProducto = valorNetoProductoFloat,
                 ValorVentaProducto = valorVentaProductoFloat,
-                valorUnidad = valorUnidadInt,
+                ValorUnidad = valorUnidadInt,
                 ID_Empresa = id_empresa,
                 Categoria = categoria,
-                estado = estado,
+                Estado = estado,
                 Ubicacion = ubicacion
             };
             _dbContext.Productos.Add(nuevoProductoInventario);
@@ -452,7 +457,7 @@ namespace Plataforma.Servicios.Implementacion
 
             if (producto != null)
             {
-                producto.estado = 0;
+                producto.Estado = 0;
 
                 await _dbContext.SaveChangesAsync();
 
@@ -470,7 +475,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Syncpdv
                 .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
                 .OrderByDescending(s => s.Idsync)
-                .Select(s => s.estado)
+                .Select(s => s.Estado)
                 .FirstOrDefault();
         }
         public Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV, int cedula)
@@ -479,8 +484,8 @@ namespace Plataforma.Servicios.Implementacion
             var nuevoEstadoPDV = new Syncpdv
             {
                 InfopdvId = idPDV,
-                estado = estadopdv,
-                fechaEstado = DateTime.Now,
+                Estado = estadopdv,
+                FechaEstado = DateTime.Now,
                 Cedula = cedula
             };
             _dbContext.Syncpdv.Add(nuevoEstadoPDV);
@@ -492,11 +497,11 @@ namespace Plataforma.Servicios.Implementacion
 
             var cliente = new Cliente
             {
-                cedulaCliente = cedulaCliente,
-                nombreCliente = nombreCliente,
-                empresaCliente = empresaCliente,
-                ciudadCliente = ciudadCliente,
-                telefonoCliente = telefonoCliente
+                CedulaCliente = cedulaCliente,
+                NombreCliente = nombreCliente,
+                EmpresaCliente = empresaCliente,
+                CiudadCliente = ciudadCliente,
+                TelefonoCliente = telefonoCliente
             };
 
             _dbContext.Cliente.Add(cliente);
@@ -520,11 +525,11 @@ namespace Plataforma.Servicios.Implementacion
         {
             var proveedor = new Proveedores
             {
-                nit = nit,
-                razonSocial = razonSocial,
-                direccion = direccion,
-                celular = celular,
-                correo = correo
+                Nit = nit,
+                RazonSocial = razonSocial,
+                Direccion = direccion,
+                Celular = celular,
+                Correo = correo
             };
 
             _dbContext.Proveedores.Add(proveedor);
@@ -543,6 +548,11 @@ namespace Plataforma.Servicios.Implementacion
         {
             var proveedores = _dbContext.Proveedores.ToList();
             return proveedores;
+        }
+        public List<Servicio> ServTraerServicios()
+        {
+            var servicios = _dbContext.Servicio.ToList();
+            return servicios;
         }
     }
 }

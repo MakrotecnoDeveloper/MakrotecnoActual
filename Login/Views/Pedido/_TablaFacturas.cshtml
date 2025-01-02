@@ -3,28 +3,28 @@
 @foreach (var factura in Model)
 {
     <tr>
-        <td>@factura.cod_factura</td>
-        <td>@factura.cedula_cliente</td>
-        <td>@factura.cedula</td>
-        <td>@factura.fechaVenta</td>
+        <td>@factura.Cod_factura</td>
+        <td>@factura.Cedula_cliente</td>
+        <td>@factura.Cedula</td>
+        <td>@factura.FechaVenta</td>
         <td>
-            @if (factura.estado == "Proceso")
+            @if (factura.Estado == "Proceso")
             {
                 <span>En Proceso</span>
             }
-            else if (factura.estado == "Pagado")
+            else if (factura.Estado == "Pagado")
             {
                 <span>Completada</span>
             }
-            else if (factura.estado == "Cerrado")
+            else if (factura.Estado == "Cerrado")
             {
                 <span>Cerrada</span>
             }
         </td>
         <td>
-            @if (factura.estado == "Proceso")
+            @if (factura.Estado == "Proceso")
             {
-                <a href="@Url.Action("CrearPedido", "Pedido", new { codigo = factura.cod_factura })">Agregar</a>
+                <a href="@Url.Action("CrearPedido", "Pedido", new { codigo = factura.Cod_factura })">Agregar</a>
             }else
             {
                 <span>Sin acciones</span>

@@ -21,7 +21,7 @@
                             <option value="">Seleccione una empresa</option>
                             @foreach (var sede in Model)
                             {
-                                <option value="@sede.id_empresa">@sede.id_empresa</option>
+                                <option value="@sede.Id_empresa">@sede.Id_empresa</option>
                             }
                         </select>
                     </div>
@@ -45,20 +45,19 @@
 
         // Filtrar las sedes asociadas a la empresa seleccionada
         var sedesAsociadas = @Html.Raw(Json.Serialize(Model));
-        console.log(sedesAsociadas);
         var sedesEmpresaSeleccionada = sedesAsociadas.filter(function (sede) {
-            return sede.id_empresa === selectedEmpresaId;
+            return sede.Id_empresa === selectedEmpresaId;
         });
 
         // Mostrar las sedes en el contenedor
         document.getElementById('sedesContainer').innerHTML = '<h1>Sedes asociadas a la empresa con ID: ' + selectedEmpresaId + '</h1>';
 
         sedesEmpresaSeleccionada.forEach(function (sede) {
-            document.getElementById('sedesContainer').innerHTML += '<p>ID Sede: ' + sede.id_sede + '</p>';
-            document.getElementById('sedesContainer').innerHTML += '<p>Nombre de la Sede: ' + sede.nombreSede + '</p>';
-            document.getElementById('sedesContainer').innerHTML += '<p>Ciudad: ' + sede.ciudad + '</p>';
-            document.getElementById('sedesContainer').innerHTML += '<p>Dirección: ' + sede.direccion + '</p>';
-            document.getElementById('sedesContainer').innerHTML += '<p>Teléfono: ' + sede.telefono + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>ID Sede: ' + sede.Id_sede + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Nombre de la Sede: ' + sede.NombreSede + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Ciudad: ' + sede.Ciudad + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Dirección: ' + sede.Direccion + '</p>';
+            document.getElementById('sedesContainer').innerHTML += '<p>Teléfono: ' + sede.Telefono + '</p>';
         });
     });
 </script>

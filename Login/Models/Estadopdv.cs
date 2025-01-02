@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Plataforma.Models;
-
-public partial class Estadopdv
+public class Estadopdv
 {
     [Key]
     public int Id_epdv { get; set; }

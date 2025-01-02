@@ -1,11 +1,11 @@
-﻿@model Login.Models.DetallesFacturaViewModel;
+﻿@model Plataforma.Models.DetallesFacturaViewModel;
 <div class="card mt-4">
     <div class="card-header">
-        <h5>Detalles de la Factura @Model.Factura.cod_factura</h5>
+        <h5>Detalles de la Factura @Model.Factura.Cod_factura</h5>
     </div>
     <div class="card-body">
-        <p><strong>Codigo de Factura:</strong> @Model.Factura.cod_factura</p>
-        <p><strong>Fecha de Venta:</strong> @Model.Factura.fechaVenta.ToString("dd/MM/yyyy")</p>
+        <p><strong>Codigo de Factura:</strong> @Model.Factura.Cod_factura</p>
+        <p><strong>Fecha de Venta:</strong> @Model.Factura.FechaVenta.ToString("dd/MM/yyyy")</p>
         <p><strong>Tipo de Factura:</strong> @Model.Factura.TipoFactura</p>
 
         <h5>Compras asociadas:</h5>

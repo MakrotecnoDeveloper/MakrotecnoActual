@@ -1,10 +1,6 @@
-﻿using Plataforma.Models;
-
-namespace Login.Models
+﻿namespace Plataforma.Models;
+public class DetallesFacturaViewModel
 {
-    public class DetallesFacturaViewModel
-    {
-        public Factura Factura { get; set; }
-        public List<HistoricoCompras> Compras { get; set; }
-    }
+        public Factura? Factura { get; set; }
+        public List<HistoricoCompras>? Compras { get; set; }
 }

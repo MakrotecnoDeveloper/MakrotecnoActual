@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
 namespace Plataforma.Models;
-
-public partial class Pedidos
+public class Pedidos
 {
     [Key]
-    public int cod_pedido { get; set; }
-    public int cod_factura { get; set; }
-    public string? cod_producto { get; set; }
-    public int cantidad { get; set; }
-    public int valorNeto { get; set; }
-    public int valorVenta { get; set; }
-    public string? estado { get; set; }
+    public int Cod_pedido { get; set; }
+    public int Cod_factura { get; set; }
+    public string? Cod_producto { get; set; }
+    public int Cantidad { get; set; }
+    public int ValorNeto { get; set; }
+    public int ValorVenta { get; set; }
+    public string? Estado { get; set; }
     public int InfopdvId { get; set; }
-    public DateTime fechaIngreso { get; set; }
+    public DateTime FechaIngreso { get; set; }
 }

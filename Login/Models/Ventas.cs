@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
 namespace Plataforma.Models;
-public partial class Ventas
+public class Ventas
 {
     [Key]
-    public int id_venta { get; set; }
-    public int ventaTotal { get; set; }
-    public int ventaMakrotecno { get; set; }
-    public int netoMakrotecno { get; set; }
-    public int ventaRecargas { get; set; }
-    public int ventaTienda { get; set; }
-    public int ventaPasivos { get; set; }
-    public DateTime fechaVenta { get; set; }
+    public int Id_venta { get; set; }
+    public int VentaTotal { get; set; }
+    public int VentaMakrotecno { get; set; }
+    public int NetoMakrotecno { get; set; }
+    public int VentaRecargas { get; set; }
+    public int VentaTienda { get; set; }
+    public int VentaPasivos { get; set; }
+    public DateTime FechaVenta { get; set; }
 }

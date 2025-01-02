@@ -1,11 +1,5 @@
-﻿//Representacion de la tabla Usuario de la base de datos
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace Plataforma.Models;
-
-public partial class ReporteItem
+﻿namespace Plataforma.Models;
+public class ReporteItem
 {
     public DateTime FechaFactura { get; set; } // Para el reporte de ganancias
     public decimal TotalVentas { get; set; } // Para el reporte de ventas

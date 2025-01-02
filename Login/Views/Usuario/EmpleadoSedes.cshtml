@@ -1,4 +1,4 @@
-﻿@model Login.Models.EmpleadoSedeViewModel
+﻿@model Plataforma.Models.EmpleadoSedeViewModel
 @{
     ViewData["Title"] = "EmpleadoSedes";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -50,9 +50,9 @@
                                         <tr>
                                             <td>@item.Empleado.Nombre</td>
                                             <td>@item.Empleado.Cedula</td>
-                                            <td>@item.TipoCargo.nombreCargo</td>
-                                            <td>@item.Sede?.nombreSede</td>
-                                            <td>@item.Empresa?.nombre</td>
+                                            <td>@item.TipoCargo.NombreCargo</td>
+                                            <td>@item.Sede?.NombreSede</td>
+                                            <td>@item.Empresa?.Nombre</td>
                                             <td><a asp-action="EliminarEmpleadoSede" asp-controller="Usuario" asp-route-cedula="@item.Empleado.Cedula">Eliminar</a></td>
                                             <!-- Otros campos -->
                                         </tr>

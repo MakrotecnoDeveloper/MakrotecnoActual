@@ -1,7 +1,5 @@
-﻿using Login.Models;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
 using OpenAI_API;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -12,24 +10,20 @@ namespace Plataforma.Servicios.Implementacion
     {
         //variable de solo lectura para referenciar la base de datos
         private readonly BaseAdmContext _dbContext;
-        private readonly OpenAIAPI _openAIAPI;
-        private readonly string _connectionString;
         public ProductoService(BaseAdmContext dbContext, IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("cadenaSQL");
             _dbContext = dbContext;
-            var apiKey = configuration["OpenAI:ApiKey"];
-            _openAIAPI = new OpenAIAPI(apiKey);
         }
         public List<Producto> ObtenerProductos()
         {
             return _dbContext.Productos.ToList();
         }
-        public List<Producto> ObtenerProductosInventarioWeb()
+        public List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio)
         {
-            return _dbContext.Productos
-                    .Where(p => !new[] { "Abarrotes", "Selecciona la Categoria", "Support" }.Contains(p.Categoria))
+            var categorias = _dbContext.CategoriaProductos
+                    .Where(c => c.IdServicio == IdServicio) // Filtrar por IdServicio
                     .ToList();
+                return categorias;
         }
         public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias)
         {
@@ -46,10 +40,10 @@ namespace Plataforma.Servicios.Implementacion
                     CantidadProducto = stock,
                     ValorNetoProducto = valor_neto,
                     ValorVentaProducto = valor_unitario,
-                    valorUnidad = valorUnidad,
+                    ValorUnidad = valorUnidad,
                     ID_Empresa = id_empresa,
                     Categoria = categorias,
-                    estado = estado,
+                    Estado = estado,
                     Ubicacion = Ubicacion
                 };
 
@@ -226,10 +220,10 @@ namespace Plataforma.Servicios.Implementacion
                 producto.CantidadProducto = cantidad;
                 producto.ValorNetoProducto = valorNeto;
                 producto.ValorVentaProducto = valorVenta;
-                producto.valorUnidad = valorUnidad;
+                producto.ValorUnidad = valorUnidad;
                 producto.ID_Empresa = idEmpresa;
                 producto.Categoria = categoria;
-                producto.estado = estado;
+                producto.Estado = estado;
                 try
                 {
                     _dbContext.SaveChanges();
@@ -275,28 +269,28 @@ namespace Plataforma.Servicios.Implementacion
         }
 
         //a
-        public void inserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
+        public void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
         {
             var nuevaPlataforma = new Plataformasuscripcion
             {
-                idPlataforma = idPlataforma,
-                descripcion = descripcion,
-                valorVenta = valorventa,
-                valorNeto = valorneto,
-                fechaIniPago = fechaInipago,
-                fechaFinPago = fechaFinpago,
-                cantidad = cantidad,
-                correo = correo,
-                contrasena = contrasena,
-                cedulaEmpleado = cedula,
-                estado = estado
+                IdPlataforma = idPlataforma,
+                Descripcion = descripcion,
+                ValorVenta = valorventa,
+                ValorNeto = valorneto,
+                FechaIniPago = fechaInipago,
+                FechaFinPago = fechaFinpago,
+                Cantidad = cantidad,
+                Correo = correo,
+                Contrasena = contrasena,
+                CedulaEmpleado = cedula,
+                Estado = estado
             };
 
             // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
             _dbContext.Plataformasuscripcion.Add(nuevaPlataforma);
             _dbContext.SaveChanges();
         }
-        public List<Plataformas> traerPlataformasExistentes()
+        public List<Plataformas> TraerPlataformasExistentes()
         {
             return _dbContext.Plataformas.ToList();
         }
@@ -308,7 +302,7 @@ namespace Plataforma.Servicios.Implementacion
         {
             // Consultar las suscripciones activas para una plataforma específica
             var suscripciones = await _dbContext.Plataformasuscripcion
-                .Where(s => s.estado == 1 && s.idPlataforma == plataformaId)
+                .Where(s => s.Estado == 1 && s.IdPlataforma == plataformaId)
                 .ToListAsync();
 
             return suscripciones;
@@ -316,25 +310,25 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<ClientePlataformaDTO>> ObtenerDatosSuscripcion(int suscripcionId)
         {
             var datos = await _dbContext.ClientesPlataforma
-                .Where(cp => cp.idPltfSuscripcion == suscripcionId && cp.estado == 1)
+                .Where(cp => cp.IdPltfSuscripcion == suscripcionId && cp.Estado == 1)
                 .Join(_dbContext.Plataformasuscripcion,
-                    cp => cp.idPltfSuscripcion,
-                    ps => ps.idPltfSuscripcion,
+                    cp => cp.IdPltfSuscripcion,
+                    ps => ps.IdPltfSuscripcion,
                     (cp, ps) => new ClientePlataformaDTO
                     {
-                        idCliente = cp.idCliPltf,
-                        IdClientePlataforma = ps.idPlataforma,
-                        NombreCliente = cp.nombreCliente,
-                        CorreoPlataforma = ps.correo,
-                        ClavePlataforma = ps.contrasena,
-                        ClavePerfil = cp.clavePerfil,
-                        Celular = cp.celularCliente,
-                        FechaIni = cp.fechaIniPago,
-                        FechaFin = cp.fechaFinPago,
-                        Plataforma = ps.idPlataforma,
-                        NombrePlataforma = ps.descripcion,
-                        Estado = cp.estado,
-                        idPltfSuscripcion = cp.idPltfSuscripcion
+                        IdCliente = cp.IdCliPltf,
+                        IdClientePlataforma = ps.IdPlataforma,
+                        NombreCliente = cp.NombreCliente,
+                        CorreoPlataforma = ps.Correo,
+                        ClavePlataforma = ps.Contrasena,
+                        ClavePerfil = cp.ClavePerfil,
+                        Celular = cp.CelularCliente,
+                        FechaIni = cp.FechaIniPago,
+                        FechaFin = cp.FechaFinPago,
+                        Plataforma = ps.IdPlataforma,
+                        NombrePlataforma = ps.Descripcion,
+                        Estado = cp.Estado,
+                        IdPltfSuscripcion = cp.IdPltfSuscripcion
                     })
                 .ToListAsync();
 
@@ -343,18 +337,18 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<ClientePlataformaDTO>> ObtenerDatosPlataforma(int suscripcionId)
         {
             var datos = await _dbContext.Plataformasuscripcion
-                .Where(ps => ps.idPltfSuscripcion == suscripcionId && ps.estado == 1)
+                .Where(ps => ps.IdPltfSuscripcion == suscripcionId && ps.Estado == 1)
                 .Select(ps => new ClientePlataformaDTO
                 {
-                    idCliente = ps.idPltfSuscripcion,
-                    IdClientePlataforma = ps.idPlataforma,
-                    NombreCliente = ps.descripcion,
-                    CorreoPlataforma = ps.correo,
-                    ClavePlataforma = ps.contrasena,
-                    FechaIni = ps.fechaIniPago,
-                    FechaFin = ps.fechaFinPago,
-                    Plataforma = ps.cantidad,
-                    Estado = ps.estado
+                    IdCliente = ps.IdPltfSuscripcion,
+                    IdClientePlataforma = ps.IdPlataforma,
+                    NombreCliente = ps.Descripcion,
+                    CorreoPlataforma = ps.Correo,
+                    ClavePlataforma = ps.Contrasena,
+                    FechaIni = ps.FechaIniPago,
+                    FechaFin = ps.FechaFinPago,
+                    Plataforma = ps.Cantidad,
+                    Estado = ps.Estado
                 })
             .ToListAsync();
 
@@ -379,13 +373,13 @@ namespace Plataforma.Servicios.Implementacion
                 return false; // Manejo de errores
             }
         }
-        public void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        public void ServicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            var plataforma = _dbContext.Plataformasuscripcion.SingleOrDefault(p => p.idPltfSuscripcion == idPltfSuscripcion);
+            var plataforma = _dbContext.Plataformasuscripcion.SingleOrDefault(p => p.IdPltfSuscripcion == idPltfSuscripcion);
             if (plataforma != null)
             {
                 // Si la plataforma existe, actualizar el campo cantidad
-                int cantidadActual = plataforma.cantidad;
+                int cantidadActual = plataforma.Cantidad;
                 int cantidadNueva = cantidadActual - cantidad;
                 if (cantidadNueva < 0)
                 {
@@ -395,20 +389,20 @@ namespace Plataforma.Servicios.Implementacion
                     //agregar cuenta
                     var nuevoVentClientPltf = new ClientesPlataforma
                     {
-                        nombreCliente = nombrecliente,
-                        celularCliente = celularcliente,
-                        correo = correo,
-                        clave = contrasena,
-                        idPltfSuscripcion = idPltfSuscripcion,
-                        cantidad = cantidad,
-                        ppm = ppm,
-                        fechaIniPago = feciniplat,
-                        fechaFinPago = fecfinplat,
-                        valorVenta = valorventa,
-                        valorNeto = valorneto,
-                        cedulaEmpleado = cedula,
-                        estado = estado,
-                        clavePerfil = clave,
+                        NombreCliente = nombrecliente,
+                        CelularCliente = celularcliente,
+                        Correo = correo,
+                        Clave = contrasena,
+                        IdPltfSuscripcion = idPltfSuscripcion,
+                        Cantidad = cantidad,
+                        Ppm = ppm,
+                        FechaIniPago = feciniplat,
+                        FechaFinPago = fecfinplat,
+                        ValorVenta = valorventa,
+                        ValorNeto = valorneto,
+                        CedulaEmpleado = cedula,
+                        Estado = estado,
+                        ClavePerfil = clave,
                     };
 
                     // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -416,7 +410,7 @@ namespace Plataforma.Servicios.Implementacion
                     _dbContext.SaveChanges();
 
                     //cantidad
-                    plataforma.cantidad = cantidadNueva;
+                    plataforma.Cantidad = cantidadNueva;
                     // Guardar los cambios en la base de datos
                     _dbContext.SaveChanges();
                 }
@@ -429,95 +423,41 @@ namespace Plataforma.Servicios.Implementacion
         public async Task ActualizarCliente(int id, int estado, int idCliente)
         {
             // Buscar la plataforma en la base de datos
-            var plataforma = await _dbContext.Plataformasuscripcion.SingleOrDefaultAsync(p => p.idPltfSuscripcion == id);
+            var plataforma = await _dbContext.Plataformasuscripcion.SingleOrDefaultAsync(p => p.IdPltfSuscripcion == id);
             if (plataforma != null)
             {
                 // Si la plataforma existe, actualizar el campo cantidad
-                int cantidadActual = plataforma.cantidad;
+                int cantidadActual = plataforma.Cantidad;
                 int cantidadReducida = 1; // Este es el valor que quieres reducir
                 int cantidadNueva = cantidadActual + cantidadReducida;
                 // Asignar la nueva cantidad a la plataforma
-                plataforma.cantidad = cantidadNueva;
+                plataforma.Cantidad = cantidadNueva;
 
                 // Guardar los cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
             }
-            var clientePlataforma = await _dbContext.ClientesPlataforma.SingleOrDefaultAsync(c => c.idCliPltf == idCliente);
+            var clientePlataforma = await _dbContext.ClientesPlataforma.SingleOrDefaultAsync(c => c.IdCliPltf == idCliente);
             if (clientePlataforma != null)
             {
-                clientePlataforma.estado = estado;
+                clientePlataforma.Estado = estado;
                 await _dbContext.SaveChangesAsync();
             }
         }
-        public List<Producto> traerProductosXCategoria(string categoria)
+        public List<Producto> TraerProductosXCategoria(string categoria)
         {
             var productos = _dbContext.Productos
-               .Where(p => p.Categoria == categoria && p.estado == 1)
+               .Where(p => p.Categoria == categoria && p.Estado == 1)
                .ToList();
             return productos;
-        }
-
-
-        /*Metodos con OpenAI*/
-        // Método para buscar productos en la base de datos
-        public async Task<List<string>> BuscarProductosAsync(string consulta)
-        {
-            var productos = new List<string>();
-
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-
-                // Buscar productos que coincidan con la consulta del usuario
-                string query = "SELECT nombreProducto FROM Productos WHERE nombreProducto LIKE @consulta";
-                using (var command = new MySqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@consulta", "%" + consulta + "%");
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            productos.Add(reader.GetString(0));
-                        }
-                    }
-                }
-            }
-
-            return productos;
-        }
-
-        // Método para generar una respuesta con OpenAI
-        public async Task<string> GenerarRespuestaAsync(string consulta, List<string> productos)
-        {
-            string prompt;
-
-            if (productos.Count > 0)
-            {
-                // Si hay productos encontrados, genera una respuesta basada en ellos
-                prompt = $"El usuario está buscando '{consulta}'. Estos son los productos que coinciden: {string.Join(", ", productos)}.";
-            }
-            else
-            {
-                // Si no se encontraron productos, pregunta a OpenAI cómo responder
-                prompt = $"El usuario está buscando '{consulta}', pero no se encontraron productos coincidentes. Proporcione una respuesta general sobre productos relacionados.";
-            }
-
-            var completion = await _openAIAPI.Completions.CreateCompletionAsync(new OpenAI_API.Completions.CompletionRequest
-            {
-                Prompt = prompt,
-                MaxTokens = 150
-            });
-
-            return completion.Completions[0].Text.Trim();
         }
         public ProveedorProductosViewModel TraerProveedorProductos(int cedula)
         {
             var consultarProveedor = _dbContext.Proveedores.ToList();
             var consultarProductos = _dbContext.Productos.ToList();
             int facturaReciente = _dbContext.Factura
-            .Where(f => f.cedula == cedula && f.TipoFactura == "Compra")
-            .OrderByDescending(f => f.cod_factura)
-            .Select(f => f.cod_factura) // Seleccionar solo el campo idFactura
+            .Where(f => f.Cedula == cedula && f.TipoFactura == "Compra")
+            .OrderByDescending(f => f.Cod_factura)
+            .Select(f => f.Cod_factura) // Seleccionar solo el campo idFactura
             .FirstOrDefault(); // Devuelve 0 si no hay resultados
             var provProdViewModel = new ProveedorProductosViewModel
             {
@@ -554,14 +494,14 @@ namespace Plataforma.Servicios.Implementacion
         public List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula)
         {
             return _dbContext.Factura
-                .Where(f => f.fechaVenta.Date == fecha.Date && f.cedula == cedula && f.TipoFactura == "Compra")
+                .Where(f => f.FechaVenta.Date == fecha.Date && f.Cedula == cedula && f.TipoFactura == "Compra")
                 .ToList();
         }
         // Método para obtener los detalles de la factura seleccionada
         public DetallesFacturaViewModel ObtenerDetallesFactura(int codFactura)
         {
             var factura = _dbContext.Factura
-                .Where(f => f.cod_factura == codFactura)
+                .Where(f => f.Cod_factura == codFactura)
                 .FirstOrDefault();
 
             var compras = _dbContext.HistoricoCompras

@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-public class ErroresController : Controller
+namespace Plataforma.Controllers
 {
-    public IActionResult Error()
+    public class ErroresController : Controller
     {
-        var mensaje = TempData["ErrorMessage"] as string;
-        return View("Error", mensaje);
+        public IActionResult Error()
+        {
+            var mensaje = TempData["ErrorMessage"] as string;
+            return View("Error", mensaje);
+        }
     }
 }

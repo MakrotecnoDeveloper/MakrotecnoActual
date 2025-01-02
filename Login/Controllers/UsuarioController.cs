@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers

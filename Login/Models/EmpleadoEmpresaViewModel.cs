@@ -1,12 +1,8 @@
-﻿using Plataforma.Models;
-
-namespace Login.Models
+﻿namespace Plataforma.Models;
+public class EmpleadoEmpresaViewModel
 {
-    public class EmpleadoEmpresaViewModel
-    {
-        public string id_empresa {  get; set; }
-        public int id_empleadoE {  get; set; }
-        public int cedula { get; set; }
-        public string NombreEmpresa { get; set; }
+    public string? Id_empresa {  get; set; }
+        public int Id_empleadoE {  get; set; }
+        public int Cedula { get; set; }
+        public string? NombreEmpresa { get; set; }
     }
-}

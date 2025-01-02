@@ -22,12 +22,12 @@
                 @foreach (var empresa in Model)
                 {
                     <tr>
-                        <td>@empresa.id_empresa</td>
-                        <td>@empresa.nombre</td>
-                        <td>@empresa.pais</td>
-                        <td>@empresa.direccion</td>
-                        <td>@empresa.telefono</td>
-                        <td><a asp-controller="Usuario" asp-action="FormEmpleadoEmpresa" asp-route-id_empresa="@empresa.id_empresa">Agregar Empleado</a></td>
+                        <td>@empresa.Id_empresa</td>
+                        <td>@empresa.Nombre</td>
+                        <td>@empresa.Pais</td>
+                        <td>@empresa.Direccion</td>
+                        <td>@empresa.Telefono</td>
+                        <td><a asp-controller="Usuario" asp-action="FormEmpleadoEmpresa" asp-route-id_empresa="@empresa.Id_empresa">Agregar Empleado</a></td>
                     </tr>
                 }
             </tbody>

@@ -1,11 +1,7 @@
-﻿using Plataforma.Models;
-
-namespace Login.Models
+﻿namespace Plataforma.Models;
+public class ProveedorProductosViewModel
 {
-    public class ProveedorProductosViewModel
-    {
-        public List<Proveedores> Proveedores { get; set; }
-        public List<Producto> Producto { get; set; }
+    public List<Proveedores>? Proveedores { get; set; }
+        public List<Producto>? Producto { get; set; }
         public int Cod_Factura {  get; set; }
-    }
 }

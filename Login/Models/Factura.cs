@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
 namespace Plataforma.Models;
-
-public partial class Factura
+public class Factura
 {
     [Key]
-    public int cod_factura { get; set; }
-    public int cedula_cliente { get; set; }
-    public int cedula { get; set; }
-    public DateTime fechaVenta { get; set; }
-    public string? estado { get; set; }
+    public int Cod_factura { get; set; }
+    public int Cedula_cliente { get; set; }
+    public int Cedula { get; set; }
+    public DateTime FechaVenta { get; set; }
+    public string? Estado { get; set; }
     public string? TipoFactura { get; set; }
 }

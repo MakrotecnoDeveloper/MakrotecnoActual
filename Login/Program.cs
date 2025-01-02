@@ -1,39 +1,48 @@
 using Microsoft.EntityFrameworkCore;
-//Esto es para acceder a la carpeta models
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//configura la lectura de variables de entorno
-builder.Host.ConfigureAppConfiguration((context, config) =>
-{
-	config.AddEnvironmentVariables();
-    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-          .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-});
+//Archivos config appsettings
+builder.Configuration
+    .AddEnvironmentVariables()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 
-// configura los servicios de MVC (Model-View-Controller) en la aplicaci�n web
+//Configuraciones para HTTP, MVC, Log para mensajes emergentes
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Logging.AddFile(builder.Configuration.GetSection("Logging:File"));
 
-//Configura el contexto de la base de datos en la aplicacion, osea la variable cadenaSQL que se asigna en appsettings.json
+//Validacion de la conexion de base de datos
+var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
+    ?? throw new InvalidOperationException("La cadena de conexión 'cadenaSQL' no está configurada.");
+
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
-    options.UseMySQL(builder.Configuration.GetConnectionString("cadenaSQL"));
+    options.UseMySQL(connectionString);
 });
+
+//Limite de envio de correos
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10485760; // 10 MB
+});
+
+//Servicios-Contrato/Implementacion
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(option =>
@@ -41,9 +50,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         option.Cookie.Name = "CookieMakrotecno";
         option.LoginPath = "/Home/Login";
         option.LogoutPath = "/Home/Logout";
-        option.ExpireTimeSpan = TimeSpan.Zero;
-        //Si estamos viendo algo el tiempo de expiracion de mi cookie se aumenta 20 minutos mas.
-        option.SlidingExpiration = false;
+        option.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        option.SlidingExpiration = true;
     });
 
 

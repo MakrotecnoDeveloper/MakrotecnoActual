@@ -1,9 +1,5 @@
-﻿using Plataforma.Models;
-
-namespace Login.Models
+﻿namespace Plataforma.Models;
+public class VisualizarProductoViewModel
 {
-    public class VisualizarProductoViewModel
-    {
-        public Producto Producto { get; set; }
-    }
+        public Producto? Producto { get; set; }
 }

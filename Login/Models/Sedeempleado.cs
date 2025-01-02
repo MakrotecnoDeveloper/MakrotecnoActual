@@ -1,14 +1,10 @@
-﻿using Plataforma.Models;
-using System.ComponentModel.DataAnnotations;
-
-namespace Login.Models
+﻿using System.ComponentModel.DataAnnotations;
+namespace Plataforma.Models;
+public class Sedeempleado
 {
-    public class Sedeempleado
-    {
         [Key]
-        public int id_sedeEmpleado {  get; set; }
-        public int id_sede {  get; set; }
-        public int cedula { get; set; }
-        public int id_cargo { get; set; }
-    }
+        public int Id_sedeEmpleado {  get; set; }
+        public int Id_sede {  get; set; }
+        public int Cedula { get; set; }
+        public int Id_cargo { get; set; }
 }

@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using Plataforma.Servicios.Implementacion;
 
 namespace Plataforma.Controllers
 {
@@ -137,13 +135,13 @@ namespace Plataforma.Controllers
             return View(traerProductos);
         }
         /*Visualizacion de  Recargas de Plataformas */
-        public IActionResult formPlataforma()
+        public IActionResult FormPlataforma()
         {
-            var traerPlataformasExistentes = _productoservice.traerPlataformasExistentes();
+            var traerPlataformasExistentes = _productoservice.TraerPlataformasExistentes();
             return View(traerPlataformasExistentes);
         }
         [HttpPost]
-        public IActionResult insertPlataforma(int idPlataforma, string plataformas, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
+        public IActionResult InsertPlataforma(int idPlataforma, string plataformas, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
         {
             if(string.IsNullOrEmpty(descripcion) || valorventa <= 0 || valorneto <= 0 || fechaInipago == DateTime.MinValue || fechaFinpago == DateTime.MinValue || cantidad <= 0 || string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(contrasena) || cedula <= 0 || estado <= 0)
             {
@@ -152,28 +150,28 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }else
             {
-                _productoservice.inserPlataformaService(idPlataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
-                return View("formPlataforma");
+                _productoservice.InserPlataformaService(idPlataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
+                return View("FormPlataforma");
             }
         }
-        public IActionResult formInserClienPlatf()
+        public IActionResult FormInserClienPlatf()
         {
             var traerPlataformas = _productoservice.SuscripcionesActivas();
             return View(traerPlataformas);
         }
-        public IActionResult insertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
+        public IActionResult InsertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
-            _productoservice.servicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
+            _productoservice.ServicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
             return RedirectToAction("formInserClienPlatf", "Producto");
         }
-        public IActionResult formVisuPlatf()
+        public IActionResult FormVisuPlatf()
         {
-            var searchPlataform = _productoservice.traerPlataformasExistentes();
+            var searchPlataform = _productoservice.TraerPlataformasExistentes();
             return View(searchPlataform);
         }
-        public IActionResult formVisuCta()
+        public IActionResult FormVisuCta()
         {
-            var searchPlataform = _productoservice.traerPlataformasExistentes();
+            var searchPlataform = _productoservice.TraerPlataformasExistentes();
             return View(searchPlataform);
         }
         [HttpGet]
@@ -214,14 +212,15 @@ namespace Plataforma.Controllers
                 return Json(new { success = true });
         }
         //Visualizar productos existentes para vender en la pagina inicial
-        public IActionResult productosExistentesVenta()
+        [HttpGet]
+        public IActionResult ProductosExistentesVenta(int IdServicio)
         {
-            var traerProductosExistentes = _productoservice.ObtenerProductosInventarioWeb();
-            return View("../Home/productosExistentesVenta", traerProductosExistentes);
+            var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
+            return View("../Home/productosExistentesVenta", traerCategoriasExistentes);
         }
-        public IActionResult traerProductoXCategoria(string categoria)
+        public IActionResult TraerProductoXCategoria(string categoria)
         {
-            var productosTraidos = _productoservice.traerProductosXCategoria(categoria);
+            var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
         public IActionResult ComprasProductos()
@@ -273,8 +272,8 @@ namespace Plataforma.Controllers
                 // Transformar las facturas a un objeto más ligero si es necesario
                 var result = facturas.Select(f => new
                 {
-                    codFactura = f.cod_factura,
-                    fechaVenta = f.fechaVenta.ToShortDateString() // Formatear la fecha
+                    codFactura = f.Cod_factura,
+                    fechaVenta = f.FechaVenta.ToShortDateString() // Formatear la fecha
                 });
 
                 return Json(result);

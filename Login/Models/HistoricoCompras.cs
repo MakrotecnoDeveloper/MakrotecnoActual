@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Plataforma.Models
+namespace Plataforma.Models;
+public class HistoricoCompras
 {
-    public class HistoricoCompras
-    {
         [Key]
         public int IdHC { get; set; }
 
@@ -29,5 +27,4 @@ namespace Plataforma.Models
 
         public int Estado { get; set; } = 1; // Valor por defecto
         public int cod_factura { get; set; }
-    }
 }

@@ -1,13 +1,11 @@
-﻿//establece un contrato que define las operaciones necesarias para interactuar con usuarios en una aplicación
-using Login.Models;
-using Plataforma.Models;
+﻿using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
         Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias);
         List<Producto> ObtenerProductos();
-        List<Producto> ObtenerProductosInventarioWeb();
+        List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio);
         List<Producto> BuscarProductos(string searchTerm, string categoriaTerm);
         List<Producto> SinStock(string searchTerm, string categoriaTerm);
         List<Producto> BuscarProSinStock(string searchTerm, string categoriaTerm);
@@ -15,18 +13,16 @@ namespace Plataforma.Servicios.Contrato
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
         void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado);
         void EliminarProducto(string id);
-        void inserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
-        List<Plataformas> traerPlataformasExistentes();
+        void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
+        List<Plataformas> TraerPlataformasExistentes();
         List<Plataformasuscripcion> SuscripcionesActivas();
         Task<List<Plataformasuscripcion>> ObtenerSuscripcionesActivas(int plataformaId);
         Task<List<ClientePlataformaDTO>> ObtenerDatosSuscripcion(int suscripcionId);
         Task<List<ClientePlataformaDTO>> ObtenerDatosPlataforma(int suscripcionId);
         Task<bool> EliminarClienteAsync(int idClientePlataforma);
-        void servicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
+        void ServicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
         Task ActualizarCliente(int id, int estado, int idCliente);
-        List<Producto> traerProductosXCategoria(string categoria);
-        Task<List<string>> BuscarProductosAsync(string consulta);
-        Task<string> GenerarRespuestaAsync(string consulta, List<string> productos);
+        List<Producto> TraerProductosXCategoria(string categoria);
         ProveedorProductosViewModel TraerProveedorProductos(int cedula);
         bool HistoricoCompra(HistoricoCompras historicoCompra);
         List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula);

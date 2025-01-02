@@ -1,4 +1,4 @@
-﻿@model Login.Models.ProveedorProductosViewModel
+﻿@model Plataforma.Models.ProveedorProductosViewModel
 @{
     ViewData["Title"] = "ComprasProductos";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -16,7 +16,7 @@
                     <option value="">Seleccione un NIT</option>
                     @foreach (var proveedor in Model.Proveedores)
                     {
-                        <option value="@proveedor.nit">@proveedor.nit - @proveedor.razonSocial</option>
+                        <option value="@proveedor.Nit">@proveedor.Nit - @proveedor.RazonSocial</option>
                     }
                 </select>
             </div>

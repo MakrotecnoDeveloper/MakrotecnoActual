@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -18,79 +17,79 @@ namespace Plataforma.Servicios.Implementacion
             IQueryable<ReporteItem> reporte = tipoReporte switch
             {
                 "ventaTotal" => (IQueryable<ReporteItem>)(from v in _dbContext.Ventas
-                                                          where v.fechaVenta >= fechaInicio && v.fechaVenta <= fechaFin
+                                                          where v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin
                                                           select new ReporteItem
                                                           {
-                                                              FechaFactura = v.fechaVenta,
-                                                              TotalVentas = v.ventaTotal
+                                                              FechaFactura = v.FechaVenta,
+                                                              TotalVentas = v.VentaTotal
                                                           }),
                 "ventaMakrotecno" => (IQueryable<ReporteItem>)(from v in _dbContext.Ventas
-                                                               where v.fechaVenta >= fechaInicio && v.fechaVenta <= fechaFin
+                                                               where v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin
                                                                select new ReporteItem
                                                                {
-                                                                   FechaFactura = v.fechaVenta,
-                                                                   TotalMakrotecno = v.ventaMakrotecno
+                                                                   FechaFactura = v.FechaVenta,
+                                                                   TotalMakrotecno = v.VentaMakrotecno
                                                                }),
                 "netoMakrotecno" => (IQueryable<ReporteItem>)(from v in _dbContext.Ventas
-                                                              where v.fechaVenta >= fechaInicio && v.fechaVenta <= fechaFin
+                                                              where v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin
                                                               select new ReporteItem
                                                               {
-                                                                  FechaFactura = v.fechaVenta,
-                                                                  TotalNetoMakrotecno = v.netoMakrotecno
+                                                                  FechaFactura = v.FechaVenta,
+                                                                  TotalNetoMakrotecno = v.NetoMakrotecno
                                                               }),
                 "ventaRecargas" => (IQueryable<ReporteItem>)(from v in _dbContext.Ventas
-                                                             where v.fechaVenta >= fechaInicio && v.fechaVenta <= fechaFin
+                                                             where v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin
                                                              select new ReporteItem
                                                              {
-                                                                 FechaFactura = v.fechaVenta,
-                                                                 TotalRecargas = v.ventaRecargas
+                                                                 FechaFactura = v.FechaVenta,
+                                                                 TotalRecargas = v.VentaRecargas
                                                              }),
                 "ventaTienda" => (IQueryable<ReporteItem>)(from v in _dbContext.Ventas
-                                                           where v.fechaVenta >= fechaInicio && v.fechaVenta <= fechaFin
+                                                           where v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin
                                                            select new ReporteItem
                                                            {
-                                                               FechaFactura = v.fechaVenta,
-                                                               TotalTienda = v.ventaTienda
+                                                               FechaFactura = v.FechaVenta,
+                                                               TotalTienda = v.VentaTienda
                                                            }),
                 "gananciaMakrotecno" => (IQueryable<ReporteItem>)(from g in _dbContext.Ganancias
-                                                                  where g.fechaGanancia >= fechaInicio && g.fechaGanancia <= fechaFin
-                                                                  group g by g.fechaGanancia into grouped
+                                                                  where g.FechaGanancia >= fechaInicio && g.FechaGanancia <= fechaFin
+                                                                  group g by g.FechaGanancia into grouped
                                                                   select new ReporteItem
                                                                   {
                                                                       FechaFactura = grouped.Key,
-                                                                      TotalGananciaMakrotecno = grouped.Sum(g => g.gananciaMakrotecno)
+                                                                      TotalGananciaMakrotecno = grouped.Sum(g => g.GananciaMakrotecno)
                                                                   }),
                 "gananciaTotal" => (IQueryable<ReporteItem>)(from g in _dbContext.Ganancias
-                                                             where g.fechaGanancia >= fechaInicio && g.fechaGanancia <= fechaFin
-                                                             group g by g.fechaGanancia into grouped
+                                                             where g.FechaGanancia >= fechaInicio && g.FechaGanancia <= fechaFin
+                                                             group g by g.FechaGanancia into grouped
                                                              select new ReporteItem
                                                              {
                                                                  FechaFactura = grouped.Key,
-                                                                 TotalGananciaTotal = grouped.Sum(g => g.gananciaTotal)
+                                                                 TotalGananciaTotal = grouped.Sum(g => g.GananciaTotal)
                                                              }),
                 "gananciaMaria" => (IQueryable<ReporteItem>)(from g in _dbContext.Ganancias
-                                                             where g.fechaGanancia >= fechaInicio && g.fechaGanancia <= fechaFin
-                                                             group g by g.fechaGanancia into grouped
+                                                             where g.FechaGanancia >= fechaInicio && g.FechaGanancia <= fechaFin
+                                                             group g by g.FechaGanancia into grouped
                                                              select new ReporteItem
                                                              {
                                                                  FechaFactura = grouped.Key,
-                                                                 TotalGananciaMaria = grouped.Sum(g => g.gananciaMaria)
+                                                                 TotalGananciaMaria = grouped.Sum(g => g.GananciaMaria)
                                                              }),
                 "gananciaVictor" => (IQueryable<ReporteItem>)(from g in _dbContext.Ganancias
-                                                              where g.fechaGanancia >= fechaInicio && g.fechaGanancia <= fechaFin
-                                                              group g by g.fechaGanancia into grouped
+                                                              where g.FechaGanancia >= fechaInicio && g.FechaGanancia <= fechaFin
+                                                              group g by g.FechaGanancia into grouped
                                                               select new ReporteItem
                                                               {
                                                                   FechaFactura = grouped.Key,
-                                                                  TotalGananciaVictor = grouped.Sum(g => g.gananciaVictor)
+                                                                  TotalGananciaVictor = grouped.Sum(g => g.GananciaVictor)
                                                               }),
                 "gananciaTeresa" => (IQueryable<ReporteItem>)(from g in _dbContext.Ganancias
-                                                              where g.fechaGanancia >= fechaInicio && g.fechaGanancia <= fechaFin
-                                                              group g by g.fechaGanancia into grouped
+                                                              where g.FechaGanancia >= fechaInicio && g.FechaGanancia <= fechaFin
+                                                              group g by g.FechaGanancia into grouped
                                                               select new ReporteItem
                                                               {
                                                                   FechaFactura = grouped.Key,
-                                                                  TotalGananciaTeresa = grouped.Sum(g => g.gananciaTeresa)
+                                                                  TotalGananciaTeresa = grouped.Sum(g => g.GananciaTeresa)
                                                               }),
                 _ => throw new ArgumentException("Tipo de reporte no válido"),
             };

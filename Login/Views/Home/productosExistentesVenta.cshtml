@@ -1,36 +1,33 @@
-﻿@model List<Producto>
+﻿@model List<CategoriaProductos>
 @{
     Layout = null;
 }
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Makrotecno</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Página de Makrotecno">
+    <meta name="author" content="Equipo Makrotecno">
+
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <!-- Custom fonts for this template -->
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="~/AdminLTE/plugins/fontawesome-free/css/all.min.css">
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet">
-    <link rel="stylesheet" href="~/AdminLTE/plugins/fontawesome-free/css/all.min.css">
-    <!-- Custom styles for this template -->
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="~/css/index-style.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/resume.min.css" />
-    <!--<link rel="icon" type="image/jpg" href="~/favicon.ico" />-->
-    <style>
-        #navbarSupportedContent {
-            max-height: 80vh; /* Ajusta esto según tus necesidades */
-            overflow-y: auto;
-        }
-    </style>
 </head>
 <body id="page-top">
     <div class="content-wrapper">
-        <div class="container">
+        <div class="container-fluid">
             <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-lg" id="sideNav">
                 <a class="navbar-brand js-scroll-trigger text-center" href="#page-top">
                     <span class="d-block d-lg-none fs-4 fw-bold">Makro Tecno</span>
@@ -48,18 +45,26 @@
                                     <i class="bi bi-tag-fill me-2"></i>Inicio
                                 </a>
                             </li>
-                        @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
-                        {
-                            <li class="nav-item my-2">
-                                <a href="#" class="nav-link js-scroll-trigger categoria-link text-light text-uppercase fw-semibold" data-categoria="@categoria">
-                                    <i class="bi bi-tag-fill me-2"></i>@categoria
-                                </a>
-                            </li>
-                        }
                     </ul>
                 </div>
             </nav>
             <div class="row">
+
+                <div class="col-12">
+                    <div class="menu-horizontal-wrapper">
+                        <div class="menu-horizontal d-flex align-items-center">
+                            @foreach (var categoria in Model)
+                            {
+                                <li class="nav-item my-2 mx-2">
+                                    <a href="#" class="nav-link js-scroll-trigger categoria-link text-light text-uppercase fw-semibold" data-categoria="@categoria.Descripcion">
+                                        <i class="bi bi-tag-fill me-2"></i>@categoria.Descripcion
+                                    </a>
+                                </li>
+                            }
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-12">
                     <div id="productos-container">
 
@@ -68,30 +73,33 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript dependencies -->
     <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <script src="~/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="~/js/resume.js"></script>
-            <script>
-                $(document).ready(function () {
-                    $('.categoria-link').click(function (e) {
-                        e.preventDefault(); // Previene el comportamiento predeterminado del enlace
-                        var categoria = $(this).data('categoria');
 
-                        $.ajax({
-                            url: '@Url.Action("traerProductoXCategoria", "Producto")',
-                            type: 'GET',
-                            data: { categoria: categoria },
-                            success: function (data) {
-                                $('#productos-container').html(data);
-                            },
-                            error: function () {
-                                alert('Error al cargar los productos.');
-                            }
-                        });
-                    });
+    <!-- Custom scripts -->
+    <!--<script src="~/js/index-main.js"></script>-->
+    <script>
+        $(document).ready(function () {
+            $('.categoria-link').click(function (e) {
+                e.preventDefault(); // Previene el comportamiento predeterminado del enlace
+                var categoria = $(this).data('categoria');
+
+                $.ajax({
+                    url: '@Url.Action("traerProductoXCategoria", "Producto")',
+                    type: 'GET',
+                    data: { categoria: categoria },
+                    success: function (data) {
+                        $('#productos-container').html(data);
+                    },
+                    error: function () {
+                        alert('Error al cargar los productos.');
+                    }
                 });
-            </script>
+            });
+        });
+    </script>
 </body>
 </html>

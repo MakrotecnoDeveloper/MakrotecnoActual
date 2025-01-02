@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
 namespace Plataforma.Models;
-
-public partial class Ganancias
+public class Ganancias
 {
     [Key]
-    public int id_ganancias { get; set; }
-    public int gananciaMakrotecno { get; set; }
-    public int gananciaTotal { get; set; }
-    public int gananciaMaria { get; set; }
-    public int gananciaVictor { get; set; }
-    public int gananciaTeresa { get; set; }
-    public DateTime fechaGanancia { get; set; }
+    public int Id_ganancias { get; set; }
+    public int GananciaMakrotecno { get; set; }
+    public int GananciaTotal { get; set; }
+    public int GananciaMaria { get; set; }
+    public int GananciaVictor { get; set; }
+    public int GananciaTeresa { get; set; }
+    public DateTime FechaGanancia { get; set; }
 }

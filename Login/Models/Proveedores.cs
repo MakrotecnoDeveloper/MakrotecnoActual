@@ -1,14 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Plataforma.Models;
-
-public partial class Proveedores
+public class Proveedores
 {
     [Key]
-    public int idProveedor {  get; set; }
-    public string nit {  get; set; }
-    public string razonSocial { get; set; }
-    public string direccion { get; set; }
-    public string celular { get; set; }
-    public string correo { get; set; }
+    public int IdProveedor {  get; set; }
+    public string? Nit {  get; set; }
+    public string? RazonSocial { get; set; }
+    public string? Direccion { get; set; }
+    public string? Celular { get; set; }
+    public string? Correo { get; set; }
 }

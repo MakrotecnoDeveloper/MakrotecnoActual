@@ -131,14 +131,14 @@
         perfiles.forEach(perfil => {
             var fila = document.createElement('tr');
             fila.className = 'perfil-fila';
-            var html = `<td>${perfil.cedula}</td>`;
-            html += `<td>${perfil.nombre}</td>`;
-            html += `<td>${perfil.apellido}</td>`;
-            html += `<td>${perfil.genero}</td>`;
-            html += `<td>${perfil.correo}</td>`;
-            html += `<td>${perfil.rh}</td>`;
-            html += `<td>${perfil.celular}</td>`;
-            html += `<td>${perfil.contrasena}</td>`;
+            var html = `<td>${perfil.Cedula}</td>`;
+            html += `<td>${perfil.Nombre}</td>`;
+            html += `<td>${perfil.Apellido}</td>`;
+            html += `<td>${perfil.Genero}</td>`;
+            html += `<td>${perfil.Correo}</td>`;
+            html += `<td>${perfil.Rh}</td>`;
+            html += `<td>${perfil.Celular}</td>`;
+            html += `<td>${perfil.Contrasena}</td>`;
 
             // Crear celdas para cada propiedad del perfil
             var propiedades = ['cedula', 'nombre', 'apellido', 'genero', 'correo', 'rh', 'celular', 'contrasena'];
@@ -150,7 +150,7 @@
 
             var enlace1 = crearEnlace(`/Usuario/Editar?id=${perfil.cedula}`, 'fas fa-pencil-alt');
             var enlace2 = crearEnlace(`/Usuario/FormEmpleadoCompania?cedula=${perfil.cedula}`, 'fas fa-pencil-alt');
-            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cod_Producto}`, 'fas fa-trash-alt');
+            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cedula}`, 'fas fa-trash-alt');
 
             // Agregar enlaces a una celda
             var acciones = document.createElement('td');
