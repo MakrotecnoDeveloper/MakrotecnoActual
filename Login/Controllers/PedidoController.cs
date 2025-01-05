@@ -163,7 +163,7 @@ namespace Plataforma.Controllers
             return NotFound();
         }
         [HttpPost]
-        public IActionResult InsertarPedido(int codfact, string cod_producto, int stock, int vneto, int vventa, string tpventa, int idpdv)
+        public IActionResult InsertarPedido(int codfact, string cod_producto, decimal stock, int vneto, int vventa, string tpventa, int idpdv)
         {
             DateTime fechaIngreso = DateTime.Now;
             var cedulaClaim = User.FindFirst("Cedula");
@@ -182,8 +182,6 @@ namespace Plataforma.Controllers
                             return RedirectToAction("Error", "Errores");
                         }else
                         {
-                            if (stock > 0 && vneto > 0 && vventa > 0 && !string.IsNullOrEmpty(tpventa))
-                            {
                                 var validarExisProd = _pedidoServicio.GetProdutos(cod_producto);
                                 if (validarExisProd != null)
                                 {
@@ -210,13 +208,6 @@ namespace Plataforma.Controllers
                                     TempData["ErrorMessage"] = mensaje;
                                     return RedirectToAction("Error", "Errores");
                                 }
-                            }
-                            else
-                            {
-                                var mensaje = "No puede haber espacios vacios entre campos.";
-                                TempData["ErrorMessage"] = mensaje;
-                                return RedirectToAction("Error", "Errores");
-                            }
                         }
                     }
                     else if (estado == 0)
@@ -287,8 +278,6 @@ namespace Plataforma.Controllers
 
         public async Task<IActionResult> VerPedidoPorId(int id)
         {
-            Console.WriteLine("Este es el ID del pedido: ", id);
-            // Obtener el pedido o la lista de pedidos por su ID
             List<Pedidos> pedidos = await _pedidoServicio.VisualizarPedidoPorId(id);
 
             if (pedidos == null || pedidos.Count == 0)
@@ -307,19 +296,37 @@ namespace Plataforma.Controllers
                 return View("VerPedido", pedidos);
             }
         }
-        public async Task<IActionResult> FormGanancia()
+        public IActionResult FormGanancia()
         {
             return View("Ganancia");
         }
-        public async Task<IActionResult> AgregarGanancia()
+        public IActionResult AgregarGanancia()
         {
             DateTime fecha = DateTime.Now;
-            decimal traerGananciaXFecha = _pedidoServicio.SumarGananciasDelDia(fecha);
             decimal totalVneto = _pedidoServicio.SumarNetoDelDia(fecha);
             decimal totalVventa = _pedidoServicio.SumarVVentaDelDia(fecha);
-            ViewBag.TotalVneto = totalVneto;
-            ViewBag.TotalVventa = totalVventa;
-            return View();
+            decimal totalCompras = _pedidoServicio.SumarCompraTotal(fecha);
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                int? buscarSede = _pedidoServicio.BuscarIdSedePorCedula(cedula);
+                int? buscarIdPDV = _pedidoServicio.BuscarIdPDVPorIdSede(buscarSede);
+                var modeloGanancia = new GananciaViewModel
+                {
+                    TotalVneto = totalVneto,
+                    TotalVventa = totalVventa,
+                    IdPDV = buscarIdPDV,
+                    TotalCompras = totalCompras
+                };
+                return View(modeloGanancia);
+            }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            
         }
         [HttpPost]
         public async Task<IActionResult> InsertarVentas(int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTotal, int ventapasivos)

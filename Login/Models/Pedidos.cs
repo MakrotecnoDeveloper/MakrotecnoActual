@@ -6,7 +6,7 @@ public class Pedidos
     public int Cod_pedido { get; set; }
     public int Cod_factura { get; set; }
     public string? Cod_producto { get; set; }
-    public int Cantidad { get; set; }
+    public decimal Cantidad { get; set; }
     public int ValorNeto { get; set; }
     public int ValorVenta { get; set; }
     public string? Estado { get; set; }

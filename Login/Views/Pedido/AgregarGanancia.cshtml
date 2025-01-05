@@ -1,4 +1,4 @@
-﻿
+﻿@model GananciaViewModel
 @{
     ViewData["Title"] = "AgregarGanancia";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -6,69 +6,72 @@
 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Agregar Factura</h1>
-                </div>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title">Recogida de Venta del Día</h3>
             </div>
-        </div><!-- /.container-fluid -->
-    </section>
-
-    <!-- Main content -->
-    <section class="content">
-        <div class="container-fluid">
-            <!-- Your page content here -->
-
-            <div class="row">
-                <div class="col-md-6">
-                    <!-- general form elements -->
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Ingrese los datos de la factura</h3>
-                        </div>
-                        <!-- /.card-header -->
-                        <!-- form start -->
-                        <form role="form" asp-controller="Pedido" asp-action="InsertarVentas">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="ventaMakrotecno">Venta Makrotecno</label>
-                                    <input type="number" class="form-control" id="ventaMakrotecno" value="@ViewBag.TotalVventa" name="ventaMakrotecno">
-                                </div>
-                                <div class="form-group">
-                                    <label for="netoMakrotecno">Neto Makrotecno</label>
-                                    <input type="number" class="form-control" id="netoMakrotecno" value="@ViewBag.TotalVneto" name="netoMakrotecno">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ventaRecarga">Venta de Recarga</label>
-                                    <input type="number" class="form-control" id="ventaRecarga" placeholder="Ingrese la venta de recarga" name="ventaRecarga">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ventaTienda">Venta Total</label>
-                                    <input type="number" class="form-control" id="ventaTotal" placeholder="Ingrese la venta de tienda" name="ventaTotal">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ventaPasivos">Venta de Pasivos</label>
-                                    <input type="checkbox" id="chkVentaPasivos" onchange="toggleInput()" />
-                                    <input type="number" class="form-control" id="ventaPasivos" placeholder="Ingrese la venta de pasivos" name="ventapasivos" value="0" disabled />
-                                </div>
-                            </div>
-                            <!-- /.card-body -->
-
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Guardar</button>
-                            </div>
-                        </form>
+            <div class="card-body">
+                <!-- Información de la factura -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><strong>Fecha:</strong> <span>@DateTime.Now.ToString("yyyy-MM-dd")</span></h5>
+                        <h5><strong>Vendedor:</strong> <span>@User.FindFirst("Cedula").Value</span></h5>
                     </div>
-                    <!-- /.card -->
+                    <div class="col-md-6 text-end">
+                        <h5><strong>Sucursal:</strong> <span>@Model.IdPDV</span></h5>
+                    </div>
                 </div>
-            </div>
 
-        </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
+                <!-- Formulario de venta -->
+                <form role="form" asp-controller="Pedido" asp-action="InsertarVentas">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="ventaMakrotecno"><strong>Total:</strong></label>
+                                <input type="number" class="form-control" id="ventaMakrotecno" value="@Model.TotalVventa" name="ventaMakrotecno" readonly>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="ventaMakrotecno"><strong>Efectivo:</strong></label>
+                                <input type="number" class="form-control" id="ventaEfectivo" placeholder="Ingrese el monto en efectivo" name="ventaEfectivo" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="ventaRecarga"><strong>Recarga:</strong></label>
+                                <input type="number" class="form-control" id="ventaRecarga" placeholder="Ingrese la venta de recarga" name="ventaRecarga">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="ventaTienda"><strong>Tienda:</strong></label>
+                                <input type="number" class="form-control" id="ventaTienda" placeholder="Ingrese la venta de tienda" name="ventaTienda">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="chkVentaPasivos"><strong>Depósitos Bancarios:</strong></label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="chkVentaPasivos" onchange="toggleInput()" />
+                                    <label class="form-check-label" for="chkVentaPasivos">Activar</label>
+                                </div>
+                                <input type="number" class="form-control mt-2" id="ventaPasivos" placeholder="Ingrese la venta de pasivos" name="ventaPasivos" value="0" disabled>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="netoMakrotecno"><strong>Neto:</strong></label>
+                                <input type="number" class="form-control" id="netoMakrotecno" value="@Model.TotalVneto" name="netoMakrotecno">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light">
+                <h5 class="m-0"><strong>Compras Totales:</strong> @Model.TotalCompras</h5>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- /.content-wrapper -->
 

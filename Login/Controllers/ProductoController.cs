@@ -22,7 +22,7 @@ namespace Plataforma.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, int stock, string categoria)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, string categoria)
         {
 
             if (ModelState.IsValid)

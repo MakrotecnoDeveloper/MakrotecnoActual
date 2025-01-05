@@ -5,92 +5,137 @@
 }
 
 <div class="content-wrapper">
-    <!-- Contenido del encabezado -->
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h2>Agregar Producto</h2>
+                    <h2 class="text-primary">Factura de Venta</h2>
+                    <p class="text-muted">Ingrese los detalles de la factura y los productos correspondientes.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Formulario -->
     <section class="content">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Ingrese los datos del producto</h3>
+            <div class="row justify-content-center">
+                <!-- Contenedor principal -->
+                <div class="col-md-10">
+                    <div class="card shadow-lg border-secondary">
+                        <!-- Encabezado de la factura -->
+                        <div class="card-header bg-dark text-white">
+                            <h3 class="card-title text-center mb-0">Factura de Venta</h3>
                         </div>
-                        <!-- /.card-header -->
-                        <!-- Formulario -->
-                        <form role="form" id="productForm" asp-controller="Pedido" asp-action="InsertarPedido">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="codfact">Cod Factura</label>
-                                    <input type="number" class="form-control" id="codfact" name="codfact" value="@Model.Factura.Cod_factura" readonly>
+                        <!-- Contenido de la factura -->
+                        <div class="card-body">
+                            <!-- Información del cliente y factura -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h5 class="text-secondary">Detalles del Cliente</h5>
+                                    <div class="form-group">
+                                        <label for="clienteNombre" class="fw-bold">Nombre del Cliente</label>
+                                        <input type="text" class="form-control" id="clienteNombre" name="clienteNombre" placeholder="Ingrese el nombre del cliente">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="clienteCedula" class="fw-bold">Cédula</label>
+                                        <input type="text" class="form-control" id="clienteCedula" name="clienteCedula" placeholder="Ingrese la cédula">
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="cod_producto">Codigo Producto</label>
-                                    <input type="text" class="form-control" id="cod_producto" placeholder="Ingrese el codigo del producto" name="cod_producto">
-                                    <div id="opcionesCodigosProducto"></div>
+                                <div class="col-md-6">
+                                    <h5 class="text-secondary">Información de la Factura</h5>
+                                    <div class="form-group">
+                                        <label for="numeroFactura" class="fw-bold">Número de Factura</label>
+                                        <input type="text" class="form-control bg-light border-0" id="numeroFactura" name="numeroFactura" value="001-000123" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fechaFactura" class="fw-bold">Fecha</label>
+                                        <input type="date" class="form-control" id="fechaFactura" name="fechaFactura" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="stock">Cantidad</label>
-                                    <input type="number" class="form-control" id="stock" placeholder="Ingrese la cantidad de producto" name="stock">
-                                </div>
-                                <div class="form-group">
-                                    <label for="vneto">Neto</label>
-                                    <input type="number" class="form-control" id="vneto" name="vneto">
-                                </div>
-                                <div class="form-group">
-                                    <label for="vventa">Venta</label>
-                                    <input type="number" class="form-control" id="vventa" name="vventa">
-                                </div>
-                                <div class="form-group">
-                                    <label for="tpventa">Estado</label>
-                                    <select class="form-control" id="tpventa" name="tpventa">
-                                        <option value="Venta">Venta</option>
-                                        <option value="Descuento">Descuento</option>
-                                        <option value="Cambio">Cambio</option>
-                                        <option value="Devolucion">Devolucion</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" value="@Model.EstadoPDV" id="idpdv" name="idpdv">
                             </div>
-                            <div class="card-footer">
-                                <button class="btn btn-primary">Agregar Producto</button>
+
+                            <!-- Tabla de productos -->
+                            <h5 class="text-secondary">Detalles de los Productos</h5>
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered">
+                                    <thead class="bg-primary text-white">
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Descripción</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Subtotal</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaProductos">
+                                        <tr>
+                                            <td>
+                                                <input type="text" class="form-control" name="codigoProducto[]" placeholder="Código">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="descripcionProducto[]" placeholder="Descripción">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control" name="cantidadProducto[]" placeholder="Cantidad">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control" name="precioUnitario[]" placeholder="Precio Unitario">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="subtotalProducto[]" readonly placeholder="Subtotal">
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-success btn-sm" onclick="agregarFila()">
+                                    <i class="fas fa-plus"></i> Agregar Producto
+                                </button>
                             </div>
-                            <!-- /.card-body
-                            <div class="card-footer">
-                                <button type="button" class="btn btn-primary" id="btnMostrarFormulario">+</button>
-                            </div>-->
-                        </form>
-                        <!-- Formulario de cantidad de productos oculto -->
-                        <div id="divAgregarProductos" style="display: none;">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="cantidad">Cantidad de productos a agregar</label>
-                                    <input type="number" class="form-control" id="cantidadProductos" placeholder="Ingrese la cantidad">
+
+                            <!-- Resumen de la factura -->
+                            <h5 class="text-secondary">Resumen de la Factura</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="subtotalFactura" class="fw-bold">Subtotal</label>
+                                        <input type="text" class="form-control bg-light border-0" id="subtotalFactura" name="subtotalFactura" readonly value="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ivaFactura" class="fw-bold">IVA (19%)</label>
+                                        <input type="text" class="form-control bg-light border-0" id="ivaFactura" name="ivaFactura" readonly value="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="descuentoFactura" class="fw-bold">Descuento</label>
+                                        <input type="number" class="form-control" id="descuentoFactura" name="descuentoFactura" value="0">
+                                    </div>
                                 </div>
-                                <button type="button" class="btn btn-primary" id="btnAceptar">Aceptar</button>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="totalFactura" class="fw-bold">Total</label>
+                                        <input type="text" class="form-control bg-light border-0 text-success fw-bold" id="totalFactura" name="totalFactura" readonly value="0.00">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <!-- /.card -->
+
+                        <!-- Footer de la factura -->
+                        <div class="card-footer text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Guardar Factura
+                            </button>
+                        </div>
                     </div>
-                    <!-- /.card -->
                 </div>
-                <!-- /.col -->
             </div>
-            <!-- /.row -->
-        </div><!-- /.container-fluid -->
+        </div>
     </section>
-    <!-- /.content -->
 </div>
-<!-- /.content-wrapper -->
 
 <script>
     $(document).ready(function () {

@@ -17,7 +17,8 @@ public class HistoricoCompras
         public decimal ValorU { get; set; }
 
         //[Column(TypeName = "decimal(5,2)")] // Define precisión para la base de datos
-        public int Stock { get; set; }
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal Stock { get; set; }
 
         [Column(TypeName = "decimal(10,2)")] // Define precisión para la base de datos
         public decimal ValorTotal { get; set; }

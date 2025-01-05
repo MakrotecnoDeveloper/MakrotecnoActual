@@ -25,7 +25,7 @@ namespace Plataforma.Servicios.Implementacion
                     .ToList();
                 return categorias;
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, int stock, string categorias)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, string categorias)
         {
             try
             {

@@ -4,59 +4,59 @@
 }
 
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <h1>
-            Agregar Factura
-        </h1>
+    <section class="content-header py-4">
+        <div class="container">
+            <h1 class="text-center">Crear Nueva Factura</h1>
+            <p class="text-center text-muted">Complete la información para generar una nueva factura</p>
+        </div>
     </section>
-
-    <!-- Main content -->
     <section class="content">
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                <div class="box box-primary">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Formulario de Factura</h3>
-                    </div>
-                    <!-- /.box-header -->
-                    <!-- form start -->
-                    <form role="form" method="post" asp-controller="Pedido" asp-action="CrearFactura" id="formCrearFactura">
-                        <div class="box-body">
-                                <div class="form-group">
-                                    <label for="cedula_cliente">Cédula del Cliente</label>
-                                    <input type="text" class="form-control" id="cedula_cliente" name="cedula_cliente" placeholder="Cédula del Cliente">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title text-center mb-0">Formulario de Factura</h3>
+                        </div>
+                        <div class="card-body">
+                            <form role="form" method="post" asp-controller="Pedido" asp-action="CrearFactura" id="formCrearFactura">
+                                <!-- Cédula del Cliente -->
+                                <div class="mb-3">
+                                    <label for="cedula_cliente" class="form-label">Cédula del Cliente</label>
+                                    <input type="text" class="form-control" id="cedula_cliente" name="cedula_cliente" placeholder="Ingrese la cédula del cliente" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="cedula_empleado">Cédula del Empleado</label>
-                                    <input type="text" class="form-control" id="cedula_empleado" name="cedula_empleado" placeholder="Cédula del Empleado" readonly value="1234193470">
+                                <!-- Cédula del Empleado -->
+                                <div class="mb-3">
+                                    <label for="cedula_empleado" class="form-label">Cédula del Empleado</label>
+                                    <input type="text" class="form-control" id="cedula_empleado" name="cedula_empleado" value="1234193470" readonly>
                                 </div>
-                                <div class="form-group">
-                                    <label for="estado">Estado Factura</label>
-                                    <input type="text" class="form-control" id="estado" name="estado" value="Proceso">
+                                <!-- Estado de la Factura -->
+                                <div class="mb-3">
+                                    <label for="estado" class="form-label">Estado de la Factura</label>
+                                    <input type="text" class="form-control" id="estado" name="estado" value="Proceso" readonly>
                                 </div>
-                                <div class="form-group">
-                                    <label for="tpfactura">Tipo Factura</label>
-                                <select class="form-control" id="tpfactura" name="tpfactura">
+                                <!-- Tipo de Factura -->
+                                <div class="mb-3">
+                                    <label for="tpfactura" class="form-label">Tipo de Factura</label>
+                                    <select class="form-select" id="tpfactura" name="tpfactura" required>
                                         <option value="Venta">Venta</option>
                                         <option value="Compra">Compra</option>
                                     </select>
                                 </div>
+                                <!-- Botón de Enviar -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="btnCrearFactura">
+                                        <i class="fas fa-save me-2"></i> Guardar Factura
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        
-                        <!-- /.box-body -->
-
-                        <div class="box-footer">
-                            <button type="submit" class="btn btn-primary" id="btnCrearFactura">Agregar Factura</button>
+                        <div class="card-footer text-center text-muted">
+                            Todos los campos son obligatorios.
                         </div>
-                    </form>
+                    </div>
                 </div>
-                <!-- /.box -->
             </div>
-            <!-- /.col -->
         </div>
-        <!-- /.row -->
     </section>
-    <!-- /.content -->
 </div>
-<!-- /.content-wrapper -->

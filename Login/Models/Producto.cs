@@ -5,7 +5,7 @@ public class Producto
     [Key]
         public string? Cod_Producto { get; set; }
         public string? NombreProducto { get; set; }
-        public int CantidadProducto { get; set; }
+        public decimal CantidadProducto { get; set; }
         public float ValorNetoProducto { get; set; }
         public float ValorVentaProducto { get; set; }
         public int ValorUnidad {  get; set; }
