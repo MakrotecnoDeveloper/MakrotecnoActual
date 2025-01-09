@@ -49,5 +49,7 @@ namespace Plataforma.Servicios.Contrato
         bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo);
         List<Proveedores> ServVisuaProveedor();
         List<Servicio> ServTraerServicios();
+        Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa);
+        Task<string> ObtenerIdEmpresaAsync(int cargoId);
     }
 }

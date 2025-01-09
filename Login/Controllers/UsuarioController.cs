@@ -306,5 +306,9 @@ namespace Plataforma.Controllers
             }
             return View(visualizarClientes);
         }
+        public IActionResult SelectMenu()
+        {
+            return View();
+        }
     }
 }

@@ -32,6 +32,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<HistoricoCompras> HistoricoCompras { get; set; }
     public DbSet<Servicio> Servicio { get; set; }
     public DbSet<CategoriaProductos> CategoriaProductos { get; set; }
+    public DbSet<MenuOption> MenuOption { get; set; }
+    public DbSet<Menu> Menu { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +61,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<HistoricoCompras>().HasKey(prvd => prvd.IdHC);
         modelBuilder.Entity<Servicio>().HasKey(idser => idser.IdServicio);
         modelBuilder.Entity<CategoriaProductos>().HasKey(idcapro => idcapro.IdCateProducto);
+        modelBuilder.Entity<MenuOption>().HasKey(idmo => idmo.IdMenuOption);
+        modelBuilder.Entity<Menu>().HasKey(idm => idm.IdMenu);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.Cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
@@ -84,5 +88,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<HistoricoCompras>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_Producto);
         modelBuilder.Entity<HistoricoCompras>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
         modelBuilder.Entity<CategoriaProductos>().HasOne<Servicio>().WithMany().HasForeignKey(f => f.IdServicio);
+        modelBuilder.Entity<MenuOption>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_Empresa);
+        modelBuilder.Entity<MenuOption>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_Tipo);
+        modelBuilder.Entity<MenuOption>().HasOne<Menu>().WithMany().HasForeignKey(f => f.IdMenu);
     }
 }

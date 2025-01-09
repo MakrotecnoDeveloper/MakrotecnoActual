@@ -147,7 +147,15 @@ namespace Plataforma.Servicios.Implementacion
                     };
 
                     _dbContext.Pedidos.Add(pedido);
-                    _dbContext.SaveChanges();
+                    try
+                    {
+                        _dbContext.SaveChanges();
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        Console.WriteLine(ex.InnerException?.Message);
+                        throw; // O maneja el error según lo necesites
+                    }
 
                     //Inserccion en la tabla GananciaPedido
                     int codPedidoGenerado = pedido.Cod_pedido;
@@ -319,6 +327,13 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
                 .OrderByDescending(s => s.Idsync)
                 .Select(s => s.Estado)
+                .FirstOrDefault();
+        }
+        public string? ObtenerNombreCliente(int cedulaCliente)
+        {
+            return _dbContext.Cliente
+                .Where(nc => nc.CedulaCliente == cedulaCliente)
+                .Select(nc => nc.NombreCliente)
                 .FirstOrDefault();
         }
     }

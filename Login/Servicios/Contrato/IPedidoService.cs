@@ -31,5 +31,6 @@ namespace Plataforma.Servicios.Contrato
         decimal SumarNetoDelDia(DateTime fecha);
         decimal SumarVVentaDelDia(DateTime fecha);
         decimal SumarCompraTotal(DateTime fecha);
+        string? ObtenerNombreCliente(int cedulaCliente);
     }
 }

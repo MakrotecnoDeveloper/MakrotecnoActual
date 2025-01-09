@@ -554,5 +554,21 @@ namespace Plataforma.Servicios.Implementacion
             var servicios = _dbContext.Servicio.ToList();
             return servicios;
         }
+        public async Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa)
+        {
+            return await _dbContext.MenuOption
+                .Where(m => m.Id_Tipo == cargoId && m.Id_Empresa == idEmpresa)
+                .ToListAsync();
+        }
+        public async Task<string> ObtenerIdEmpresaAsync(int cargoId)
+        {
+            // Suponiendo que tienes una tabla o entidad que relaciona los cargos con las empresas
+            var empresa = await _dbContext.TipoCargo
+                .Where(e => e.Id_tipo == cargoId)
+                .Select(e => e.Id_empresa) // Obtienes solo el IdEmpresa
+                .FirstOrDefaultAsync(); // Traes el primer o único resultado
+
+            return empresa; // Devuelves el IdEmpresa como string
+        }
     }
 }

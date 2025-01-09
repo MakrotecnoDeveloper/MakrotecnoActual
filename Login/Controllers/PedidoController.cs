@@ -104,12 +104,15 @@ namespace Plataforma.Controllers
                         if(factura != null)
                         {
                             var productos = _productoservice.ObtenerProductos();
+                            var cedulaCliente = factura.Cedula_cliente;
+                            var nombreCliente = _pedidoServicio.ObtenerNombreCliente(cedulaCliente);
                             // Crear el objeto ViewModel y asignar los valores
                             var viewModel = new PedidoViewModel
                             {
                                 Factura = factura,
                                 Productos = productos,
-                                EstadoPDV = idPDV
+                                EstadoPDV = idPDV,
+                                NombreCliente = nombreCliente
                             };
 
                             // Pasar el ViewModel a la vista
@@ -147,90 +150,86 @@ namespace Plataforma.Controllers
         }
         public IActionResult AutocompletarCodigosProducto(string codigo)
         {
+            // Obtener una lista de códigos similares desde el servicio
             var codigosProductos = _pedidoServicio.ObtenerCodigosProductosAutocompletado(codigo);
-            return Json(codigosProductos);
+            return Json(codigosProductos); // Retorna una lista de strings
         }
         [HttpGet]
         public async Task<IActionResult> AutocompletarProducto(string codigo)
         {
+            // Obtener información del producto de forma asíncrona
             var productoInfo = await _pedidoServicio.ObtenerInfoProductoAsync(codigo);
 
             if (productoInfo != null)
             {
-                return Json(productoInfo);
+                return Json(new { vneto = productoInfo.ValorNetoProducto, vventa = productoInfo.ValorVentaProducto }); // Retorna un objeto con VNeto y VVenta
             }
 
-            return NotFound();
+            return NotFound(); // Si no se encuentra el producto
         }
         [HttpPost]
-        public IActionResult InsertarPedido(int codfact, string cod_producto, decimal stock, int vneto, int vventa, string tpventa, int idpdv)
+        public IActionResult InsertarPedido(List<ProductoViewModel> productos, int codfact, int idpdv)
         {
             DateTime fechaIngreso = DateTime.Now;
             var cedulaClaim = User.FindFirst("Cedula");
+
             if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
                 int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
                 var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
-                if (estado != null)
+
+                if (estado == 1)
                 {
-                    if (estado == 1)
+                    foreach (var producto in productos)
                     {
-                        if (string.IsNullOrEmpty(cod_producto))
+                        if (string.IsNullOrEmpty(producto.Codigo))
                         {
-                            var mensaje = "Error: El código del producto no puede ser nulo o vacío.";
-                            TempData["ErrorMessage"] = mensaje;
+                            TempData["ErrorMessage"] = "El código del producto no puede ser nulo o vacío.";
                             return RedirectToAction("Error", "Errores");
-                        }else
+                        }
+                        var tpventa = "Venta";
+                        var validarExisProd = _pedidoServicio.GetProdutos(producto.Codigo);
+                        if (validarExisProd != null)
                         {
-                                var validarExisProd = _pedidoServicio.GetProdutos(cod_producto);
-                                if (validarExisProd != null)
+                            foreach (var prod in validarExisProd)
+                            {
+                                if (prod.CantidadProducto <= 0)
                                 {
-                                    // Llamada al servicio para insertar el pedido en la base de datos
-                                    foreach (var producto in validarExisProd)
-                                    {
-                                        if (producto.CantidadProducto <= 0)
-                                        {
-                                            var mensaje = "Error: El producto no tiene stock para continuar la venta.";
-                                            TempData["ErrorMessage"] = mensaje;
-                                            return RedirectToAction("Error", "Errores");
-                                        }
-                                        else
-                                        {
-                                            _pedidoServicio.InsertarPedido(codfact, cod_producto, stock, vneto, vventa, fechaIngreso, tpventa, idpdv);
-                                        }
-                                    }
-                                    // Redireccionar a la vista Index
-                                    return RedirectToAction("Index");
-                                }
-                                else
-                                {
-                                    var mensaje = "Error: Producto no existe.";
-                                    TempData["ErrorMessage"] = mensaje;
+                                    TempData["ErrorMessage"] = "El producto no tiene stock suficiente.";
                                     return RedirectToAction("Error", "Errores");
                                 }
+
+                                // Insertar pedido por cada producto
+                                _pedidoServicio.InsertarPedido(
+                                    codfact,
+                                    producto.Codigo,
+                                    producto.Stock,
+                                    producto.VNeto,
+                                    producto.VVenta,
+                                    fechaIngreso,
+                                    tpventa,
+                                    idpdv
+                                );
+                            }
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = "Producto no existe.";
+                            return RedirectToAction("Error", "Errores");
                         }
                     }
-                    else if (estado == 0)
-                    {
-                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
-                        TempData["ErrorMessage"] = mensaje;
-                        return RedirectToAction("Error", "Errores");
-                    }
-                    else if (estado == 2)
-                    {
-                        var mensaje = "Error B10: PDV esta en mantenimiento";
-                        TempData["ErrorMessage"] = mensaje;
-                        return RedirectToAction("Error", "Errores");
-                    }
+
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "PDV no está disponible.";
+                    return RedirectToAction("Error", "Errores");
                 }
             }
-            else
-            {
-                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-            return RedirectToAction("Index");
+
+            TempData["ErrorMessage"] = "Claim 'Cedula' no existe.";
+            return RedirectToAction("Error", "Errores");
         }
         public async Task<IActionResult> Facturas(int page = 1, int pageSize = 10)
         {
