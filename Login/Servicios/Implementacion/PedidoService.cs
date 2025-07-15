@@ -203,12 +203,12 @@ namespace Plataforma.Servicios.Implementacion
             var vventaTotal = pedidos.Sum(p => p.ValorVenta);
             return pedidos;
         }
-        public async Task<int> VentaInsertada(int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        public async Task<int> VentaInsertada(int ventaEfectivo, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
         {
             DateTime fechaActual = DateTime.Now;
             var ventas = new Ventas
             {
-                VentaTotal = ventaTotal,
+                VentaTotal = ventaEfectivo,
                 VentaMakrotecno = ventaMakrotecno,
                 NetoMakrotecno = netoMakrotecno,
                 VentaRecargas = ventaRecarga,

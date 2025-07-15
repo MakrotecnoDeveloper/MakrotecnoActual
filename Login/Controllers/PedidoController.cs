@@ -188,6 +188,7 @@ namespace Plataforma.Controllers
                             return RedirectToAction("Error", "Errores");
                         }
                         var tpventa = "Venta";
+                        decimal stockDecimal = 0;
                         var validarExisProd = _pedidoServicio.GetProdutos(producto.Codigo);
                         if (validarExisProd != null)
                         {
@@ -198,17 +199,38 @@ namespace Plataforma.Controllers
                                     TempData["ErrorMessage"] = "El producto no tiene stock suficiente.";
                                     return RedirectToAction("Error", "Errores");
                                 }
-
+                                decimal StockDecimal = 0;
+                                if (producto.Stock.Contains("/"))
+                                {
+                                    var partes = producto.Stock.Split('/');
+                                    if (partes.Length == 2 && decimal.TryParse(partes[0], out decimal numerador) && decimal.TryParse(partes[1], out decimal denominador) && denominador != 0)
+                                    {
+                                        StockDecimal = numerador / denominador;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"Fraccion invalida en Cantidad: {producto.Stock}");
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    if (!decimal.TryParse(producto.Stock, out StockDecimal))
+                                    {
+                                        Console.WriteLine($"Stock invalido: {producto.Stock}");
+                                        continue;
+                                    }
+                                }
                                 // Insertar pedido por cada producto
                                 _pedidoServicio.InsertarPedido(
                                     codfact,
                                     producto.Codigo,
-                                    producto.Stock,
+                                    StockDecimal,
                                     producto.VNeto,
                                     producto.VVenta,
                                     fechaIngreso,
                                     tpventa,
-                                    idpdv
+                                    idPDV
                                 );
                             }
                         }
@@ -328,27 +350,49 @@ namespace Plataforma.Controllers
             
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarVentas(int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTotal, int ventapasivos)
+        public async Task<IActionResult> InsertarVentas(int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaEfectivo, int ventaBancaria, float valorCompras)
         {
-            // Fase 1
-            if (ventapasivos > 0)
+            int idCompany = 1;
+            if(idCompany == 1)
             {
-                ventaTotal = ventaTotal - ventapasivos;
+                int ventaTotal = ventaEfectivo + ventaBancaria;//22000
+                int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;//9999
+                int gananciaTeresa = (int)(ventaTienda * 0.15);
+                // Fase 2
+                await _pedidoServicio.VentaInsertada(ventaEfectivo, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventaBancaria);
+                // Fase 3
+                int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
+                int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
+                int gananciaVictor = gananciaMakrotecno - gananciaMaria;
+                int gananciaRecargas = (int)(ventaRecarga * 0.056);
+                int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
+                await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+                return RedirectToAction("Index");
+            } else if (idCompany == 2)
+            {
+                int ventaTotal = ventaEfectivo + ventaBancaria;
+                float comprasTotales = valorCompras;
+                int ventaTienda = 0;
+                ventaMakrotecno = 0;
+                netoMakrotecno = 0;
+                ventaRecarga = 0;
+                await _pedidoServicio.VentaInsertada(ventaEfectivo, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventaBancaria);
+                int gananciaMakrotecno = 0;
+                int gananciaMaria = 0;
+                int gananciaVictor = 0;
+                int gananciaRecargas = 0;
+                int gananciaTeresa = 0;
+                int gananciaTotal = (int)(ventaTotal - comprasTotales);
+                await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+                return RedirectToAction("Index");
             }
-            int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;
-            int gananciaTeresa = (int)(ventaTienda * 0.15);
-            ventaTienda -= gananciaTeresa;
-            // Fase 2
-            int id_venta = await _pedidoServicio.VentaInsertada(ventaTotal, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventapasivos);
-            // Fase 3
-            int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
-            int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
-            //Console.WriteLine(gananciaMaria);
-            int gananciaVictor = gananciaMakrotecno - gananciaMaria;
-            int gananciaRecargas = (int)(ventaRecarga * 0.056);
-            int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
-            await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
-            return RedirectToAction("Index");
+            else
+            {
+                var mensaje = "Error en el ID Company";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            
         }
         public IActionResult VisualizarGanancia()
         {

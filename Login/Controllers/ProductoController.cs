@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using Plataforma.Servicios.Implementacion;
 
 namespace Plataforma.Controllers
 {
@@ -19,10 +20,12 @@ namespace Plataforma.Controllers
         }
         public IActionResult Insertar() 
         {
-            return View();
+            int IdServicio = 1;
+            var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
+            return View(traerCategoriasExistentes);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, string categoria)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, int categoria)
         {
 
             if (ModelState.IsValid)
@@ -40,19 +43,19 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
-        public IActionResult Buscar(string searchTerm, string categoriaTerm)
+        public IActionResult Buscar(string searchTerm, int categoriaTerm)
         {
             if (string.IsNullOrEmpty(searchTerm)) {
                 searchTerm = "";
             }else
             {
-                categoriaTerm = "";
+                categoriaTerm = 0;
             }
             var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
             return PartialView("_TablaProductos", productosEncontrados);
         }
         [HttpGet]
-        public IActionResult BuscarSinStock(string searchTerm, string categoriaTerm)
+        public IActionResult BuscarSinStock(string searchTerm, int categoriaTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
@@ -60,13 +63,13 @@ namespace Plataforma.Controllers
             }
             else
             {
-                categoriaTerm = "";
+                categoriaTerm = 0;
             }
             var productosSinStock = _productoservice.SinStock(searchTerm, categoriaTerm);
             return PartialView("_TablaProductos", productosSinStock);
         }
         [HttpGet]
-        public IActionResult BuscarProximosSinStock(string searchTerm, string categoriaTerm)
+        public IActionResult BuscarProximosSinStock(string searchTerm, int categoriaTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
             {
@@ -74,14 +77,14 @@ namespace Plataforma.Controllers
             }
             else
             {
-                categoriaTerm = "";
+                categoriaTerm = 0;
             }
             var productosEncontrados = _productoservice.BuscarProSinStock(searchTerm, categoriaTerm);
             return PartialView("_TablaProductos", productosEncontrados);
         }
         public IActionResult Editar(string id)
         {
-            string categoriaTerm = "";
+            int categoriaTerm = 0;
             var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
             foreach (var producto in editarProducto)
             {
@@ -101,7 +104,7 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado)
+        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado)
         {
             // Llama al método EditarProducto del servicio de productos
             _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, valorUnidad, cantidad, categoria, idEmpresa, estado);
@@ -129,7 +132,7 @@ namespace Plataforma.Controllers
         }
         public IActionResult VisualizarProducto(string id)
         {
-            string categoriaTerm = "";
+            int categoriaTerm = 0;
             string searchTerm = id;
             var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
             return View(traerProductos);
@@ -218,7 +221,7 @@ namespace Plataforma.Controllers
             var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
             return View("../Home/productosExistentesVenta", traerCategoriasExistentes);
         }
-        public IActionResult TraerProductoXCategoria(string categoria)
+        public IActionResult TraerProductoXCategoria(int categoria)
         {
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
@@ -239,23 +242,51 @@ namespace Plataforma.Controllers
                 
         }
         [HttpPost]
-        public IActionResult GuardarHistoricoCompra(HistoricoCompras historicoCompra)
+        public IActionResult GuardarHistoricoCompra(List<ProductoViewModel> productos, int codfact, DateTime fechaRegistro, string tpventa)
         {
-            if (ModelState.IsValid)
+            int idPDv = 1;
+            decimal StockDecimal = 0;
+            decimal total = 0;
+            foreach (var producto in productos)
             {
-                var guardarHC = _productoservice.HistoricoCompra(historicoCompra);
-                if (guardarHC)
-                {
-                    return RedirectToAction("ComprasProductos");
-                }
-                else
-                {
-                    var mensaje = "El proceso fallo en alguna parte del codigo, revisar COD: 001";
-                    TempData["ErrorMessage"] = mensaje;
-                    return RedirectToAction("Error", "Errores");
-                }
+
+                    if(producto.Stock.Contains("/"))
+                    {
+                        var partes = producto.Stock.Split('/');
+                        if(partes.Length == 2 && decimal.TryParse(partes[0], out decimal numerador) && decimal.TryParse(partes[1], out decimal denominador) && denominador != 0) 
+                        {
+                            StockDecimal = numerador / denominador;
+                        }else
+                        {
+                            var mensaje = $"Fraccion invalida en Cantidad: {producto.Stock}";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                    }
+                    }else
+                    {
+                        if(!decimal.TryParse(producto.Stock, out StockDecimal))
+                        {
+                            var mensaje = $"Stock invalido: {producto.Stock}";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                    }
+                    total = StockDecimal * producto.VNeto;
+                    //Console.WriteLine($"Producto: {producto.Codigo} | Vneto: {producto.VNeto} | Cantidad: {StockDecimal} | Total: {total}");
+                // Insertar pedido por cada producto
+                _productoservice.HistoricoCompra(
+                    codfact,
+                    producto.Codigo,
+                    StockDecimal,
+                    producto.UnidadMedida,
+                    producto.VNeto,
+                    total,
+                    fechaRegistro,
+                    tpventa,
+                    idPDv
+                );
             }
-            return View("ComprasProductos");
+            return RedirectToAction("ComprasProductos");
         }
         public IActionResult VisualizarCompras()
         {

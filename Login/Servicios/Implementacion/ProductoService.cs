@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using OpenAI_API;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -10,13 +9,18 @@ namespace Plataforma.Servicios.Implementacion
     {
         //variable de solo lectura para referenciar la base de datos
         private readonly BaseAdmContext _dbContext;
-        public ProductoService(BaseAdmContext dbContext, IConfiguration configuration)
+        private readonly ILogger<ProductoService> _logger;
+        public ProductoService(BaseAdmContext dbContext, IConfiguration configuration, ILogger<ProductoService> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
         public List<Producto> ObtenerProductos()
         {
-            return _dbContext.Productos.ToList();
+            var productosTraidosDB = _dbContext.Productos
+                .Where(p => p.Estado == 1)
+                .ToList();
+            return productosTraidosDB;
         }
         public List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio)
         {
@@ -25,7 +29,7 @@ namespace Plataforma.Servicios.Implementacion
                     .ToList();
                 return categorias;
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, string categorias)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
         {
             try
             {
@@ -42,7 +46,7 @@ namespace Plataforma.Servicios.Implementacion
                     ValorVentaProducto = valor_unitario,
                     ValorUnidad = valorUnidad,
                     ID_Empresa = id_empresa,
-                    Categoria = categorias,
+                    IdCatepro = categorias,
                     Estado = estado,
                     Ubicacion = Ubicacion
                 };
@@ -54,26 +58,29 @@ namespace Plataforma.Servicios.Implementacion
                 // Devolver true si la operación fue exitosa
                 return Task.FromResult(true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al insertar productos asincronicamente.");
                 // Manejar cualquier error y devolver false si la operación falla
                 return Task.FromResult(false);
             }
         }
-        public List<Producto> BuscarProductos(string searchTerm, string categoriaTerm)
+        public List<Producto> BuscarProductos(string searchTerm, int categoriaTerm)
         {
             
             // Lógica para buscar productos por el nombre o la categoría
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                Console.WriteLine("searchTerm");
-                var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm).ToList();
+                var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm)
+                    .Where(p => p.Estado == 1)
+                    .ToList();
                 return consulta;
             }
-            else if (!string.IsNullOrEmpty(categoriaTerm))
+            else if (categoriaTerm > 0)
             {
-                Console.WriteLine("Categoria");
-                var consulta = _dbContext.Productos.Where(p => p.Categoria == categoriaTerm).ToList();
+                var consulta = _dbContext.Productos.Where(p => p.IdCatepro == categoriaTerm).ToList()
+                    .Where(p => p.Estado == 1)
+                    .ToList();
                 return consulta;
             }
             else
@@ -82,21 +89,21 @@ namespace Plataforma.Servicios.Implementacion
                 return new List<Producto>();
             }
         }
-        public List<Producto> SinStock(string searchTerm, string categoriaTerm)
+        public List<Producto> SinStock(string searchTerm, int categoriaTerm)
         {
 
             // Lógica para buscar productos por el nombre o la categoría
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 var productosSinStock = _dbContext.Productos
-                    .Where(p => p.Cod_Producto == searchTerm && p.CantidadProducto == 0)
+                    .Where(p => p.Cod_Producto == searchTerm && p.CantidadProducto == 0 && p.Estado == 1)
                     .ToList();
                 return productosSinStock;
             }
-            else if (!string.IsNullOrEmpty(categoriaTerm))
+            else if (categoriaTerm > 0)
             {
                 var productosSinStock = _dbContext.Productos
-                    .Where(p => p.Categoria == categoriaTerm && p.CantidadProducto == 0)
+                    .Where(p => p.IdCatepro == categoriaTerm && p.CantidadProducto == 0 && p.Estado == 1)
                     .ToList();
                 return productosSinStock;
             }
@@ -106,20 +113,20 @@ namespace Plataforma.Servicios.Implementacion
                 return new List<Producto>();
             }
         }
-        public List<Producto> BuscarProSinStock(string searchTerm, string categoriaTerm)
+        public List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm)
         {
 
             // Lógica para buscar productos por el nombre o la categoría
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 Console.WriteLine("searchTerm");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Cod_Producto == searchTerm).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Cod_Producto == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
-            else if (!string.IsNullOrEmpty(categoriaTerm))
+            else if (categoriaTerm > 0)
             {
                 Console.WriteLine("Categoria");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Categoria == categoriaTerm).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.IdCatepro == categoriaTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
             else
@@ -202,10 +209,10 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, string categoria, string idEmpresa, int estado)
+        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado)
         {
 
-            if (codigo == null || nombreProducto == null || categoria == null || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
+            if (codigo == null || nombreProducto == null || categoria <= 0 || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
             {
                 Console.WriteLine("Error: Todos los campos deben tener un valor. No se permiten valores nulos.");
                 return;
@@ -222,7 +229,7 @@ namespace Plataforma.Servicios.Implementacion
                 producto.ValorVentaProducto = valorVenta;
                 producto.ValorUnidad = valorUnidad;
                 producto.ID_Empresa = idEmpresa;
-                producto.Categoria = categoria;
+                producto.IdCatepro = categoria;
                 producto.Estado = estado;
                 try
                 {
@@ -443,10 +450,10 @@ namespace Plataforma.Servicios.Implementacion
                 await _dbContext.SaveChangesAsync();
             }
         }
-        public List<Producto> TraerProductosXCategoria(string categoria)
+        public List<Producto> TraerProductosXCategoria(int categoria)
         {
             var productos = _dbContext.Productos
-               .Where(p => p.Categoria == categoria && p.Estado == 1)
+               .Where(p => p.IdCatepro == categoria && p.Estado == 1)
                .ToList();
             return productos;
         }
@@ -462,34 +469,33 @@ namespace Plataforma.Servicios.Implementacion
             var provProdViewModel = new ProveedorProductosViewModel
             {
                 Proveedores = consultarProveedor,
-                Producto = consultarProductos,
+                Productos = consultarProductos,
                 Cod_Factura = facturaReciente
             };
             return provProdViewModel;
         }
-        public bool HistoricoCompra(HistoricoCompras historicoCompra)
+        public void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv)
         {
-                _dbContext.HistoricoCompras.Add(historicoCompra);
-                _dbContext.SaveChanges();
-
-            var producto = _dbContext.Productos
-                         .FirstOrDefault(p => p.Cod_Producto == historicoCompra.Cod_Producto);
-
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
             if (producto != null)
             {
-                // Paso 3: Sumar el stock recibido con el stock actual del producto
-                producto.CantidadProducto += historicoCompra.Stock;
+                _dbContext.SaveChanges();
+                var pedido = new HistoricoCompras
+                {
+                    cod_factura = codfact,
+                    Cod_Producto = cod_producto,
+                    Stock = stock,
+                    UnidadMedida = UnidadMedida,
+                    ValorU = vneto,
+                    ValorTotal = vtotal,
+                    Nit = tpventa,
+                    Estado = idpdv,
+                    FechaRegistro = fechaIngreso
+                };
 
-                // Paso 4: Guardar los cambios en la tabla Productos
+                _dbContext.HistoricoCompras.Add(pedido);
                 _dbContext.SaveChanges();
             }
-            else
-            {
-                // Si no se encuentra el producto, podrías manejarlo de alguna forma, por ejemplo:
-                return false;
-            }
-
-            return true;
         }
         public List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula)
         {

@@ -136,11 +136,11 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="editable" id="valorUnidad_@producto.Cod_Producto">
+                                            <span class="editable" id="ValorUnidad_@producto.Cod_Producto">
                                                 @producto.ValorUnidad
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('valorUnidad_@producto.Cod_Producto')">
+                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('ValorUnidad_@producto.Cod_Producto')">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -175,7 +175,7 @@
                         var dato = "Valor Venta";
                     } else if (campo == "ValorNetoProducto") {
                         var dato = "Valor Paca";
-                    } else if (campo == "valorUnidad") {
+                    } else if (campo == "ValorUnidad") {
                         var dato = "Valor Unidad";
                     } else if (campo == "Ubicacion") {
                         var dato = "Ubicacion";
@@ -185,7 +185,7 @@
                     if (newVal !== null && newVal.trim() !== "") {
                         campo = id.split('_')[0]; // Campo a actualizar (p.ej., 'nombreProducto')
                         var codProducto = id.split('_')[1]; // Código del producto
-                        //console.log("Producto Nuevo: " + newVal + " Campo a Actualizar: " + campo + " ID Producto: " + codProducto);
+                        //console.log("Valor Nuevo: " + newVal + " Campo a Actualizar: " + campo + " ID Producto: " + codProducto);
                         $.ajax({
                             url: '@Url.Action("modificarProInventario", "Home")',
                             type: 'POST',
@@ -219,13 +219,13 @@
                             alert("Porfavor, introduce un numero valido");
                         } else {
                             var id_empresa = "31969450-0";
-                            var categoria = "Abarrotes";
+                            var categoria = 17;
                             var estado = 1;
                             var ubicacion = prompt("Ubicacion ej: Estante #7");
                             $.ajax({
                                 url: '@Url.Action("insertarProInventario", "Home")',
                                 type: 'POST',
-                                data: { nombreProducto: nombreProducto, cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion },
+                                data: { nombreProducto: nombreProducto.toUpperCase(), cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion },
                                 success: function (data) {
                                     alert('Producto insertado.');
                                 },

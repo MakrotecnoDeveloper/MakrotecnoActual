@@ -1,75 +1,62 @@
-﻿@model Plataforma.Models.Producto
+﻿@model List<CategoriaProductos>
 @{
     ViewData["Title"] = "Insertar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
     <!-- Tu formulario HTML aquí -->
-<form id="formularioProducto" method="POST">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6 mx-auto text-center">
-                <div class="header-title">
-                    <h1 class="wv-heading--title">
-                        Agregar Producto Nuevo
-                    </h1>
-                    <h2 class="wv-heading--subtitle">
-                        Interfaz de Usuario para agregar productos nuevos al sistema
-                    </h2>
+<div class="content-wrapper">
+    <form id="formularioProducto" method="POST">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mx-auto text-center">
+                    <div class="header-title">
+                        <h1 class="wv-heading--title">
+                            Agregar Productos
+                        </h1>
+                        <h2 class="wv-heading--subtitle">
+                            Interfaz de Usuario para agregar productos nuevos al sistema
+                        </h2>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4 mx-auto">
-                <div class="myform form ">
-                        <div class="form-group">
-                            <select name="id_empresa" id="id_empresa">
-                            <option value="1234193470-6">Makrotecno</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="codigo" class="form-control my-input" id="codigo" placeholder="Codigo">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="descripcion" class="form-control my-input" id="descripcion" placeholder="Descripcion">
-                        </div>
-                        <div class="form-group">
-                            <input type="number" name="valor_neto" class="form-control my-input" id="valorNeto" placeholder="Valor Neto">
-                        </div>
-                        <div class="form-group">
-                            <input type="number" name="valor_unitario" id="valorVenta" class="form-control my-input" placeholder="Valor Unitario">
-                        </div>
-                        <div class="form-group">
-                            <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
-                        </div>
-                        <div class="form-group">
-                            <select name="categorias" id="categorias" class="form-control my-input">
-                                <option>Selecciona la categoria</option>
-                                <option>Audifonos</option>
-                                <option>Cargadores</option>
-                                <option>Cables de Datos</option>
-                                <option>Fundas</option>
-                                <option>Vidrios Templados</option>
-                                <option>Cables</option>
-                                <option>Adaptadores</option>
-                                <option>Accesorios</option>
-                                <option>Memorias</option>
-                                <option>Accesorios para PC</option>
-                                <option>Gamers</option>
-                                <option>Controles</option>
-                                <option>Simcard´s</option>
-                                <option>Celulares</option>
-                                <option>Accesorios Genericos</option>
-                                <option>Pilas</option>
-                                <option>Streaming</option>
-                                <option>Support</option>
-                            </select>
-                        </div>
-                        <div class="text-center ">
-                            <button type="button" id="btnAgregarProducto" class="btn btn-block send-button tx-tfm">Agregar Producto</button>
-                        </div>
-                </div>
-             </div>
-        </div>
-     </div>
-</form>
+            <div class="row">
+                <div class="col-md-4 mx-auto">
+                    <div class="myform form ">
+                            <div class="form-group">
+                                <select name="id_empresa" id="id_empresa">
+                                <option value="1234193470-6">Makrotecno</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="codigo" class="form-control my-input" id="codigo" placeholder="Codigo">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="descripcion" class="form-control my-input" id="descripcion" placeholder="Descripcion">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" name="valor_neto" class="form-control my-input" id="valorNeto" placeholder="Valor Neto">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" name="valor_unitario" id="valorVenta" class="form-control my-input" placeholder="Valor Unitario">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
+                            </div>
+                            <div class="form-group">
+                                <select name="categorias" id="categorias" class="form-control my-input">
+                                    @foreach (var categoria in Model)
+                                    {
+                                        <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="text-center ">
+                                <button type="button" id="btnAgregarProducto" class="btn btn-block send-button tx-tfm">Agregar Producto</button>
+                            </div>
+                    </div>
+                 </div>
+            </div>
+         </div>
+    </form>
+</div>

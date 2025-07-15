@@ -52,7 +52,15 @@ function insertarFilasCrearPedido()
                 <div class="opcionesCodigosProducto"></div>
             </td>
             <td>
-                <input type="number" class="form-control" name="productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
+                <input type="text" class="form-control" name="productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
+            </td>
+            <td>
+                <select name="productos[${index}].UnidadMedida" id="unidad${index}">
+                    <option value="Libra">Libra</option>
+                    <option value="Unidad">Unidad</option>
+                    <option value="Display">Display</option>
+                    <option value="Paca">Paca</option>
+                </select>
             </td>
             <td>
                 <input type="number" class="form-control" name="productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
@@ -61,7 +69,7 @@ function insertarFilasCrearPedido()
                 <input type="text" class="form-control" name="productos[${index}].VVenta" readonly placeholder="Valor Venta" id="vventa${index}">
             </td>
             <td>
-                <input type="text" class="form-control" name="productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
+                <input type="number" class="form-control" name="productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
             </td>
             <td>
                 <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
@@ -136,10 +144,18 @@ $(document).on('click', '.opcion', function () {
     });
 });
 // Cálculo dinámico del valor total al editar 'Stock' o 'VVenta'
-$(document).on('input', '[id^="stock"], [id^="vventa"]', function () {
+$(document).on('input', '[id^="stock"], [id^="vneto"], [id^="vventa"]', function () {
     var fila = $(this).closest('tr'); // Fila actual
+    var tabla = fila.closest('table'); // Tabla actual
+
     var stock = parseFloat(fila.find('[id^="stock"]').val()) || 0; // Valor de stock
-    var vventa = parseFloat(fila.find('[id^="vventa"]').val()) || 0; // Valor de venta
+    var vventa;
+
+    if (tabla.data('tipo') === 'compra') {
+        vventa = parseFloat(fila.find('[id^="vneto"]').val()) || 0;
+    } else if (tabla.data('tipo') === 'venta') {
+        vventa = parseFloat(fila.find('[id^="vventa"]').val()) || 0;
+    }
 
     // Calcular y asignar el valor total
     var vtotal = stock * vventa;

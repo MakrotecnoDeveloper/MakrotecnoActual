@@ -79,7 +79,7 @@
                         <label for="category">Categoría:</label>
                         <select id="category" class="form-control">
                             <option value="">Seleccione una categoría</option>
-                            @foreach (var categoria in Model.Select(p => p.Categoria).Distinct())
+                            @foreach (var categoria in Model.Select(p => p.IdCatepro).Distinct().OrderBy(id => id))
                             {
                                 <option value="@categoria">@categoria</option>
                             }

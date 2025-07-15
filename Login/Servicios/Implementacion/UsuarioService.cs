@@ -7,9 +7,11 @@ namespace Plataforma.Servicios.Implementacion
     public class UsuarioService : IUsuarioService
     {
         private readonly BaseAdmContext _dbContext;
-        public UsuarioService(BaseAdmContext dbContext)
+        private readonly ILogger<UsuarioService> _logger;
+        public UsuarioService(BaseAdmContext dbContext, ILogger<UsuarioService> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
         public List<Empleado> ObtenerUsuarios()
         {
@@ -398,12 +400,24 @@ namespace Plataforma.Servicios.Implementacion
 
             return cuentasProximas;
         }
+        #region tiendaMama
+        //Tienda..
         public List<Producto> ProductosAbarrotes()
         {
-            return _dbContext.Productos
-                     .Where(c => c.Categoria == "Abarrotes" && c.Estado == 1)
+            try
+            {
+                return _dbContext.Productos
+                     .Where(c => c.IdCatepro == 17 && c.Estado == 1)
                      .OrderBy(c => c.NombreProducto)
                      .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener productos de abarrotes");
+                _logger.LogInformation("Base de datos: {Database}", _dbContext.Database.GetDbConnection().Database);
+                return new List<Producto>();
+            }
+            
         }
         public async Task<bool> ActualizarProductoAsync(string id, string campo, string newVal)
         {
@@ -413,16 +427,53 @@ namespace Plataforma.Servicios.Implementacion
                 {
                     return false;
                 }
-
+            try
+            {
+                //Console.WriteLine(campo);
+                // Obtener información de la propiedad usando reflexión
                 var property = producto.GetType().GetProperty(campo);
-                property?.SetValue(producto, Convert.ChangeType(newVal, property.PropertyType));
 
+                if (property == null)
+                {
+                    throw new ArgumentException($"El campo '{campo}' no existe en la clase Producto.");
+                }
+
+                // Intentar convertir y asignar el nuevo valor
+                var convertedValue = Convert.ChangeType(newVal, property.PropertyType);
+                property.SetValue(producto, convertedValue);
+
+                // Guardar cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
                 return true;
+            }
+            catch (FormatException ex)
+            {
+                // Error en la conversión de tipo
+                Console.WriteLine($"Error de formato: {ex.Message}");
+                return false;
+            }
+            catch (InvalidCastException ex)
+            {
+                // Error de conversión de tipo
+                Console.WriteLine($"Error de conversión: {ex.Message}");
+                return false;
+            }
+            catch (ArgumentException ex)
+            {
+                // Error por un argumento inválido
+                Console.WriteLine($"Argumento inválido: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Otros errores no específicos
+                Console.WriteLine($"Error inesperado: {ex.Message}");
+                return false;
+            }
         }
-        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
+        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion)
         {
-            var productosObtenidos = _dbContext.Productos.Where(c => c.Categoria == "Abarrotes").OrderBy(c => c.NombreProducto).ToList();
+            var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 17).OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
             .Select(p => {
                 bool isNumeric = int.TryParse(p.Cod_Producto, out int numero);
@@ -431,8 +482,25 @@ namespace Plataforma.Servicios.Implementacion
             .Where(p => p.Numero.HasValue)
             .Select(p => p.Numero.GetValueOrDefault())
             .ToList();
+            var codigosNumericosOrdenados = codigosNumericos.OrderBy(n => n).ToList();
+
+            foreach (var codigo in codigosNumericosOrdenados)
+            {
+                //_logger.LogInformation("Código numérico encontrado: " + codigo);
+
+            }
             int nuevoCodigo = codigosNumericos.Count > 0 ? codigosNumericos.Max() + 1 : 1;
             string nuevoCodigoStr = nuevoCodigo.ToString();
+            /*_logger.LogInformation("Nuevo Codigo: " + nuevoCodigoStr +
+                                     "Nuevo Producto: " + nombreProducto +
+                                     "Cantidad Producto " + cantidadProducto +
+                                     "Valor Neto " + valorNetoProductoFloat +
+                                     "Valor Venta " + valorVentaProductoFloat +
+                                     "Valor Unidad " + valorUnidadInt +
+                                     "Id_Empresa " + id_empresa +
+                                     "Categoria " + categoria +
+                                     "Estado " + estado +
+                                     "Ubicacion " + ubicacion);*/
             var nuevoProductoInventario = new Producto
             {
                 Cod_Producto = nuevoCodigoStr,
@@ -442,7 +510,7 @@ namespace Plataforma.Servicios.Implementacion
                 ValorVentaProducto = valorVentaProductoFloat,
                 ValorUnidad = valorUnidadInt,
                 ID_Empresa = id_empresa,
-                Categoria = categoria,
+                IdCatepro = categoria,
                 Estado = estado,
                 Ubicacion = ubicacion
             };
@@ -466,6 +534,8 @@ namespace Plataforma.Servicios.Implementacion
 
             return false;
         }
+        //Fin Tienda..
+#endregion
         public Infopdv? SeleccionarNombrePDV(int selectedPDV)
         {
             return _dbContext.Infopdv.FirstOrDefault(p => p.InfopdvId == selectedPDV);

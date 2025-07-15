@@ -24,11 +24,6 @@ namespace Plataforma.Controllers
             var TraerServicios = _usuarioService.ServTraerServicios();
             return View(TraerServicios);
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
         public IActionResult Login()
         {
             return View();
@@ -62,7 +57,7 @@ namespace Plataforma.Controllers
                         return View(varValidarPDV);
                     }else
                     {
-                        var mensaje = "Error: No hay puntos de venta configurados con esta sede.";
+                        var mensaje = "Error: No hay puntos de venta configurados con este empleado.";
                         TempData["ErrorMessage"] = mensaje;
                         return RedirectToAction("Error", "Errores");
                     }
@@ -148,7 +143,7 @@ namespace Plataforma.Controllers
                     return RedirectToAction("Error", "Errores");
                 }else
                 {
-                    Console.WriteLine("Se va a ingresar el cierre de sesion");
+                    //Console.WriteLine("Se va a ingresar el cierre de sesion");
                     _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado, idPDV);
                 }
             }
@@ -171,7 +166,7 @@ namespace Plataforma.Controllers
 
             try
             {
-
+                
                 bool resultado = await _usuarioService.ActualizarProductoAsync(id, campo, newVal);
 
                 if (resultado)
@@ -190,7 +185,7 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, string categoria, int estado, string ubicacion)
+        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion)
         {
             try
             {

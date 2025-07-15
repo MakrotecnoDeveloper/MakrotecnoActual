@@ -8,3 +8,30 @@ UsuarioService -> proporciona la lógica concreta para llevar a cabo esas operaci
 
 
 //"cadenaSQL": "server=192.168.1.60;port=3307;database=u655007811_tienda;user=root;password=ecRQFhIOLZiU7OFv;"
+
+
+//LOG´S PARA DETERMINAR ERRORES EN PRODUCCION
+• Si quiero validar errores referentes a una funcionalidad se debe hacer lo siguiente:
+En el service donde quiero validar, se pone al inicio de la clase
+private readonly ILogger<UsuarioService> _logger;
+y debe estar la de base de datos tambien
+private readonly BaseAdmContext _dbContext;
+
+y en el metodo de inicio del servicio se pone dentro de 
+public ProcesoService(BaseAdmContext dbContext, ILogger<UsuarioService> logger)
+{
+	 _dbContext = dbContext;
+     _logger = logger;
+}
+de hay ya llamo al metodo donde requiera validar con lo siguiente atravez de un try-catch
+ try
+ {
+   //Proceso que quiero que salga bien
+ }
+ catch (Exception ex)
+ {
+        //Proceso que saldra mal si el try falla
+      _logger.LogError(ex, "Error obteniendo x servicio");
+      _logger.LogInformation("Base de datos: {Database}", _dbContext.Database.GetDbConnection().Database);//Forma de determinar en que bd estamos conectados
+      return x_variable;
+ }

@@ -59,11 +59,12 @@
                                 <button type="button" class="btn btn-success btn-sm" onclick="insertarFilasCrearPedido()">
                                     <i class="fas fa-plus"></i> Agregar Producto
                                 </button>
-                                <table class="table table-bordered">
+                                <table class="table table-bordered" data-tipo="venta">
                                     <thead class="bg-primary text-white">
                                         <tr>
                                             <th>Código</th>
                                             <th>Cantidad</th>
+                                            <th>Unidad</th>
                                             <th>Valor Neto</th>
                                             <th>Valor Unitario</th>
                                             <th>Acumulado</th>
@@ -77,8 +78,16 @@
                                                 <div class="opcionesCodigosProducto"></div>
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control" name="productos[0].Stock" placeholder="Cantidad" id="stock0">
+                                                <input type="text" class="form-control" name="productos[0].Stock" placeholder="Cantidad" id="stock0">
                                             </td>
+                                             <td>
+                                                <select name="productos[0].UnidadMedida" id="unidad0">
+                                                    <option name="Libra">Libra</option>
+                                                    <option name="Unidad">Unidad</option>
+                                                    <option name="Display">Display</option>
+                                                    <option name="Paca">Paca</option>
+                                                </select>
+                                             </td>
                                             <td>
                                                 <input type="number" class="form-control" name="productos[0].VNeto" placeholder="Venta Neto" id="vneto0">
                                             </td>

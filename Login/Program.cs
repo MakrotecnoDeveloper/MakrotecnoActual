@@ -5,8 +5,22 @@ using Plataforma.Servicios.Implementacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Features;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "logs", "app-log-.txt");
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: logPath,
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+
+builder.Host.UseSerilog();
 
 //Archivos config appsettings
 builder.Configuration
@@ -21,6 +35,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Logging.AddFile("Logs/app-log-{Date}.txt");
 
 //Validacion de la conexion de base de datos
 var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
@@ -28,7 +43,7 @@ var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
 
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
-    options.UseMySQL(connectionString);
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
 //Limite de envio de correos

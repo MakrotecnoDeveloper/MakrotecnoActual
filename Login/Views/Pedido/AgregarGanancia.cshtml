@@ -42,16 +42,16 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label for="ventaTienda"><strong>Tienda:</strong></label>
-                                <input type="number" class="form-control" id="ventaTienda" placeholder="Ingrese la venta de tienda" name="ventaTienda">
+                                <label for="valorCompras"><strong>Compras:</strong></label>
+                                <input type="number" class="form-control" id="valorCompras" value="@Model.TotalCompras" name="valorCompras">
                             </div>
                             <div class="form-group mb-3">
                                 <label for="chkVentaPasivos"><strong>Depósitos Bancarios:</strong></label>
                                 <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="chkVentaPasivos" onchange="toggleInput()" />
+                                    <input type="checkbox" class="form-check-input" id="chkVentaBancaria" onchange="toggleInput()" />
                                     <label class="form-check-label" for="chkVentaPasivos">Activar</label>
                                 </div>
-                                <input type="number" class="form-control mt-2" id="ventaPasivos" placeholder="Ingrese la venta de pasivos" name="ventaPasivos" value="0" disabled>
+                                <input type="number" class="form-control mt-2" id="ventaBancaria" placeholder="Ingrese la venta de pasivos" name="ventaBancaria" value="0" disabled>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="netoMakrotecno"><strong>Neto:</strong></label>
@@ -68,7 +68,7 @@
                 </form>
             </div>
             <div class="card-footer text-center bg-light">
-                <h5 class="m-0"><strong>Compras Totales:</strong> @Model.TotalCompras</h5>
+                <h5 class="m-0"><strong>Compras Totales:</strong> @Model.TotalCompras </h5>
             </div>
         </div>
     </div>
@@ -77,14 +77,14 @@
 
 <script>
     function toggleInput() {
-        var inputVentaPasivos = document.getElementById('ventaPasivos');
-        var chkVentaPasivos = document.getElementById('chkVentaPasivos');
+        var inputVentaBancaria = document.getElementById('ventaBancaria');
+        var chkVentaBancaria = document.getElementById('chkVentaBancaria');
 
-        if (chkVentaPasivos.checked) {
-            inputVentaPasivos.disabled = false;
+        if (chkVentaBancaria.checked) {
+            inputVentaBancaria.disabled = false;
         } else {
-            inputVentaPasivos.disabled = true;
-            inputVentaPasivos.value = '0'; // Establecer el valor a 0 cuando se deshabilite
+            inputVentaBancaria.disabled = true;
+            inputVentaBancaria.value = '0'; // Establecer el valor a 0 cuando se deshabilite
         }
     }
 </script>

@@ -132,3 +132,40 @@
         background-color: #495057;
         text-decoration: none;
     }
+
+/* Estilos para el footer*/
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #495057;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+    .social-icon:hover {
+        background-color: #0d6efd;
+        color: white;
+        text-decoration: none;
+    }
+
+footer a:hover {
+    color: #ffffff !important;
+}
+
+footer h6 {
+    color: #ffffff !important;
+}
+footer {
+    background: linear-gradient(135deg, #1d1f21, #343a40);
+}
+/*Estilos para la seccion "Nosotros"*/
+@media (max-width: 768px) {
+    .nosotros .card {
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+}

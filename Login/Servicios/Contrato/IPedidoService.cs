@@ -1,5 +1,4 @@
-﻿using Mysqlx.Cursor;
-using Plataforma.Models;
+﻿using Plataforma.Models;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
@@ -21,7 +20,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Factura>> VisualizarPedido(string estado);
         Task<List<Pedidos>> VisualizarPedidoPorId(int id);
         Task<List<Pedidos>> traerValorProductos(int id);
-        Task<int> VentaInsertada(int ventaTotal, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos);
+        Task<int> VentaInsertada(int ventaEfectivo, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos);
         Task GananciaInsertada(int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal);
         List<Ganancias> TraerGanancias();
         void EliminarPedido(int id);
