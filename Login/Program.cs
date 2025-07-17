@@ -23,10 +23,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 //Archivos config appsettings
-builder.Configuration
+/*builder.Configuration
     .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);*/
 
 
 //Configuraciones para HTTP, MVC, Log para mensajes emergentes
@@ -43,7 +43,7 @@ var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
 
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    options.UseSqlServer(connectionString);
 });
 
 //Limite de envio de correos
@@ -57,6 +57,7 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IDispositivoService, DispositivoService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

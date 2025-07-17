@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Órdenes de Servicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2>Órdenes de Servicio</h2>
+
+        <!-- Botón de nueva orden -->
+        <div class="mb-3">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Orden
+            </a>
+        </div>
+
+        <!-- Filtros de búsqueda -->
+        <form asp-action="Index" method="get" class="mb-3">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="cliente" class="form-control" placeholder="Buscar por cliente">
+                </div>
+                <div class="col-md-3">
+                    <select name="estado" class="form-select">
+                        <option value="">-- Estado --</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En proceso">En proceso</option>
+                        <option value="Terminado">Terminado</option>
+                        <option value="Entregado">Entregado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabla de órdenes -->
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Cliente</th>
+                    <th>Dispositivo</th>
+                    <th>Problema Reportado</th>
+                    <th>Estado</th>
+                    <th>Fecha Ingreso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Ejemplo de datos quemados mientras implementas la consulta real *@
+                <tr>
+                    <td>1</td>
+                    <td>Juan Pérez</td>
+                    <td>Samsung A52</td>
+                    <td>No enciende</td>
+                    <td>Pendiente</td>
+                    <td>2025-07-16</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="1" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        <a asp-action="Edit" asp-route-id="1" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

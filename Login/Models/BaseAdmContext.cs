@@ -34,6 +34,11 @@ public partial class BaseAdmContext : DbContext
     public DbSet<CategoriaProductos> CategoriaProductos { get; set; }
     public DbSet<MenuOption> MenuOption { get; set; }
     public DbSet<Menu> Menu { get; set; }
+    public DbSet<Dispositivo> Dispositivos { get; set; }
+    public DbSet<OrdenServicio> OrdenServicios { get; set; }
+    public DbSet<SeguimientoServicio> SeguimientoServicios { get; set; }
+    public DbSet<DiagnosticoProblema> DiagnosticoProblemas { get; set; }
+    public DbSet<GestionRealizada> GestionRealizadas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,6 +68,11 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<CategoriaProductos>().HasKey(idcapro => idcapro.IdCateProducto);
         modelBuilder.Entity<MenuOption>().HasKey(idmo => idmo.IdMenuOption);
         modelBuilder.Entity<Menu>().HasKey(idm => idm.IdMenu);
+        modelBuilder.Entity<Dispositivo>().HasKey(id => id.IdDispositivo);
+        modelBuilder.Entity<OrdenServicio>().HasKey(io => io.IdOrden);
+        modelBuilder.Entity<SeguimientoServicio>().HasKey(iss => iss.IdSeguiServ);
+        modelBuilder.Entity<DiagnosticoProblema>().HasKey(idp => idp.IdDiagProb);
+        modelBuilder.Entity<GestionRealizada>().HasKey(igr => igr.IdGR);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.Cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
@@ -92,5 +102,32 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<MenuOption>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_Tipo);
         modelBuilder.Entity<MenuOption>().HasOne<Menu>().WithMany().HasForeignKey(f => f.IdMenu);
         modelBuilder.Entity<Producto>().HasOne<CategoriaProductos>().WithMany().HasForeignKey(f => f.IdCatepro);
+        modelBuilder.Entity<Dispositivo>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.CedulaCliente);
+        modelBuilder.Entity<OrdenServicio>().HasOne<Dispositivo>().WithMany().HasForeignKey(f => f.IdDispositivo);
+        modelBuilder.Entity<DiagnosticoProblema>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
+        modelBuilder.Entity<DiagnosticoProblema>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
+        modelBuilder.Entity<SeguimientoServicio>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
+        modelBuilder.Entity<GestionRealizada>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
+
+
+        modelBuilder.Entity<DiagnosticoProblema>()
+        .Property(d => d.Costo)
+        .HasPrecision(10, 2); // o el valor que requieras
+
+        modelBuilder.Entity<DiagnosticoProblema>()
+            .Property(d => d.CostoInterno)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<GestionRealizada>()
+            .Property(g => g.CostoTotal)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<Pedidos>()
+            .Property(p => p.Cantidad)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<Producto>()
+            .Property(p => p.CantidadProducto)
+            .HasPrecision(10, 2);
     }
 }

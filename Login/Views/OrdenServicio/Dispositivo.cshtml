@@ -1,0 +1,144 @@
+﻿@{
+    ViewData["Title"] = "Dispositivos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+    <div class="content-wrapper">
+        <div class="container mt-4">
+            <h2>Dispositivos</h2>
+
+        <!-- Botón Nuevo Dispositivo -->
+        <div class="mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoDispositivo">
+                <i class="bi bi-plus-circle"></i> Nuevo Dispositivo
+            </button>
+        </div>
+
+            <!-- Modal Nuevo Dispositivo -->
+            <div class="modal fade" id="modalNuevoDispositivo" tabindex="-1" aria-labelledby="modalNuevoDispositivoLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="formNuevoDispositivo">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalNuevoDispositivoLabel">Registrar Nuevo Dispositivo</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="marca" class="form-label">Marca</label>
+                                    <input type="text" class="form-control" id="marca" name="Marca" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="modelo" class="form-label">Modelo</label>
+                                    <input type="text" class="form-control" id="modelo" name="Modelo" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="imei" class="form-label">IMEI</label>
+                                    <input type="text" class="form-control" id="imei" name="IMEI">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="idCliente" class="form-label">Id Cliente</label>
+                                    <input type="number" class="form-control" id="idCliente" name="IdCliente" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="accesorios" class="form-label">Accesorios</label>
+                                    <input type="text" class="form-control" id="accesorios" name="Accesorios">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de búsqueda -->
+            <form asp-action="Index" method="get" class="mb-3">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input type="text" name="cliente" class="form-control" placeholder="Buscar por Cliente">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="imei" class="form-control" placeholder="Buscar por IMEI">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-secondary w-100">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tabla de dispositivos -->
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Id</th>
+                        <th>Cliente</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>IMEI</th>
+                        <th>Accesorios</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Ejemplo de datos quemados mientras implementas la consulta real *@
+                    <tr>
+                        <td>1</td>
+                        <td>Juan Pérez</td>
+                        <td>Samsung</td>
+                        <td>A52</td>
+                        <td>123456789012345</td>
+                        <td>Cargador y estuche</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="1" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Edit" asp-route-id="1" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+<script>
+    document.getElementById('formNuevoDispositivo').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = {
+            Marca: document.getElementById('marca').value,
+            Modelo: document.getElementById('modelo').value,
+            IMEI: document.getElementById('imei').value,
+            CedulaCliente: document.getElementById('idCliente').value,
+            Accesorios: document.getElementById('accesorios').value
+        };
+        console.log("Form Data: ", formData);
+        fetch('/OrdenServicio/CrearDispositivo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Dispositivo registrado exitosamente');
+                    location.reload(); // Opcional: Recargar para ver el nuevo dispositivo en la tabla
+                } else {
+                    alert('Error al registrar dispositivo');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            });
+    });
+</script>

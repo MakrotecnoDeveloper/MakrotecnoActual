@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Plataforma.Models;
-    public class ClientesPlataforma
+[Table("clientesplataforma", Schema = "pruebas")]
+public class ClientesPlataforma
     {
         [Key]
         public int IdCliPltf {  get; set; }

@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Seguimiento de Servicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2>Seguimiento de Servicio</h2>
+
+        <!-- Botón para registrar seguimiento -->
+        <div class="mb-3">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Seguimiento
+            </a>
+        </div>
+
+        <!-- Filtro por orden de servicio -->
+        <form asp-action="Index" method="get" class="mb-3">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="idOrden" class="form-control" placeholder="Buscar por Id de Orden">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabla de seguimientos -->
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Orden</th>
+                    <th>Fecha Seguimiento</th>
+                    <th>Proceso</th>
+                    <th>Respuesta Cliente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Ejemplo de datos quemados mientras implementas la consulta real *@
+                <tr>
+                    <td>1</td>
+                    <td>5</td>
+                    <td>2025-07-16</td>
+                    <td>Revisión técnica inicial</td>
+                    <td>Esperando aprobación</td>
+                    <td>Pendiente</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="1" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        <a asp-action="Edit" asp-route-id="1" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
