@@ -24,23 +24,38 @@ namespace Plataforma.Controllers
             var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
             return View(traerCategoriasExistentes);
         }
+        
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, int categoria)
+        [ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, int categoria)
+        public async Task<IActionResult> Insertar(Producto model)
         {
-
-            if (ModelState.IsValid)
+            try
             {
-                // Lógica para agregar el producto usando _productoService
-                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
 
-                if (resultado)
+                if (ModelState.IsValid)
                 {
-                    return Json(new { success = true });
+                    // Lógica para agregar el producto usando _productoService
+                   // var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
+                    var resultado = await _productoservice.AgregarProductoAsync(model);
+
+                    if (resultado)
+                    {
+                        return Json(new { success = true });
+                    }
                 }
+
+                return Json(new { success = false });
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, msj = ex.Message });
+
             }
 
-            return Json(new { success = false });
         }
+
         [Authorize]
         [HttpGet]
         public IActionResult Buscar(string searchTerm, int categoriaTerm)

@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-    <!-- Tu formulario HTML aquí -->
+<!-- Tu formulario HTML aquí -->
 <div class="content-wrapper">
     <form id="formularioProducto" method="POST">
         <div class="container">
@@ -23,40 +23,40 @@
             <div class="row">
                 <div class="col-md-4 mx-auto">
                     <div class="myform form ">
-                            <div class="form-group">
-                                <select name="id_empresa" id="id_empresa">
+                        <div class="form-group">
+                            <select name="id_empresa" id="id_empresa">
                                 <option value="1234193470-6">Makrotecno</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" name="codigo" class="form-control my-input" id="codigo" placeholder="Codigo">
-                            </div>
-                            <div class="form-group">
-                                <input type="text" name="descripcion" class="form-control my-input" id="descripcion" placeholder="Descripcion">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" name="valor_neto" class="form-control my-input" id="valorNeto" placeholder="Valor Neto">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" name="valor_unitario" id="valorVenta" class="form-control my-input" placeholder="Valor Unitario">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
-                            </div>
-                            <div class="form-group">
-                                <select name="categorias" id="categorias" class="form-control my-input">
-                                    @foreach (var categoria in Model)
-                                    {
-                                        <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="text-center ">
-                                <button type="button" id="btnAgregarProducto" class="btn btn-block send-button tx-tfm">Agregar Producto</button>
-                            </div>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="codigo" class="form-control my-input" id="codigo" placeholder="Codigo">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="descripcion" class="form-control my-input" id="descripcion" placeholder="Descripcion">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" name="valor_neto" class="form-control my-input" id="valorNeto" placeholder="Valor Neto">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" name="valor_unitario" id="valorVenta" class="form-control my-input" placeholder="Valor Unitario">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
+                        </div>
+                        <div class="form-group">
+                            <select name="categorias" id="categorias" class="form-control my-input">
+                                @foreach (var categoria in Model)
+                                {
+                                    <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="text-center ">
+                            <button type="button" id="btnAgregarProducto" class="btn btn-block send-button tx-tfm">Agregar Producto</button>
+                        </div>
                     </div>
-                 </div>
+                </div>
             </div>
-         </div>
+        </div>
     </form>
 </div>
