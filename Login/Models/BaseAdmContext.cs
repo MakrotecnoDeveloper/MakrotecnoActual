@@ -39,6 +39,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<SeguimientoServicio> SeguimientoServicios { get; set; }
     public DbSet<DiagnosticoProblema> DiagnosticoProblemas { get; set; }
     public DbSet<GestionRealizada> GestionRealizadas { get; set; }
+    public DbSet<MkMenu> MkMenus { get; set; }
+    public DbSet<MkPermisosMenu> MkPermisosMenus { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +75,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<SeguimientoServicio>().HasKey(iss => iss.IdSeguiServ);
         modelBuilder.Entity<DiagnosticoProblema>().HasKey(idp => idp.IdDiagProb);
         modelBuilder.Entity<GestionRealizada>().HasKey(igr => igr.IdGR);
+        modelBuilder.Entity<MkMenu>().HasKey(id => id.Id);
+        modelBuilder.Entity<MkPermisosMenu>().HasKey(id => id.Id);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.Cedula_cliente);
         modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
@@ -108,6 +112,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<DiagnosticoProblema>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<SeguimientoServicio>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
         modelBuilder.Entity<GestionRealizada>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
+        modelBuilder.Entity<MkPermisosMenu>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_TipoCargo);
+        modelBuilder.Entity<MkPermisosMenu>().HasOne<Menu>().WithMany().HasForeignKey(f => f.Id_Menu);
 
 
         modelBuilder.Entity<DiagnosticoProblema>()
