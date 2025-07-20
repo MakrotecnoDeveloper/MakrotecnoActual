@@ -43,12 +43,12 @@
     <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
+    <div class="wrapper">
 
-    <!-- Preloader -->
-    <div class="preloader flex-column justify-content-center align-items-center">
-        <img class="animation__shake" src="~/AdminLTE/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
-    </div>
+        <!-- Preloader -->
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="~/AdminLTE/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
+        </div>
 
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -63,71 +63,71 @@
             </ul>
         </nav>
         <!-- /.navbar -->
-    <!-- Main Sidebar Container -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <!-- Brand Logo -->
-        <a asp-controller="Inicio" asp-action="Index" class="brand-link">
-            <img src="~/img/logo-inverse.png" class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">Makrotecno</span>
-        </a>
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a asp-controller="Inicio" asp-action="Index" class="brand-link">
+                <img src="~/img/logo-inverse.png" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">Makrotecno</span>
+            </a>
 
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <!-- Sidebar user panel (optional) -->
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                <div class="image">
-                    <img src="~/AdminLTE/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
-                </div>
-                <div class="info">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="~/AdminLTE/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
                         <a href="#" class="d-block">@nombre</a>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Sidebar Menu -->
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <!-- Add icons to the links using the .nav-icon class
-                         with font-awesome or any other icon font library -->
-                    <li class="nav-header">SISTEMAS</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>
-                                Configuracion
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <!-- Add icons to the links using the .nav-icon class
+                             with font-awesome or any other icon font library -->
+                        <li class="nav-header">SISTEMAS</li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Configuracion
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="Cargos" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Cargos</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Cargos</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="Empresas" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Empresas</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Empresas</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="Sedes" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Sedes</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Sedes</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="EmpleadoEmpresa" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Vinculacion EE</p>
-                                </a>
-                            </li>
-                             <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Vinculacion EE</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="EmpleadoSedes" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Vinculacion ES</p>
-                                </a>
-                            </li>
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Vinculacion ES</p>
+                                    </a>
+                                </li>
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">
                                         <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -169,8 +169,8 @@
                                         </li>
                                     </ul>
                                 </li>
-                        </ul>
-                    </li>
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -206,77 +206,77 @@
                                 </li>
                             </ul>
                         </li>
-                    <li class="nav-header">GESTION ADMINISTRATIVA</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>
-                                Configuracion Empresas
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
+                        <li class="nav-header">GESTION ADMINISTRATIVA</li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Configuracion Empresas
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="Index" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Panel de Usuario</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Panel de Usuario</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Usuario" asp-action="RegistrarEmpleado" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Registrar Empleado</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>
-                                Financiero
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Registrar Empleado</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Financiero
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
                                     <a asp-controller="Inicio" asp-action="Index" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Registrar Pago</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Registrar Pago</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Balance General</p>
-                                </a>
-                            </li>
-                        </ul>
-                     </li>
-                     <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>
-                                Historicos
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Balance General</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>
+                                    Historicos
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
                                     <a asp-controller="Producto" asp-action="Chat" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Historico Login</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Historico Login</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Historico Pagos</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-header">GESTION DE PRODUCTOS</li>
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Historico Pagos</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-header">GESTION DE PRODUCTOS</li>
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -521,12 +521,12 @@
                                 </li>
                             </ul>
                         </li>
-                </ul>
-            </nav>
-            <!-- /.sidebar-menu -->
-        </div>
-        <!-- /.sidebar -->
-    </aside>
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var yearElement = document.getElementById('currentYear');
@@ -536,46 +536,46 @@
                 }
             });
         </script>
-            @RenderBody()
-    <footer class="main-footer">
-        <strong>Copyright &copy; <span id="currentYear"></span> Makrotecno</strong>
+        @RenderBody()
+        <footer class="main-footer">
+            <strong>Copyright &copy; <span id="currentYear"></span> Makrotecno</strong>
             Plantilla diseñada por <span>https://adminlte.io</span>, Editada y Organizada por Makrotecno
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 0.0.1
-        </div>
-    </footer>
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 0.0.1
+            </div>
+        </footer>
 
-        </div>
-        <!-- ./wrapper -->
-        <!-- jQuery UI 1.11.4 -->
+    </div>
+    <!-- ./wrapper -->
+    <!-- jQuery UI 1.11.4 -->
     <script src="~/AdminLTE/plugins/jquery-ui/jquery-ui.min.js"></script>
-        <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-        <script>
-            $.widget.bridge('uibutton', $.ui.button)
-        </script>
-        <!-- Bootstrap 4 -->
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script>
+        $.widget.bridge('uibutton', $.ui.button)
+    </script>
+    <!-- Bootstrap 4 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- ChartJS -->
+    <!-- ChartJS -->
     <script src="~/AdminLTE/plugins/chart.js/Chart.min.js"></script>
-        <!-- JQVMap -->
+    <!-- JQVMap -->
     <script src="~/AdminLTE/plugins/jqvmap/jquery.vmap.min.js"></script>
     <script src="~/AdminLTE/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
-        <!-- jQuery Knob Chart -->
+    <!-- jQuery Knob Chart -->
     <script src="~/AdminLTE/plugins/jquery-knob/jquery.knob.min.js"></script>
-        <!-- daterangepicker -->
+    <!-- daterangepicker -->
     <script src="~/AdminLTE/plugins/moment/moment.min.js"></script>
     <script src="~/AdminLTE/plugins/daterangepicker/daterangepicker.js"></script>
-        <!-- Tempusdominus Bootstrap 4 -->
+    <!-- Tempusdominus Bootstrap 4 -->
     <script src="~/AdminLTE/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
-        <!-- Summernote -->
+    <!-- Summernote -->
     <script src="~/AdminLTE/plugins/summernote/summernote-bs4.min.js"></script>
-        <!-- overlayScrollbars -->
+    <!-- overlayScrollbars -->
     <script src="~/AdminLTE/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
-        <!-- AdminLTE App -->
+    <!-- AdminLTE App -->
     <script src="~/AdminLTE/dist/js/adminlte.js"></script>
-        <!-- AdminLTE for demo purposes -->
+    <!-- AdminLTE for demo purposes -->
     <script src="~/AdminLTE/dist/js/demo.js"></script>
-        <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- Fin AdminLTE -->
