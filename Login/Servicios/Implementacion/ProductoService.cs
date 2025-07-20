@@ -216,12 +216,13 @@ namespace Plataforma.Servicios.Implementacion
             }
             return _dbContext.Productos.ToList();
         }
-        //a
+        //
         public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado)
         {
 
             if (codigo == null || nombreProducto == null || categoria <= 0 || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
             {
+                //pasar a validacion js
                 Console.WriteLine("Error: Todos los campos deben tener un valor. No se permiten valores nulos.");
                 return;
             }
@@ -308,7 +309,8 @@ namespace Plataforma.Servicios.Implementacion
             };
             return provProdViewModel;
         }
-        public void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv)
+        public void HistoricoCompra(int codfact, string cod_producto, decimal stock, 
+            string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv)
         {
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
             if (producto != null)
