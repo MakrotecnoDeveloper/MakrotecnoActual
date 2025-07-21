@@ -34,9 +34,7 @@ namespace Plataforma.Servicios.Implementacion
         {
             try
             {
-                int valorUnidad = 0;
-                int estado = 1;
-                string Ubicacion = "Web";
+
                 /*
                 // Crear un nuevo objeto Producto con los parámetros proporcionados
                 var nuevoProducto = new Producto
@@ -56,9 +54,9 @@ namespace Plataforma.Servicios.Implementacion
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
                 //_dbContext.Productos.Add(nuevoProducto);
-                model.ValorUnidad = valorUnidad;
-                model.Estado = estado;
-                model.Ubicacion = Ubicacion;
+                model.ValorUnidad = 0;
+                model.Estado = 1;
+                model.Ubicacion = "Web";
 
                 _dbContext.Productos.Add(model);
                 _dbContext.SaveChanges();
