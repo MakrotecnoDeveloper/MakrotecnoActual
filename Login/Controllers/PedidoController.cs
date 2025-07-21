@@ -71,38 +71,49 @@ namespace Plataforma.Controllers
             }
             return View(venta);
         }
+        [HttpGet]
+        public async Task<IActionResult> BuscarProductoPorCodigo(string codigo)
+        {
+            var resultado = await _pedidoServicio.BuscarProductoPorCodigoAsync(codigo);
+
+            if (resultado == null)
+                return NotFound();
+
+            return Json(new
+            {
+                valorVenta = resultado.Value.valorVenta,
+                valorNeto = resultado.Value.valorNeto
+            });
+        }
 
         [HttpGet]
         public IActionResult AgregarProductoAVenta(int idVenta)
         {
-            var nuevoPedido = new Pedidos { IdVenta = idVenta, FechaRegistro = DateTime.Now };
-            return View(nuevoPedido);
+            var viewModel = new PedidosViewModel
+            {
+                IdVenta = idVenta,
+                Productos = new List<Pedidos>
+        {
+            new Pedidos() // Inicializa con una fila vacía
+        }
+            };
+
+            return View(viewModel); // ✅ Ahora el modelo coincide con la vista
         }
 
         [HttpPost]
-        public async Task<IActionResult> AgregarProductoAVenta(Pedidos pedido)
+        public async Task<IActionResult> AgregarMultiplesProductosAVenta(PedidosViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                // Recorremos los errores y los mostramos por consola o los puedes enviar a la vista
-                foreach (var key in ModelState.Keys)
-                {
-                    var errors = ModelState[key].Errors;
-                    foreach (var error in errors)
-                    {
-                        Console.WriteLine($"Error en '{key}': {error.ErrorMessage}");
-                    }
-                }
-
-                TempData["ErrorMessage"] = "Revisa los campos obligatorios o datos inválidos.";
-                //return View(pedido);
+                await _pedidoServicio.GuardarPedidosAsync(model.Productos, model.IdVenta, User);
+                return RedirectToAction("DetalleVenta", new { idVenta = model.IdVenta });
             }
-
-            pedido.SubTotal = pedido.Cantidad * pedido.ValorVenta;
-            pedido.FechaRegistro = DateTime.Now;
-
-            await _pedidoServicio.GuardarPedidoAsync(pedido);
-            return RedirectToAction("DetalleVenta", new { idVenta = pedido.IdVenta });
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al guardar los productos: {ex.Message}";
+                return View(model);
+            }
         }
         public IActionResult CrearFactura()
         {

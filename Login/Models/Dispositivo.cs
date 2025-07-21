@@ -12,4 +12,5 @@ public class Dispositivo
     public string? IMEI { get; set; }
     public string? Accesorios { get; set; }
     public int CedulaCliente { get; set; }
+    public Cliente Cliente { get; set; }
 }

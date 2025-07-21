@@ -1,37 +1,99 @@
-﻿@model Plataforma.Models.Pedidos
+﻿@model Plataforma.Models.PedidosViewModel
+
 @{
-    ViewData["Title"] = "Agregar Producto";
+    ViewData["Title"] = "Agregar Productos a Venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="content-wrapper">
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Agregar Producto a la Venta</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Agregar Productos a la Venta</h2>
 
-        <form method="post" asp-action="AgregarProductoAVenta" asp-controller="Pedido">
-            <input type="hidden" asp-for="IdVenta" />
+    <form method="post" asp-controller="Pedido" asp-action="AgregarMultiplesProductosAVenta">
+        <input type="hidden" name="IdVenta" value="@Model.IdVenta" />
 
-            <div class="mb-3">
-                <label class="form-label">Código Producto</label>
-                <input type="text" asp-for="CodProducto" class="form-control" required />
+        <div id="productos-container">
+            <div class="producto-fila row mb-3">
+                <div class="col-md-2">
+                    <input type="text" name="Productos[0].CodProducto" placeholder="Código" class="form-control" onblur="buscarProducto(this)" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="Productos[0].Cantidad" placeholder="Cantidad" class="form-control cantidad" step="0.01" required oninput="recalcular(this)" />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="Productos[0].ValorVenta" placeholder="Valor Venta" class="form-control valorVenta" readonly />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="Productos[0].ValorNeto" placeholder="Valor Neto" class="form-control valorNeto" readonly />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="Productos[0].SubTotal" placeholder="SubTotal" class="form-control subTotal" readonly />
+                </div>
+                    <input type="hidden" name="IdVenta" value="@Model.IdVenta" />
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger" onclick="eliminarFila(this)">🗑</button>
+                </div>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Cantidad</label>
-                <input type="number" asp-for="Cantidad" step="0.01" class="form-control" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Valor Unitario</label>
-                <input type="number" asp-for="ValorVenta" class="form-control" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">PDV (ID opcional)</label>
-                <input type="number" asp-for="InfopdvId" class="form-control" />
-            </div>
-
-            <button type="submit" class="btn btn-primary">Agregar</button>
-            <a asp-action="DetalleVenta" asp-route-idVenta="@Model.IdVenta" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
+        <button type="button" class="btn btn-secondary" onclick="agregarFila()">+ Agregar otro producto</button>
+        <button type="submit" class="btn btn-primary mt-3">Guardar productos</button>
+    </form>
 </div>
+</div>
+@section Scripts {
+    <script>
+        let filaIndex = 1;
+
+        function buscarProducto(input) {
+            const codigo = input.value;
+            const fila = input.closest('.producto-fila');
+            if (!codigo) return;
+
+            fetch(`/Pedido/BuscarProductoPorCodigo?codigo=${codigo}`)
+                .then(resp => {
+                    if (!resp.ok) throw new Error("Producto no encontrado");
+                    return resp.json();
+                })
+                .then(data => {
+                    fila.querySelector('.valorVenta').value = data.valorVenta;
+                    fila.querySelector('.valorNeto').value = data.valorNeto;
+                    recalcular(fila.querySelector('.cantidad'));
+                })
+                .catch(err => {
+                    alert("Producto no encontrado.");
+                    fila.querySelector('.valorVenta').value = '';
+                    fila.querySelector('.valorNeto').value = '';
+                });
+        }
+
+        function recalcular(input) {
+            const fila = input.closest('.producto-fila');
+            const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
+            const valorVenta = parseFloat(fila.querySelector('.valorVenta').value) || 0;
+            const valorNeto = parseFloat(fila.querySelector('.valorNeto').value) || 0;
+
+            fila.querySelector('.subTotal').value = (cantidad * valorVenta).toFixed(2);
+        }
+
+        function agregarFila() {
+            const container = document.getElementById('productos-container');
+            const nuevaFila = container.firstElementChild.cloneNode(true);
+
+            nuevaFila.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                const name = input.getAttribute('name');
+                if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${filaIndex}]`));
+            });
+
+            container.appendChild(nuevaFila);
+            filaIndex++;
+        }
+
+        function eliminarFila(button) {
+            const container = document.getElementById('productos-container');
+            if (container.children.length > 1) {
+                button.closest('.producto-fila').remove();
+            }
+        }
+    </script>
+}

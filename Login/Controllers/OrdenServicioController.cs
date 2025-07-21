@@ -7,36 +7,65 @@ namespace Plataforma.Controllers
     public class OrdenServicioController : Controller
     {
         private readonly IDispositivoService _dispositivoService;
-        public OrdenServicioController(IDispositivoService dispositivoService)
+        private readonly IOrdenServicioService _ordenServicioService;
+        public OrdenServicioController(IDispositivoService dispositivoService, IOrdenServicioService ordenServicioService)
         {
             _dispositivoService = dispositivoService;
+            _ordenServicioService = ordenServicioService;
         }
         public IActionResult Index()
         {
             return View();
         }
-        public IActionResult Dispositivo() 
+        [HttpGet]
+        public async Task<IActionResult> Dispositivos()
         {
-            return View();
+            var dispositivos = await _dispositivoService.ObtenerDispositivosConClientesAsync();
+            return View(dispositivos);
         }
-        public IActionResult OrdenesServicio()
-        {
-            return View();
-        }
-        public IActionResult SeguimientoServicio()
-        {
-            return View();
-        }
+
         [HttpPost]
         public async Task<IActionResult> CrearDispositivo([FromBody] Dispositivo dispositivo)
         {
-            Console.WriteLine(dispositivo);
-            if (ModelState.IsValid)
+            try
             {
-                await _dispositivoService.AgregarDispositivoAsync(dispositivo);
+                await _dispositivoService.CrearDispositivoAsync(dispositivo);
                 return Ok();
             }
-            return BadRequest();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var dispositivo = await _dispositivoService.ObtenerPorIdAsync(id);
+            if (dispositivo == null)
+                return NotFound();
+
+            return View(dispositivo);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var dispositivo = await _dispositivoService.ObtenerPorIdAsync(id);
+            if (dispositivo == null)
+                return NotFound();
+
+            return View(dispositivo);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Dispositivo dispositivo)
+        {
+            if (!ModelState.IsValid)
+                return View(dispositivo);
+
+            await _dispositivoService.ActualizarDispositivoAsync(dispositivo);
+            TempData["Success"] = "Dispositivo actualizado correctamente.";
+            return RedirectToAction("Dispositivos");
         }
     }
 }

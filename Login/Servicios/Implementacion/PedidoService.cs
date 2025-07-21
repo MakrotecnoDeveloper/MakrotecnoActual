@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Security.Claims;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -31,6 +32,73 @@ namespace Plataforma.Servicios.Implementacion
                 .OrderByDescending(v => v.FechaVenta)
                 .ToListAsync();
         }
+        public async Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo)
+        {
+            Console.WriteLine(codigo);
+            var producto = await _dbContext.Productos
+                .Where(p => p.Cod_Producto == codigo)
+                .Select(p => new
+                {
+                    p.ValorVentaProducto,
+                    p.ValorNetoProducto
+                })
+                .FirstOrDefaultAsync();
+
+            if (producto == null)
+                return null;
+
+            return (producto.ValorVentaProducto, producto.ValorNetoProducto);
+        }
+        public async Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario)
+        {
+            // 1. Obtener cédula desde el claim
+            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
+            if (!int.TryParse(cedulaStr, out int cedula))
+                throw new Exception("No se pudo obtener la cédula del usuario autenticado.");
+
+            // 2. Consultar IdSede
+            var idSede = await _dbContext.Sedeempleado
+                .Where(se => se.Cedula == cedula)
+                .Select(se => se.Id_sede)
+                .FirstOrDefaultAsync();
+
+            if (idSede == 0)
+                throw new Exception("No se encontró una sede asociada al usuario.");
+
+            // 3. Consultar InfoPdvId
+            var infoPdvId = await _dbContext.Infopdv
+                .Where(p => p.Id_Sede == idSede)
+                .Select(p => p.InfopdvId)
+                .FirstOrDefaultAsync();
+
+            if (infoPdvId == 0)
+                throw new Exception("No se encontró un PDV válido para la sede.");
+
+            // 4. Completar y guardar los pedidos
+            foreach (var pedido in pedidos)
+            {
+                pedido.IdVenta = idVenta;
+                pedido.InfopdvId = infoPdvId;
+                pedido.FechaRegistro = DateTime.Now;
+                pedido.SubTotal = pedido.Cantidad * pedido.ValorVenta;
+
+                _dbContext.Pedidos.Add(pedido);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task GuardarPedidosAsync(List<Pedidos> pedidos)
+        {
+            foreach (var pedido in pedidos)
+            {
+                pedido.SubTotal = pedido.Cantidad * pedido.ValorVenta;
+                pedido.FechaRegistro = DateTime.Now;
+            }
+
+            _dbContext.Pedidos.AddRange(pedidos);
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido)
         {
             try
@@ -51,11 +119,6 @@ namespace Plataforma.Servicios.Implementacion
             {
                 return false;
             }
-        }
-        public async Task GuardarPedidoAsync(Pedidos pedido)
-        {
-            _dbContext.Pedidos.Add(pedido);
-            await _dbContext.SaveChangesAsync();
         }
         public void ActualizarEstadoFacturas()
         {

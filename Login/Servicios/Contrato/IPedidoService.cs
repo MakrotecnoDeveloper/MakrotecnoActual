@@ -1,12 +1,15 @@
 ﻿using Plataforma.Models;
+using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
     {
         Task<bool> CrearVentaAsync(Ventas venta);
         Task<List<Ventas>> ObtenerTodasLasVentasAsync();
+        Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
+        Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario);
+        Task GuardarPedidosAsync(List<Pedidos> pedidos);
         Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido);
-        Task GuardarPedidoAsync(Pedidos pedido);
         void ActualizarEstadoFacturas();
         List<Factura> ObtenerFacturasFechaDescendente();
         Task<Ventas> ObtenerVentaConPedidos(int idVenta);

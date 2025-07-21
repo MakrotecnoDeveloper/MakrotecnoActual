@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<Plataforma.Models.Dispositivo>
+@{
     ViewData["Title"] = "Dispositivos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -83,25 +84,27 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @* Ejemplo de datos quemados mientras implementas la consulta real *@
+            <tbody>
+                @foreach (var item in Model)
+                {
                     <tr>
-                        <td>1</td>
-                        <td>Juan Pérez</td>
-                        <td>Samsung</td>
-                        <td>A52</td>
-                        <td>123456789012345</td>
-                        <td>Cargador y estuche</td>
+                        <td>@item.IdDispositivo</td>
+                        <td>@item.Cliente?.NombreCliente</td>
+                        <td>@item.Marca</td>
+                        <td>@item.Modelo</td>
+                        <td>@item.IMEI</td>
+                        <td>@item.Accesorios</td>
                         <td>
-                            <a asp-action="Details" asp-route-id="1" class="btn btn-sm btn-info">
+                            <a asp-action="Details" asp-route-id="@item.IdDispositivo" class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
-                            <a asp-action="Edit" asp-route-id="1" class="btn btn-sm btn-warning">
+                            <a asp-action="Edit" asp-route-id="@item.IdDispositivo" class="btn btn-sm btn-warning">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
                         </td>
                     </tr>
-                </tbody>
+                }
+            </tbody>
             </table>
         </div>
     </div>

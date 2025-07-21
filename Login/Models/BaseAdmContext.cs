@@ -105,7 +105,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<MenuOption>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_Tipo);
         modelBuilder.Entity<MenuOption>().HasOne<Menu>().WithMany().HasForeignKey(f => f.IdMenu);
         modelBuilder.Entity<Producto>().HasOne<CategoriaProductos>().WithMany().HasForeignKey(f => f.IdCatepro);
-        modelBuilder.Entity<Dispositivo>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.CedulaCliente);
+        modelBuilder.Entity<Dispositivo>().HasOne(d => d.Cliente).WithMany().HasForeignKey(d => d.CedulaCliente).HasPrincipalKey(c => c.CedulaCliente);
         modelBuilder.Entity<OrdenServicio>().HasOne<Dispositivo>().WithMany().HasForeignKey(f => f.IdDispositivo);
         modelBuilder.Entity<DiagnosticoProblema>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
         modelBuilder.Entity<DiagnosticoProblema>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
