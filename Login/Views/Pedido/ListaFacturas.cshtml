@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Factura>
+@{
+    ViewData["Title"] = "Listado de Facturas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Listado de Facturas</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var factura in Model)
+                {
+                    <tr>
+                        <td>@factura.NumeroFactura</td>
+                        <td>@factura.FechaEmision.ToShortDateString()</td>
+                        <td>@factura.Venta.CedulaCliente</td>
+                        <td>$@factura.Total</td>
+                        <td>@factura.EstadoFactura</td>
+                        <td>
+                            <a asp-action="DetalleFactura" asp-route-idFactura="@factura.IdFactura" class="btn btn-sm btn-info">Detalle</a>
+                            <form asp-action="AnularFactura" method="post" style="display:inline">
+                                <input type="hidden" name="idFactura" value="@factura.IdFactura" />
+                                <button class="btn btn-sm btn-warning" type="submit">Anular</button>
+                            </form>
+                            <form asp-action="EliminarFactura" method="post" style="display:inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta factura?');">
+                                <input type="hidden" name="idFactura" value="@factura.IdFactura" />
+                                <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

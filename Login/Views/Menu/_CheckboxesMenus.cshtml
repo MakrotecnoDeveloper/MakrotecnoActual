@@ -1,0 +1,10 @@
+﻿@model List<MenuConEstadoDTO>
+
+@foreach (var item in Model)
+{
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="menuCheckbox"
+               value="@item.IdMenu" @(item.EstaActivo ? "checked" : "") />
+        <label class="form-check-label">@item.NombreMenu</label>
+    </div>
+}

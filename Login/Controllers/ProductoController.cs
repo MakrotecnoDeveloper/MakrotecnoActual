@@ -226,7 +226,7 @@ namespace Plataforma.Controllers
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
-        public IActionResult ComprasProductos()
+        /*public IActionResult ComprasProductos()
         {
             var cedulaClaim = User.FindFirst("Cedula");
             if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
@@ -292,46 +292,6 @@ namespace Plataforma.Controllers
         {
             return View();
         }
-        [HttpPost]
-        public IActionResult BuscarFactXFecha(DateTime fechaEscoger)
-        {
-            var cedulaClaim = User.FindFirst("Cedula");
-            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
-            {
-                var facturas = _productoservice.ObtenerFacturasPorFechaYUsuario(fechaEscoger, cedula);
-
-                // Transformar las facturas a un objeto más ligero si es necesario
-                var result = facturas.Select(f => new
-                {
-                    codFactura = f.Cod_factura,
-                    fechaVenta = f.FechaVenta.ToShortDateString() // Formatear la fecha
-                });
-
-                return Json(result);
-            }
-            else
-            {
-                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-                
-        }
-        [HttpGet]
-        public IActionResult ObtenerDetallesFactura(int codFactura)
-        {
-            var detallesFactura = _productoservice.ObtenerDetallesFactura(codFactura); // Llama al servicio para obtener los detalles
-
-            if (detallesFactura == null)
-            {
-                var mensaje = "Resultado Null, revisar datos.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-
-            // Devuelve la vista parcial con los detalles de la factura
-            return PartialView("_DetallesFactura", detallesFactura);
-        }
-
+        */
     }
 }

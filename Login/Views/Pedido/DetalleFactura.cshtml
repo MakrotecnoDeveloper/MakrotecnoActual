@@ -1,0 +1,46 @@
+﻿@model Factura
+@{
+    ViewData["Title"] = "Detalle de Factura";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Detalle de Factura</h2>
+
+        <div class="mb-3">
+            <strong>Número Factura:</strong> @Model.NumeroFactura <br />
+            <strong>Fecha Emisión:</strong> @Model.FechaEmision.ToString("dd/MM/yyyy") <br />
+            <strong>Cédula Cliente:</strong> @Model.Venta.CedulaCliente <br />
+            <strong>Estado:</strong> @Model.EstadoFactura
+        </div>
+
+        <h4>Productos</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Código Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pedido in Model.Venta.Pedidos)
+                {
+                    <tr>
+                        <td>@pedido.CodProducto</td>
+                        <td>@pedido.Cantidad</td>
+                        <td>$@pedido.ValorVenta</td>
+                        <td>$@pedido.SubTotal</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-end">
+            <strong>Subtotal:</strong> $@Model.SubTotal <br />
+            <strong>IVA:</strong> $@Model.IVA <br />
+            <strong>Total:</strong> $@Model.Total
+        </div>
+    </div>
+</div>

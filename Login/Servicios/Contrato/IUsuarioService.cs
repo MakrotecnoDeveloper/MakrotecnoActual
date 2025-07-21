@@ -51,5 +51,6 @@ namespace Plataforma.Servicios.Contrato
         List<Servicio> ServTraerServicios();
         Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa);
         Task<string> ObtenerIdEmpresaAsync(int cargoId);
+        Task<bool> CrearPuntoVentaAsync(Infopdv infopdv);
     }
 }

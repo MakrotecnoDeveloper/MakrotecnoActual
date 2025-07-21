@@ -56,19 +56,38 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IReporteService, ReporteService>();
+//builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IDispositivoService, DispositivoService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(option =>
+    .AddCookie(options =>
     {
-        option.Cookie.Name = "CookieMakrotecno";
-        option.LoginPath = "/Home/Login";
-        option.LogoutPath = "/Home/Logout";
-        option.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-        option.SlidingExpiration = true;
+        options.Cookie.Name = "CookieMakrotecno";
+        options.LoginPath = "/Home/Login";
+        options.LogoutPath = "/Home/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                // ✅ Evita agregar ?ReturnUrl
+                if (context.Request.Path.StartsWithSegments("/Home/Login"))
+                {
+                    context.Response.Redirect("/Home/Login");
+                }
+                else
+                {
+                    context.Response.Redirect("/Home/Login"); // fuerza redirección limpia
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 
 builder.Services.AddControllersWithViews(options =>

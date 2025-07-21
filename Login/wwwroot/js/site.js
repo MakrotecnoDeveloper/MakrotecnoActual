@@ -55,14 +55,6 @@ function insertarFilasCrearPedido()
                 <input type="text" class="form-control" name="productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
             </td>
             <td>
-                <select name="productos[${index}].UnidadMedida" id="unidad${index}">
-                    <option value="Libra">Libra</option>
-                    <option value="Unidad">Unidad</option>
-                    <option value="Display">Display</option>
-                    <option value="Paca">Paca</option>
-                </select>
-            </td>
-            <td>
                 <input type="number" class="form-control" name="productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
             </td>
             <td>

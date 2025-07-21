@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Plataforma.Models;
-[Table("MkPermisosMenu", Schema = "pruebas")]
+[Table("MkPermisosMenu", Schema = "dbo")]
 public class MkPermisosMenu
 {
     [Key]
