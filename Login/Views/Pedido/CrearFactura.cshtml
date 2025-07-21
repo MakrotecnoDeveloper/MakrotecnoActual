@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Crear Factura";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Crear Factura Manual</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <form method="post" asp-action="CrearFactura" asp-controller="Pedido">
+            <div class="mb-3">
+                <label for="idVenta" class="form-label">ID de Venta</label>
+                <input type="number" name="idVenta" class="form-control" placeholder="Ingrese el ID de la venta aprobada" required />
+            </div>
+            <button type="submit" class="btn btn-success">Generar Factura</button>
+        </form>
+    </div>
+</div>

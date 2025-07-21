@@ -1,0 +1,42 @@
+﻿@model List<Plataforma.Models.Sede>
+
+@{
+    ViewData["Title"] = "Registrar Punto de Venta";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center rounded-top-4">
+                    <h4 class="mb-0">Registrar Punto de Venta (PDV)</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Crear" asp-controller="Usuario" method="post">
+                        <div class="mb-4">
+                            <label for="nombrePDV" class="form-label">Nombre del Punto de Venta</label>
+                            <input name="nombrePDV" id="nombrePDV" class="form-control" placeholder="Ej: PDV Principal Centro" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="idSede" class="form-label">Sede Asociada</label>
+                            <select name="idSede" id="idSede" class="form-select" required>
+                                <option value="">-- Selecciona una sede --</option>
+                                @foreach (var sede in Model)
+                                {
+                                    <option value="@sede.Id_sede">@sede.NombreSede</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Guardar PDV
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

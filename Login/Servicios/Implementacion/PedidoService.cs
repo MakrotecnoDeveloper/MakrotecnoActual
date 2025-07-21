@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -11,330 +12,149 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext = dbContext;
         }
-        public List<Producto> GetProdutos(string cod_producto)
+        public async Task<bool> CrearVentaAsync(Ventas venta)
         {
-            // Verifica si el código de producto existe en la base de datos
-            var productoExiste = _dbContext.Productos.Any(p => p.Cod_Producto == cod_producto);
-
-            if (!productoExiste)
+            try
             {
-                return null;
+                _dbContext.Ventas.Add(venta);
+                await _dbContext.SaveChangesAsync();
+                return true;
             }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<List<Ventas>> ObtenerTodasLasVentasAsync()
+        {
+            return await _dbContext.Ventas
+                .OrderByDescending(v => v.FechaVenta)
+                .ToListAsync();
+        }
+        public async Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido)
+        {
+            try
+            {
+                _dbContext.Pedidos.Add(pedido);
 
-            // Si el código de producto es válido, retorna la lista de productos
-            return _dbContext.Productos.Where(p => p.Cod_Producto == cod_producto).ToList();
+                // Actualizar el total en la venta
+                var venta = await _dbContext.Ventas.FirstOrDefaultAsync(v => v.IdVenta == pedido.IdVenta);
+                if (venta != null)
+                {
+                    venta.Total += (int)pedido.SubTotal;
+                }
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
-        public List<Factura> ObtenerFacturasFechaDescendente()
+        public async Task GuardarPedidoAsync(Pedidos pedido)
         {
-            var facturasOrdenadas = _dbContext.Factura.OrderByDescending(f => f.FechaVenta).ToList();
-            return facturasOrdenadas;
-        }
-        public List<Factura> ObtenerFacturas()
-        {
-            return _dbContext.Factura.ToList();
+            _dbContext.Pedidos.Add(pedido);
+            await _dbContext.SaveChangesAsync();
         }
         public void ActualizarEstadoFacturas()
         {
-            var facturasCompletadas = _dbContext.Factura
-                .Where(f => f.Estado == "Proceso" && f.FechaVenta.AddDays(7) <= DateTime.Now)
+            var facturasVencidas = _dbContext.Factura
+                .Where(f => f.FechaEmision.AddDays(7) <= DateTime.Now && f.EstadoFactura == "Emitida")
                 .ToList();
 
-            foreach (var factura in facturasCompletadas)
+            foreach (var factura in facturasVencidas)
             {
-                factura.Estado = "Cerrado";
+                factura.EstadoFactura = "Cerrada";
             }
 
             _dbContext.SaveChanges();
         }
-        public IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado, string tpfactura)
+        public List<Factura> ObtenerFacturasFechaDescendente()
         {
-            // Crear una nueva instancia de Empleado
-            var nuevaFactura = new Factura
-            {
-                Cedula_cliente = cedula_cliente,
-                Cedula = cedula_empleado,
-                FechaVenta = fechaVenta,
-                Estado = estado,
-                TipoFactura = tpfactura
-            };
-
-            // Agregar el nuevo empleado al contexto de la base de datos
-            _dbContext.Factura.Add(nuevaFactura);
-
-            // Guardar los cambios en la base de datos
-            _dbContext.SaveChanges();
-
-            // Retornar todos los empleados después de agregar el nuevo empleado
-            return _dbContext.Factura.ToList();
-        }
-        public List<string> ObtenerCodigosProductosAutocompletado(string codigo)
-        {
-            return _dbContext.Productos
-                .Where(p => p.Cod_Producto.StartsWith(codigo))
-                .Select(p => p.Cod_Producto)
+            return _dbContext.Factura
+                .Include(f => f.Venta)
+                .OrderByDescending(f => f.FechaEmision)
                 .ToList();
         }
-        public async Task<Producto> ObtenerInfoProductoAsync(string codigoProducto)
+        public async Task<Ventas> ObtenerVentaConPedidos(int idVenta)
         {
-            var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == codigoProducto);
-            return producto;
+            return await _dbContext.Ventas
+                .Include(v => v.Pedidos)
+                .FirstOrDefaultAsync(v => v.IdVenta == idVenta);
         }
-        public async Task<List<Factura>> ObtenerFacturasAsync(int page, int pageSize)
+        public async Task<int> GenerarConsecutivoFactura()
         {
-            // Lógica para obtener facturas desde tu base de datos, teniendo en cuenta la paginación
-            // Por ejemplo, puedes usar LINQ para aplicar la paginación
-            var facturas = await _dbContext.Factura
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var random = new Random();
+            int numeroFactura;
 
-            return facturas;
+            do
+            {
+                numeroFactura = random.Next(10000000, 99999999); // 8 dígitos
+            } while (await _dbContext.Factura.AnyAsync(f => f.NumeroFactura == numeroFactura));
+
+            return numeroFactura;
         }
-
-        public async Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura)
+        public async Task GuardarFacturaAsync(Factura factura)
+        {
+            _dbContext.Factura.Add(factura);
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error al guardar: " + ex.Message);
+                if (ex.InnerException != null)
+                    Console.WriteLine("🔍 Inner: " + ex.InnerException.Message);
+                throw;
+            }
+        }
+        public async Task<List<Factura>> ObtenerFacturasConVentaCliente()
         {
             return await _dbContext.Factura
-                .Where(f => f.Cod_factura == numeroFactura)
+                .Include(f => f.Venta)
+                .ThenInclude(v => v.Pedidos)
+                .OrderByDescending(f => f.FechaEmision)
                 .ToListAsync();
         }
-        public async Task<int> ObtenerCantidadTotalFacturasAsync()
-        {
-            int totalFacturas = await _dbContext.Factura.CountAsync();
-            return totalFacturas;
-        }
-        public Factura BuscarFacturaPorId(int id)
-        {
-            // Implementa la lógica para buscar la factura en la base de datos
-            return _dbContext.Factura.FirstOrDefault(f => f.Cod_factura == id);
-        }
-        public int? BuscarIdSedePorCedula(int cedula)
-        {
-            // Busca el primer registro que coincida con la cédula y devuelve el id_sede
-            return _dbContext.Sedeempleado
-                .Where(s => s.Cedula == cedula)
-                .Select(s => s.Id_sede)
-                .FirstOrDefault();
-        }
-        public int? BuscarIdPDVPorIdSede(int? buscarIdSede)
-        {
-            return _dbContext.Infopdv
-                .Where(s => s.Id_Sede == buscarIdSede)
-                .Select(s => s.InfopdvId)
-                .FirstOrDefault();
-        }
-        public void InsertarPedido(int codfact, string cod_producto, decimal stock, int vneto, int vventa, DateTime fechaIngreso, string tpventa, int idpdv)
-        {
-            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
-            if (producto != null)
-            {
-                if (producto.CantidadProducto >= stock)
-                {
-                    decimal cantidadRestante = producto.CantidadProducto - stock;
-                    vventa = (int)(stock * vventa);
-                    vneto = (int)(stock * vneto);
-                    producto.CantidadProducto = cantidadRestante;
-                    _dbContext.SaveChanges();
-                    var pedido = new Pedidos
-                    {
-                        Cod_factura = codfact,
-                        Cod_producto = cod_producto,
-                        Cantidad = stock,
-                        ValorNeto = vneto,
-                        ValorVenta = vventa,
-                        Estado = tpventa,
-                        InfopdvId = idpdv,
-                        FechaIngreso = fechaIngreso
-                    };
-
-                    _dbContext.Pedidos.Add(pedido);
-                    try
-                    {
-                        _dbContext.SaveChanges();
-                    }
-                    catch (DbUpdateException ex)
-                    {
-                        Console.WriteLine(ex.InnerException?.Message);
-                        throw; // O maneja el error según lo necesites
-                    }
-
-                    //Inserccion en la tabla GananciaPedido
-                    int codPedidoGenerado = pedido.Cod_pedido;
-                    int ganancia = vventa - vneto;
-                    var gananciaPedido = new GananciaPedido
-                    {
-                        Cod_pedido = codPedidoGenerado,
-                        Ganancia = ganancia
-                    };
-                    _dbContext.GananciaPedido.Add(gananciaPedido);
-                    _dbContext.SaveChanges();
-                }
-                else
-                {
-                    Console.WriteLine("No hay suficiente stock disponible para este producto.");
-                }
-            }
-
-        }
-        public async Task<List<Factura>> VisualizarPedido(string estado)
+        public async Task<Factura> ObtenerFacturaConDetalle(int idFactura)
         {
             return await _dbContext.Factura
-                .Where(f => f.Estado == estado)
-                .OrderByDescending(f => f.FechaVenta)
-                .ToListAsync();
+                .Include(f => f.Venta)
+                .ThenInclude(v => v.Pedidos)
+                .FirstOrDefaultAsync(f => f.IdFactura == idFactura);
         }
-        public async Task<List<Pedidos>> VisualizarPedidoPorId(int id)
+        public async Task<bool> AnularFacturaAsync(int idFactura)
         {
-            List<Pedidos> pedidos = await _dbContext.Pedidos.Where(p => p.Cod_factura == id).ToListAsync();
-            if (pedidos != null && pedidos.Count > 0)
-            {
-                return pedidos;
-            }
-            else
-            {
-                throw new Exception("No se encontró ningún pedido con el ID especificado");
-            }
-        }
-        public async Task<List<Pedidos>> traerValorProductos(int id)
-        {
-            var pedidos = await _dbContext.Pedidos
-                       .Where(p => p.Cod_factura == id)
-                       .ToListAsync();
-            var vnetoTotal = pedidos.Sum(p => p.ValorNeto);
-            var vventaTotal = pedidos.Sum(p => p.ValorVenta);
-            return pedidos;
-        }
-        public async Task<int> VentaInsertada(int ventaEfectivo, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
-        {
-            DateTime fechaActual = DateTime.Now;
-            var ventas = new Ventas
-            {
-                VentaTotal = ventaEfectivo,
-                VentaMakrotecno = ventaMakrotecno,
-                NetoMakrotecno = netoMakrotecno,
-                VentaRecargas = ventaRecarga,
-                VentaTienda = ventaTienda,
-                VentaPasivos = ventapasivos,
-                FechaVenta = fechaActual
-            };
+            var factura = await _dbContext.Factura.FindAsync(idFactura);
+            if (factura == null || factura.EstadoFactura == "Anulada")
+                return false;
 
-            _dbContext.Ventas.Add(ventas);
-            _dbContext.SaveChanges();
-            return ventas.Id_venta;
+            factura.EstadoFactura = "Anulada";
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
-        public async Task GananciaInsertada(int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
+        public async Task<bool> EliminarFacturaAsync(int idFactura)
         {
-            DateTime fechaActual = DateTime.Now;
-            var ganancia = new Ganancias
-            {
-                GananciaMakrotecno = gananciaMakrotecno,
-                GananciaTotal = gananciaTotal,
-                GananciaMaria = gananciaMaria,
-                GananciaVictor = gananciaVictor,
-                GananciaTeresa = gananciaTeresa,
-                FechaGanancia = fechaActual
-            };
-            _dbContext.Ganancias.Add(ganancia);
-            _dbContext.SaveChanges();
-        }
-        public List<Ganancias> TraerGanancias()
-        {
-            return _dbContext.Ganancias.ToList();
-        }
-        public void EliminarPedido(int id)
-        {
-            var pedidoVerificado = _dbContext.Pedidos.FirstOrDefault(p => p.Cod_pedido == id);
-            if (pedidoVerificado != null)
-            {
-                try
-                {
-                    // 3. Eliminar el producto.
-                    _dbContext.Pedidos.Remove(pedidoVerificado);
+            var factura = await _dbContext.Factura.FindAsync(idFactura);
+            if (factura == null)
+                return false;
 
-                    // 4. Guardar los cambios en la base de datos.
-                    _dbContext.SaveChanges();
-
-                    Console.WriteLine("Producto eliminado exitosamente.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error al eliminar el producto: " + ex.Message);
-                    // Puedes agregar un código adicional aquí para manejar el error, como registrar el error en un archivo de registro, notificar al usuario, etc.
-                }
-            }
-            else
-            {
-                Console.WriteLine("El producto no existe.");
-                // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
-            }
+            _dbContext.Factura.Remove(factura);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
-        public List<Ventas> TraerVentas()
+        public async Task<Ventas> ObtenerVentaPorIdAsync(int id)
         {
-            return _dbContext.Ventas.ToList();
+            return await _dbContext.Ventas.FindAsync(id);
         }
 
-        public decimal SumarNetoDelDia(DateTime fecha)
+        public async Task ActualizarVentaAsync(Ventas venta)
         {
-            var sumaValorNeto = (from pedido in _dbContext.Pedidos
-                                 join factura in _dbContext.Factura
-                                 on pedido.Cod_factura equals factura.Cod_factura
-                                 where factura.FechaVenta.Date == fecha.Date
-                                 select pedido.ValorNeto)
-                         .Sum();
-
-            return sumaValorNeto;
+            _dbContext.Ventas.Update(venta);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public decimal SumarVVentaDelDia(DateTime fecha)
-        {
-            var sumaValorVenta = (from pedido in _dbContext.Pedidos
-                                 join factura in _dbContext.Factura
-                                 on pedido.Cod_factura equals factura.Cod_factura
-                                 where factura.FechaVenta.Date == fecha.Date
-                                 select pedido.ValorVenta)
-                         .Sum();
-
-            return sumaValorVenta;
-        }
-        public decimal SumarCompraTotal(DateTime fecha)
-        {
-            //var sumaCompraTotal = _dbContext.HistoricoCompras.Sum(hc => hc.ValorTotal);
-            var sumaCompraTotal = (from HistoricoCompras in _dbContext.HistoricoCompras
-                                   where HistoricoCompras.FechaRegistro.Date == fecha.Date
-                                   select HistoricoCompras.ValorTotal)
-                            .Sum();
-            return sumaCompraTotal;
-        }
-        public int? ValidarEstadoPDV(int? traerIdPDVLogsLogin)
-        {
-            var today = DateTime.Today;
-             return _dbContext.Syncpdv
-            .Where(s => s.InfopdvId == traerIdPDVLogsLogin && s.FechaEstado.Date == today)
-            .OrderByDescending(s => s.Idsync)
-            .Select(s => s.Estado)
-            .FirstOrDefault();
-        }
-        public int TraerUltimoIDPdv(int cedulaEmpleado)
-        {
-            return _dbContext.LogsLogin
-            .Where(ce => ce.Cedula == cedulaEmpleado)
-            .OrderByDescending(ce => ce.Id_log)
-            .Select(ce => ce.InfopdvId)
-            .FirstOrDefault();
-        }
-        public int? ValidarExistenteIdPDV(int idPDV, int cedula)
-        {
-            return _dbContext.Syncpdv
-                .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
-                .OrderByDescending(s => s.Idsync)
-                .Select(s => s.Estado)
-                .FirstOrDefault();
-        }
-        public string? ObtenerNombreCliente(int cedulaCliente)
-        {
-            return _dbContext.Cliente
-                .Where(nc => nc.CedulaCliente == cedulaCliente)
-                .Select(nc => nc.NombreCliente)
-                .FirstOrDefault();
-        }
     }
 }

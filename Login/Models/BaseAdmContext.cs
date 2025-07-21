@@ -47,10 +47,10 @@ public partial class BaseAdmContext : DbContext
         //Llaves Primarias
         modelBuilder.Entity<Empleado>().HasKey(e => e.Cedula);
         modelBuilder.Entity<Producto>().HasKey(e => e.Cod_Producto);
-        modelBuilder.Entity<Factura>().HasKey(e => e.Cod_factura);
+        modelBuilder.Entity<Factura>().HasKey(e => e.IdFactura);
         modelBuilder.Entity<Cliente>().HasKey(c => c.CedulaCliente);
-        modelBuilder.Entity<Pedidos>().HasKey(cp => cp.Cod_pedido);
-        modelBuilder.Entity<Ventas>().HasKey(cv => cv.Id_venta);
+        modelBuilder.Entity<Pedidos>().HasKey(cp => cp.IdPedido);
+        modelBuilder.Entity<Ventas>().HasKey(cv => cv.IdVenta);
         modelBuilder.Entity<Ganancias>().HasKey(id => id.Id_ganancias);
         modelBuilder.Entity<TipoCargo>().HasKey(it => it.Id_tipo);
         modelBuilder.Entity<Empresas>().HasKey(ie => ie.Id_empresa);
@@ -78,10 +78,10 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<MkMenu>().HasKey(id => id.Id);
         modelBuilder.Entity<MkPermisosMenu>().HasKey(id => id.Id);
         //Llaves foraneas
-        modelBuilder.Entity<Factura>().HasOne<Cliente>().WithMany().HasForeignKey(f => f.Cedula_cliente);
-        modelBuilder.Entity<Factura>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
-        modelBuilder.Entity<Pedidos>().HasOne<Factura>().WithMany().HasForeignKey(f => f.Cod_factura);
-        modelBuilder.Entity<Pedidos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_producto);
+        modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
+        modelBuilder.Entity<Ventas>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
+        modelBuilder.Entity<Pedidos>().HasOne(p => p.Venta).WithMany(v => v.Pedidos).HasForeignKey(p => p.IdVenta);
+        modelBuilder.Entity<Pedidos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.CodProducto);
         modelBuilder.Entity<Pedidos>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<TipoCargo>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_empresa);
         modelBuilder.Entity<Sede>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_empresa);
@@ -94,7 +94,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Plataformasuscripcion>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.IdPlataforma);
         modelBuilder.Entity<LogsLogin>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformasuscripcion>().WithMany().HasForeignKey(f => f.IdPltfSuscripcion);
-        modelBuilder.Entity<Infopdv>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_Empresa);
         modelBuilder.Entity<Infopdv>().HasOne<Sede>().WithMany().HasForeignKey(f => f.Id_Sede);
         modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);

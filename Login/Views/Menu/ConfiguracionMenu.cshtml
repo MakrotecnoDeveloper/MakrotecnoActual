@@ -1,0 +1,65 @@
+﻿@model List<TipoCargo>
+<div class="content-wrapper">
+    <h3>Configuración de Menús por Rol</h3>
+
+    <div class="row">
+        <div class="col-md-4">
+            <label>Seleccionar Rol:</label>
+            <select id="selectRol" class="form-control">
+                <option value="">-- Selecciona un rol --</option>
+                @foreach (var rol in Model)
+                {
+                    <option value="@rol.Id_tipo">@rol.NombreCargo</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <hr />
+
+    <div id="menuContainer" class="mt-4">
+        <!-- Aquí se carga el partial de checkboxes -->
+    </div>
+
+    <button id="btnGuardar" class="btn btn-success" style="display:none;">Guardar Cambios</button>
+</div>
+@section Scripts {
+    <script>
+        $(function () {
+            $('#selectRol').change(function () {
+                let idCargo = $(this).val();
+                if (idCargo) {
+                    $.get('/Menu/ObtenerMenusPorCargo', { idCargo: idCargo }, function (html) {
+                        $('#menuContainer').html(html);
+                        $('#btnGuardar').show();
+                    });
+                } else {
+                    $('#menuContainer').empty();
+                    $('#btnGuardar').hide();
+                }
+            });
+
+            $('#btnGuardar').click(function () {
+                let idCargo = $('#selectRol').val();
+                let idsSeleccionados = [];
+
+                $('input[name="menuCheckbox"]:checked').each(function () {
+                    idsSeleccionados.push($(this).val());
+                });
+
+                $.ajax({
+                    url: '/Menu/ActualizarMenusPorCargo',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ idCargo: idCargo, idsMenu: idsSeleccionados }),
+                    success: function () {
+                        alert("Permisos actualizados correctamente");
+                    },
+                    error: function () {
+                        alert("Ocurrió un error al actualizar");
+                    }
+                });
+            });
+        });
+    </script>
+}

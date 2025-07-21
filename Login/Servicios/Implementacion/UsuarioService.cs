@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -339,17 +340,8 @@ namespace Plataforma.Servicios.Implementacion
             DateTime fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
 
             int totalFacturas = _dbContext.Factura
-                .Where(f => f.FechaVenta == fecha)
+                .Where(f => f.FechaEmision == fecha)
                 .Count();
-
-            decimal sumaValorVenta = _dbContext.Pedidos
-            .Join(
-                _dbContext.Factura,
-                pedido => pedido.Cod_factura,
-                factura => factura.Cod_factura,
-                (pedido, factura) => new { pedido, factura })
-            .Where(x => x.factura.FechaVenta == fecha)
-            .Sum(x => (decimal?)x.pedido.ValorVenta) ?? 0;
 
 
             int totalEmpleados = _dbContext.Empleado.Count();
@@ -381,7 +373,6 @@ namespace Plataforma.Servicios.Implementacion
             FacProUserViewModel viewModel = new()
             {
                 TotalSumaCodFactura = totalFacturas,
-                TotalVentaDia = sumaValorVenta,
                 TotalEmpleados = totalEmpleados,
                 TotalProductos = totalProductos,
                 RolEmpleado = rolEmpleado,
@@ -639,6 +630,20 @@ namespace Plataforma.Servicios.Implementacion
                 .FirstOrDefaultAsync(); // Traes el primer o único resultado
 
             return empresa; // Devuelves el IdEmpresa como string
+        }
+        public async Task<bool> CrearPuntoVentaAsync(Infopdv infopdv)
+        {
+            try
+            {
+                _dbContext.Infopdv.Add(infopdv);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Puedes loguear el error si tienes un sistema de logs
+                return false;
+            }
         }
     }
 }

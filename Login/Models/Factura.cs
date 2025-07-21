@@ -5,10 +5,14 @@ namespace Plataforma.Models;
 public class Factura
 {
     [Key]
-    public int Cod_factura { get; set; }
-    public int Cedula_cliente { get; set; }
-    public int Cedula { get; set; }
-    public DateTime FechaVenta { get; set; }
-    public string? Estado { get; set; }
-    public string? TipoFactura { get; set; }
+    public int IdFactura { get; set; }
+    public int NumeroFactura { get; set; }
+    public int IdVenta { get; set; }
+    public DateTime FechaEmision { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal IVA { get; set; }
+    public decimal Total { get; set; }
+    public string EstadoFactura { get; set; }
+    [ForeignKey("IdVenta")]
+    public virtual Ventas Venta { get; set; }
 }

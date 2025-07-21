@@ -1,0 +1,825 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Plataforma.Models;
+using Plataforma.Servicios.Contrato;
+
+namespace Plataforma.Servicios.Implementacion
+{
+    public class PedidoService : IPedidoService
+    {
+        private readonly BaseAdmContext _dbContext;
+        public PedidoService(BaseAdmContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+        public List<Producto> GetProdutos(string cod_producto)
+        {
+            // Verifica si el código de producto existe en la base de datos
+            var productoExiste = _dbContext.Productos.Any(p => p.Cod_Producto == cod_producto);
+
+            if (!productoExiste)
+            {
+                return null;
+            }
+
+            // Si el código de producto es válido, retorna la lista de productos
+            return _dbContext.Productos.Where(p => p.Cod_Producto == cod_producto).ToList();
+        }
+        public List<Factura> ObtenerFacturasFechaDescendente()
+        {
+            var facturasOrdenadas = _dbContext.Factura.OrderByDescending(f => f.FechaEmision).ToList();
+            return facturasOrdenadas;
+        }
+        public List<Factura> ObtenerFacturas()
+        {
+            return _dbContext.Factura.ToList();
+        }
+        public void ActualizarEstadoFacturas()
+        {
+            var facturasCompletadas = _dbContext.Factura
+                .Where(f => f.FechaEmision.AddDays(7) <= DateTime.Now)
+                .ToList();
+
+            _dbContext.SaveChanges();
+        }
+        //revisar
+        public IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado, string tpfactura)
+        {
+            // Crear una nueva instancia de Empleado
+            var nuevaFactura = new Factura
+            {
+                Cedula_cliente = cedula_cliente,
+                Cedula = cedula_empleado,
+                FechaVenta = fechaVenta,
+                Estado = estado,
+                TipoFactura = tpfactura
+            };
+
+            // Agregar el nuevo empleado al contexto de la base de datos
+            _dbContext.Factura.Add(nuevaFactura);
+
+            // Guardar los cambios en la base de datos
+            _dbContext.SaveChanges();
+
+            // Retornar todos los empleados después de agregar el nuevo empleado
+            return _dbContext.Factura.ToList();
+        }
+        public List<string> ObtenerCodigosProductosAutocompletado(string codigo)
+        {
+            return _dbContext.Productos
+                .Where(p => p.Cod_Producto.StartsWith(codigo))
+                .Select(p => p.Cod_Producto)
+                .ToList();
+        }
+        public async Task<Producto> ObtenerInfoProductoAsync(string codigoProducto)
+        {
+            var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == codigoProducto);
+            return producto;
+        }
+        public async Task<List<Factura>> ObtenerFacturasAsync(int page, int pageSize)
+        {
+            // Lógica para obtener facturas desde tu base de datos, teniendo en cuenta la paginación
+            // Por ejemplo, puedes usar LINQ para aplicar la paginación
+            var facturas = await _dbContext.Factura
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return facturas;
+        }
+        //revisar
+        public async Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura)
+        {
+            return await _dbContext.Factura
+                .Where(f => f.Cod_factura == numeroFactura)
+                .ToListAsync();
+        }
+        public async Task<int> ObtenerCantidadTotalFacturasAsync()
+        {
+            int totalFacturas = await _dbContext.Factura.CountAsync();
+            return totalFacturas;
+        }
+        //revisar
+        public Factura BuscarFacturaPorId(int id)
+        {
+            // Implementa la lógica para buscar la factura en la base de datos
+            return _dbContext.Factura.FirstOrDefault(f => f.Cod_factura == id);
+        }
+        public int? BuscarIdSedePorCedula(int cedula)
+        {
+            // Busca el primer registro que coincida con la cédula y devuelve el id_sede
+            return _dbContext.Sedeempleado
+                .Where(s => s.Cedula == cedula)
+                .Select(s => s.Id_sede)
+                .FirstOrDefault();
+        }
+        public int? BuscarIdPDVPorIdSede(int? buscarIdSede)
+        {
+            return _dbContext.Infopdv
+                .Where(s => s.Id_Sede == buscarIdSede)
+                .Select(s => s.InfopdvId)
+                .FirstOrDefault();
+        }
+        //revisar
+        public void InsertarPedido(int codfact, string cod_producto, decimal stock, int vneto, int vventa, DateTime fechaIngreso, string tpventa, int idpdv)
+        {
+            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
+            if (producto != null)
+            {
+                if (producto.CantidadProducto >= stock)
+                {
+                    decimal cantidadRestante = producto.CantidadProducto - stock;
+                    vventa = (int)(stock * vventa);
+                    vneto = (int)(stock * vneto);
+                    producto.CantidadProducto = cantidadRestante;
+                    _dbContext.SaveChanges();
+                    var pedido = new Pedidos
+                    {
+                        Cod_factura = codfact,
+                        Cod_producto = cod_producto,
+                        Cantidad = stock,
+                        ValorNeto = vneto,
+                        ValorVenta = vventa,
+                        Estado = tpventa,
+                        InfopdvId = idpdv,
+                        FechaIngreso = fechaIngreso
+                    };
+
+                    _dbContext.Pedidos.Add(pedido);
+                    try
+                    {
+                        _dbContext.SaveChanges();
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        Console.WriteLine(ex.InnerException?.Message);
+                        throw; // O maneja el error según lo necesites
+                    }
+
+                    //Inserccion en la tabla GananciaPedido
+                    int codPedidoGenerado = pedido.Cod_pedido;
+                    int ganancia = vventa - vneto;
+                    var gananciaPedido = new GananciaPedido
+                    {
+                        Cod_pedido = codPedidoGenerado,
+                        Ganancia = ganancia
+                    };
+                    _dbContext.GananciaPedido.Add(gananciaPedido);
+                    _dbContext.SaveChanges();
+                }
+                else
+                {
+                    Console.WriteLine("No hay suficiente stock disponible para este producto.");
+                }
+            }
+
+        }
+        //revisar
+        public async Task<List<Factura>> VisualizarPedido(string estado)
+        {
+            return await _dbContext.Factura
+                .Where(f => f.Estado == estado)
+                .OrderByDescending(f => f.FechaVenta)
+                .ToListAsync();
+        }
+        //revisar
+        public async Task<List<Pedidos>> VisualizarPedidoPorId(int id)
+        {
+            List<Pedidos> pedidos = await _dbContext.Pedidos.Where(p => p.Cod_factura == id).ToListAsync();
+            if (pedidos != null && pedidos.Count > 0)
+            {
+                return pedidos;
+            }
+            else
+            {
+                throw new Exception("No se encontró ningún pedido con el ID especificado");
+            }
+        }
+        //revisar
+        public async Task<List<Pedidos>> traerValorProductos(int id)
+        {
+            var pedidos = await _dbContext.Pedidos
+                       .Where(p => p.Cod_factura == id)
+                       .ToListAsync();
+            var vnetoTotal = pedidos.Sum(p => p.ValorNeto);
+            var vventaTotal = pedidos.Sum(p => p.ValorVenta);
+            return pedidos;
+        }
+        //revisar
+        public async Task<int> VentaInsertada(int ventaEfectivo, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos)
+        {
+            DateTime fechaActual = DateTime.Now;
+            var ventas = new Ventas
+            {
+                VentaTotal = ventaEfectivo,
+                VentaMakrotecno = ventaMakrotecno,
+                NetoMakrotecno = netoMakrotecno,
+                VentaRecargas = ventaRecarga,
+                VentaTienda = ventaTienda,
+                VentaPasivos = ventapasivos,
+                FechaVenta = fechaActual
+            };
+
+            _dbContext.Ventas.Add(ventas);
+            _dbContext.SaveChanges();
+            return ventas.Id_venta;
+        }
+        public async Task GananciaInsertada(int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal)
+        {
+            DateTime fechaActual = DateTime.Now;
+            var ganancia = new Ganancias
+            {
+                GananciaMakrotecno = gananciaMakrotecno,
+                GananciaTotal = gananciaTotal,
+                GananciaMaria = gananciaMaria,
+                GananciaVictor = gananciaVictor,
+                GananciaTeresa = gananciaTeresa,
+                FechaGanancia = fechaActual
+            };
+            _dbContext.Ganancias.Add(ganancia);
+            _dbContext.SaveChanges();
+        }
+        public List<Ganancias> TraerGanancias()
+        {
+            return _dbContext.Ganancias.ToList();
+        }
+        //revisar
+        public void EliminarPedido(int id)
+        {
+            var pedidoVerificado = _dbContext.Pedidos.FirstOrDefault(p => p.Cod_pedido == id);
+            if (pedidoVerificado != null)
+            {
+                try
+                {
+                    // 3. Eliminar el producto.
+                    _dbContext.Pedidos.Remove(pedidoVerificado);
+
+                    // 4. Guardar los cambios en la base de datos.
+                    _dbContext.SaveChanges();
+
+                    Console.WriteLine("Producto eliminado exitosamente.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al eliminar el producto: " + ex.Message);
+                    // Puedes agregar un código adicional aquí para manejar el error, como registrar el error en un archivo de registro, notificar al usuario, etc.
+                }
+            }
+            else
+            {
+                Console.WriteLine("El producto no existe.");
+                // Puedes agregar un código adicional aquí si necesitas manejar el caso en que el producto no exista
+            }
+        }
+        public List<Ventas> TraerVentas()
+        {
+            return _dbContext.Ventas.ToList();
+        }
+        //revisar
+        public decimal SumarNetoDelDia(DateTime fecha)
+        {
+            var sumaValorNeto = (from pedido in _dbContext.Pedidos
+                                 join factura in _dbContext.Factura
+                                 on pedido.Cod_factura equals factura.Cod_factura
+                                 where factura.FechaVenta.Date == fecha.Date
+                                 select pedido.ValorNeto)
+                         .Sum();
+
+            return sumaValorNeto;
+        }
+        //revisar
+
+        public decimal SumarVVentaDelDia(DateTime fecha)
+        {
+            var sumaValorVenta = (from pedido in _dbContext.Pedidos
+                                 join factura in _dbContext.Factura
+                                 on pedido.Cod_factura equals factura.Cod_factura
+                                 where factura.FechaVenta.Date == fecha.Date
+                                 select pedido.ValorVenta)
+                         .Sum();
+
+            return sumaValorVenta;
+        }
+        public decimal SumarCompraTotal(DateTime fecha)
+        {
+            //var sumaCompraTotal = _dbContext.HistoricoCompras.Sum(hc => hc.ValorTotal);
+            var sumaCompraTotal = (from HistoricoCompras in _dbContext.HistoricoCompras
+                                   where HistoricoCompras.FechaRegistro.Date == fecha.Date
+                                   select HistoricoCompras.ValorTotal)
+                            .Sum();
+            return sumaCompraTotal;
+        }
+        public int? ValidarEstadoPDV(int? traerIdPDVLogsLogin)
+        {
+            var today = DateTime.Today;
+             return _dbContext.Syncpdv
+            .Where(s => s.InfopdvId == traerIdPDVLogsLogin && s.FechaEstado.Date == today)
+            .OrderByDescending(s => s.Idsync)
+            .Select(s => s.Estado)
+            .FirstOrDefault();
+        }
+        public int TraerUltimoIDPdv(int cedulaEmpleado)
+        {
+            return _dbContext.LogsLogin
+            .Where(ce => ce.Cedula == cedulaEmpleado)
+            .OrderByDescending(ce => ce.Id_log)
+            .Select(ce => ce.InfopdvId)
+            .FirstOrDefault();
+        }
+        public int? ValidarExistenteIdPDV(int idPDV, int cedula)
+        {
+            return _dbContext.Syncpdv
+                .Where(s => s.InfopdvId == idPDV && s.Cedula == cedula)
+                .OrderByDescending(s => s.Idsync)
+                .Select(s => s.Estado)
+                .FirstOrDefault();
+        }
+        public string? ObtenerNombreCliente(int cedulaCliente)
+        {
+            return _dbContext.Cliente
+                .Where(nc => nc.CedulaCliente == cedulaCliente)
+                .Select(nc => nc.NombreCliente)
+                .FirstOrDefault();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+//IPedodService
+        List<Producto> GetProdutos(string cod_producto);
+        List<Factura> ObtenerFacturasFechaDescendente();
+        List<Factura> ObtenerFacturas();
+        void ActualizarEstadoFacturas();
+        int? BuscarIdSedePorCedula(int cedula);
+        int? BuscarIdPDVPorIdSede(int? buscarIdSede);
+        IEnumerable<Factura> CrearFactura(int cedula_cliente, int cedula_empleado, DateTime fechaVenta, string estado, string tpfactura);
+        List<string> ObtenerCodigosProductosAutocompletado(string codigo);
+        Task<Producto> ObtenerInfoProductoAsync(string codigoProducto);
+        Task<List<Factura>> ObtenerFacturasAsync(int pagina, int pageSize);
+        Task<List<Factura>> BuscarFacturaPorNumeroAsync(int numeroFactura);
+        Task<int> ObtenerCantidadTotalFacturasAsync();
+        Factura BuscarFacturaPorId(int id);
+        void InsertarPedido(int codfact, string cod_producto, decimal stock, int vneto, int vventa, DateTime fechaIngreso, string tpventa, int idpdv);
+        Task<List<Factura>> VisualizarPedido(string estado);
+        Task<List<Pedidos>> VisualizarPedidoPorId(int id);
+        Task<List<Pedidos>> traerValorProductos(int id);
+        Task<int> VentaInsertada(int ventaEfectivo, int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaTienda, int ventapasivos);
+        Task GananciaInsertada(int gananciaMakrotecno, int gananciaMaria, int gananciaVictor, int gananciaTeresa, int gananciaRecargas, int gananciaTotal);
+        List<Ganancias> TraerGanancias();
+        void EliminarPedido(int id);
+        List<Ventas> TraerVentas();
+        int TraerUltimoIDPdv(int cedulaEmpleado);
+        int? ValidarExistenteIdPDV(int idPDV, int cedula);
+        decimal SumarNetoDelDia(DateTime fecha);
+        decimal SumarVVentaDelDia(DateTime fecha);
+        decimal SumarCompraTotal(DateTime fecha);
+        string? ObtenerNombreCliente(int cedulaCliente);
+        Task<int> CrearVentaAsync(Ventas venta);
+        Task InsertarDetalleVentaAsync(Pedidos detalle);
+        Task ActualizarTotalVentaAsync(int idVenta, decimal nuevoTotal);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //controllerpedido
+        public IActionResult AgregarFactura()
+        {
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+                var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+                if (estado != null)
+                {
+                    if (estado == 1)
+                    {
+                        var ventas = _pedidoServicio.ObtenerFacturas(); // ← ventas disponibles para facturar
+                        var viewModel = new FacturaViewModel
+                        {
+                            FechaEmision = DateTime.Now,
+                            VentasDisponibles = ventas.Select(v => new SelectListItem
+                            {
+                                Value = v.IdVenta.ToString(),
+                                Text = $"Venta #{v.IdVenta} - Cliente: {v} - Total: ${v.Total:N0}"
+                            }).ToList()
+                        };
+
+                        return View(viewModel);
+                    }
+                    else if (estado == 0)
+                    {
+                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    else if (estado == 2)
+                    {
+                        var mensaje = "Error B10: PDV esta en mantenimiento";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                }
+            }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public IActionResult CrearFactura(int cedula_cliente, int cedula_empleado, string estado, string tpfactura)
+        {
+            DateTime fechaVenta = DateTime.Now;
+                if(cedula_cliente > 0)
+                {
+                    if(fechaVenta != DateTime.MinValue)
+                    {
+                        _pedidoServicio.CrearFactura(cedula_cliente, cedula_empleado, fechaVenta, estado, tpfactura);
+                        if(tpfactura == "Compra")
+                        {
+                            return RedirectToAction("ComprasProductos", "Producto");
+                        }else 
+                        { 
+                            return RedirectToAction("Index");
+                        }
+                            
+                    }else
+                    {
+                        var mensaje = "Error A2: La fecha no es un dato valido, verificar nuevamente.";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                }else
+                {
+                    var mensaje = "Error A1: La cedula del cliente esta vacia, escribala.";
+                    TempData["ErrorMessage"] = mensaje;
+                    return RedirectToAction("Error", "Errores");
+                }
+                
+        }
+        [HttpGet]
+        public IActionResult CrearPedido(int id)
+        {
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+                var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+                if (estado != null)
+                {
+                    if (estado == 1)
+                    {
+                        var factura = _pedidoServicio.BuscarFacturaPorId(id);
+                        if(factura != null)
+                        {
+                            var productos = _productoservice.ObtenerProductos();
+                            var cedulaCliente = factura.Cedula_cliente;
+                            var nombreCliente = _pedidoServicio.ObtenerNombreCliente(cedulaCliente);
+                            // Crear el objeto ViewModel y asignar los valores
+                            var viewModel = new PedidoViewModel
+                            {
+                                Factura = factura,
+                                Productos = productos,
+                                EstadoPDV = idPDV,
+                                NombreCliente = nombreCliente
+                            };
+
+                            // Pasar el ViewModel a la vista
+                            return View(viewModel);
+
+                        }
+                        else
+                        {
+                            var mensaje = "Error: Factura no encontrada.";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+                    }
+                    else if (estado == 0)
+                    {
+                        var mensaje = "Error B10: PDV Cerrado, porfavor hacer apertura";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                    else if (estado == 2)
+                    {
+                        var mensaje = "Error B10: PDV esta en mantenimiento";
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToAction("Error", "Errores");
+                    }
+                }
+            }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            return RedirectToAction("Index");
+        }
+        public IActionResult AutocompletarCodigosProducto(string codigo)
+        {
+            // Obtener una lista de códigos similares desde el servicio
+            var codigosProductos = _pedidoServicio.ObtenerCodigosProductosAutocompletado(codigo);
+            return Json(codigosProductos); // Retorna una lista de strings
+        }
+        [HttpGet]
+        public async Task<IActionResult> AutocompletarProducto(string codigo)
+        {
+            // Obtener información del producto de forma asíncrona
+            var productoInfo = await _pedidoServicio.ObtenerInfoProductoAsync(codigo);
+
+            if (productoInfo != null)
+            {
+                return Json(new { vneto = productoInfo.ValorNetoProducto, vventa = productoInfo.ValorVentaProducto }); // Retorna un objeto con VNeto y VVenta
+            }
+
+            return NotFound(); // Si no se encuentra el producto
+        }
+        [HttpPost]
+        public async Task<IActionResult> InsertarPedido(List<ProductoViewModel> productos, int idpdv)
+        {
+            DateTime fechaIngreso = DateTime.Now;
+            var cedulaClaim = User.FindFirst("Cedula");
+
+            if (cedulaClaim == null || !int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                TempData["ErrorMessage"] = "Claim 'Cédula' no existe.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            int idPDV = _pedidoServicio.TraerUltimoIDPdv(cedula);
+            var estado = _pedidoServicio.ValidarExistenteIdPDV(idPDV, cedula);
+
+            if (estado != 1)
+            {
+                TempData["ErrorMessage"] = "PDV no está disponible.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 1. Crear la venta (tabla Ventas)
+            int idVenta = await _pedidoServicio.CrearVentaAsync(new Ventas
+            {
+                FechaVenta = fechaIngreso,
+                CedulaCliente = 0, // Si no hay cliente aún
+                MetodoPago = "Por definir", // Esto podría venir del formulario
+                Total = 0, // Se actualiza luego de calcular los productos
+                EstadoVenta = "Pendiente",
+                Cedula = cedula
+            });
+
+            if (idVenta == 0)
+            {
+                TempData["ErrorMessage"] = "No se pudo registrar la venta.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            decimal totalVenta = 0;
+
+            // 2. Recorrer productos y registrar en DetalleVenta
+            foreach (var producto in productos)
+            {
+                if (string.IsNullOrEmpty(producto.Codigo))
+                {
+                    TempData["ErrorMessage"] = "El código del producto no puede ser nulo o vacío.";
+                    return RedirectToAction("Error", "Errores");
+                }
+
+                var productosBD = _pedidoServicio.GetProdutos(producto.Codigo);
+                if (productosBD == null || !productosBD.Any())
+                {
+                    TempData["ErrorMessage"] = $"El producto {producto.Codigo} no existe.";
+                    return RedirectToAction("Error", "Errores");
+                }
+
+                var productoBD = productosBD.First();
+
+                if (productoBD.CantidadProducto <= 0)
+                {
+                    TempData["ErrorMessage"] = $"El producto {producto.Codigo} no tiene stock suficiente.";
+                    return RedirectToAction("Error", "Errores");
+                }
+
+                if (!TryParseDecimalStock(producto.Stock, out decimal stockDecimal))
+                {
+                    TempData["ErrorMessage"] = $"Stock inválido: {producto.Stock}";
+                    return RedirectToAction("Error", "Errores");
+                }
+
+                // Insertar detalle de venta (pedido)
+                await _pedidoServicio.InsertarDetalleVentaAsync(new Pedidos
+                {
+                    IdVenta = idVenta,
+                    CodProducto = producto.Codigo,
+                    Cantidad = stockDecimal,
+                    ValorVenta = producto.VVenta,
+                    ValorNeto = producto.VNeto,
+                    SubTotal = stockDecimal * producto.VVenta
+                });
+
+                totalVenta += stockDecimal * producto.VVenta;
+            }
+
+            // 3. Actualizar total de la venta
+            await _pedidoServicio.ActualizarTotalVentaAsync(idVenta, totalVenta);
+
+            return RedirectToAction("Index");
+        }
+
+        // Utilidad para interpretar fracción o decimal
+        private bool TryParseDecimalStock(string stock, out decimal result)
+        {
+            result = 0;
+            if (stock.Contains("/"))
+            {
+                var partes = stock.Split('/');
+                if (partes.Length == 2 &&
+                    decimal.TryParse(partes[0], out decimal num) &&
+                    decimal.TryParse(partes[1], out decimal den) && den != 0)
+                {
+                    result = num / den;
+                    return true;
+                }
+                return false;
+            }
+            return decimal.TryParse(stock, out result);
+        }
+
+        public async Task<IActionResult> Facturas(int page = 1, int pageSize = 10)
+        {
+            List<Factura> facturas = await _pedidoServicio.ObtenerFacturasAsync(page, pageSize);
+            return Json(facturas);
+        }
+
+        [HttpGet]
+        public async Task<int> CantidadTotalFacturas()
+        {
+            int totalFacturas = await _pedidoServicio.ObtenerCantidadTotalFacturasAsync();
+            return totalFacturas;
+        }
+
+        public async Task<IActionResult> BuscarFactura(int numeroFactura)
+        {
+            // Lógica para buscar la factura por número de factura
+            // Puedes llamar a tu servicio para buscar la factura por número de factura
+            List<Factura> facturasEncontradas = await _pedidoServicio.BuscarFacturaPorNumeroAsync(numeroFactura);
+            return PartialView("_TablaFacturas", facturasEncontradas);
+        }
+        public async Task<IActionResult> VisualizarPedido(string estado)
+        {
+            List<Factura> facturasEncontradas = null;
+            // Aquí puedes usar el valor de "estado" para tomar decisiones en tu lógica de negocio
+            if (estado == "Proceso")
+            {
+                facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            else if (estado == "Cerrado")
+            {
+               facturasEncontradas = await _pedidoServicio.VisualizarPedido(estado);
+            }
+            else
+            {
+                // Hacer algo si el estado no es reconocido
+            }
+
+            return View("PedidoVisualizado", facturasEncontradas);
+        }
+        public IActionResult PedidoVisualizado()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> VerPedidoPorId(int id)
+        {
+            List<Pedidos> pedidos = await _pedidoServicio.VisualizarPedidoPorId(id);
+
+            if (pedidos == null || pedidos.Count == 0)
+            {
+                return NotFound();
+            }
+
+            if (pedidos.Count == 1)
+            {
+                // Si solo hay un pedido, mostrar la vista VerPedido para ese pedido
+                return View("VerPedido", new List<Pedidos> { pedidos.First() });
+            }
+            else
+            {
+                // Si hay múltiples pedidos, mostrar la vista VerPedidos para la lista de pedidos
+                return View("VerPedido", pedidos);
+            }
+        }
+        public IActionResult FormGanancia()
+        {
+            return View("Ganancia");
+        }
+        public IActionResult AgregarGanancia()
+        {
+            DateTime fecha = DateTime.Now;
+            decimal totalVneto = _pedidoServicio.SumarNetoDelDia(fecha);
+            decimal totalVventa = _pedidoServicio.SumarVVentaDelDia(fecha);
+            decimal totalCompras = _pedidoServicio.SumarCompraTotal(fecha);
+            var cedulaClaim = User.FindFirst("Cedula");
+            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            {
+                int? buscarSede = _pedidoServicio.BuscarIdSedePorCedula(cedula);
+                int? buscarIdPDV = _pedidoServicio.BuscarIdPDVPorIdSede(buscarSede);
+                var modeloGanancia = new GananciaViewModel
+                {
+                    TotalVneto = totalVneto,
+                    TotalVventa = totalVventa,
+                    IdPDV = buscarIdPDV,
+                    TotalCompras = totalCompras
+                };
+                return View(modeloGanancia);
+            }
+            else
+            {
+                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            
+        }
+        [HttpPost]
+        public async Task<IActionResult> InsertarVentas(int ventaMakrotecno, int netoMakrotecno, int ventaRecarga, int ventaEfectivo, int ventaBancaria, float valorCompras)
+        {
+            int idCompany = 1;
+            if(idCompany == 1)
+            {
+                int ventaTotal = ventaEfectivo + ventaBancaria;//22000
+                int ventaTienda = ventaTotal - ventaMakrotecno - ventaRecarga;//9999
+                int gananciaTeresa = (int)(ventaTienda * 0.15);
+                // Fase 2
+                await _pedidoServicio.VentaInsertada(ventaEfectivo, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventaBancaria);
+                // Fase 3
+                int gananciaMakrotecno = ventaMakrotecno - netoMakrotecno;
+                int gananciaMaria = (int)(gananciaMakrotecno * 0.20);
+                int gananciaVictor = gananciaMakrotecno - gananciaMaria;
+                int gananciaRecargas = (int)(ventaRecarga * 0.056);
+                int gananciaTotal = gananciaMakrotecno + gananciaMaria + gananciaVictor + gananciaTeresa + gananciaRecargas;
+                await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+                return RedirectToAction("Index");
+            } else if (idCompany == 2)
+            {
+                int ventaTotal = ventaEfectivo + ventaBancaria;
+                float comprasTotales = valorCompras;
+                int ventaTienda = 0;
+                ventaMakrotecno = 0;
+                netoMakrotecno = 0;
+                ventaRecarga = 0;
+                await _pedidoServicio.VentaInsertada(ventaEfectivo, ventaMakrotecno, netoMakrotecno, ventaRecarga, ventaTienda, ventaBancaria);
+                int gananciaMakrotecno = 0;
+                int gananciaMaria = 0;
+                int gananciaVictor = 0;
+                int gananciaRecargas = 0;
+                int gananciaTeresa = 0;
+                int gananciaTotal = (int)(ventaTotal - comprasTotales);
+                await _pedidoServicio.GananciaInsertada(gananciaMakrotecno, gananciaMaria, gananciaVictor, gananciaTeresa, gananciaRecargas, gananciaTotal);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                var mensaje = "Error en el ID Company";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
+            
+        }
+        public IActionResult VisualizarGanancia()
+        {
+            var traerGanancia = _pedidoServicio.TraerGanancias();
+            return View(traerGanancia);
+        }
+        public IActionResult EliminarProdPorId(int id)
+        {
+            _pedidoServicio.EliminarPedido(id);
+            return RedirectToAction("Index");
+        }
+        public IActionResult VisualizarFactura()
+        {
+            var traerVentas = _pedidoServicio.TraerVentas();
+            return View(traerVentas);
+        }
+        public IActionResult ProcesoRecogida()
+        {
+            return View();
+        }

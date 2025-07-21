@@ -457,6 +457,7 @@ namespace Plataforma.Servicios.Implementacion
                .ToList();
             return productos;
         }
+        /* Pendiente revisar
         public ProveedorProductosViewModel TraerProveedorProductos(int cedula)
         {
             var consultarProveedor = _dbContext.Proveedores.ToList();
@@ -474,6 +475,7 @@ namespace Plataforma.Servicios.Implementacion
             };
             return provProdViewModel;
         }
+        */
         public void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv)
         {
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
@@ -496,36 +498,6 @@ namespace Plataforma.Servicios.Implementacion
                 _dbContext.HistoricoCompras.Add(pedido);
                 _dbContext.SaveChanges();
             }
-        }
-        public List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula)
-        {
-            return _dbContext.Factura
-                .Where(f => f.FechaVenta.Date == fecha.Date && f.Cedula == cedula && f.TipoFactura == "Compra")
-                .ToList();
-        }
-        // Método para obtener los detalles de la factura seleccionada
-        public DetallesFacturaViewModel ObtenerDetallesFactura(int codFactura)
-        {
-            var factura = _dbContext.Factura
-                .Where(f => f.Cod_factura == codFactura)
-                .FirstOrDefault();
-
-            var compras = _dbContext.HistoricoCompras
-                .Where(h => h.cod_factura == codFactura)
-                .ToList();
-
-            if (factura == null || compras.Count == 0)
-            {
-                return null;
-            }
-
-            var model = new DetallesFacturaViewModel
-            {
-                Factura = factura,
-                Compras = compras
-            };
-
-            return model;
         }
     }
 }

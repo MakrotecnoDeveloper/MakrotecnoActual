@@ -23,9 +23,7 @@ namespace Plataforma.Servicios.Contrato
         void ServicioInsertarVentClientPlataforma(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave);
         Task ActualizarCliente(int id, int estado, int idCliente);
         List<Producto> TraerProductosXCategoria(int categoria);
-        ProveedorProductosViewModel TraerProveedorProductos(int cedula);
+        //ProveedorProductosViewModel TraerProveedorProductos(int cedula);
         void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv);
-        List<Factura> ObtenerFacturasPorFechaYUsuario(DateTime fecha, int cedula);
-        DetallesFacturaViewModel ObtenerDetallesFactura(int codFactura);
     }
 }

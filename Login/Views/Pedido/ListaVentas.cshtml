@@ -1,0 +1,38 @@
+﻿@model List<Plataforma.Models.Ventas>
+@{
+    ViewData["Title"] = "Lista de Ventas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Ventas Registradas</h2>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID Venta</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var venta in Model)
+                {
+                    <tr>
+                        <td>@venta.IdVenta</td>
+                        <td>@venta.CedulaCliente</td>
+                        <td>@venta.FechaVenta.ToString("dd/MM/yyyy")</td>
+                        <td>@venta.EstadoVenta</td>
+                        <td>$@venta.Total</td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" asp-action="DetalleVenta" asp-route-idVenta="@venta.IdVenta">Ver Detalle</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

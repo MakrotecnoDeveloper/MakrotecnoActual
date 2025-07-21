@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers
@@ -85,6 +88,7 @@ namespace Plataforma.Controllers
                 }
             }
         }
+        [Authorize]
         public IActionResult Cargos()
         {
             var cargos = _usuarioService.ObtenerCargos();
@@ -306,9 +310,40 @@ namespace Plataforma.Controllers
             }
             return View(visualizarClientes);
         }
-        public IActionResult SelectMenu()
+        public IActionResult CrearPDV()
         {
-            return View();
+            var traerSedes = _usuarioService.ObtenerSedes();
+            return View(traerSedes);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Crear(string nombrePDV, int idSede)
+        {
+            if (string.IsNullOrWhiteSpace(nombrePDV) || idSede == 0)
+            {
+                TempData["Error"] = "Todos los campos son obligatorios.";
+                var sedes = _usuarioService.ObtenerSedes();
+                return View("CrearPuntoVenta", sedes);
+            }
+
+            var nuevoPDV = new Infopdv
+            {
+                Name = nombrePDV,
+                Id_Sede = idSede
+            };
+
+            var resultado = await _usuarioService.CrearPuntoVentaAsync(nuevoPDV);
+
+            if (resultado)
+            {
+                TempData["Success"] = "Punto de Venta creado correctamente.";
+                return RedirectToAction("CrearPDV");
+            }
+            else
+            {
+                TempData["Error"] = "Error al guardar el Punto de Venta.";
+                var sedes = _usuarioService.ObtenerSedes();
+                return View("CrearPDV", sedes);
+            }
         }
     }
 }

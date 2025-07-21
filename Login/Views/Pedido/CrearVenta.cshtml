@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Crear Venta";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Crear Nueva Venta</h2>
+        <form method="post" asp-action="CrearVenta" asp-controller="Pedido">
+            <div class="mb-3">
+                <label class="form-label">Cédula del Cliente</label>
+                <input type="number" name="CedulaCliente" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Método de Pago</label>
+                <select name="MetodoPago" class="form-select">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cédula del Vendedor</label>
+                <input type="number" name="Cedula" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Venta</button>
+        </form>
+    </div>
+</div>
