@@ -1,0 +1,43 @@
+﻿@model Plataforma.Models.Dispositivo
+
+@{
+    ViewData["Title"] = "Editar Dispositivo";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2>Editar Dispositivo</h2>
+        <hr />
+
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="IdDispositivo" />
+            <input type="hidden" asp-for="CedulaCliente" />
+
+            <div class="mb-3">
+                <label asp-for="Marca" class="form-label"></label>
+                <input asp-for="Marca" class="form-control" />
+                <span asp-validation-for="Marca" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Modelo" class="form-label"></label>
+                <input asp-for="Modelo" class="form-control" />
+                <span asp-validation-for="Modelo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IMEI" class="form-label"></label>
+                <input asp-for="IMEI" class="form-control" />
+                <span asp-validation-for="IMEI" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Accesorios" class="form-label"></label>
+                <input asp-for="Accesorios" class="form-control" />
+                <span asp-validation-for="Accesorios" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            <a asp-action="Dispositivos" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

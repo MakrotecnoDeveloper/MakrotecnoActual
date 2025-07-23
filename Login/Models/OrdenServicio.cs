@@ -11,5 +11,5 @@ public class OrdenServicio
     public DateTime FechaIngreso { get; set; }
     public string? ProblemaReportado { get; set; }
     public string? Estado { get; set; }
-    public DateTime FechaModificacion { get; set; }
+    public Dispositivo? Dispositivo { get; set; }
 }

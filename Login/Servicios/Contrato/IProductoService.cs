@@ -24,6 +24,5 @@ namespace Plataforma.Servicios.Contrato
         Task ActualizarCliente(int id, int estado, int idCliente);
         List<Producto> TraerProductosXCategoria(int categoria);
         //ProveedorProductosViewModel TraerProveedorProductos(int cedula);
-        void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv);
     }
 }

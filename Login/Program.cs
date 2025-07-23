@@ -60,6 +60,7 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IDispositivoService, DispositivoService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
+builder.Services.AddScoped<IComprasService, ComprasService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

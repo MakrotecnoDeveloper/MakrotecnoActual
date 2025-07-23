@@ -1,0 +1,190 @@
+﻿@model CompraViewModel
+@{
+    ViewData["Title"] = "InsertarCompra";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var proveedores = ViewBag.Proveedores as List<Proveedores>;
+}
+<div class="content-wrapper">
+    <h1>InsertarCompra</h1>
+
+    <form asp-action="InsertarCompra" method="post">
+        <div class="form-group">
+            <label>Proveedor</label>
+            <select asp-for="IdProveedor" class="form-control">
+                @foreach (var prov in proveedores)
+                {
+                    <option value="@prov.IdProveedor">@prov.RazonSocial</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Factura Externa</label>
+            <input asp-for="CodFacturaExterno" class="form-control" />
+        </div>
+
+        <!-- Tabla de productos -->
+        <h5 class="text-secondary">Detalles de los Productos</h5>
+        <div class="table-responsive mb-4">
+            <button type="button" class="btn btn-success btn-sm" onclick="insertarFilaDetalle()">
+                <i class="fas fa-plus"></i> Agregar Producto
+            </button>
+            <table class="table table-bordered">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Código</th>
+                        <th>Cantidad</th>
+                        <th>Valor Unitario</th>
+                        <th>Valor Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaProductos">
+                    <tr>
+                        <td>
+                            <input type="text" class="form-control codProducto" name="Detalles[0].CodProducto" placeholder="Código" />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control cantidad" name="Detalles[0].Cantidad" placeholder="Cantidad" />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control valorU" name="Detalles[0].ValorU" placeholder="Valor Unitario" readonly />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control valorTotal" name="Detalles[0].ValorTotal" placeholder="Valor Total" readonly />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen de la factura -->
+        <h5 class="text-secondary">Resumen de la Factura</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="fw-bold">Subtotal</label>
+                    <input type="text" class="form-control bg-light border-0" id="subtotalFactura" readonly value="0.00">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="fw-bold">Total</label>
+                    <input type="text" class="form-control bg-light border-0 text-success fw-bold" id="totalFactura" readonly value="0.00">
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Guardar Compra
+            </button>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script>
+        // Usa window.index para evitar conflictos de ámbito si ya existe
+        window.index = window.index || 1;
+
+        // Define globalmente la función
+        window.insertarFilaDetalle = function () {
+            const nuevaFila = `
+                    <tr>
+                        <td>
+                            <input type="text" class="form-control codProducto" name="Detalles[${window.index}].CodProducto" placeholder="Código" />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control cantidad" name="Detalles[${window.index}].Cantidad" placeholder="Cantidad" />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control valorU" name="Detalles[${window.index}].ValorU" placeholder="Valor Unitario" readonly />
+                        </td>
+                        <td>
+                            <input type="number" class="form-control valorTotal" name="Detalles[${window.index}].ValorTotal" placeholder="Valor Total" readonly />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            $('#tablaProductos').append(nuevaFila);
+            window.index++;
+        }
+
+        window.eliminarFila = function (button) {
+            $(button).closest('tr').remove();
+            calcularTotales();
+        }
+
+        $(document).on('input', '.codProducto', function () {
+            var input = $(this);
+            var codigo = input.val();
+            if (codigo.length >= 2) {
+                $.get('/Compras/BuscarProductoPorCodigo', { codigo: codigo }, function (data) {
+                    if (data && data.valorNeto) {
+                        var row = input.closest('tr');
+                        row.find('.valorU').val(data.valorNeto);
+                        calcularFila(row);
+                    }
+                });
+            }
+        });
+
+        $(document).on('input', '.cantidad', function () {
+            var row = $(this).closest('tr');
+            calcularFila(row);
+        });
+
+        function calcularFila(row) {
+            var cantidad = parseFloat(row.find('.cantidad').val()) || 0;
+            var valorU = parseFloat(row.find('.valorU').val()) || 0;
+            var total = cantidad * valorU;
+            row.find('.valorTotal').val(total.toFixed(2));
+            calcularTotales();
+        }
+
+        function calcularTotales() {
+            let subtotal = 0;
+            $('.valorTotal').each(function () {
+                subtotal += parseFloat($(this).val()) || 0;
+            });
+            $('#subtotalFactura').val(subtotal.toFixed(2));
+            $('#totalFactura').val(subtotal.toFixed(2));
+        }
+        $(document).ready(function () {
+            // Delegado para inputs generados dinámicamente
+            $(document).on('focus', '.codProducto', function () {
+                var input = $(this);
+                if (!input.data("ui-autocomplete")) { // Evita inicializar dos veces
+                    input.autocomplete({
+                        source: function (request, response) {
+                            $.ajax({
+                                url: '/Compras/BuscarProductoPorCodigo',
+                                type: 'GET',
+                                data: { term: request.term },
+                                success: function (data) {
+                                    response(data);
+                                }
+                            });
+                        },
+                        minLength: 2,
+                        select: function (event, ui) {
+                            input.val(ui.item.value); // Coloca el código seleccionado
+                            var row = input.closest('tr');
+                            row.find('.valorU').val(ui.item.valorNeto); // Rellena valor unitario
+                            calcularFila(row);
+                            return false; // Evita comportamiento por defecto
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

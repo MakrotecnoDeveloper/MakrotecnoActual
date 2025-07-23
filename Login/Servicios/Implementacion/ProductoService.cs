@@ -275,7 +275,7 @@ namespace Plataforma.Servicios.Implementacion
             }
         }
 
-        //a
+        //plataformas de streaming
         public void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado)
         {
             var nuevaPlataforma = new Plataformasuscripcion
@@ -457,47 +457,6 @@ namespace Plataforma.Servicios.Implementacion
                .ToList();
             return productos;
         }
-        /* Pendiente revisar
-        public ProveedorProductosViewModel TraerProveedorProductos(int cedula)
-        {
-            var consultarProveedor = _dbContext.Proveedores.ToList();
-            var consultarProductos = _dbContext.Productos.ToList();
-            int facturaReciente = _dbContext.Factura
-            .Where(f => f.Cedula == cedula && f.TipoFactura == "Compra")
-            .OrderByDescending(f => f.Cod_factura)
-            .Select(f => f.Cod_factura) // Seleccionar solo el campo idFactura
-            .FirstOrDefault(); // Devuelve 0 si no hay resultados
-            var provProdViewModel = new ProveedorProductosViewModel
-            {
-                Proveedores = consultarProveedor,
-                Productos = consultarProductos,
-                Cod_Factura = facturaReciente
-            };
-            return provProdViewModel;
-        }
-        */
-        public void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv)
-        {
-            var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == cod_producto);
-            if (producto != null)
-            {
-                _dbContext.SaveChanges();
-                var pedido = new HistoricoCompras
-                {
-                    cod_factura = codfact,
-                    Cod_Producto = cod_producto,
-                    Stock = stock,
-                    UnidadMedida = UnidadMedida,
-                    ValorU = vneto,
-                    ValorTotal = vtotal,
-                    Nit = tpventa,
-                    Estado = idpdv,
-                    FechaRegistro = fechaIngreso
-                };
-
-                _dbContext.HistoricoCompras.Add(pedido);
-                _dbContext.SaveChanges();
-            }
-        }
+        //fin plataformas de streaming
     }
 }

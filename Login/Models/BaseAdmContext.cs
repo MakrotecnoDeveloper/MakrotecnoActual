@@ -29,7 +29,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<GananciaPedido> GananciaPedido { get; set; }
     public DbSet<Plataformas> Plataformas { get; set; }
     public DbSet<Proveedores> Proveedores { get; set; }
-    public DbSet<HistoricoCompras> HistoricoCompras { get; set; }
+    public DbSet<Compras> Compras { get; set; }
+    public DbSet<DetalleCompra> DetalleCompras { get; set; }
     public DbSet<Servicio> Servicio { get; set; }
     public DbSet<CategoriaProductos> CategoriaProductos { get; set; }
     public DbSet<MenuOption> MenuOption { get; set; }
@@ -65,7 +66,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<GananciaPedido>().HasKey(ds => ds.IdGP);
         modelBuilder.Entity<Plataformas>().HasKey(iptlf => iptlf.IdPlataforma);
         modelBuilder.Entity<Proveedores>().HasKey(prvd => prvd.IdProveedor);
-        modelBuilder.Entity<HistoricoCompras>().HasKey(prvd => prvd.IdHC);
+        modelBuilder.Entity<Compras>().HasKey(prvd => prvd.IdCompras);
+        modelBuilder.Entity<DetalleCompra>().HasKey(iddc => iddc.IdDetalleCompra);
         modelBuilder.Entity<Servicio>().HasKey(idser => idser.IdServicio);
         modelBuilder.Entity<CategoriaProductos>().HasKey(idcapro => idcapro.IdCateProducto);
         modelBuilder.Entity<MenuOption>().HasKey(idmo => idmo.IdMenuOption);
@@ -98,15 +100,16 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<GananciaPedido>().HasOne<Pedidos>().WithMany().HasForeignKey(f => f.Cod_pedido);
-        modelBuilder.Entity<HistoricoCompras>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_Producto);
-        modelBuilder.Entity<HistoricoCompras>().HasOne<Factura>().WithMany().HasForeignKey(f => f.cod_factura);
+        modelBuilder.Entity<DetalleCompra>().HasOne<Compras>().WithMany().HasForeignKey(f => f.IdCompra);
+        modelBuilder.Entity<DetalleCompra>().HasOne<Producto>().WithMany().HasForeignKey(f => f.CodProducto);
+        modelBuilder.Entity<Compras>().HasOne<Proveedores>().WithMany().HasForeignKey(f => f.IdProveedor);
         modelBuilder.Entity<CategoriaProductos>().HasOne<Servicio>().WithMany().HasForeignKey(f => f.IdServicio);
         modelBuilder.Entity<MenuOption>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.Id_Empresa);
         modelBuilder.Entity<MenuOption>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.Id_Tipo);
         modelBuilder.Entity<MenuOption>().HasOne<Menu>().WithMany().HasForeignKey(f => f.IdMenu);
         modelBuilder.Entity<Producto>().HasOne<CategoriaProductos>().WithMany().HasForeignKey(f => f.IdCatepro);
         modelBuilder.Entity<Dispositivo>().HasOne(d => d.Cliente).WithMany().HasForeignKey(d => d.CedulaCliente).HasPrincipalKey(c => c.CedulaCliente);
-        modelBuilder.Entity<OrdenServicio>().HasOne<Dispositivo>().WithMany().HasForeignKey(f => f.IdDispositivo);
+        modelBuilder.Entity<OrdenServicio>().HasOne(d => d.Dispositivo).WithMany().HasForeignKey(d => d.IdDispositivo).HasPrincipalKey(c => c.IdDispositivo);
         modelBuilder.Entity<DiagnosticoProblema>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);
         modelBuilder.Entity<DiagnosticoProblema>().HasOne<Empleado>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<SeguimientoServicio>().HasOne<OrdenServicio>().WithMany().HasForeignKey(f => f.IdOrden);

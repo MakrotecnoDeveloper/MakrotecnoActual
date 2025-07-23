@@ -210,10 +210,11 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarEstadoCta(int id, int estado, int idCliente)
         {
-            Console.WriteLine("IDCLIENTEPLATAFORMA: " + id + " ESTADO: " + estado + " IDCLIENTE " + idCliente);
+            //Console.WriteLine("IDCLIENTEPLATAFORMA: " + id + " ESTADO: " + estado + " IDCLIENTE " + idCliente);
                 await _productoservice.ActualizarCliente(id, estado, idCliente);
                 return Json(new { success = true });
         }
+        //fin plataformas de streaming
         //Visualizar productos existentes para vender en la pagina inicial
         [HttpGet]
         public IActionResult ProductosExistentesVenta(int IdServicio)
@@ -226,72 +227,5 @@ namespace Plataforma.Controllers
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
-        /*public IActionResult ComprasProductos()
-        {
-            var cedulaClaim = User.FindFirst("Cedula");
-            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
-            {
-                var proveedorProducto = _productoservice.TraerProveedorProductos(cedula);
-                return View(proveedorProducto);
-            }else
-            {
-                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-                
-        }
-        [HttpPost]
-        public IActionResult GuardarHistoricoCompra(List<ProductoViewModel> productos, int codfact, DateTime fechaRegistro, string tpventa)
-        {
-            int idPDv = 1;
-            decimal StockDecimal = 0;
-            decimal total = 0;
-            foreach (var producto in productos)
-            {
-
-                    if(producto.Stock.Contains("/"))
-                    {
-                        var partes = producto.Stock.Split('/');
-                        if(partes.Length == 2 && decimal.TryParse(partes[0], out decimal numerador) && decimal.TryParse(partes[1], out decimal denominador) && denominador != 0) 
-                        {
-                            StockDecimal = numerador / denominador;
-                        }else
-                        {
-                            var mensaje = $"Fraccion invalida en Cantidad: {producto.Stock}";
-                            TempData["ErrorMessage"] = mensaje;
-                            return RedirectToAction("Error", "Errores");
-                    }
-                    }else
-                    {
-                        if(!decimal.TryParse(producto.Stock, out StockDecimal))
-                        {
-                            var mensaje = $"Stock invalido: {producto.Stock}";
-                            TempData["ErrorMessage"] = mensaje;
-                            return RedirectToAction("Error", "Errores");
-                        }
-                    }
-                    total = StockDecimal * producto.VNeto;
-                    //Console.WriteLine($"Producto: {producto.Codigo} | Vneto: {producto.VNeto} | Cantidad: {StockDecimal} | Total: {total}");
-                // Insertar pedido por cada producto
-                _productoservice.HistoricoCompra(
-                    codfact,
-                    producto.Codigo,
-                    StockDecimal,
-                    producto.UnidadMedida,
-                    producto.VNeto,
-                    total,
-                    fechaRegistro,
-                    tpventa,
-                    idPDv
-                );
-            }
-            return RedirectToAction("ComprasProductos");
-        }
-        public IActionResult VisualizarCompras()
-        {
-            return View();
-        }
-        */
     }
 }

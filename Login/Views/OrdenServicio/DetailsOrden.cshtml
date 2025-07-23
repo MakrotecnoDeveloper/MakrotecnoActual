@@ -1,0 +1,24 @@
+﻿@model Plataforma.Models.OrdenServicio
+@{
+    ViewData["Title"] = "DetailsOrden";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h2>Detalles de la Orden</h2>
+    <dl class="row">
+        <dt class="col-sm-3">Cliente</dt>
+        <dd class="col-sm-9">@Model.Dispositivo?.Cliente?.NombreCliente</dd>
+
+        <dt class="col-sm-3">Dispositivo</dt>
+        <dd class="col-sm-9">@($"{Model.Dispositivo?.Marca} {Model.Dispositivo?.Modelo}")</dd>
+
+        <dt class="col-sm-3">Problema Reportado</dt>
+        <dd class="col-sm-9">@Model.ProblemaReportado</dd>
+
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9">@Model.Estado</dd>
+
+        <dt class="col-sm-3">Fecha Ingreso</dt>
+        <dd class="col-sm-9">@Model.FechaIngreso.ToShortDateString()</dd>
+    </dl>
+</div>

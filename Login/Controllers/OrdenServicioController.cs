@@ -67,5 +67,56 @@ namespace Plataforma.Controllers
             TempData["Success"] = "Dispositivo actualizado correctamente.";
             return RedirectToAction("Dispositivos");
         }
+        [HttpGet]
+        public async Task<IActionResult> OrdenesServicio()
+        {
+            var ordenes = await _ordenServicioService.ObtenerTodasAsync();
+            return View("OrdenesServicio", ordenes);
+        }
+
+        [HttpGet]
+        public IActionResult CreateOrden()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOrden(OrdenServicio orden)
+        {
+            await _ordenServicioService.CrearAsync(orden);
+            return RedirectToAction("OrdenesServicio");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditOrden(int id)
+        {
+            var orden = await _ordenServicioService.ObtenerPorIdAsync(id);
+            if (orden == null)
+                return NotFound();
+
+            return View(orden);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditOrden(OrdenServicio orden)
+        {
+            //return View(orden);
+            var cedulaClaim = User.FindFirst("Cedula")?.Value;
+            if (int.TryParse(cedulaClaim, out int cedulaEmpleado))
+            {
+                await _ordenServicioService.ActualizarAsync(orden, cedulaEmpleado);
+            }
+            return RedirectToAction("OrdenesServicio");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsOrden(int id)
+        {
+            var orden = await _ordenServicioService.ObtenerPorIdAsync(id);
+            if (orden == null)
+                return NotFound();
+
+            return View(orden);
+        }
     }
 }
