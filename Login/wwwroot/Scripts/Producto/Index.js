@@ -26,66 +26,24 @@
     $('#search-btn').on('click', function () {
         var searchTerm = $('#product-code').val();
         var categoriaTerm = $('#category').val();
-        switch (n) {
-            case 1:
-                $.ajax({
-                    url: '@Url.Action("Buscar", "Producto")',
-                    type: 'GET',
-                    data: {
-                        searchTerm: searchTerm,
-                        categoriaTerm: categoriaTerm
-                    },
-                    success: function (data) {
-                        $('#search-box').removeClass('active');
-                        $('#results-box').addClass('active');
-                        $('#results').html(data);
-                    },
-                    error: function () {
-                        $('#results').append('<div>Error al buscar productos.</div>');
-                    }
-                });
-                break;
-            case 2:
-                $.ajax({
-                    url: '@Url.Action("BuscarSinStock", "Producto")',
-                    type: 'GET',
-                    data: {
-                        __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
-                        searchTerm: searchTerm,
-                        categoriaTerm: categoriaTerm
-                    },
-                    success: function (data) {
-                        $('#search-box').removeClass('active');
-                        $('#results-box').addClass('active');
-                        $('#results').html(data);
-                    },
-                    error: function () {
-                        $('#results').append('<div>Error al buscar productos.</div>');
-                    }
-                });
-                break;
-            case 3:
-                $.ajax({
-                    url: searchNextNoStok,
-                    type: 'GET',
-                    data: {
-                        __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
-                        searchTerm: searchTerm,
-                        categoriaTerm: categoriaTerm
-                    },
-                    success: function (data) {
-                        $('#search-box').removeClass('active');
-                        $('#results-box').addClass('active');
-                        $('#results').html(data);
-                    },
-                    error: function () {
-                        $('#results').append('<div>Error al buscar productos.</div>');
-                    }
-                });
-                break;
-            default:
-                console.log("No ha seleccionado una opcion");
-                break;
-        }
+        $.ajax({
+            url: searchNextNoStok,
+            type: 'GET',
+            data: {
+                __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
+                searchTerm: searchTerm,
+                categoriaTerm: categoriaTerm,
+                type: n
+            },
+            success: function (data) {
+                $('#search-box').removeClass('active');
+                $('#results-box').addClass('active');
+                $('#results').html(data);
+
+            },
+            error: function () {
+                $('#results').append('<div>Error al buscar productos.</div>');
+            }
+        });
     });
 });

@@ -63,26 +63,45 @@ namespace Plataforma.Controllers
 
         [HttpGet]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Buscar(string searchTerm, int categoriaTerm)
+        public async Task<IActionResult> BuscarProdctoFiltro(string searchTerm, int categoriaTerm, int type)
         {
             try
             {
                 //Usar FindList para buscar productos por nombre o codigo
+                if (string.IsNullOrEmpty(searchTerm) || categoriaTerm == 0)
+                    throw new Exception("Termino de busqueda no valido, debe " +
+                        "ingresar un codigo o nombre de producto o categoria.");
+                
+
                 List<Producto> productosEncontrados = new List<Producto>();
-                if (string.IsNullOrEmpty(searchTerm))
+
+                productosEncontrados = await _productoservice
+                           .FindListByFunction(p => p.Cod_Producto == searchTerm || 
+                           p.IdCatepro == categoriaTerm
+                           && p.Estado == 1);
+
+
+                switch (type)
                 {
-                    searchTerm = "";
-                    productosEncontrados = await _productoservice
-                        .FindListByFunction(p => p.Cod_Producto == searchTerm
-                        && p.Estado == 1);
+                    case 1: // Buscar Codigo Producto 
+                        productosEncontrados = productosEncontrados.Where(p => p.Cod_Producto == searchTerm).ToList();
+                        break;
+                    case 2: // Buscar Producto sin Stock
+                        productosEncontrados = productosEncontrados
+                            .Where(p => p.CantidadProducto == 0).ToList();
+                        break;
+                    case 3: // Buscar por categoría
+                        productosEncontrados = productosEncontrados
+                            .Where(p => p.CantidadProducto < 5).ToList();
+                        break;
+                    default:
+                        // Si no se especifica un tipo, buscar por nombre por defecto
+                        productosEncontrados = await _productoservice
+                            .FindListByFunction(p => p.NombreProducto == searchTerm
+                            && p.Estado == 1);
+                        break;
                 }
-                else
-                {
-                    categoriaTerm = 0;
-                    productosEncontrados = await _productoservice
-                        .FindListByFunction(p => p.IdCatepro == categoriaTerm
-                        && p.Estado == 1);
-                }
+
                 return PartialView("_TablaProductos", productosEncontrados);
             }
             catch (Exception ex)

@@ -3,57 +3,59 @@
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    .vertical-nav {
+        position: fixed;
+        background-color: #343a40;
+        color: white;
+        padding-top: 20px;
+    }
+
+        .vertical-nav .nav-link {
+            color: white;
+            padding: 15px;
+            font-size: 1.1em;
+        }
+
+            .vertical-nav .nav-link:hover {
+                background-color: #495057;
+            }
+
+            .vertical-nav .nav-link.active {
+                background-color: #007bff;
+            }
+
+    .search-box {
+        display: none;
+        width: 300px;
+        background-color: #f1f1f1;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+        padding: 20px;
+    }
+
+        .search-box.active {
+            display: block;
+        }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .results-box {
+        display: none;
+        margin-top: 20px;
+    }
+
+        .results-box.active {
+            display: block;
+        }
+</style>
+
 <div class="content-wrapper">
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 col-md-1">
-                <style>
-                    .vertical-nav {
-                        position: fixed;
-                        background-color: #343a40;
-                        color: white;
-                        padding-top: 20px;
-                    }
 
-                        .vertical-nav .nav-link {
-                            color: white;
-                            padding: 15px;
-                            font-size: 1.1em;
-                        }
-
-                            .vertical-nav .nav-link:hover {
-                                background-color: #495057;
-                            }
-
-                            .vertical-nav .nav-link.active {
-                                background-color: #007bff;
-                            }
-
-                    .search-box {
-                        display: none;
-                        width: 300px;
-                        background-color: #f1f1f1;
-                        box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-                        padding: 20px;
-                    }
-
-                        .search-box.active {
-                            display: block;
-                        }
-
-                    .form-group {
-                        margin-bottom: 15px;
-                    }
-
-                    .results-box {
-                        display: none;
-                        margin-top: 20px;
-                    }
-
-                        .results-box.active {
-                            display: block;
-                        }
-                </style>
                 <nav class="vertical-nav">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -67,9 +69,13 @@
                         </li>
                     </ul>
                 </nav>
+
             </div>
+        </div>
+
+        @Html.AntiForgeryToken()
+        <div class="row">
             <div class="col-12 col-md-11">
-                @Html.AntiForgeryToken()
                 <div class="search-box" id="search-box">
                     <h2>Buscar Producto</h2>
                     <div class="form-group">
@@ -101,7 +107,7 @@
 
 @section Scripts {
     <script>
-        var searchNextNoStok = @Url.Action("BuscarProximosSinStock", "Producto");
+        var searchNextNoStok = '@Url.Action("BuscarProdctoFiltro", "Producto")';
     </script>
     <script src="~/Scripts/Producto/Index.js" asp-append-version="true"></script>
 }

@@ -143,7 +143,9 @@ namespace Plataforma.Servicios.Implementacion
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 Console.WriteLine("searchTerm");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Cod_Producto == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos
+                    .Where(p => p.CantidadProducto == 1 && p.Cod_Producto 
+                    == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
             else if (categoriaTerm > 0)
