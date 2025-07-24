@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using System.Linq.Expressions;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
@@ -18,5 +19,7 @@ namespace Plataforma.Servicios.Contrato
         ProveedorProductosViewModel TraerProveedorProductos(int cedula);
         void HistoricoCompra(int codfact, string cod_producto, decimal stock, string? UnidadMedida, int vneto, decimal vtotal, DateTime fechaIngreso, string tpventa, int idpdv);
 
+        //Nuevos metodos
+        Task<List<Producto>> FindListByFunction(Expression<Func<Producto, bool>> lambda);
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Linq.Expressions;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -71,6 +72,7 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
+
         public List<Producto> BuscarProductos(string searchTerm, int categoriaTerm)
         {
             
@@ -95,6 +97,21 @@ namespace Plataforma.Servicios.Implementacion
                 return new List<Producto>();
             }
         }
+
+        public async Task<List<Producto>> FindListByFunction(Expression<Func<Producto, bool>> lambda)
+        {
+            try
+            {
+                // tenemos una expresión lambda que filtra los productos según
+                // la condición proporcionada bien sea Buscar por nombre o por categoría
+                return await _dbContext.Productos.Where(lambda).ToListAsync() ?? [];
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public List<Producto> SinStock(string searchTerm, int categoriaTerm)
         {
 
@@ -132,7 +149,11 @@ namespace Plataforma.Servicios.Implementacion
             else if (categoriaTerm > 0)
             {
                 Console.WriteLine("Categoria");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.IdCatepro == categoriaTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos
+                    .Where(p => p.CantidadProducto == 1 
+                    && p.IdCatepro == categoriaTerm 
+                    && p.Estado == 1).ToList(); 
+                // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
             else

@@ -1,17 +1,22 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AspNetCoreGeneratedDocument;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
+using System.Threading.Tasks;
 
 namespace Plataforma.Controllers
 {
     public class ProductoController : Controller
     {
         private readonly IProductoService _productoservice;
-        public ProductoController(IProductoService productoservice)
+        private readonly ILogger<ProductoService> _logger;
+
+        public ProductoController(IProductoService productoservice, ILogger<ProductoService> logger)
         {
             _productoservice = productoservice;
+            _logger = logger;
         }
         public IActionResult Index()
         {
@@ -56,18 +61,35 @@ namespace Plataforma.Controllers
 
         }
 
-        [Authorize]
         [HttpGet]
-        public IActionResult Buscar(string searchTerm, int categoriaTerm)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Buscar(string searchTerm, int categoriaTerm)
         {
-            if (string.IsNullOrEmpty(searchTerm)) {
-                searchTerm = "";
-            }else
+            try
             {
-                categoriaTerm = 0;
+                //Usar FindList para buscar productos por nombre o codigo
+                List<Producto> productosEncontrados = new List<Producto>();
+                if (string.IsNullOrEmpty(searchTerm))
+                {
+                    searchTerm = "";
+                    productosEncontrados = await _productoservice
+                        .FindListByFunction(p => p.Cod_Producto == searchTerm
+                        && p.Estado == 1);
+                }
+                else
+                {
+                    categoriaTerm = 0;
+                    productosEncontrados = await _productoservice
+                        .FindListByFunction(p => p.IdCatepro == categoriaTerm
+                        && p.Estado == 1);
+                }
+                return PartialView("_TablaProductos", productosEncontrados);
             }
-            var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            return PartialView("_TablaProductos", productosEncontrados);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al buscar productos: {SearchTerm}, Categoria: {CategoriaTerm}", searchTerm, categoriaTerm);
+                throw;
+            }
         }
         [HttpGet]
         public IActionResult BuscarSinStock(string searchTerm, int categoriaTerm)
@@ -145,6 +167,7 @@ namespace Plataforma.Controllers
             _productoservice.EliminarProducto(id);
             return RedirectToAction("Index");
         }
+
         public IActionResult VisualizarProducto(string id)
         {
             int categoriaTerm = 0;
@@ -152,6 +175,7 @@ namespace Plataforma.Controllers
             var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
             return View(traerProductos);
         }
+        
         /*Visualizacion de  Recargas de Plataformas */
         public IActionResult FormPlataforma()
         {

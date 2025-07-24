@@ -69,6 +69,7 @@
                 </nav>
             </div>
             <div class="col-12 col-md-11">
+                @Html.AntiForgeryToken()
                 <div class="search-box" id="search-box">
                     <h2>Buscar Producto</h2>
                     <div class="form-group">
@@ -97,94 +98,10 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function () {
-        var n = 0;
-        $('#search-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 1;
-        });
-        $('#sinstock-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 2;
-        });
-        $('#proxsinstock-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 3;
-        });
 
-        $('#close-search-box').on('click', function () {
-            $('#search-box').removeClass('active');
-        });
-
-        $('#search-btn').on('click', function () {
-            var searchTerm = $('#product-code').val();
-            var categoriaTerm = $('#category').val();
-            switch (n) {
-                case 1:
-                    $.ajax({
-                        url: '@Url.Action("Buscar", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
-                    });
-                    break;
-                case 2:
-                    $.ajax({
-                        url: '@Url.Action("BuscarSinStock", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
-                    });
-                    break;
-                case 3:
-                    $.ajax({
-                        url: '@Url.Action("BuscarProximosSinStock", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
-                    });
-                    break;
-                default:
-                    console.log("No ha seleccionado una opcion");
-                    break;
-            }
-        });
-    });
-</script>
+@section Scripts {
+    <script>
+        var searchNextNoStok = @Url.Action("BuscarProximosSinStock", "Producto");
+    </script>
+    <script src="~/Scripts/Producto/Index.js" asp-append-version="true"></script>
+}
