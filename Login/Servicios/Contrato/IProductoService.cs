@@ -8,9 +8,7 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> AgregarProductoAsync(Producto model);
         List<Producto> ObtenerProductos();
         List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio);
-        List<Producto> BuscarProductos(string searchTerm, int categoriaTerm);
-        List<Producto> SinStock(string searchTerm, int categoriaTerm);
-        List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
+        
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
         void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado);
@@ -21,5 +19,15 @@ namespace Plataforma.Servicios.Contrato
 
         //Nuevos metodos
         Task<List<Producto>> FindListByFunction(Expression<Func<Producto, bool>> lambda);
+
+        
+        //Sin uso
+        /*
+        
+        List<Producto> BuscarProductos(string searchTerm, int categoriaTerm);
+        List<Producto> SinStock(string searchTerm, int categoriaTerm);
+        List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
+        
+         */
     }
 }
