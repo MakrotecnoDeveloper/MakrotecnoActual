@@ -3,103 +3,37 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<style>
-    .icono-enlace {
-        display: inline-block;
-        vertical-align: middle; /* Centrar verticalmente */
-        margin-right: 10px; /* Agregar espacio entre iconos */
-        font-size: 20px; /* Tamaño de fuente del icono */
-    }
-</style>
-<div class="content-wrapper" id="tablaEmpleadoContainer">
+<div class="content-wrapper py-4" id="tablaEmpleadoContainer">
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-white text-center">Empleados</h1>
-                <div class="table-responsive justify-content-center">
-                    <table class="table table-bordered tabla_ListaUsuarios" id="tablaProductos">
-                        <thead style="background-color: #002d72;">
-                            <tr>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Cedula</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Nombre</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Apellido</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Genero</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Correo</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>RH</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Celular</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col">
-                                    <div class="input-group mb-3">
-                                        <div class="col-12">
-                                            <p>Contrasena</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th scope="col" class="text-center">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <form id="formBusqueda">
-                                                    <label for="searchTerm">Buscar:</label>
-                                                    <input type="text" id="searchTerm" name="searchTerm" />
-                                                    <button type="button" id="btnBuscar">Buscar</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <!--Lista de Usuarios-->
-                        <tbody id="resultados" class="listaUsuarios">
-                        </tbody>
-                    </table>
-                </div>
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="text-white bg-primary py-3 rounded shadow">Listado de Empleados</h1>
             </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered shadow" id="tablaProductos">
+                <thead class="text-white" style="background-color: #002d72;">
+                    <tr class="text-center align-middle">
+                        <th>Cédula</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Género</th>
+                        <th>Correo</th>
+                        <th>RH</th>
+                        <th>Celular</th>
+                        <th>Contraseña</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="resultados" class="text-center">
+                    <!-- Aquí se cargan los empleados -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
 <div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
     <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
     <span id="pagina-actual" class="text-white">Página 1</span>
@@ -148,15 +82,15 @@
                 fila.appendChild(celda);
             });
 
-            var enlace1 = crearEnlace(`/Usuario/Editar?id=${perfil.cedula}`, 'fas fa-pencil-alt');
-            var enlace2 = crearEnlace(`/Usuario/FormEmpleadoCompania?cedula=${perfil.cedula}`, 'fas fa-pencil-alt');
-            var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cedula}`, 'fas fa-trash-alt');
+            var enlace1 = crearEnlace(`/Usuario/Editar?id=${perfil.cedula}`, 'fas fa-user-edit');
+            //var enlace2 = crearEnlace(`/Usuario/FormEmpleadoCompania?cedula=${perfil.cedula}`, 'fas fa-user-plus');
+            //var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cedula}`, 'fas fa-user-times');
 
             // Agregar enlaces a una celda
             var acciones = document.createElement('td');
             acciones.appendChild(enlace1);
-            acciones.appendChild(enlace2);
-            acciones.appendChild(enlace3);
+            //acciones.appendChild(enlace2);
+            //acciones.appendChild(enlace3);
             fila.appendChild(acciones);
 
             // Agregar la fila a la tabla

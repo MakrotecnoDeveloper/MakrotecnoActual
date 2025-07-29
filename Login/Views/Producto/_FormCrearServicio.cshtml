@@ -1,0 +1,22 @@
+﻿@model Servicio
+
+<form id="formCrearServicio">
+    <div class="modal-header">
+        <h5 class="modal-title">Crear Servicio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label">Nombre del Servicio</label>
+            <input asp-for="NombreServicio" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <input asp-for="DescripcionServicio" class="form-control" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>

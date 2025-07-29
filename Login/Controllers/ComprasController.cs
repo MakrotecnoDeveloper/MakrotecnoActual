@@ -19,34 +19,22 @@ namespace Plataforma.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> InsertarCompra(CompraViewModel model)
+        public async Task<IActionResult> InsertarCompraCreate([FromForm] CompraViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var compra = new Compras
+                var resultado = await _comprasService.InsertarCompraAsync(model);
+                if (resultado)
                 {
-                    IdProveedor = model.IdProveedor,
-                    CodFacturaExterno = model.CodFacturaExterno,
-                    FechaCompra = DateTime.Now,
-                    Estado = 1
-                };
-
-                var detalles = model.Detalles.Select(d => new DetalleCompra
-                {
-                    CodProducto = d.CodProducto,
-                    Cantidad = d.Cantidad,
-                    ValorU = d.ValorU,
-                    ValorTotal = d.Cantidad * d.ValorU
-                }).ToList();
-
-                await _comprasService.InsertarCompraAsync(compra, detalles);
-
-                return RedirectToAction("Index");
+                    return RedirectToAction("Index"); // O a donde requieras
+                }
             }
 
+            // Si falla la validación o inserción, recarga la vista con el modelo
             ViewBag.Proveedores = await _comprasService.ObtenerProveedoresAsync();
             return View(model);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -56,13 +44,15 @@ namespace Plataforma.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> BuscarProductoPorCodigo(string term)
+        public async Task<IActionResult> BuscarProductoPorCodigo(string codigo)
         {
-            var productos = await _comprasService.BuscarProductosPorCodigoAsync(term);
+            Console.WriteLine("Me oprimiste aca" + codigo);
+            var productos = await _comprasService.BuscarProductosPorCodigoAsync(codigo);
             var resultados = productos.Select(p => new {
                 label = $"{p.Cod_Producto} - {p.NombreProducto}",
                 value = p.Cod_Producto,
-                valorNeto = p.ValorNetoProducto
+                valorNeto = p.ValorNetoProducto,
+                valorVenta = p.ValorVentaProducto
             });
 
             return Json(resultados);

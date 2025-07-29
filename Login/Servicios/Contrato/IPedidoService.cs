@@ -8,12 +8,13 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Ventas>> ObtenerTodasLasVentasAsync();
         Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
         Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario);
-        Task GuardarPedidosAsync(List<Pedidos> pedidos);
+        //Task GuardarPedidosAsync(List<Pedidos> pedidos);
         Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido);
         void ActualizarEstadoFacturas();
         List<Factura> ObtenerFacturasFechaDescendente();
         Task<Ventas> ObtenerVentaConPedidos(int idVenta);
         Task<int> GenerarConsecutivoFactura();
+        Task GuardarVentaActualizada(Ventas venta, decimal total);
         Task GuardarFacturaAsync(Factura factura);
         Task<List<Factura>> ObtenerFacturasConVentaCliente();
         Task<Factura> ObtenerFacturaConDetalle(int idFactura);
@@ -21,5 +22,6 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> EliminarFacturaAsync(int idFactura);
         Task<Ventas> ObtenerVentaPorIdAsync(int id);
         Task ActualizarVentaAsync(Ventas venta);
+        Task ActualizarEstadoVentaAsync(int idVenta, string nuevoEstado);
     }
 }

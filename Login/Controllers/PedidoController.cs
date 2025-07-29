@@ -133,6 +133,8 @@ namespace Plataforma.Controllers
             decimal iva = subtotal * 0.19M; // o la tasa correspondiente
             decimal total = subtotal + iva;
 
+            await _pedidoServicio.GuardarVentaActualizada(venta, total);
+
             Factura factura = new Factura
             {
                 NumeroFactura = await _pedidoServicio.GenerarConsecutivoFactura(),
@@ -145,6 +147,9 @@ namespace Plataforma.Controllers
             };
 
             await _pedidoServicio.GuardarFacturaAsync(factura);
+
+            await _pedidoServicio.ActualizarEstadoVentaAsync(idVenta, "Finalizado");
+
             return RedirectToAction("ListaFacturas");
         }
         public async Task<IActionResult> ListaFacturas()

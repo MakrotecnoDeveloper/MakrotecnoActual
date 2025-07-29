@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Plataforma.Models;
-[Table("clientesplataforma", Schema = "pruebas")]
+[Table("clientesplataforma", Schema = "dbo")]
 public class ClientesPlataforma
     {
         [Key]

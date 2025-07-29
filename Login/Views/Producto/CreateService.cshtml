@@ -1,0 +1,68 @@
+﻿@model List<Servicio>
+@{
+    ViewData["Title"] = "Servicios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2>Servicios</h2>
+
+        <button class="btn btn-primary mb-3" id="btnMostrarModal">Crear Servicio</button>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>IdServicio</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaServicios">
+                @foreach (var servicio in Model)
+                {
+                    <tr>
+                        <td>@servicio.IdServicio</td>
+                        <td>@servicio.NombreServicio</td>
+                        <td>@servicio.DescripcionServicio</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalCrearServicio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="modalContent">
+                <!-- El formulario se carga por AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#btnMostrarModal').click(function () {
+                $.get('/Producto/FormCrearServicio', function (data) {
+                    $('#modalContent').html(data);
+                    $('#modalCrearServicio').modal('show');
+                });
+            });
+
+            // Maneja el submit del formulario desde el modal
+            $(document).on('submit', '#formCrearServicio', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '/Producto/CrearServicio',
+                    data: $(this).serialize(),
+                    success: function (nuevoServicioHtml) {
+                        $('#tablaServicios').append(nuevoServicioHtml);
+                        $('#modalCrearServicio').modal('hide');
+                    }
+                });
+            });
+        });
+    </script>
+}

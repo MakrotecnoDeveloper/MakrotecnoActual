@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Plataforma.Models;
-[Table("ganancias", Schema = "pruebas")]
+[Table("ganancias", Schema = "dbo")]
 public class Ganancias
 {
     [Key]
-    public int Id_ganancias { get; set; }
-    public int GananciaMakrotecno { get; set; }
-    public int GananciaTotal { get; set; }
-    public int GananciaMaria { get; set; }
-    public int GananciaVictor { get; set; }
-    public int GananciaTeresa { get; set; }
-    public DateTime FechaGanancia { get; set; }
+    public int IdGanancia { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Ingresos { get; set; }
+    public decimal Costos { get; set; }
+    public decimal Utilidad { get; set; }
+    public int Cedula {  get; set; }
 }

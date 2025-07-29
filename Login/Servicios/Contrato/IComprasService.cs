@@ -5,8 +5,8 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<List<Proveedores>> ObtenerProveedoresAsync();
         Task<Proveedores> BuscarProveedorPorIdAsync(int idProveedor);
-        Task<List<Producto>> BuscarProductosPorCodigoAsync(string term);
-        Task InsertarCompraAsync(Compras compra, List<DetalleCompra> detalles);
+        Task<List<Producto>> BuscarProductosPorCodigoAsync(string codigo);
+        Task<bool> InsertarCompraAsync(CompraViewModel model);
         Task<List<Compras>> ObtenerComprasAsync();
     }
 }

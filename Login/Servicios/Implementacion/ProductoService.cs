@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -22,12 +23,17 @@ namespace Plataforma.Servicios.Implementacion
                 .ToList();
             return productosTraidosDB;
         }
-        public List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio)
+        public List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio)
         {
-            var categorias = _dbContext.CategoriaProductos
-                    .Where(c => c.IdServicio == IdServicio) // Filtrar por IdServicio
-                    .ToList();
-                return categorias;
+            return _dbContext.CategoriaProductos
+                           .Where(c => c.IdServicio == idServicio)
+                           .ToList();
+        }
+        public async Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio)
+        {
+            return await _dbContext.CategoriaProductos
+                .Where(c => c.IdServicio == idServicio)
+                .ToListAsync();
         }
         public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
         {
@@ -458,5 +464,26 @@ namespace Plataforma.Servicios.Implementacion
             return productos;
         }
         //fin plataformas de streaming
+        public async Task<bool> CrearCategoriaAsync(CategoriaProductos categoria)
+        {
+            _dbContext.CategoriaProductos.Add(categoria);
+            return await _dbContext.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<Servicio>> ObtenerServiciosAsync()
+        {
+            return await _dbContext.Servicio.ToListAsync();
+        }
+        public async Task<List<Servicio>> ObtenerServicios()
+        {
+            return await _dbContext.Servicio.ToListAsync();
+        }
+
+        public async Task<Servicio> CrearServicio(Servicio servicio)
+        {
+            _dbContext.Servicio.Add(servicio);
+            await _dbContext.SaveChangesAsync();
+            return servicio;
+        }
     }
 }

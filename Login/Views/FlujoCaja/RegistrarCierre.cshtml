@@ -1,0 +1,39 @@
+﻿@model CierreCajaViewModel
+@{
+    ViewData["Title"] = "RegistrarCierre";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h3>Cierre de Caja - @DateTime.Today.ToShortDateString()</h3>
+
+    <form asp-action="RegistrarCierre" method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <label>Efectivo ingresado</label>
+                <input asp-for="Efectivo" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label>Transferencias bancarias</label>
+                <input asp-for="Transferencia" class="form-control" />
+            </div>
+            <div class="col-md-6 mt-3">
+                <label>Gasto en efectivo</label>
+                <input asp-for="GastoEfectivo" class="form-control" />
+            </div>
+            <div class="col-md-6 mt-3">
+                <label>Gasto por transferencia</label>
+                <input asp-for="GastoTransferencia" class="form-control" />
+            </div>
+            <div class="col-md-6 mt-3">
+                <label>Total Facturado (hoy)</label>
+                <input asp-for="TotalFacturado" class="form-control" readonly />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-4">Guardar Cierre</button>
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
+    }
+</div>

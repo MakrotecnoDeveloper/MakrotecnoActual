@@ -61,6 +61,10 @@ builder.Services.AddScoped<IDispositivoService, DispositivoService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
 builder.Services.AddScoped<IComprasService, ComprasService>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IFlujoCajaService, FlujoCajaService>();
+builder.Services.AddScoped<IGananciaService, GananciaService>();
+builder.Services.AddScoped<IStreamingService, StreamingService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -125,6 +129,6 @@ app.UseStaticFiles();
 //establece una ruta predeterminada para la aplicaci�n web
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=login}/{id?}");
 
 app.Run();

@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -22,32 +21,64 @@ namespace Plataforma.Servicios.Implementacion
             return await _dbContext.Set<Proveedores>().FindAsync(idProveedor);
         }
 
-        public async Task<List<Producto>> BuscarProductosPorCodigoAsync(string term)
+        public async Task<List<Producto>> BuscarProductosPorCodigoAsync(string codigo)
         {
             return await _dbContext.Set<Producto>()
-                                 .Where(p => p.Cod_Producto.Contains(term))
+                                 .Where(p => p.Cod_Producto.Contains(codigo))
                                  .ToListAsync();
         }
 
-        public async Task InsertarCompraAsync(Compras compra, List<DetalleCompra> detalles)
+        public async Task<bool> InsertarCompraAsync(CompraViewModel model)
         {
-            _dbContext.Set<Compras>().Add(compra);
-            await _dbContext.SaveChangesAsync(); // Para obtener IdCompra generado
-
-            foreach (var detalle in detalles)
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                detalle.IdCompra = compra.IdCompras;
-                _dbContext.Set<DetalleCompra>().Add(detalle);
-
-                var producto = await _dbContext.Set<Producto>().FindAsync(detalle.CodProducto);
-                if (producto != null)
+                // 1. Crear la compra
+                var compra = new Compras
                 {
-                    producto.CantidadProducto += detalle.Cantidad;
-                }
-            }
+                    IdProveedor = model.IdProveedor,
+                    ValorTotal = model.Productos.Sum(p => p.VTotal),
+                    FechaCompra = DateTime.Now,
+                    Estado = 1,
+                    CodFacturaExterno = model.CodFacturaExterno
+                };
 
-            compra.ValorTotal = detalles.Sum(d => d.ValorTotal);
-            await _dbContext.SaveChangesAsync();
+                _dbContext.Compras.Add(compra);
+                await _dbContext.SaveChangesAsync(); // Guarda y obtiene IdCompra
+
+                // 2. Crear los detalles
+                foreach (var producto in model.Productos)
+                {
+
+                    var productoExistente = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == producto.Codigo);
+                    if(productoExistente != null)
+                    {
+                        productoExistente.CantidadProducto += producto.Stock;
+                        _dbContext.Productos.Update(productoExistente);
+                    }
+
+                    var detalle = new DetalleCompra
+                    {
+                        IdCompra = compra.IdCompra,
+                        Codigo = producto.Codigo,
+                        Stock = producto.Stock,
+                        VNeto = producto.VNeto,
+                        VVenta = producto.VVenta,
+                        VTotal = producto.VTotal
+                    };
+                    _dbContext.DetalleCompras.Add(detalle);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Log ex (implementa tu logger o consola)
+                return false;
+            }
         }
 
         public async Task<List<Compras>> ObtenerComprasAsync()

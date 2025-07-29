@@ -367,7 +367,7 @@ namespace Plataforma.Servicios.Implementacion
 
             string? traerNombrePDV = _dbContext.Infopdv
           .Where(ce => ce.InfopdvId == idPDVActual)
-          .Select(ce => ce.Name)
+          .Select(ce => ce.NombreInfoPDV)
           .FirstOrDefault();
 
             FacProUserViewModel viewModel = new()

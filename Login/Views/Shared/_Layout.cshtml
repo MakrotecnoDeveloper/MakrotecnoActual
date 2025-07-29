@@ -182,6 +182,31 @@
                                         </li>
                                     </ul>
                                 </li>
+                                 <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                                        <p>
+                                            Configuracion Categoria
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a asp-controller="Producto" asp-action="CategoriaProductos" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Categorias</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                                <a asp-controller="Producto" asp-action="CreateService" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Servicios</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
                         </ul>
                     </li>
                             <li class="nav-item">
@@ -245,7 +270,7 @@
                             </li>
                         </ul>
                     </li>
-                            <li class="nav-item">
+                     <!--<li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
@@ -267,8 +292,8 @@
                                 </a>
                             </li>
                         </ul>
-                     </li>
-                            <li class="nav-item">
+                     </li>-->
+                     <!--<li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
@@ -290,7 +315,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li>
+                     </li>-->
                         }
                         @if (menusActivos.Contains(3))
                         {
@@ -316,12 +341,6 @@
                                             <p>Ver Productos</p>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Inicio" asp-action="Stock" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Agregar Stock</p>
-                                        </a>
-                                    </li>
                                 </ul>
                             </li>
                             <li class="nav-item">
@@ -343,12 +362,6 @@
                                         <a asp-controller="Compras" asp-action="Index" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Ver Compras</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Historico Categoria</p>
                                         </a>
                                     </li>
                                 </ul>
@@ -376,41 +389,6 @@
                                         <a asp-controller="OrdenServicio" asp-action="OrdenesServicio" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Ordenes de Servicio</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="OrdenServicio" asp-action="SeguimientoServicio" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Seguimiento de Servicio</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    <p>
-                                        Historicos
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Producto" asp-action="ComprasProductos" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Historico Compras</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Producto" asp-action="VisualizarCompras" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ver Compras</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Inicio" asp-action="Prueba" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Historico Categoria</p>
                                         </a>
                                     </li>
                                 </ul>
@@ -479,21 +457,21 @@
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="AgregarGanancia" class="nav-link">
+                                        <a asp-controller="FlujoCaja" asp-action="Index" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Recogida</p>
+                                            <p>Flujo Caja</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="VisualizarGanancia" class="nav-link">
+                                        <a asp-controller="Ganancia" asp-action="GananciaDelDia" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Ver Ganancias</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="ProcesoRecogida" class="nav-link">
+                                        <a asp-controller="FlujoCaja" asp-action="RegistrarCierre" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Recogida</p>
+                                            <p>Registrar Cierre</p>
                                         </a>
                                     </li>
                                 </ul>
@@ -508,7 +486,7 @@
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a asp-controller="Reporte" asp-action="Index" class="nav-link">
+                                        <a asp-controller="Reporte" asp-action="Diario" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Reporte General</p>
                                         </a>

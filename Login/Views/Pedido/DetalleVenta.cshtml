@@ -28,9 +28,9 @@
                 @foreach (var pedido in Model.Pedidos)
                 {
                     <tr>
-                        <td>@pedido.CodProducto</td>
-                        <td>@pedido.Cantidad</td>
-                        <td>$@pedido.ValorVenta</td>
+                        <td>@pedido.Codigo</td>
+                        <td>@pedido.Stock</td>
+                        <td>$@pedido.VVenta</td>
                         <td>$@pedido.SubTotal</td>
                     </tr>
                 }

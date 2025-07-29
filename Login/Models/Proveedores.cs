@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Plataforma.Models;
-[Table("proveedores", Schema = "pruebas")]
+[Table("proveedores", Schema = "dbo")]
 public class Proveedores
 {
     [Key]

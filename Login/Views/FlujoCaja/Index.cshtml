@@ -1,0 +1,32 @@
+﻿@model List<Plataforma.Models.FlujoCaja>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h2 class="text-center">Flujo de Caja - Hoy</h2>
+
+    <table class="table table-bordered mt-3">
+        <thead class="bg-secondary text-white">
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Fecha.ToString("yyyy-MM-dd")</td>
+                    <td>@m.TipoMovimiento</td>
+                    <td>@m.Concepto</td>
+                    <td class="@(m.TipoMovimiento == "Ingreso" ? "text-success" : "text-danger")">
+                        @m.Monto:C
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

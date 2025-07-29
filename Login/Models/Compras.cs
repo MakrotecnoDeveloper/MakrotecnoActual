@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Plataforma.Models;
-[Table("compras", Schema = "pruebas")]
+[Table("compras", Schema = "dbo")]
 public class Compras
 {
         [Key]
-        public int IdCompras { get; set; }
+        public int IdCompra { get; set; }
 
         [Required]
         public int IdProveedor { get; set; }
@@ -14,7 +14,7 @@ public class Compras
         public decimal ValorTotal { get; set; }
 
         [Required]
-        public DateTime FechaCompra { get; set; } = DateTime.Now; // Valor por defecto
+        public DateTime? FechaCompra { get; set; } = DateTime.Now; // Valor por defecto
 
         public int Estado { get; set; } = 1; // Valor por defecto
         public string CodFacturaExterno { get; set; }

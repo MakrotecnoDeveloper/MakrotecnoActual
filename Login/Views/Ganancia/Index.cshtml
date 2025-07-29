@@ -1,0 +1,30 @@
+﻿@model List<Plataforma.Models.Ganancias>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h2 class="text-center">Ganancias Diarias</h2>
+
+    <table class="table table-bordered table-striped mt-3">
+        <thead class="thead-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Ingresos</th>
+                <th>Costos</th>
+                <th>Utilidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model)
+            {
+                <tr>
+                    <td>@g.Fecha.ToString("yyyy-MM-dd")</td>
+                    <td>@g.Ingresos:C</td>
+                    <td>@g.Costos:C</td>
+                    <td class="text-success fw-bold">@g.Utilidad:C</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

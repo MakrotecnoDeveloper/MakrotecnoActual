@@ -1,4 +1,4 @@
-﻿@model List<CategoriaProductos>
+﻿@model ProductoInsertarViewModel
 @{
     ViewData["Title"] = "Insertar";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -44,11 +44,19 @@
                                 <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
                             </div>
                             <div class="form-group">
-                                <select name="categorias" id="categorias" class="form-control my-input">
-                                    @foreach (var categoria in Model)
+                                <label for="servicio">Servicio</label>
+                                <select name="servicio" id="servicio" class="form-control my-input">
+                                    <option disabled selected>Seleccione un servicio</option>
+                                    @foreach (var servicio in Model.Servicios)
                                     {
-                                        <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
+                                        <option value="@servicio.IdServicio">@servicio.NombreServicio</option>
                                     }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Categorías</label>
+                                <select name="categorias" id="categorias" class="form-control my-input">
+                                    <!-- Se llenará con JS -->
                                 </select>
                             </div>
                             <div class="text-center ">
@@ -60,3 +68,65 @@
          </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#servicio').on('change', function () {
+                var idServicio = $(this).val();
+
+                if (idServicio) {
+                    $.ajax({
+                        url: '/Producto/ObtenerCategoriaProductos',
+                        type: 'GET',
+                        data: { idServicio: idServicio },
+                        success: function (categorias) {
+                            var $categoriaSelect = $('#categorias');
+                            $categoriaSelect.empty();
+
+                            $.each(categorias, function (i, categoria) {
+                                $categoriaSelect.append(
+                                    $('<option>', {
+                                        value: categoria.idCateProducto,
+                                        text: categoria.descripcion
+                                    })
+                                );
+                            });
+                        },
+                        error: function () {
+                            alert('Error al cargar las categorías.');
+                        }
+                    });
+                } else {
+                    $('#categorias').empty();
+                }
+            });
+        });
+
+        $('#btnAgregarProducto').on('click', function () {
+            var producto = {
+                id_empresa: $('#id_empresa').val(),
+                codigo: $('#codigo').val(),
+                descripcion: $('#descripcion').val(),
+                valor_neto: parseFloat($('#valorNeto').val()),
+                valor_unitario: parseFloat($('#valorVenta').val()),
+                stock: parseInt($('#stock').val()),
+                categorias: $('#categorias').val(),
+                id_servicio: $('#servicio').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/Producto/Insertar',
+                data: producto,
+                success: function (response) {
+                    alert('Producto agregado correctamente.');
+                    $('#formularioProducto')[0].reset();
+                    $('#categorias').empty();
+                },
+                error: function () {
+                    alert('Error al agregar el producto.');
+                }
+            });
+        });
+    </script>
+}

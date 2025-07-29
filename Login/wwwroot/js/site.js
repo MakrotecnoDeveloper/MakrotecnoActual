@@ -1,75 +1,31 @@
-﻿    // Agrega un controlador de eventos al botón con ID "btnAgregarProducto"
-    $("#btnAgregarProducto").click(function () {
-        // Obtiene los valores de los campos
-        var id_empresa = $("#id_empresa").val();
-        var codigo = $("#codigo").val();
-        var descripcion = $("#descripcion").val();
-        var valorNeto = $("#valorNeto").val();
-        var valorVenta = $("#valorVenta").val();
-        var stock = $("#stock").val();
-        var categoria = $("#categorias").val();
-        // Llama a la función para enviar el producto
-        enviarProducto(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
-    });
-// Función para enviar un producto
-function enviarProducto(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria) {
-    // Crea un objeto con los datos del producto
-    var data = {
-        id_empresa: id_empresa,
-        codigo: codigo,
-        descripcion: descripcion,
-        valorNeto: valorNeto,
-        valorVenta: valorVenta,
-        stock: stock,
-        categoria: categoria
-    };
-    // Realiza la solicitud AJAX
-    $.ajax({
-        type: "POST",
-        url: "/Producto/Insertar", // Ajusta la URL según tu ruta
-        data: data,
-        success: function (response) {
-            // Lógica para manejar el éxito
-            alert("Producto agregado exitosamente.");
-            $("#formularioProducto")[0].reset();
-
-        },
-        error: function (error) {
-            // Lógica para manejar el error
-            alert("Error al agregar el producto.");
-        }
-    });
-}
-//Fin codigo
-let index = 1;
-function insertarFilasCrearPedido()
-{
+﻿let index = 1;
+function insertarFilasCrearPedido() {
     //Filas dinamicas
-        const nuevaFila = `
-        <tr>
-            <td>
-                <input type="text" class="form-control codigoProducto" name="productos[${index}].Codigo" placeholder="Código" id="codfact${index}">
-                <div class="opcionesCodigosProducto"></div>
-            </td>
-            <td>
-                <input type="text" class="form-control" name="productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
-            </td>
-            <td>
-                <input type="number" class="form-control" name="productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
-            </td>
-            <td>
-                <input type="text" class="form-control" name="productos[${index}].VVenta" readonly placeholder="Valor Venta" id="vventa${index}">
-            </td>
-            <td>
-                <input type="number" class="form-control" name="productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `;
+    const nuevaFila = `
+                <tr>
+                    <td>
+                        <input type="text" class="form-control codigoProducto" name="Productos[${index}].Codigo" placeholder="Código" id="codfact${index}">
+                        <div class="opcionesCodigosProducto"></div>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="Productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="Productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="Productos[${index}].VVenta" readonly placeholder="Valor Venta" id="vventa${index}">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="Productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
     $('#tablaProductos').append(nuevaFila);
     index = index + 1;
 }
@@ -78,7 +34,7 @@ function insertarFilasCrearPedido()
 function mostrarOpcionesAutocompletado(opciones, container) {
     var opcionesHtml = '';
     opciones.forEach(function (opcion) {
-        opcionesHtml += '<div class="opcion">' + opcion + '</div>';
+        opcionesHtml += '<div class="opcion">' + opcion.value + '</div>';
     });
     container.html(opcionesHtml);
 }
@@ -92,7 +48,7 @@ $(document).on('input', '.codigoProducto', function () {
     if (codigo.length >= 3) {
         // Llamada AJAX para obtener las opciones de autocompletado
         $.ajax({
-            url: '/Pedido/AutocompletarCodigosProducto',
+            url: '/Compras/BuscarProductoPorCodigo',
             type: 'GET',
             data: { codigo: codigo },
             success: function (response) {
@@ -122,13 +78,17 @@ $(document).on('click', '.opcion', function () {
 
     // Llamada AJAX para obtener los detalles del producto y autocompletar los campos
     $.ajax({
-        url: '/Pedido/AutocompletarProducto',
+        url: '/Compras/BuscarProductoPorCodigo',
         type: 'GET',
         data: { codigo: codigoSeleccionado },
         success: function (data) {
-            // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
-            fila.find('#vneto' + fila.index()).val(data.vneto);
-            fila.find('#vventa' + fila.index()).val(data.vventa);
+            if (Array.isArray(data) && data.length > 0) {
+                var producto = data[0];
+                // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
+                fila.find('#vneto' + fila.index()).val(producto.valorNeto);
+                fila.find('#vventa' + fila.index()).val(producto.valorVenta);
+                console.log(producto.valorVenta);
+            }
         },
         error: function () {
             console.error('Error al obtener los datos del producto.');

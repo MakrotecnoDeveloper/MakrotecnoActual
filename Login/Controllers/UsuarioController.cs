@@ -327,7 +327,7 @@ namespace Plataforma.Controllers
 
             var nuevoPDV = new Infopdv
             {
-                Name = nombrePDV,
+                NombreInfoPDV = nombrePDV,
                 Id_Sede = idSede
             };
 

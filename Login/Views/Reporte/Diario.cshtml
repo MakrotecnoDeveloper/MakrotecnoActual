@@ -1,0 +1,59 @@
+﻿@model ReporteFinancieroViewModel
+@{
+    ViewData["Title"] = "Diario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h2 class="text-center">Reporte Financiero del Día: @Model.Fecha.ToShortDateString()</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Ingresos</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Ingresos:C</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Costos</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Costos:C</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Utilidad</div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Utilidad:C</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mt-4">Movimientos en Caja</h4>
+    <table class="table table-bordered table-sm mt-2">
+        <thead class="bg-dark text-white">
+            <tr>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var mov in Model.Movimientos)
+            {
+                <tr>
+                    <td>@mov.TipoMovimiento</td>
+                    <td>@mov.Concepto</td>
+                    <td>@mov.Monto:C</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h5 class="text-end text-primary fw-bold">Balance en caja: @Model.BalanceCaja:C</h5>
+</div>
+

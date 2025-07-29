@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Plataforma.Models.Compras>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+<h2>Listado de Compras</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Factura Externa</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Detalles</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var compra in Model)
+        {
+            <tr>
+                <td>@compra.IdCompra</td>
+                <td>@compra.CodFacturaExterno</td>
+                <td>@(compra.FechaCompra.HasValue ? compra.FechaCompra.Value.ToString("yyyy-MM-dd") : "")</td>
+                <td>@compra.ValorTotal.ToString("C")</td>
+                <td>
+                    @if (compra.Detalles != null && compra.Detalles.Any())
+                    {
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Código Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Valor Neto</th>
+                                    <th>Valor Venta</th>
+                                    <th>Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detalle in compra.Detalles)
+                                {
+                                    <tr>
+                                        <td>@detalle.Codigo</td>
+                                        <td>@detalle.Stock</td>
+                                        <td>@detalle.VNeto.ToString("C")</td>
+                                        <td>@detalle.VVenta.ToString("C")</td>
+                                        <td>@detalle.VTotal.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <span>No tiene detalles</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

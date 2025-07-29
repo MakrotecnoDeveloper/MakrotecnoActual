@@ -18,20 +18,35 @@ namespace Plataforma.Controllers
             var productos = _productoservice.ObtenerProductos();
             return View(productos);
         }
-        public IActionResult Insertar() 
+        [HttpGet]
+        public async Task<IActionResult> ObtenerCategoriaProductos(int idServicio)
         {
-            int IdServicio = 1;
-            var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
-            return View(traerCategoriasExistentes);
+            var categorias = await _productoservice.ObtenerCategoriasPorServicio(idServicio);
+
+            return Json(categorias.Select(c => new {
+                idCateProducto = c.IdCateProducto,
+                descripcion = c.Descripcion
+            }));
+        }
+        [HttpGet]
+        public async Task<IActionResult> Insertar()
+        {
+            var model = new ProductoInsertarViewModel
+            {
+                Servicios = await _productoservice.ObtenerServicios(),
+                Categorias = new List<CategoriaProductos>() // o datos reales si los tienes
+            };
+
+            return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valorNeto, float valorVenta, decimal stock, int categoria)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
         {
 
             if (ModelState.IsValid)
             {
                 // Lógica para agregar el producto usando _productoService
-                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valorNeto, valorVenta, stock, categoria);
+                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valor_neto, valor_unitario, stock, categorias);
 
                 if (resultado)
                 {
@@ -226,6 +241,69 @@ namespace Plataforma.Controllers
         {
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
+        }
+        [HttpGet]
+        public async Task<IActionResult> CategoriaProductos()
+        {
+            var servicios = await _productoservice.ObtenerServiciosAsync();
+
+            var viewModel = new CategoriaProductosViewModel
+            {
+                Servicios = servicios
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCate(CategoriaProductosViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Servicios = await _productoservice.ObtenerServiciosAsync();
+                return View(model);
+            }
+
+            var categoria = new CategoriaProductos
+            {
+                Descripcion = model.Descripcion,
+                IdServicio = model.IdServicio
+            };
+
+            var exito = await _productoservice.CrearCategoriaAsync(categoria);
+
+            if (exito)
+            {
+                TempData["Mensaje"] = "Categoría creada correctamente.";
+                return RedirectToAction("CategoriaProductos"); // o una vista de categorías
+            }
+
+            ModelState.AddModelError("", "No se pudo crear la categoría.");
+            model.Servicios = await _productoservice.ObtenerServiciosAsync();
+            return View(model);
+        }
+        public async Task<IActionResult> CreateService()
+        {
+            var servicios = await _productoservice.ObtenerServicios();
+            return View(servicios);
+        }
+
+        [HttpGet]
+        public IActionResult FormCrearServicio()
+        {
+            return PartialView("_FormCrearServicio", new Servicio());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearServicio(Servicio servicio)
+        {
+            if (ModelState.IsValid)
+            {
+                var nuevoServicio = await _productoservice.CrearServicio(servicio);
+                return PartialView("_ServicioRow", nuevoServicio);
+            }
+
+            return BadRequest("Error al crear servicio");
         }
     }
 }

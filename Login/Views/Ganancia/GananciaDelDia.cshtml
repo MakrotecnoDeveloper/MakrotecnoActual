@@ -1,0 +1,38 @@
+﻿@model GananciaViewModel
+
+@{
+    ViewData["Title"] = "Ganancia del Día";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2>@ViewData["Title"]</h2>
+
+        @if (Model != null)
+        {
+            <table class="table table-bordered mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Ingresos</th>
+                        <th>Costos</th>
+                        <th>Utilidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.Cedula</td>
+                        <td>@Model.TotalIngresos.ToString("C")</td>
+                        <td>@Model.TotalCostos.ToString("C")</td>
+                        <td class="fw-bold text-success">@Model.TotalUtilidad.ToString("C")</td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                No hay ganancias registradas para el día de hoy.
+            </div>
+        }
+    </div>
+</div>

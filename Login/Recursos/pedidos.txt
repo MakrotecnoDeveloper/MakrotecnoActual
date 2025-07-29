@@ -823,3 +823,20 @@ namespace Plataforma.Servicios.Implementacion
         {
             return View();
         }
+
+
+
+        Formulario para buscar en Index/Usuario
+                                   <form id="formBusqueda" class="d-flex align-items-center justify-content-center gap-2">
+                                <div>
+                                    <label for="searchTerm" class="form-label mb-0 text-white">Buscar:</label>
+                                </div>
+                                <div>
+                                    <input type="text" class="form-control form-control-sm" id="searchTerm" name="searchTerm" placeholder="Cédula o nombre" />
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-light" id="btnBuscar">
+                                        <i class="bi bi-search"></i> Buscar
+                                    </button>
+                                </div>
+                             </form>

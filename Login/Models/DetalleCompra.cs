@@ -7,18 +7,19 @@ public class DetalleCompra
         [Key]
         public int IdDetalleCompra { get; set; }
 
-        [Required]
         public int IdCompra { get; set; }
 
-        public string CodProducto { get; set; }
+        public string Codigo { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]
-        public decimal Cantidad { get; set; }
+        public decimal Stock { get; set; }
         [Column(TypeName = "decimal(10,2)")]
-        public decimal ValorU { get; set; }
+        public decimal VNeto { get; set; }
         [Column(TypeName = "decimal(10,2)")]
-        public decimal ValorTotal { get; set; }
+        public decimal VVenta { get; set; }
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal VTotal { get; set; }
         [ForeignKey("IdCompra")]
         public Compras Compra { get; set; }
 }

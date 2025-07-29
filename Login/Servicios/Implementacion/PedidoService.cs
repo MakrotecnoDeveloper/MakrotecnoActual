@@ -74,13 +74,27 @@ namespace Plataforma.Servicios.Implementacion
             if (infoPdvId == 0)
                 throw new Exception("No se encontró un PDV válido para la sede.");
 
+            decimal totalVenta = 0;
+
             // 4. Completar y guardar los pedidos
             foreach (var pedido in pedidos)
             {
+
+                var productoExistente = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == pedido.Codigo);
+                if (productoExistente != null)
+                {
+                    productoExistente.CantidadProducto -= pedido.Stock;
+                    _dbContext.Productos.Update(productoExistente);
+                }
+
+                //Calcular subtotal de este pedido
                 pedido.IdVenta = idVenta;
                 pedido.InfopdvId = infoPdvId;
                 pedido.FechaRegistro = DateTime.Now;
-                pedido.SubTotal = pedido.Cantidad * pedido.ValorVenta;
+                pedido.SubTotal = pedido.Stock * pedido.VVenta;
+
+                //Acumular total
+                totalVenta += pedido.SubTotal;
 
                 _dbContext.Pedidos.Add(pedido);
             }
@@ -88,17 +102,17 @@ namespace Plataforma.Servicios.Implementacion
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task GuardarPedidosAsync(List<Pedidos> pedidos)
+        /*public async Task GuardarPedidosAsync(List<Pedidos> pedidos)
         {
             foreach (var pedido in pedidos)
             {
-                pedido.SubTotal = pedido.Cantidad * pedido.ValorVenta;
+                pedido.SubTotal = pedido.Stock * pedido.VVenta;
                 pedido.FechaRegistro = DateTime.Now;
             }
 
             _dbContext.Pedidos.AddRange(pedidos);
             await _dbContext.SaveChangesAsync();
-        }
+        }*/
         public async Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido)
         {
             try
@@ -157,6 +171,22 @@ namespace Plataforma.Servicios.Implementacion
             } while (await _dbContext.Factura.AnyAsync(f => f.NumeroFactura == numeroFactura));
 
             return numeroFactura;
+        }
+        public async Task GuardarVentaActualizada(Ventas venta, decimal total)
+        {
+            if (venta == null)
+                throw new ArgumentNullException(nameof(venta), "La venta no puede ser nula.");
+
+            if (venta.Pedidos == null || !venta.Pedidos.Any())
+                throw new Exception("La venta no tiene productos asociados.");
+
+
+            // 2. Actualizar el campo Total en la venta
+            venta.Total = total;
+
+            // 3. Guardar cambios en la base de datos
+            _dbContext.Ventas.Update(venta);
+            await _dbContext.SaveChangesAsync();
         }
         public async Task GuardarFacturaAsync(Factura factura)
         {
@@ -217,6 +247,20 @@ namespace Plataforma.Servicios.Implementacion
         {
             _dbContext.Ventas.Update(venta);
             await _dbContext.SaveChangesAsync();
+        }
+        public async Task ActualizarEstadoVentaAsync(int idVenta, string nuevoEstado)
+        {
+            var venta = await _dbContext.Ventas.FirstOrDefaultAsync(v => v.IdVenta == idVenta);
+            if (venta != null)
+            {
+                venta.EstadoVenta = nuevoEstado;
+                _dbContext.Ventas.Update(venta);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception($"No se encontró la venta con Id {idVenta} para actualizar su estado.");
+            }
         }
 
     }

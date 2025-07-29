@@ -5,7 +5,8 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias);
         List<Producto> ObtenerProductos();
-        List<CategoriaProductos> ObtenerCategoriaProductos(int IdServicio);
+        List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio);
+        Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio);
         List<Producto> BuscarProductos(string searchTerm, int categoriaTerm);
         List<Producto> SinStock(string searchTerm, int categoriaTerm);
         List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
@@ -24,5 +25,9 @@ namespace Plataforma.Servicios.Contrato
         Task ActualizarCliente(int id, int estado, int idCliente);
         List<Producto> TraerProductosXCategoria(int categoria);
         //ProveedorProductosViewModel TraerProveedorProductos(int cedula);
+        Task<bool> CrearCategoriaAsync(CategoriaProductos categoria);
+        Task<List<Servicio>> ObtenerServiciosAsync();
+        Task<List<Servicio>> ObtenerServicios();
+        Task<Servicio> CrearServicio(Servicio servicio);
     }
 }
