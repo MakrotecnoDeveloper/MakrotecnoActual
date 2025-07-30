@@ -413,7 +413,7 @@ namespace Plataforma.Servicios.Implementacion
             try
             {
                 return _dbContext.Productos
-                     .Where(c => c.IdCatepro == 17 && c.Estado == 1)
+                     .Where(c => c.IdCatepro == 42 && c.Estado == 1)
                      .OrderBy(c => c.NombreProducto)
                      .ToList();
             }
@@ -479,7 +479,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion)
         {
-            var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 17).OrderBy(c => c.NombreProducto).ToList();
+            var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 42).OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
             .Select(p => {
                 bool isNumeric = int.TryParse(p.Cod_Producto, out int numero);

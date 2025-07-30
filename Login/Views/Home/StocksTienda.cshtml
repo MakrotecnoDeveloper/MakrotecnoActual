@@ -218,8 +218,8 @@
                         if (isNaN(valorVentaProductoFloat)) {
                             alert("Porfavor, introduce un numero valido");
                         } else {
-                            var id_empresa = "31969450-0";
-                            var categoria = 17;
+                            var id_empresa = "1234193470-6";
+                            var categoria = 42;
                             var estado = 1;
                             var ubicacion = prompt("Ubicacion ej: Estante #7");
                             $.ajax({
@@ -229,8 +229,9 @@
                                 success: function (data) {
                                     alert('Producto insertado.');
                                 },
-                                error: function () {
+                                error: function (xhr) {
                                     alert('Error al insertar los productos.');
+                                    console.log(xhr.responseText);
                                 }
                             });
                         }
