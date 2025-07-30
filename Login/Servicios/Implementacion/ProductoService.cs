@@ -18,10 +18,21 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<Producto> ObtenerProductos()
         {
-            var productosTraidosDB = _dbContext.Productos
+            return _dbContext.Productos
                 .Where(p => p.Estado == 1)
                 .ToList();
-            return productosTraidosDB;
+        }
+
+        public List<CategoriaProductos> ObtenerCategorias()
+        {
+            return _dbContext.CategoriaProductos.ToList();
+        }
+
+        public List<Producto> ObtenerProductosPorCategoria(int idCategoria)
+        {
+            return _dbContext.Productos
+                .Where(p => p.IdCatepro == idCategoria && p.Estado == 1)
+                .ToList();
         }
         public List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio)
         {

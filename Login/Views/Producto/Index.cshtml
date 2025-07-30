@@ -1,93 +1,125 @@
-﻿@model List<Producto>
+﻿@model Plataforma.Models.ProductosCategoriaViewModel
+
 @{
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    .vertical-nav {
+        position: relative;
+        background-color: #343a40;
+        color: white;
+        padding-top: 20px;
+        height: auto;
+    }
+
+        .vertical-nav .nav-link {
+            color: white;
+            padding: 15px;
+            font-size: 1.1em;
+        }
+
+            .vertical-nav .nav-link:hover {
+                background-color: #495057;
+            }
+
+            .vertical-nav .nav-link.active {
+                background-color: #007bff;
+            }
+
+    .search-box,
+    .results-box {
+        display: none;
+        margin-top: 20px;
+        background-color: #f1f1f1;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+        .search-box.active,
+        .results-box.active {
+            display: block;
+        }
+
+    .initial-view {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+
+    .btn-volver {
+        margin-bottom: 15px;
+    }
+</style>
+
 <div class="content-wrapper">
     <div class="container-fluid">
         <div class="row">
+            <!-- Menú lateral -->
             <div class="col-12 col-md-1">
-                <style>
-                    .vertical-nav {
-                        position: fixed;
-                        background-color: #343a40;
-                        color: white;
-                        padding-top: 20px;
-                    }
-
-                        .vertical-nav .nav-link {
-                            color: white;
-                            padding: 15px;
-                            font-size: 1.1em;
-                        }
-
-                            .vertical-nav .nav-link:hover {
-                                background-color: #495057;
-                            }
-
-                            .vertical-nav .nav-link.active {
-                                background-color: #007bff;
-                            }
-
-                    .search-box {
-                        display: none;
-                        width: 300px;
-                        background-color: #f1f1f1;
-                        box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-                        padding: 20px;
-                    }
-
-                        .search-box.active {
-                            display: block;
-                        }
-
-                    .form-group {
-                        margin-bottom: 15px;
-                    }
-
-                    .results-box {
-                        display: none;
-                        margin-top: 20px;
-                    }
-
-                        .results-box.active {
-                            display: block;
-                        }
-                </style>
                 <nav class="vertical-nav">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a href="#" class="nav-link" id="search-product-btn" data-toggle="tooltip" data-placement="right" title="Buscar Producto"><i class="fas fa-search"></i></a>
+                            <a href="#" class="nav-link" id="search-product-btn" title="Buscar Producto">
+                                <i class="fas fa-search"></i>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link" id="sinstock-product-btn" data-toggle="tooltip" data-placement="right" title="Productos sin stock"><i class="fas fa-exclamation-circle"></i></a>
+                            <a href="#" class="nav-link" id="sinstock-product-btn" title="Productos sin stock">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link" id="proxsinstock-product-btn" data-toggle="tooltip" data-placement="right" title="Productos proximos sin stock"><i class="fas fa-bell"></i></a>
+                            <a href="#" class="nav-link" id="proxsinstock-product-btn" title="Productos próximos sin stock">
+                                <i class="fas fa-bell"></i>
+                            </a>
                         </li>
                     </ul>
                 </nav>
             </div>
+
+            <!-- Contenido principal -->
             <div class="col-12 col-md-11">
+                <!-- Vista inicial -->
+                <div id="initial-view" class="initial-view">
+                    <h2>Bienvenido</h2>
+                    <p>Selecciona una opción del menú lateral para visualizar productos.</p>
+                    <p>Puedes buscar productos, ver los que no tienen stock o los que están por agotarse.</p>
+                    <!-- Puedes poner una imagen o ícono aquí también -->
+                </div>
+
+                <!-- Botón para volver a vista inicial -->
+                <div id="volver-inicio" style="display: none;">
+                    <button type="button" class="btn btn-secondary btn-volver" id="btn-volver-inicio">Volver a inicio</button>
+                </div>
+
+                <!-- Caja de búsqueda -->
                 <div class="search-box" id="search-box">
                     <h2>Buscar Producto</h2>
+
                     <div class="form-group">
                         <label for="product-code">Código del Producto:</label>
-                        <input type="text" id="product-code" class="form-control">
+                        <input type="text" id="product-code" class="form-control" />
                     </div>
+
                     <div class="form-group">
                         <label for="category">Categoría:</label>
                         <select id="category" class="form-control">
                             <option value="">Seleccione una categoría</option>
-                            @foreach (var categoria in Model.Select(p => p.IdCatepro).Distinct().OrderBy(id => id))
+                            @foreach (var categoria in Model.CategoriaProductos)
                             {
-                                <option value="@categoria">@categoria</option>
+                                <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
                             }
                         </select>
                     </div>
+
                     <button type="button" id="search-btn" class="btn btn-primary">Buscar</button>
                     <button type="button" id="close-search-box" class="btn btn-secondary">Cerrar</button>
                 </div>
+
+                <!-- Resultados AJAX -->
                 <div class="results-box" id="results-box">
                     <h2>Resultados de la búsqueda</h2>
                     <div id="results"></div>
@@ -97,94 +129,76 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function () {
-        var n = 0;
-        $('#search-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 1;
-        });
-        $('#sinstock-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 2;
-        });
-        $('#proxsinstock-product-btn').on('click', function () {
-            $('#search-box').addClass('active');
-            $('#results-box').removeClass('active');
-            $('#results').html('');
-            n = 3;
-        });
+@section Scripts {
+    <script>
+        $(function () {
+            let currentAction = '';
 
-        $('#close-search-box').on('click', function () {
-            $('#search-box').removeClass('active');
-        });
+            const resetView = () => {
+                $('#search-box').removeClass('active');
+                $('#results-box').removeClass('active').find('#results').empty();
+                $('#volver-inicio').hide();
+                $('#initial-view').show();
+            };
 
-        $('#search-btn').on('click', function () {
-            var searchTerm = $('#product-code').val();
-            var categoriaTerm = $('#category').val();
-            switch (n) {
-                case 1:
-                    $.ajax({
-                        url: '@Url.Action("Buscar", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
+            const mostrarBusqueda = () => {
+                $('#initial-view').hide();
+                $('#results-box').removeClass('active').find('#results').empty();
+                $('#search-box').addClass('active');
+                $('#volver-inicio').show();
+            };
+
+            const mostrarResultados = (html) => {
+                $('#search-box').removeClass('active');
+                $('#initial-view').hide();
+                $('#results-box').addClass('active').find('#results').html(html);
+                $('#volver-inicio').show();
+            };
+
+            // Eventos del menú lateral
+            $('#search-product-btn').click(function () {
+                currentAction = '@Url.Action("Buscar", "Producto")';
+                mostrarBusqueda();
+            });
+
+            $('#sinstock-product-btn').click(function () {
+                currentAction = '@Url.Action("BuscarSinStock", "Producto")';
+                mostrarBusqueda();
+            });
+
+            $('#proxsinstock-product-btn').click(function () {
+                currentAction = '@Url.Action("BuscarProximosSinStock", "Producto")';
+                mostrarBusqueda();
+            });
+
+            // Botón para cerrar caja de búsqueda
+            $('#close-search-box').click(function () {
+                resetView();
+            });
+
+            // Botón para volver a la vista inicial
+            $('#btn-volver-inicio').click(function () {
+                resetView();
+            });
+
+            // Buscar producto
+            $('#search-btn').click(function () {
+                const searchTerm = $('#product-code').val();
+                const categoriaTerm = $('#category').val();
+
+                if (!currentAction) {
+                    alert("Selecciona una opción del menú primero.");
+                    return;
+                }
+
+                $.get(currentAction, { searchTerm, categoriaTerm })
+                    .done(function (data) {
+                        mostrarResultados(data);
+                    })
+                    .fail(function () {
+                        mostrarResultados('<div class="alert alert-danger">Error al buscar productos.</div>');
                     });
-                    break;
-                case 2:
-                    $.ajax({
-                        url: '@Url.Action("BuscarSinStock", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
-                    });
-                    break;
-                case 3:
-                    $.ajax({
-                        url: '@Url.Action("BuscarProximosSinStock", "Producto")',
-                        type: 'GET',
-                        data: {
-                            searchTerm: searchTerm,
-                            categoriaTerm: categoriaTerm
-                        },
-                        success: function (data) {
-                            $('#search-box').removeClass('active');
-                            $('#results-box').addClass('active');
-                            $('#results').html(data);
-                        },
-                        error: function () {
-                            $('#results').append('<div>Error al buscar productos.</div>');
-                        }
-                    });
-                    break;
-                default:
-                    console.log("No ha seleccionado una opcion");
-                    break;
-            }
+            });
         });
-    });
-</script>
+    </script>
+}

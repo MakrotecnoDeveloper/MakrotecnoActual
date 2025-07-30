@@ -13,42 +13,40 @@ namespace Plataforma.Controllers
         {
             _usuarioService = usuarioService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var empleado = _usuarioService.ObtenerUsuarios();
+            var empleado = await _usuarioService.ObtenerUsuarios();
             return View(empleado);
         }
-        public IActionResult RegistrarEmpleado()
+        public IActionResult _AgregarEmpleado()
         {
-            return View();
+            return PartialView(new Empleado());
         }
+
         [HttpPost]
-        public IActionResult RegistrarDBEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
+        public async Task<IActionResult> AgregarEmpleado(Empleado emp)
         {
-            if(_usuarioService.ValidarEmpleado(cedula))
-            {
-                var mensaje = "Error: Ya existe un empleado con la misma cédula";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }else
-            {
-                _usuarioService.RegistrarEmpleado(cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
-                return RedirectToAction("RegistrarEmpleado");
-            }
+            await _usuarioService.InsertarEmpleado(emp);
+            return Ok();
         }
-        public IActionResult Editar(int id)
+
+        public async Task<IActionResult> _VerEmpleado(int cedula)
         {
-            var usuarioEncontrado = _usuarioService.BuscarUsuario(id);
-            if (usuarioEncontrado.Any())
-            {
-                return View(usuarioEncontrado);
-            }
-            else
-            {
-                var mensaje = "Error: No hay productos con ese codigo referenciado";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
+            var empleado = await _usuarioService.ObtenerPorCedula(cedula);
+            return PartialView(empleado);
+        }
+
+        public async Task<IActionResult> _EditarEmpleado(int cedula)
+        {
+            var empleado = await _usuarioService.ObtenerPorCedula(cedula);
+            return PartialView(empleado);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditarEmpleado(Empleado emp)
+        {
+            await _usuarioService.ActualizarEmpleado(emp);
+            return Ok();
         }
         public IActionResult FormEmpleadoCompania(int cedula)
         {
@@ -63,29 +61,6 @@ namespace Plataforma.Controllers
                 var mensaje = "Error: No hay empresas anexadas al sistema";
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
-            }
-        }
-        [HttpPost]
-        public IActionResult EditarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
-        {
-            if (cedula < 0 || nombre == null || apellido == null || genero == null || correo == null || rh == null || celular == null || contrasena == null)
-            {
-                var mensaje = "Error: Todos los campos deben tener un valor. No se permiten valores nulos.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }else
-            {
-                var empleado = _usuarioService.GetUsuarios(cedula, contrasena);
-                if(empleado == null)
-                {
-                    var mensaje = "Error: Empleado no existe.";
-                    TempData["ErrorMessage"] = mensaje;
-                    return RedirectToAction("Error", "Errores");
-                }else
-                {
-                    _usuarioService.EditarEmpleado(empleado, cedula, nombre, apellido, genero, correo, rh, celular, contrasena);
-                    return RedirectToAction("Index");
-                }
             }
         }
         [Authorize]

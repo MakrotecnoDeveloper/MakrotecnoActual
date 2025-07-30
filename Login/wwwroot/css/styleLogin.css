@@ -1,37 +1,62 @@
-﻿/* Background image (replace with URL from step 1) */
-body {
-    background-image: url("https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-    background-size: cover;
-    background-position: center;
+﻿body {
+    background-image: url('../img/Fondo_Login/background.png'), url('../img/Fondo_Login/background2.png');
+    background-repeat: no-repeat, no-repeat;
+    background-size: 30%, 30%;
+    background-position: left center, right center;
+    background-color: #fef8f5;
     height: 100vh;
+    margin: 0;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
-/* Login form styling (using Bootstrap) */
+@media (max-width: 768px) {
+    body {
+        background-size: 50%, 50%;
+        background-position: left bottom, right bottom;
+        padding-top: 2rem;
+    }
+
+    .login-form {
+        width: 95%;
+    }
+}
+
 .login-form {
-    width: 360px;
+    width: 400px;
+    max-width: 100%;
     padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #ffffffee;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+    position: relative;
 }
 
 .login-form-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .login-form-font-header {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: bold;
+    color: #333;
+    letter-spacing: 1px;
 }
 
     .login-form-font-header span {
-        color: #007bff; /* Bootstrap primary color */
+        color: #007bff;
     }
 
 .login-from-row {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 5px;
 }

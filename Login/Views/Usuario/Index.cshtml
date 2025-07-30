@@ -1,157 +1,135 @@
-﻿@model List<Empleado>
-@{
-    ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@{
+    ViewData["Title"] = "Empleados";
+    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "Rol")?.Value;
+    var mostrarOpciones = rolUsuario == "3";
 }
-<div class="content-wrapper py-4" id="tablaEmpleadoContainer">
-    <div class="container-fluid">
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h1 class="text-white bg-primary py-3 rounded shadow">Listado de Empleados</h1>
-            </div>
-        </div>
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2 class="mb-3">Listado de Empleados</h2>
+
+        @if (mostrarOpciones)
+        {
+            <button class="btn btn-primary mb-3" onclick="abrirModalAgregar()">Agregar Empleado</button>
+        }
 
         <div class="table-responsive">
-            <table class="table table-striped table-hover table-bordered shadow" id="tablaProductos">
-                <thead class="text-white" style="background-color: #002d72;">
-                    <tr class="text-center align-middle">
+            <table class="table table-bordered table-hover" id="tablaEmpleados">
+                <thead class="table-light">
+                    <tr>
                         <th>Cédula</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Género</th>
                         <th>Correo</th>
-                        <th>RH</th>
                         <th>Celular</th>
-                        <th>Contraseña</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="resultados" class="text-center">
-                    <!-- Aquí se cargan los empleados -->
+                <tbody id="tablaCuerpo">
+                    @foreach (var empleado in Model)
+                    {
+                        <tr>
+                            <td>@empleado.Cedula</td>
+                            <td>@empleado.Nombre</td>
+                            <td>@empleado.Apellido</td>
+                            <td>@empleado.Genero</td>
+                            <td>@empleado.Correo</td>
+                            <td>@empleado.Celular</td>
+                            <td>
+                                <button class="btn btn-info btn-sm" onclick="verEmpleado(@empleado.Cedula)">Ver</button>
+
+                                @if (mostrarOpciones)
+                                {
+                                    <button class="btn btn-warning btn-sm" onclick="editarEmpleado(@empleado.Cedula)">Editar</button>
+                                }
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
+
+        <!-- Controles de paginación -->
+        <nav>
+            <ul class="pagination justify-content-center" id="paginacionTabla"></ul>
+        </nav>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalEmpleado" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="contenidoModalEmpleado">
+                <!-- Se carga parcial con AJAX -->
+            </div>
+        </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        const filasPorPagina = 5;
+        let paginaActual = 1;
+        const tabla = document.getElementById("tablaEmpleados");
+        const cuerpoTabla = document.getElementById("tablaCuerpo");
+        const paginacion = document.getElementById("paginacionTabla");
 
-<div id="paginacion-container" class="text-center" style="margin-bottom:10px;">
-    <button onclick="cambiarPagina(-1)" id="botonAnterior">Anterior</button>
-    <span id="pagina-actual" class="text-white">Página 1</span>
-    <button onclick="cambiarPagina(1)" id="botonSiguiente">Siguiente</button>
-</div>
+        function mostrarPagina(pagina) {
+            const filas = cuerpoTabla.getElementsByTagName("tr");
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
 
-<script>
-    var paginaActual = 1;
-    var perfilesPorPagina = 10; // Puedes ajustar esto según tus necesidades
-    var totalPerfiles = @Model.Count(); // Obtén el total de perfiles desde el modelo
+            // Ocultar todas
+            for (let i = 0; i < filas.length; i++) {
+                filas[i].style.display = "none";
+            }
 
-    function cambiarPagina(direccion) {
-        paginaActual += direccion;
-        mostrarPerfiles();
-    }
+            // Mostrar las de la página actual
+            const inicio = (pagina - 1) * filasPorPagina;
+            const fin = inicio + filasPorPagina;
 
-    function mostrarPerfiles() {
-        var perfiles = @Html.Raw(Json.Serialize(Model));
-        var inicio = (paginaActual - 1) * perfilesPorPagina;
-        var fin = inicio + perfilesPorPagina;
-        var perfilesPagina = perfiles.slice(inicio, fin);
-        actualizarTabla(perfilesPagina);
-        actualizarPaginacion();
-    }
+            for (let i = inicio; i < fin && i < filas.length; i++) {
+                filas[i].style.display = "";
+            }
 
-    function actualizarTabla(perfiles) {
-        var resultados = document.getElementById('resultados');
-        resultados.innerHTML = '';
-        perfiles.forEach(perfil => {
-            var fila = document.createElement('tr');
-            fila.className = 'perfil-fila';
-            var html = `<td>${perfil.Cedula}</td>`;
-            html += `<td>${perfil.Nombre}</td>`;
-            html += `<td>${perfil.Apellido}</td>`;
-            html += `<td>${perfil.Genero}</td>`;
-            html += `<td>${perfil.Correo}</td>`;
-            html += `<td>${perfil.Rh}</td>`;
-            html += `<td>${perfil.Celular}</td>`;
-            html += `<td>${perfil.Contrasena}</td>`;
+            // Actualizar controles
+            paginacion.innerHTML = "";
+            for (let i = 1; i <= totalPaginas; i++) {
+                paginacion.innerHTML += `
+                    <li class="page-item ${i === pagina ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="mostrarPagina(${i})">${i}</a>
+                    </li>
+                `;
+            }
 
-            // Crear celdas para cada propiedad del perfil
-            var propiedades = ['cedula', 'nombre', 'apellido', 'genero', 'correo', 'rh', 'celular', 'contrasena'];
-            propiedades.forEach(propiedad => {
-                var celda = document.createElement('td');
-                celda.textContent = perfil[propiedad];
-                fila.appendChild(celda);
+            paginaActual = pagina;
+        }
+
+        // Inicializar
+        document.addEventListener("DOMContentLoaded", function () {
+            mostrarPagina(1);
+        });
+
+        function abrirModalAgregar() {
+            $.get('@Url.Action("_AgregarEmpleado", "Usuario")', function (data) {
+                $("#contenidoModalEmpleado").html(data);
+                $("#modalEmpleado").modal("show");
             });
+        }
 
-            var enlace1 = crearEnlace(`/Usuario/Editar?id=${perfil.cedula}`, 'fas fa-user-edit');
-            //var enlace2 = crearEnlace(`/Usuario/FormEmpleadoCompania?cedula=${perfil.cedula}`, 'fas fa-user-plus');
-            //var enlace3 = crearEnlace(`/Producto/Eliminar?id=${perfil.cedula}`, 'fas fa-user-times');
-
-            // Agregar enlaces a una celda
-            var acciones = document.createElement('td');
-            acciones.appendChild(enlace1);
-            //acciones.appendChild(enlace2);
-            //acciones.appendChild(enlace3);
-            fila.appendChild(acciones);
-
-            // Agregar la fila a la tabla
-            resultados.appendChild(fila);
-        });
-    }
-
-    function crearEnlace(href, iconoClass) {
-        var enlace = document.createElement('a');
-        enlace.href = href;
-        var icono = document.createElement('i');
-
-        icono.classList.add('icono-enlace');
-
-        // Separar las clases y agregarlas individualmente
-        var clases = iconoClass.split(' ');
-        clases.forEach(clase => {
-            icono.classList.add(clase);
-        });
-
-        enlace.appendChild(icono);
-        enlace.onclick = function () {
-            window.location.href = this.href;
-            return false; // Prevenir el comportamiento predeterminado del enlace
-        };
-        return enlace;
-    }
-    //fin funciones
-
-    function actualizarPaginacion() {
-        var paginaActualElement = document.getElementById('pagina-actual');
-        paginaActualElement.textContent = `Página ${paginaActual}`;
-
-        var botonAnterior = document.getElementById('botonAnterior');
-        var botonSiguiente = document.getElementById('botonSiguiente');
-
-        botonAnterior.disabled = paginaActual <= 1;
-        botonSiguiente.disabled = (paginaActual * perfilesPorPagina) >= totalPerfiles;
-    }
-
-    mostrarPerfiles();
-
-
-    // Script para manejar la búsqueda asíncrona
-    $(document).ready(function () {
-        $("#btnBuscar").click(function () {
-            var searchTerm = $("#searchTerm").val();
-            var categoriaTerm = $("#categoriaTerm").val();
-            $.ajax({
-                type: "POST",
-                url: "/Producto/Buscar",
-                data: { searchTerm: searchTerm, categoriaTerm: categoriaTerm },
-                success: function (result) {
-                    // Se espera que el controlador devuelva la vista parcial adecuada según la situación
-                    $("#tablaEmpleadoContainer").html(result);
-                },
-                error: function () {
-                    // Manejo de errores si es necesario
-                    $("#tablaEmpleadoContainer").html("<p>Ocurrió un error al procesar la solicitud.</p>");
-                }
+        function verEmpleado(cedula) {
+            $.get('@Url.Action("_VerEmpleado", "Usuario")', { cedula: cedula }, function (data) {
+                $("#contenidoModalEmpleado").html(data);
+                $("#modalEmpleado").modal("show");
             });
-        });
-    });
-</script>
+        }
+
+        function editarEmpleado(cedula) {
+            $.get('@Url.Action("_EditarEmpleado", "Usuario")', { cedula: cedula }, function (data) {
+                $("#contenidoModalEmpleado").html(data);
+                $("#modalEmpleado").modal("show");
+            });
+        }
+
+        function actualizarTabla() {
+            location.reload(); // O usar AJAX si quieres mejorar esto más
+        }
+    </script>
+}

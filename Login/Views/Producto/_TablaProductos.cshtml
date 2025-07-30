@@ -1,43 +1,100 @@
-﻿﻿
-@model List<Producto>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Descripcion</th>
-            <th>Valor Neto</th>
-            <th>Valor de Venta</th>
-            <th>Cantidad</th>
-            <th>Categoría</th>
-            <th>Empresa</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var producto in Model)
-        {
+﻿@model List<Producto>
+@{
+    ViewData["Title"] = "Productos";
+    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "Rol")?.Value;
+    var esRol6 = rolUsuario == "3"; // true si tiene rol 6
+}
+<div class="table-responsive">
+    <table id="productosTable" class="table table-striped table-bordered">
+        <thead class="thead-dark">
             <tr>
-                <td>@producto.Cod_Producto</td>
-                <td>@producto.NombreProducto</td>
-                <td>@producto.ValorNetoProducto</td>
-                <td>@producto.ValorVentaProducto</td>
-                <td>@producto.CantidadProducto</td>
-                <td>@producto.IdCatepro</td>
-                <td>@producto.ID_Empresa</td>
-                <td>@producto.Estado</td>
-                <td>
-                    <a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a asp-controller="Producto" asp-action="Eliminar" asp-route-id="@producto.Cod_Producto" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </a>
-                    <a asp-controller="Producto" asp-action="VisualizarProducto" asp-route-id="@producto.Cod_Producto" title="Visualizar">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                </td>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Valor Neto</th>
+                <th>Valor de Venta</th>
+                <th>Cantidad</th>
+                <th>Categoría</th>
+                <th>Empresa</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
+        </thead>
+        <tbody id="tablaBody">
+            @foreach (var producto in Model)
+            {
+                <tr>
+                    <td>@producto.Cod_Producto</td>
+                    <td>@producto.NombreProducto</td>
+                    <td>@producto.ValorNetoProducto</td>
+                    <td>@producto.ValorVentaProducto</td>
+                    <td>@producto.CantidadProducto</td>
+                    <td>@producto.IdCatepro</td>
+                    <td>@producto.ID_Empresa</td>
+                    <td>@producto.Estado</td>
+                    <td>
+                        @if (esRol6)
+                        {
+                            <a asp-controller="Producto" asp-action="Editar" asp-route-id="@producto.Cod_Producto" title="Editar">
+                                <i class="fas fa-edit text-primary"></i>
+                            </a>
+                            <a asp-controller="Producto" asp-action="Eliminar" asp-route-id="@producto.Cod_Producto" title="Eliminar">
+                                <i class="fas fa-trash-alt text-danger mx-2"></i>
+                            </a>
+                        }
+                        <a asp-controller="Producto" asp-action="VisualizarProducto" asp-route-id="@producto.Cod_Producto" title="Visualizar">
+                            <i class="fas fa-eye text-success"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- 📄 Paginación -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <button id="prevPage" class="btn btn-outline-secondary">Anterior</button>
+    <span id="pageInfo" class="mx-2"></span>
+    <button id="nextPage" class="btn btn-outline-secondary">Siguiente</button>
+</div>
+
+@section Scripts {
+    <script>
+        const rowsPerPage = 10;
+        let currentPage = 1;
+
+        const table = document.getElementById('productosTable');
+        const tbody = document.getElementById('tablaBody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        function renderPage(page) {
+            tbody.innerHTML = '';
+            const start = (page - 1) * rowsPerPage;
+            const end = page * rowsPerPage;
+
+            rows.slice(start, end).forEach(row => tbody.appendChild(row));
+            document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages}`;
+
+            document.getElementById('prevPage').disabled = page === 1;
+            document.getElementById('nextPage').disabled = page === totalPages;
         }
-    </tbody>
-</table>
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+
+        // Inicializar
+        renderPage(currentPage);
+    </script>
+}

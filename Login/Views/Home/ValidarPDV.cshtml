@@ -16,7 +16,7 @@
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 login-form">
+            <div class="col-md-6 login-form text-center">
                 <form asp-controller="Home" asp-action="validacionLogin" method="POST">
                     <div class="row login-form-header">
                         <p class="login-form-font-header">Makro<span>tecno</span></p>
@@ -30,7 +30,7 @@
                     <div class="row login-from-row">
                         <div class="col-md-12">
                             <span>Seleccione el PDV:</span>
-                            <select name="selectedPDV" class="form-control">
+                            <select name="selectedPDV" class="form-control mt-3">
                                 @foreach (var pdv in Model)
                                 {
                                     <option value="@pdv.InfopdvId">@pdv.NombreInfoPDV</option>

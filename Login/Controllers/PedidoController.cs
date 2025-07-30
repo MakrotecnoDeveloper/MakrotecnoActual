@@ -104,10 +104,23 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarMultiplesProductosAVenta(PedidosViewModel model)
         {
+            //Validar cantidad antes de hacer la venta.. (ya se hizo y valida si es menor o igual a 0)
             try
             {
+                foreach (var producto in model.Productos)
+                {
+                    var codigo = producto.Codigo.ToString();
+                    var cantidadActual = await _pedidoServicio.ObtenerCantidadProductoActual(codigo);
+                    //Validar cantidad es mayor al stock.. (pendiente mañana)
+                    if (cantidadActual <= 0.0m)
+                    {
+                        TempData["ErrorMessage"] = $"Error: El producto '{producto.Codigo}' no tiene stock.";
+                        return RedirectToAction("Error", "Errores");
+                    } 
+                }
                 await _pedidoServicio.GuardarPedidosAsync(model.Productos, model.IdVenta, User);
                 return RedirectToAction("DetalleVenta", new { idVenta = model.IdVenta });
+
             }
             catch (Exception ex)
             {
@@ -130,7 +143,8 @@ namespace Plataforma.Controllers
             }
 
             decimal subtotal = venta.Pedidos.Sum(p => p.SubTotal);
-            decimal iva = subtotal * 0.19M; // o la tasa correspondiente
+            //decimal iva = subtotal * 0.19M;
+            decimal iva = 0;
             decimal total = subtotal + iva;
 
             await _pedidoServicio.GuardarVentaActualizada(venta, total);

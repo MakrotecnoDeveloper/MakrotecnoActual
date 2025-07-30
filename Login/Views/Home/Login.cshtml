@@ -3,43 +3,44 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-  <link rel="stylesheet" href="~/css/styleLogin.css">
+    <meta charset="UTF-8">
+    <title>Login ERP - Makrotecno</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos opcionales -->
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css">
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="~/css/styleLogin.css">
 </head>
 <body>
-	
-	<div class="container">
-		<div class="row justify-content-center">
-			<div class="col-md-6 login-form">
-				<form asp-controller="Home" asp-action="ValidarPDV" method="POST">
-					<div class="row login-form-header">
-						<p class="login-form-font-header">Makro<span>tecno</span></p>
-					</div>
-					<div class="row login-from-row">
-						<div class="col-md-12">
-							<span>Cedula:</span>
-							<input type="number" name="cedula" class="form-control">
-						</div>
-					</div>
-					<div class="row login-from-row">
-						<div class="col-md-12">
-							<span>Contraseña:</span>
-							<input type="password" name="password" class="form-control">
-						</div>
-					</div>
-					<div class="row login-from-row">
-						<div class="col-md-12">
-							<button class="btn btn-primary">Entrar</button>
-							<a class="btn btn-primary" asp-action="Index" asp-controller="Home">Portal</a>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 login-form text-center">
+                <form asp-controller="Home" asp-action="ValidarPDV" method="POST">
+                    <div class="login-form-header">
+                        <p class="login-form-font-header">Makro<span>tecno ERP</span></p>
+                    </div>
+                    <div class="login-from-row">
+                        <label class="form-label">Cédula:</label>
+                        <input type="number" name="cedula" class="form-control" required>
+                    </div>
+                    <div class="login-from-row">
+                        <label class="form-label">Contraseña:</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="login-from-row d-flex justify-content-around">
+                        <button class="btn btn-primary" type="submit">Entrar</button>
+                        <a class="btn btn-outline-primary" asp-action="Index" asp-controller="Home">Portal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

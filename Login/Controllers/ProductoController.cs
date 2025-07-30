@@ -15,8 +15,20 @@ namespace Plataforma.Controllers
         }
         public IActionResult Index()
         {
-            var productos = _productoservice.ObtenerProductos();
-            return View(productos);
+            var model = new ProductosCategoriaViewModel
+            {
+                Productos = _productoservice.ObtenerProductos(),
+                CategoriaProductos = _productoservice.ObtenerCategorias()
+            };
+
+            return View(model);
+        }
+
+        // Para la búsqueda asincrónica
+        public IActionResult ProductosPorCategoria(int idCategoria)
+        {
+            var productos = _productoservice.ObtenerProductosPorCategoria(idCategoria);
+            return PartialView("_TablaProductos", productos);
         }
         [HttpGet]
         public async Task<IActionResult> ObtenerCategoriaProductos(int idServicio)

@@ -49,6 +49,19 @@ namespace Plataforma.Servicios.Implementacion
 
             return (producto.ValorVentaProducto, producto.ValorNetoProducto);
         }
+        public async Task<decimal> ObtenerCantidadProductoActual(string codigo)
+        {
+            try
+            {
+                var cantidad = await _dbContext.Productos.Where(x => x.Cod_Producto == codigo).FirstOrDefaultAsync();
+                return cantidad.CantidadProducto;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
         public async Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario)
         {
             // 1. Obtener cédula desde el claim

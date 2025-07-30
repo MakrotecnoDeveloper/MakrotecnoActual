@@ -1,0 +1,30 @@
+﻿@model List<Empleado>
+
+<table class="table table-bordered table-striped table-responsive">
+    <thead class="thead-dark">
+        <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Celular</th>
+            <th>Correo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr>
+                <td>@emp.Cedula</td>
+                <td>@emp.Nombre</td>
+                <td>@emp.Apellido</td>
+                <td>@emp.Celular</td>
+                <td>@emp.Correo</td>
+                <td>
+                    <button class="btn btn-info btn-sm verEmpleado" data-id="@emp.Cedula">Ver</button>
+                    <button class="btn btn-primary btn-sm editarEmpleado" data-id="@emp.Cedula">Editar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

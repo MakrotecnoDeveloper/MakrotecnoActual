@@ -3,19 +3,25 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
     {
-        List<Empleado> ObtenerUsuarios();
+        Task<List<Empleado>> ObtenerUsuarios();
+        Task<List<Empleado>> ObtenerTodos();
+        Task<Empleado> ObtenerPorCedula(int cedula);
+        Task InsertarEmpleado(Empleado empleado);
+        Task ActualizarEmpleado(Empleado empleado);
         int ObtenerRolPermisos(int cedula);
         string? ObtenerNombreRolPermisos(int rolEmpleado);
         int TraerUltimoIDPdv(int cedulaEmpleado);
         bool ServValidarDisponSede(int cedula);
         LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV);
         Empleado? GetUsuarios(int cedula, string password);
-        Task<Empleado> SaveUsuario(Empleado modelo);
+        //Task<Empleado> SaveUsuario(Empleado modelo);
 		List<Infopdv> FunValidarPDV(int cedula);
-		bool ValidarEmpleado(int cedula);
-        IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
-        List<Empleado> BuscarUsuario(int id);
-        void EditarEmpleado(Empleado empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
+		//bool ValidarEmpleado(int cedula);
+        //Empleado ObtenerEmpleadoPorId(string id);
+        //void ActualizarEmpleado(Empleado empleado);
+        //void AgregarEmpleado(Empleado empleado);
+        //List<Empleado> BuscarUsuario(int id);
+        //void EditarEmpleado(Empleado empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
         List<TipoCargo> ObtenerCargos();
         Empresas? ValidarExistenciaEmpresa(string nit);
         List<Empresas> ObtenerEmpresas();

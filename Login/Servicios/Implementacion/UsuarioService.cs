@@ -14,9 +14,31 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext = dbContext;
             _logger = logger;
         }
-        public List<Empleado> ObtenerUsuarios()
+        public async Task<List<Empleado>> ObtenerUsuarios()
         {
-            return _dbContext.Empleado.ToList();
+            var empleados = await _dbContext.Empleado.ToListAsync();
+            return empleados;
+        }
+        public async Task<List<Empleado>> ObtenerTodos()
+        {
+            return await _dbContext.Empleado.ToListAsync();
+        }
+
+        public async Task<Empleado> ObtenerPorCedula(int cedula)
+        {
+            return await _dbContext.Empleado.FindAsync(cedula);
+        }
+
+        public async Task InsertarEmpleado(Empleado empleado)
+        {
+            _dbContext.Empleado.Add(empleado);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task ActualizarEmpleado(Empleado empleado)
+        {
+            _dbContext.Empleado.Update(empleado);
+            await _dbContext.SaveChangesAsync();
         }
         public int ObtenerRolPermisos(int cedula)
         {
@@ -113,22 +135,15 @@ namespace Plataforma.Servicios.Implementacion
             var empleadoExistente = _dbContext.Empleado.FirstOrDefault(p => p.Cedula == cedula);
             return empleadoExistente != null;
         }
-        public IEnumerable<Empleado> RegistrarEmpleado(int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
+        public Empleado ObtenerEmpleadoPorId(string cedula)
         {
-            var nuevoEmpleado = new Empleado
-            {
-                Cedula = cedula,
-                Nombre = nombre,
-                Apellido = apellido,
-                Genero = genero,
-                Correo = correo,
-                Rh = rh,
-                Celular = celular,
-                Contrasena = contrasena
-            };
-            _dbContext.Empleado.Add(nuevoEmpleado);
+            return _dbContext.Empleado.Find(cedula);
+        }
+
+        public void AgregarEmpleado(Empleado empleado)
+        {
+            _dbContext.Empleado.Add(empleado);
             _dbContext.SaveChanges();
-            return _dbContext.Empleado.ToList();
         }
         public List<Empleado> BuscarUsuario(int id)
         {

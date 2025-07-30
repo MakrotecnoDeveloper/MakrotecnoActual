@@ -7,31 +7,32 @@
 <div class="content-wrapper justify-content-center">
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-12">
-                <div class="card rounded-lg shadow-sm mt-4">
+            <div class="col-lg-10">
+                <div class="card shadow rounded-4">
                     <div class="card-header bg-primary text-white">
-                        @foreach (var productos in Model)
-                        {
-                            <h3>Visualizar Producto @productos.NombreProducto</h3>
-                        }
+                        <h3 class="mb-0">Visualizar Productos</h3>
                     </div>
                     <div class="card-body">
-                        <div class="container">
-                            <table>
-                                <thead>
-                                    <th>Nombre</th>
-                                    <th>Valor Venta</th>
-                                    <th>Foto</th>
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Valor Venta</th>
+                                        <th>Foto</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var producto in Model)
                                     {
                                         <tr>
                                             <td>@producto.NombreProducto</td>
-                                            <td>@producto.ValorVentaProducto</td>
+                                            <td>$@producto.ValorVentaProducto</td>
                                             <td>
                                                 <img src="@Url.Content($"~/img/Productos/{producto.IdCatepro}/{producto.Cod_Producto}.png")"
                                                      alt="@producto.NombreProducto"
+                                                     class="img-thumbnail"
+                                                     style="max-width: 500px; max-height: 500px;"
                                                      onerror="this.onerror=null;this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
                                             </td>
                                         </tr>
@@ -39,6 +40,13 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        @if (!Model.Any())
+                        {
+                            <div class="alert alert-warning text-center mt-3">
+                                No hay productos disponibles para mostrar.
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
