@@ -26,7 +26,7 @@ namespace Plataforma.Controllers
                 var resultado = await _comprasService.InsertarCompraAsync(model);
                 if (resultado)
                 {
-                    return RedirectToAction("Index"); // O a donde requieras
+                    return RedirectToAction("InsertarCompra"); // O a donde requieras
                 }
             }
 

@@ -33,13 +33,21 @@ namespace Plataforma.Servicios.Implementacion
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
+                //Si hay descuento..
+                var total = model.Productos.Sum(p => p.VTotal);
+                if(model.Iva > 0)
+                {
+                    total = ((total * model.Iva) / 100) + total;
+                }
                 // 1. Crear la compra
                 var compra = new Compras
                 {
                     IdProveedor = model.IdProveedor,
-                    ValorTotal = model.Productos.Sum(p => p.VTotal),
+                    ValorTotal = total,
                     FechaCompra = DateTime.Now,
                     Estado = 1,
+                    Iva = model.Iva,
+                    DescuentoFactura = total - model.DescuentoFactura,
                     CodFacturaExterno = model.CodFacturaExterno
                 };
 

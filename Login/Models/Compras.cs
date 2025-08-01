@@ -18,5 +18,8 @@ public class Compras
 
         public int Estado { get; set; } = 1; // Valor por defecto
         public string CodFacturaExterno { get; set; }
+        public int Iva {  get; set; }
+        [Column(TypeName = "decimal(10,2)")] // Define precisión para la base de datos
+        public decimal DescuentoFactura { get; set; }
         public virtual ICollection<DetalleCompra> Detalles { get; set; }
 }
