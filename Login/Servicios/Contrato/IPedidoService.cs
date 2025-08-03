@@ -24,5 +24,8 @@ namespace Plataforma.Servicios.Contrato
         Task<Ventas> ObtenerVentaPorIdAsync(int id);
         Task ActualizarVentaAsync(Ventas venta);
         Task ActualizarEstadoVentaAsync(int idVenta, string nuevoEstado);
+        Task<Factura> ObtenerFacturaConAdicionesAsync(int IdFactura);
+        Task<bool> AgregarAdicionFacturaAsync(int IdFactura, decimal valor, string descripcion, int cedulaEmpleado, string EstadoAdicion);
+        List<AdicionFactura> ObtenerConceptosCompletos();
     }
 }

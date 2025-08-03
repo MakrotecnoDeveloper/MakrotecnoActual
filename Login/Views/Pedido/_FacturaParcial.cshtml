@@ -1,0 +1,33 @@
+﻿@model Plataforma.Models.Factura
+@{
+    var esAdmin = ViewBag.Rol == "Admininistrador";
+}
+
+<table class="table table-bordered table-sm">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Número</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Model.IdFactura</td>
+            <td>@Model.NumeroFactura</td>
+            <td>@Model.Venta.CedulaCliente</td>
+            <td>@Model.FechaEmision.ToShortDateString()</td>
+            <td>$@Model.Total</td>
+            <td>@Model.EstadoFactura</td>
+            <td>
+                    <button class="btn btn-success btn-sm" onclick="mostrarAdicion(@Model.IdFactura)">Agregar Adición</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div id="formularioAdicion"></div>

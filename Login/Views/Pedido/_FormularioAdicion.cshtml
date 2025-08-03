@@ -1,0 +1,21 @@
+﻿@model int
+
+<form id="formAgregarAdicion">
+    <input type="hidden" name="IdFactura" value="@Model" />
+
+    <div class="mb-2">
+        <label class="form-label">Descripción:</label>
+        <input type="text" name="Descripcion" class="form-control" required />
+    </div>
+
+    <div class="mb-2">
+        <select name="EstadoAdicion">
+            <option value="Descuento">Descuento</option>
+            <option value="Aumento">Aumento</option>
+        </select>
+        <label class="form-label">Valor (+/-):</label>
+        <input type="number" name="Valor" class="form-control" required step="0.01" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar Adición</button>
+</form>

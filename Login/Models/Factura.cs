@@ -15,4 +15,5 @@ public class Factura
     public string EstadoFactura { get; set; }
     [ForeignKey("IdVenta")]
     public virtual Ventas Venta { get; set; }
+    public virtual ICollection<AdicionFactura> Adiciones { get; set; }
 }

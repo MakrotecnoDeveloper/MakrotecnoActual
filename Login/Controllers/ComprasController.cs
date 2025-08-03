@@ -29,6 +29,20 @@ namespace Plataforma.Controllers
                     return RedirectToAction("InsertarCompra"); // O a donde requieras
                 }
             }
+            else
+            {
+                // Aquí inspeccionas los errores del ModelState
+                foreach (var entry in ModelState)
+                {
+                    var key = entry.Key; // Nombre del campo
+                    var errors = entry.Value.Errors;
+                    foreach (var error in errors)
+                    {
+                        // Puedes registrar, mostrar o hacer algo con los errores
+                        Console.WriteLine($"Error en campo '{key}': {error.ErrorMessage}");
+                    }
+                }
+            }
 
             // Si falla la validación o inserción, recarga la vista con el modelo
             ViewBag.Proveedores = await _comprasService.ObtenerProveedoresAsync();

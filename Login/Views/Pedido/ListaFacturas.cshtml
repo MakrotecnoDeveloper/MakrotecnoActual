@@ -12,6 +12,17 @@
             <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
         }
 
+        <!-- Buscador de Factura Individual -->
+        <div class="mb-4 text-center">
+            <div class="input-group w-50 mx-auto">
+                <input type="number" id="buscarFacturaInput" class="form-control" placeholder="Buscar por ID de Factura" />
+                <button class="btn btn-primary" id="btnBuscarFactura">Buscar</button>
+            </div>
+        </div>
+
+        <!-- Resultado de la búsqueda -->
+        <div id="resultadoFactura"></div>
+
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -49,3 +60,37 @@
         </table>
     </div>
 </div>
+
+
+
+@section Scripts {
+    <script>
+        $(document).on('click', '#btnBuscarFactura', function () {
+            var IdFactura = $('#buscarFacturaInput').val();
+            if (!IdFactura) return;
+
+            $.get('/Pedido/BuscarFacturaPorId', { IdFactura: IdFactura }, function (html) {
+                $('#resultadoFactura').html(html);
+            });
+        });
+
+        function mostrarAdicion(IdFactura) {
+            $.get('/Pedido/FormularioAdicion', { IdFactura: IdFactura }, function (html) {
+                $('#formularioAdicion').html(html);
+            });
+        }
+
+        $(document).on('submit', '#formAgregarAdicion', function (e) {
+            e.preventDefault();
+
+            $.post('/Pedido/GuardarAdicion', $(this).serialize(), function (resp) {
+                if (resp.success) {
+                    alert("Adición registrada correctamente");
+                    $('#btnBuscarFactura').click(); // Recargar factura actualizada
+                } else {
+                    alert("Error al guardar la adición.");
+                }
+            });
+        });
+    </script>
+}

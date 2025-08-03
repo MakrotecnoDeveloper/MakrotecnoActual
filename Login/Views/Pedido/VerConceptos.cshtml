@@ -1,0 +1,30 @@
+﻿@model List<Plataforma.Models.AdicionFactura>
+@{
+    ViewData["Title"] = "VerConceptos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <h2>Conceptos de Facturas</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Descripción</th>
+                <th>Valor</th>
+                <th>Factura relacionada</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IdAdicion</td>
+                    <td>@item.Descripcion</td>
+                    <td>@item.Valor</td>
+                    <td>@item.IdFactura</td> <!-- Solo si estás usando Include -->
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

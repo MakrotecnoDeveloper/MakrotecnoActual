@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Vml;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -99,33 +100,18 @@ namespace Plataforma.Servicios.Implementacion
                     productoExistente.CantidadProducto -= pedido.Stock;
                     _dbContext.Productos.Update(productoExistente);
                 }
-
                 //Calcular subtotal de este pedido
                 pedido.IdVenta = idVenta;
                 pedido.InfopdvId = infoPdvId;
                 pedido.FechaRegistro = DateTime.Now;
+                var subtotal = pedido.Stock * pedido.VVenta;
                 pedido.SubTotal = pedido.Stock * pedido.VVenta;
-
-                //Acumular total
-                totalVenta += pedido.SubTotal;
-
                 _dbContext.Pedidos.Add(pedido);
             }
+            
 
             await _dbContext.SaveChangesAsync();
         }
-
-        /*public async Task GuardarPedidosAsync(List<Pedidos> pedidos)
-        {
-            foreach (var pedido in pedidos)
-            {
-                pedido.SubTotal = pedido.Stock * pedido.VVenta;
-                pedido.FechaRegistro = DateTime.Now;
-            }
-
-            _dbContext.Pedidos.AddRange(pedidos);
-            await _dbContext.SaveChangesAsync();
-        }*/
         public async Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido)
         {
             try
@@ -274,6 +260,49 @@ namespace Plataforma.Servicios.Implementacion
             {
                 throw new Exception($"No se encontró la venta con Id {idVenta} para actualizar su estado.");
             }
+        }
+        public async Task<Factura> ObtenerFacturaConAdicionesAsync(int IdFactura)
+        {
+            return await _dbContext.Factura
+                .Include(f => f.Venta)
+                .Include(f => f.Adiciones)
+                .FirstOrDefaultAsync(f => f.IdFactura == IdFactura);
+        }
+
+        public async Task<bool> AgregarAdicionFacturaAsync(int IdFactura, decimal valor, string descripcion, int cedulaEmpleado, string EstadoAdicion)
+        {
+            var factura = await _dbContext.Factura.FindAsync(IdFactura);
+            if (factura == null)
+                return false;
+
+            var adicion = new AdicionFactura
+            {
+                IdFactura = IdFactura,
+                Valor = valor,
+                Descripcion = descripcion,
+                Fecha = DateTime.Now,
+                Cedula = cedulaEmpleado
+            };
+
+            if(EstadoAdicion == "Descuento")
+            {
+                factura.Total -= valor;
+            }
+            else if(EstadoAdicion == "Aumento")
+                {
+                factura.Total += valor;
+            }
+                
+
+            _dbContext.AdicionFacturas.Add(adicion);
+            _dbContext.Factura.Update(factura);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+        public List<AdicionFactura> ObtenerConceptosCompletos()
+        {
+            return _dbContext.AdicionFacturas.ToList();
         }
 
     }

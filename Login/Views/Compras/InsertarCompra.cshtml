@@ -25,7 +25,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold">Factura Externa</label>
-                                        <input asp-for="CodFacturaExterno" name="CodFacturaExterno" class="form-control shadow-sm" />
+                                        <input asp-for="CodFacturaExterno" name="CodFacturaExterno" class="form-control shadow-sm" value="No tiene" />
                                     </div>
                                 </div>
 
@@ -93,7 +93,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label for="ivaFactura" class="form-label fw-semibold">IVA (19%)</label>
-                                            <input type="number" class="form-control bg-light" id="ivaFactura" name="Iva" value="0">
+                                            <input type="number" class="form-control bg-light" id="iva" name="Iva" value="0">
                                         </div>
                                         <div class="col-md-4">
                                             <label for="descuentoFactura" class="form-label fw-semibold">Descuento</label>
@@ -101,7 +101,7 @@
                                         </div>
                                         <div class="col-md-6 mt-3">
                                             <label for="totalFactura" class="form-label fw-bold">Total</label>
-                                            <input type="text" class="form-control bg-light text-success fw-bold" id="totalFactura" name="totalFactura" readonly value="0.00">
+                                            <input type="text" class="form-control bg-light text-success fw-bold" id="totalFactura" name="totalFactura" readonly value="0">
                                         </div>
                                     </div>
                                 </div>

@@ -137,6 +137,6 @@ function AcumularProductosDePedido() {
     let total = subtotal + iva - descuento;
 
     // Actualizar los campos de IVA y total
-    $('#ivaFactura').val(iva.toFixed(2));
+    //$('#ivaFactura').val(Math.floor(iva));
     $('#totalFactura').val(total.toFixed(2));
 }

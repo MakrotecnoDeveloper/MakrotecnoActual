@@ -133,7 +133,7 @@ namespace Plataforma.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> CrearFactura(int idVenta)
+        public async Task<IActionResult> CrearFactura(int idVenta, int Iva)
         {
             var venta = await _pedidoServicio.ObtenerVentaConPedidos(idVenta);
             if (venta == null || venta.Pedidos.Count == 0)
@@ -141,12 +141,13 @@ namespace Plataforma.Controllers
                 TempData["ErrorMessage"] = "No se encontró la venta o no tiene productos.";
                 return RedirectToAction("AgregarFactura");
             }
-
-            decimal subtotal = venta.Pedidos.Sum(p => p.SubTotal);
             //decimal iva = subtotal * 0.19M;
-            decimal iva = 0;
-            decimal total = subtotal + iva;
-
+            decimal total = venta.Pedidos.Sum(p => p.SubTotal);
+            decimal totalIva = ((total * Iva) / 100);
+            if (totalIva > 0)
+            {
+                total = totalIva + total;
+            }
             await _pedidoServicio.GuardarVentaActualizada(venta, total);
 
             Factura factura = new Factura
@@ -154,8 +155,8 @@ namespace Plataforma.Controllers
                 NumeroFactura = await _pedidoServicio.GenerarConsecutivoFactura(),
                 FechaEmision = DateTime.Now,
                 IdVenta = idVenta,
-                SubTotal = subtotal,
-                IVA = iva,
+                SubTotal = total,
+                IVA = totalIva,
                 Total = total,
                 EstadoFactura = "Emitida"
             };
@@ -212,6 +213,41 @@ namespace Plataforma.Controllers
 
             TempData["SuccessMessage"] = $"La venta ha sido {nuevoEstado.ToLower()} exitosamente.";
             return RedirectToAction("DetalleVenta", new { idVenta = idVenta });
+        }
+        [HttpGet]
+        public async Task<IActionResult> BuscarFacturaPorId(int IdFactura)
+        {
+            var factura = await _pedidoServicio.ObtenerFacturaConAdicionesAsync(IdFactura);
+            if (factura == null)
+                return PartialView("_FacturaNoEncontrada");
+
+            var rol = User.IsInRole("Administrador") ? "Admin" : "User";
+            ViewBag.Rol = rol;
+            return PartialView("_FacturaParcial", factura);
+        }
+
+        [HttpGet]
+        public IActionResult FormularioAdicion(int IdFactura)
+        {
+            return PartialView("_FormularioAdicion", IdFactura);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarAdicion(int IdFactura, decimal Valor, string Descripcion, string EstadoAdicion)
+        {
+            var cedulaClaim = User.FindFirst("Cedula")?.Value;
+            if (int.TryParse(cedulaClaim, out int cedulaEmpleado))
+            {
+                var resultado = await _pedidoServicio.AgregarAdicionFacturaAsync(IdFactura, Valor, Descripcion, cedulaEmpleado, EstadoAdicion);
+                return Json(new { success = resultado });
+            }
+            return Json(new { success = false });
+        }
+        public IActionResult VerConceptos()
+        {
+            //var facturas = _pedidoServicio.ObtenerFacturasFechaDescendente();
+            var traerConceptos = _pedidoServicio.ObtenerConceptosCompletos();
+            return View(traerConceptos);
         }
     }
 }
