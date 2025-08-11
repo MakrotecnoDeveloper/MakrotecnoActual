@@ -1,0 +1,37 @@
+﻿@model Plataforma.Models.OrdenServicios
+
+<form id="formEditarOrden">
+    <input type="hidden" asp-for="IdOrden" />
+
+    <div class="mb-3">
+        <label asp-for="Estado" class="form-label"></label>
+        <select asp-for="Estado" class="form-select">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Ejecucion">Ejecución</option>
+            <option value="Finalizada">Finalizada</option>
+            <option value="Rechazada">Rechazada</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+</form>
+
+<script>
+    $("#formEditarOrden").on("submit", function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/OrdenServicio/EditarOrden',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function () {
+                alert('Estado actualizado correctamente');
+                $("#modalEditarOrden").modal('hide'); // o tu método de cerrar panel
+                location.reload(); // Recarga la lista
+            },
+            error: function () {
+                alert('Ocurrió un error al actualizar el estado.');
+            }
+        });
+    });
+</script>

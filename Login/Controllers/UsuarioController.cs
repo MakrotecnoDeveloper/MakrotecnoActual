@@ -20,11 +20,11 @@ namespace Plataforma.Controllers
         }
         public IActionResult _AgregarEmpleado()
         {
-            return PartialView(new Empleado());
+            return PartialView(new Empleados());
         }
 
         [HttpPost]
-        public async Task<IActionResult> AgregarEmpleado(Empleado emp)
+        public async Task<IActionResult> AgregarEmpleado(Empleados emp)
         {
             await _usuarioService.InsertarEmpleado(emp);
             return Ok();
@@ -43,7 +43,7 @@ namespace Plataforma.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditarEmpleado(Empleado emp)
+        public async Task<IActionResult> EditarEmpleado(Empleados emp)
         {
             await _usuarioService.ActualizarEmpleado(emp);
             return Ok();
@@ -230,9 +230,9 @@ namespace Plataforma.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult AddCliente(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente)
+        public IActionResult AddCliente(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente, string correoCliente, string direccionCliente)
         {
-            var validacionInserClient = _usuarioService.InsertAddClient(cedulaCliente, nombreCliente, empresaCliente, ciudadCliente, telefonoCliente);
+            var validacionInserClient = _usuarioService.InsertAddClient(cedulaCliente, nombreCliente, empresaCliente, ciudadCliente, telefonoCliente, correoCliente, direccionCliente);
             if(validacionInserClient)
             {
                 return RedirectToAction("FormCrearCliente");

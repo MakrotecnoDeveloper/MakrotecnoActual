@@ -4,48 +4,70 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-    <!-- Tu formulario HTML aquí -->
-<div class="content-wrapper">
+<div class="content-wrapper py-4" style="background-color: #f8f9fa;">
     <form id="formularioProducto" method="POST">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6 mx-auto text-center">
-                    <div class="header-title">
-                        <h1 class="wv-heading--title">
-                            Agregar Productos
-                        </h1>
-                        <h2 class="wv-heading--subtitle">
-                            Interfaz de Usuario para agregar productos nuevos al sistema
-                        </h2>
-                    </div>
+            <!-- Título -->
+            <div class="row mb-4">
+                <div class="col-md-8 mx-auto text-center">
+                    <h1 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-box-seam"></i> Agregar Productos
+                    </h1>
+                    <p class="text-muted">
+                        Interfaz de Usuario para agregar productos nuevos al sistema
+                    </p>
+                    <hr class="w-50 mx-auto">
                 </div>
             </div>
+
+            <!-- Formulario -->
             <div class="row">
-                <div class="col-md-4 mx-auto">
-                    <div class="myform form ">
-                            <div class="form-group">
-                                <select name="id_empresa" id="id_empresa">
-                                <option value="1234193470-6">Makrotecno</option>
+                <div class="col-md-6 mx-auto">
+                    <div class="card shadow-lg border-0 rounded-3">
+                        <div class="card-body p-4">
+
+                            <!-- Empresa -->
+                            <div class="mb-3">
+                                <label for="id_empresa" class="form-label fw-semibold">Empresa</label>
+                                <select name="id_empresa" id="id_empresa" class="form-select">
+                                    <option value="1234193470-6">Makrotecno</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <input type="text" name="codigo" class="form-control my-input" id="codigo" placeholder="Codigo">
+
+                            <!-- Código -->
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label fw-semibold">Código</label>
+                                <input type="text" name="codigo" class="form-control" id="codigo" placeholder="Ingrese el código">
                             </div>
-                            <div class="form-group">
-                                <input type="text" name="descripcion" class="form-control my-input" id="descripcion" placeholder="Descripcion">
+
+                            <!-- Descripción -->
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+                                <input type="text" name="descripcion" class="form-control" id="descripcion" placeholder="Ingrese la descripción">
                             </div>
-                            <div class="form-group">
-                                <input type="number" name="valor_neto" class="form-control my-input" id="valorNeto" placeholder="Valor Neto">
+
+                            <!-- Valor Neto -->
+                            <div class="mb-3">
+                                <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
+                                <input type="number" name="valor_neto" class="form-control" id="valorNeto" placeholder="Ingrese el valor neto">
                             </div>
-                            <div class="form-group">
-                                <input type="number" name="valor_unitario" id="valorVenta" class="form-control my-input" placeholder="Valor Unitario">
+
+                            <!-- Valor Unitario -->
+                            <div class="mb-3">
+                                <label for="valorVenta" class="form-label fw-semibold">Valor Unitario</label>
+                                <input type="number" name="valor_unitario" id="valorVenta" class="form-control" placeholder="Ingrese el valor unitario">
                             </div>
-                            <div class="form-group">
-                                <input type="number" name="stock" id="stock" class="form-control my-input" placeholder="Stock">
+
+                            <!-- Stock -->
+                            <div class="mb-3">
+                                <label for="stock" class="form-label fw-semibold">Stock</label>
+                                <input type="number" name="stock" id="stock" class="form-control" placeholder="Ingrese el stock disponible">
                             </div>
-                            <div class="form-group">
-                                <label for="servicio">Servicio</label>
-                                <select name="servicio" id="servicio" class="form-control my-input">
+
+                            <!-- Servicio -->
+                            <div class="mb-3">
+                                <label for="servicio" class="form-label fw-semibold">Servicio</label>
+                                <select name="servicio" id="servicio" class="form-select">
                                     <option disabled selected>Seleccione un servicio</option>
                                     @foreach (var servicio in Model.Servicios)
                                     {
@@ -53,19 +75,39 @@
                                     }
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Categorías</label>
-                                <select name="categorias" id="categorias" class="form-control my-input">
+
+                            <!-- Proveedores -->
+                            <div class="mb-3">
+                                <label for="proveedor" class="form-label fw-semibold">Proveedores</label>
+                                <select name="proveedor" id="proveedor" class="form-select">
+                                    <option disabled selected>Seleccione un proveedor</option>
+                                    @foreach (var proveedor in Model.Proveedores)
+                                    {
+                                        <option value="@proveedor.IdProveedor">@proveedor.RazonSocial</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Categorías -->
+                            <div class="mb-4">
+                                <label for="categorias" class="form-label fw-semibold">Categorías</label>
+                                <select name="categorias" id="categorias" class="form-select">
                                     <!-- Se llenará con JS -->
                                 </select>
                             </div>
-                            <div class="text-center ">
-                                <button type="button" id="btnAgregarProducto" class="btn btn-block send-button tx-tfm">Agregar Producto</button>
+
+                            <!-- Botón -->
+                            <div class="d-grid">
+                                <button type="button" id="btnAgregarProducto" class="btn btn-primary btn-lg shadow-sm">
+                                    <i class="bi bi-plus-circle"></i> Agregar Producto
+                                </button>
                             </div>
+
+                        </div>
                     </div>
-                 </div>
+                </div>
             </div>
-         </div>
+        </div>
     </form>
 </div>
 
@@ -112,7 +154,8 @@
                 valor_unitario: parseFloat($('#valorVenta').val()),
                 stock: parseInt($('#stock').val()),
                 categorias: $('#categorias').val(),
-                id_servicio: $('#servicio').val()
+                id_servicio: $('#servicio').val(),
+                id_proveedor: $('#proveedor').val()
             };
             $.ajax({
                 type: 'POST',

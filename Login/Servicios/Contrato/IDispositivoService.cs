@@ -3,9 +3,10 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IDispositivoService
     {
-        Task CrearDispositivoAsync(Dispositivo dispositivo);
-        Task<List<Dispositivo>> ObtenerDispositivosConClientesAsync();
-        Task<Dispositivo?> ObtenerPorIdAsync(int idDispositivo);
-        Task ActualizarDispositivoAsync(Dispositivo dispositivo);
+        Task<List<TipoDispositivos>> ObtenerTipoDispositivos();
+        Task CrearDispositivoAsync(Dispositivos dispositivo, string cedulaClaim);
+        Task<List<Dispositivos>> ObtenerDispositivosConClientesAsync();
+        Task<Dispositivos?> ObtenerPorIdAsync(int idDispositivo);
+        Task ActualizarDispositivoAsync(Dispositivos dispositivo);
     }
 }

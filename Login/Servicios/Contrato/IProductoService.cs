@@ -3,7 +3,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias);
+        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor);
         List<CategoriaProductos> ObtenerCategorias();
         List<Producto> ObtenerProductos();
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
@@ -30,6 +30,7 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> CrearCategoriaAsync(CategoriaProductos categoria);
         Task<List<Servicio>> ObtenerServiciosAsync();
         Task<List<Servicio>> ObtenerServicios();
+        Task<List<Proveedores>> ObtenerProveedores();
         Task<Servicio> CrearServicio(Servicio servicio);
     }
 }

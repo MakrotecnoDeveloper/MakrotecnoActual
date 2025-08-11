@@ -3,17 +3,17 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
     {
-        Task<List<Empleado>> ObtenerUsuarios();
-        Task<List<Empleado>> ObtenerTodos();
-        Task<Empleado> ObtenerPorCedula(int cedula);
-        Task InsertarEmpleado(Empleado empleado);
-        Task ActualizarEmpleado(Empleado empleado);
+        Task<List<Empleados>> ObtenerUsuarios();
+        Task<List<Empleados>> ObtenerTodos();
+        Task<Empleados> ObtenerPorCedula(int cedula);
+        Task InsertarEmpleado(Empleados empleado);
+        Task ActualizarEmpleado(Empleados empleado);
         int ObtenerRolPermisos(int cedula);
         string? ObtenerNombreRolPermisos(int rolEmpleado);
         int TraerUltimoIDPdv(int cedulaEmpleado);
         bool ServValidarDisponSede(int cedula);
         LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV);
-        Empleado? GetUsuarios(int cedula, string password);
+        Empleados? GetUsuarios(int cedula, string password);
         //Task<Empleado> SaveUsuario(Empleado modelo);
 		List<Infopdv> FunValidarPDV(int cedula);
 		//bool ValidarEmpleado(int cedula);
@@ -35,7 +35,7 @@ namespace Plataforma.Servicios.Contrato
         IEnumerable<EmpleadoEmpresa> InsertarEmpleadoEmpresa(string id_empresa, int cedula);
         EmpleadoSedeViewModel? EmpleadoSede();
         List<Sede> GetSedesByEmpresaId(string empresaId);
-        Empleado? ValidarCedula(int cedula);
+        Empleados? ValidarCedula(int cedula);
         string? ObtenerIdEmpresa(int cedula);
         List<Sede> ObtenerSedes(string idEmpresa);
         bool ObtenerSedePorEmpleado(int cedula);
@@ -50,8 +50,8 @@ namespace Plataforma.Servicios.Contrato
         Infopdv? SeleccionarNombrePDV(int selectedPDV);
         int? ValidarExistenteIdPDV(int idPDV, int cedula);
         Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV, int cedula);
-        bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente);
-        List<Cliente> ServVisuaCliente();
+        bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente, string correoCliente, string direccionCliente);
+        List<Clientes> ServVisuaCliente();
         bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo);
         List<Proveedores> ServVisuaProveedor();
         List<Servicio> ServTraerServicios();

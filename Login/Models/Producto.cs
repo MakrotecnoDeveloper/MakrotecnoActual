@@ -25,4 +25,5 @@ public class Producto
         public string? Ubicacion { get; set; }
         [Column("idCatePro")]
         public int IdCatepro {  get; set; }
+        public int idProveedor { get; set; }
 }

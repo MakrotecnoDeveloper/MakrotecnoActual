@@ -4,52 +4,64 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="content-wrapper">
-    <div class="container mt-5">
-        <div class="card shadow-lg">
-            <div class="card-header bg-primary text-white text-center">
-                <h3>Agregar Proveedor</h3>
+<div class="content-wrapper py-5" style="background-color: #f4f6f9;">
+    <div class="container">
+        <div class="card shadow-lg border-0 rounded-4">
+            <!-- Encabezado con degradado verde -->
+            <div class="card-header text-white text-center py-4" style="background: linear-gradient(90deg, #28a745, #5cd97c);">
+                <h3 class="m-0 fw-bold">
+                    <i class="bi bi-truck"></i> Agregar Proveedor
+                </h3>
+                <small class="opacity-75">Complete la información para registrar un nuevo proveedor</small>
             </div>
-            <div class="card-body">
+
+            <!-- Cuerpo del formulario -->
+            <div class="card-body p-4">
                 <form id="formAgregarProveedor" asp-action="AddProveedor" asp-controller="Usuario" method="POST">
+
                     <!-- NIT -->
-                    <div class="mb-3">
-                        <label for="nit" class="form-label">NIT <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nit" name="nit" placeholder="Ingrese el NIT" required>
+                    <div class="mb-4">
+                        <label for="nit" class="form-label fw-semibold">NIT <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg" id="nit" name="nit" placeholder="Ingrese el NIT" required>
                     </div>
 
                     <!-- Razón Social -->
-                    <div class="mb-3">
-                        <label for="razonSocial" class="form-label">Razón Social <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="razonSocial" name="razonSocial" placeholder="Ingrese la razón social" required>
+                    <div class="mb-4">
+                        <label for="razonSocial" class="form-label fw-semibold">Razón Social <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg" id="razonSocial" name="razonSocial" placeholder="Ingrese la razón social" required>
                     </div>
 
                     <!-- Dirección -->
-                    <div class="mb-3">
-                        <label for="direccion" class="form-label">Dirección</label>
-                        <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Ingrese la dirección">
+                    <div class="mb-4">
+                        <label for="direccion" class="form-label fw-semibold">Dirección</label>
+                        <input type="text" class="form-control form-control-lg" id="direccion" name="direccion" placeholder="Ingrese la dirección">
                     </div>
 
                     <!-- Celular -->
-                    <div class="mb-3">
-                        <label for="celular" class="form-label">Celular</label>
-                        <input type="tel" class="form-control" id="celular" name="celular" placeholder="Ingrese el celular">
+                    <div class="mb-4">
+                        <label for="celular" class="form-label fw-semibold">Celular</label>
+                        <input type="tel" class="form-control form-control-lg" id="celular" name="celular" placeholder="Ingrese el celular">
                     </div>
 
                     <!-- Correo -->
-                    <div class="mb-3">
-                        <label for="correo" class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" id="correo" name="correo" placeholder="Ingrese el correo electrónico">
+                    <div class="mb-4">
+                        <label for="correo" class="form-label fw-semibold">Correo Electrónico</label>
+                        <input type="email" class="form-control form-control-lg" id="correo" name="correo" placeholder="Ingrese el correo electrónico">
                     </div>
 
                     <!-- Botones -->
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-success px-4">Guardar</button>
-                        <button type="reset" class="btn btn-secondary px-4">Limpiar</button>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-lg text-white px-5 shadow-sm" style="background: linear-gradient(90deg, #28a745, #5cd97c); border: none;">
+                            <i class="bi bi-save-fill"></i> Guardar
+                        </button>
+                        <button type="reset" class="btn btn-lg btn-outline-secondary px-5 ms-2">
+                            <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 

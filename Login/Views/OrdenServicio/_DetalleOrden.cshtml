@@ -1,0 +1,23 @@
+﻿@model List<HistOrdSer>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Fecha Registro</th>
+            <th>Reparación Detalle</th>
+            <th>Código Producto</th>
+            <th>Tecnico Asignado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FechaRegistro?.ToString("dd/MM/yyyy")</td>
+                <td>@item.ReparacionDet</td>
+                <td>@item.Cod_Producto</td>
+                <td>@item.Cedula</td>
+            </tr>
+        }
+    </tbody>
+</table>

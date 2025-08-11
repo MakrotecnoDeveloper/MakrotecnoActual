@@ -14,7 +14,7 @@ function insertarFilasCrearPedido() {
                         <input type="number" class="form-control" name="Productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
                     </td>
                     <td>
-                        <input type="text" class="form-control" name="Productos[${index}].VVenta" readonly placeholder="Valor Venta" id="vventa${index}">
+                        <input type="text" class="form-control" name="Productos[${index}].VVenta" placeholder="Valor Venta" id="vventa${index}">
                     </td>
                     <td>
                         <input type="number" class="form-control" name="Productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
@@ -87,7 +87,6 @@ $(document).on('click', '.opcion', function () {
                 // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
                 fila.find('#vneto' + fila.index()).val(producto.valorNeto);
                 fila.find('#vventa' + fila.index()).val(producto.valorVenta);
-                console.log(producto.valorVenta);
             }
         },
         error: function () {
@@ -111,7 +110,7 @@ $(document).on('input', '[id^="stock"], [id^="vneto"], [id^="vventa"]', function
 
     // Calcular y asignar el valor total
     var vtotal = stock * vventa;
-    fila.find('[id^="vtotal"]').val(vtotal.toFixed(2)); // Mostrar con 2 decimales
+    fila.find('[id^="vtotal"]').val(vtotal); // Mostrar con 2 decimales
 });
 
 function AcumularProductosDePedido() {
@@ -124,7 +123,7 @@ function AcumularProductosDePedido() {
     });
 
     // Actualizar el campo subtotal
-    $('#subtotalFactura').val(subtotal.toFixed(2));
+    $('#subtotalFactura').val(subtotal);
 
     // Leer valores de IVA y descuento
     let ivaPorcentaje = parseFloat($('#ivaFactura').val()) || 0; // Leer el porcentaje de IVA, si está vacío, será 0
@@ -138,5 +137,5 @@ function AcumularProductosDePedido() {
 
     // Actualizar los campos de IVA y total
     //$('#ivaFactura').val(Math.floor(iva));
-    $('#totalFactura').val(total.toFixed(2));
+    $('#totalFactura').val(total);
 }

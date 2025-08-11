@@ -1,4 +1,4 @@
-﻿@model Plataforma.Models.Dispositivo
+﻿@model Plataforma.Models.Dispositivos
 
 @{
     ViewData["Title"] = "Detalle del Dispositivo";
@@ -21,8 +21,6 @@
             <dt class="col-sm-3">IMEI</dt>
             <dd class="col-sm-9">@Model.IMEI</dd>
 
-            <dt class="col-sm-3">Accesorios</dt>
-            <dd class="col-sm-9">@Model.Accesorios</dd>
         </dl>
 
         <a asp-action="Dispositivos" class="btn btn-secondary">Volver</a>

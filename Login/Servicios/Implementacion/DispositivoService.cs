@@ -12,30 +12,54 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext = dbContext;
         }
 
-            public async Task CrearDispositivoAsync(Dispositivo dispositivo)
+            public async Task<List<TipoDispositivos>> ObtenerTipoDispositivos()
             {
-                var cliente = await _dbContext.Cliente.FindAsync(dispositivo.CedulaCliente);
+                return await  _dbContext.TipoDispositivos.ToListAsync();
+            }
+
+            public async Task CrearDispositivoAsync(Dispositivos dispositivo, string cedulaClaim)
+            {
+                var cliente = await _dbContext.Cliente
+                .Where(c => c.IdCliente == dispositivo.IdCliente)
+                .Select(c => new { c.IdCliente, c.CedulaCliente })
+                .FirstOrDefaultAsync();
+
                 if (cliente == null)
                     throw new Exception("El cliente no existe.");
 
+                // Asignar la cédula al dispositivo
+                dispositivo.CedulaCliente = cliente.CedulaCliente;
+
                 _dbContext.Dispositivos.Add(dispositivo);
+                await _dbContext.SaveChangesAsync();
+
+                var nuevaOrden = new OrdenServicios
+                { 
+                    IdDispositivo = dispositivo.IdDispositivo,
+                    FechaIngreso = dispositivo.FechaIngreso,
+                    ProblemaReportado = dispositivo.Detalle,
+                    Estado = "Ingresada",
+                    Observaciones = "Revision",
+                    Cedula = int.Parse(cedulaClaim)
+                };
+                _dbContext.OrdenServicios.Add(nuevaOrden);
                 await _dbContext.SaveChangesAsync();
             }
 
-            public async Task<List<Dispositivo>> ObtenerDispositivosConClientesAsync()
+            public async Task<List<Dispositivos>> ObtenerDispositivosConClientesAsync()
             {
                 return await _dbContext.Dispositivos
                     .Include(d => d.Cliente)
                     .ToListAsync();
             }
 
-            public async Task<Dispositivo?> ObtenerPorIdAsync(int idDispositivo)
+            public async Task<Dispositivos?> ObtenerPorIdAsync(int idDispositivo)
             {
                 return await _dbContext.Dispositivos
                     .Include(d => d.Cliente)
                     .FirstOrDefaultAsync(d => d.IdDispositivo == idDispositivo);
             }
-            public async Task ActualizarDispositivoAsync(Dispositivo dispositivo)
+            public async Task ActualizarDispositivoAsync(Dispositivos dispositivo)
             {
                 _dbContext.Dispositivos.Update(dispositivo);
                 await _dbContext.SaveChangesAsync();

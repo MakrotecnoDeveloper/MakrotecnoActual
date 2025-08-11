@@ -46,19 +46,20 @@ namespace Plataforma.Controllers
             var model = new ProductoInsertarViewModel
             {
                 Servicios = await _productoservice.ObtenerServicios(),
-                Categorias = new List<CategoriaProductos>() // o datos reales si los tienes
+                Categorias = new List<CategoriaProductos>(),
+                Proveedores = await _productoservice.ObtenerProveedores()
             };
 
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor)
         {
 
             if (ModelState.IsValid)
             {
                 // Lógica para agregar el producto usando _productoService
-                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valor_neto, valor_unitario, stock, categorias);
+                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valor_neto, valor_unitario, stock, categorias, id_proveedor);
 
                 if (resultado)
                 {

@@ -1,4 +1,4 @@
-﻿@model Plataforma.Models.Dispositivo
+﻿@model Plataforma.Models.Dispositivos
 
 @{
     ViewData["Title"] = "Editar Dispositivo";
@@ -10,7 +10,7 @@
 
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="IdDispositivo" />
-            <input type="hidden" asp-for="CedulaCliente" />
+            <input type="hidden" asp-for="IdCliente" />
 
             <div class="mb-3">
                 <label asp-for="Marca" class="form-label"></label>
@@ -28,12 +28,6 @@
                 <label asp-for="IMEI" class="form-label"></label>
                 <input asp-for="IMEI" class="form-control" />
                 <span asp-validation-for="IMEI" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Accesorios" class="form-label"></label>
-                <input asp-for="Accesorios" class="form-control" />
-                <span asp-validation-for="Accesorios" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-success">Guardar Cambios</button>

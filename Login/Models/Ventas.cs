@@ -6,7 +6,7 @@ public class Ventas
 {
     [Key]
     public int IdVenta { get; set; }
-    public int CedulaCliente { get; set; }
+    public int IdCliente { get; set; }
     public string MetodoPago { get; set; }
     [Column(TypeName = "decimal(10,2)")]
     public decimal Total { get; set; }
@@ -14,4 +14,5 @@ public class Ventas
     public int Cedula { get; set; }
     public DateTime FechaVenta { get; set; }
     public virtual ICollection<Pedidos> Pedidos { get; set; }
+    public int CedulaCliente { get; set; }
 }

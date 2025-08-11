@@ -42,7 +42,7 @@ namespace Plataforma.Controllers
         [HttpPost]
         public IActionResult ListarUsuarios(int cedula, string password)
         {
-            Empleado usuario_buscar = _usuarioService.GetUsuarios(cedula, password);
+            Empleados usuario_buscar = _usuarioService.GetUsuarios(cedula, password);
             if (usuario_buscar == null)
             {
                 var mensaje = "No se encontró ningún usuario con las credenciales especificadas. (SGE)";

@@ -60,7 +60,7 @@ namespace Plataforma.Controllers
         [HttpGet]
         public async Task<IActionResult> BuscarProductoPorCodigo(string codigo)
         {
-            Console.WriteLine("Me oprimiste aca" + codigo);
+            //Console.WriteLine("Me oprimiste aca" + codigo);
             var productos = await _comprasService.BuscarProductosPorCodigoAsync(codigo);
             var resultados = productos.Select(p => new {
                 label = $"{p.Cod_Producto} - {p.NombreProducto}",

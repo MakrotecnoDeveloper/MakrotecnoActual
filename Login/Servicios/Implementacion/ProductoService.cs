@@ -46,7 +46,7 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(c => c.IdServicio == idServicio)
                 .ToListAsync();
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor)
         {
             try
             {
@@ -65,7 +65,8 @@ namespace Plataforma.Servicios.Implementacion
                     ID_Empresa = id_empresa,
                     IdCatepro = categorias,
                     Estado = estado,
-                    Ubicacion = Ubicacion
+                    Ubicacion = Ubicacion,
+                    idProveedor = id_proveedor
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -488,6 +489,10 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<Servicio>> ObtenerServicios()
         {
             return await _dbContext.Servicio.ToListAsync();
+        }
+        public async Task<List<Proveedores>> ObtenerProveedores()
+        {
+            return await _dbContext.Proveedores.ToListAsync();
         }
 
         public async Task<Servicio> CrearServicio(Servicio servicio)

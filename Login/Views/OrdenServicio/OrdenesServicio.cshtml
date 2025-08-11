@@ -1,4 +1,4 @@
-﻿@model List<Plataforma.Models.OrdenServicio>
+﻿@model OrdenesServicioViewModel
 @{
     ViewData["Title"] = "Órdenes de Servicio";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -51,7 +51,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.OrdenServicios)
                 {
                     <tr>
                         <td>@item.IdOrden</td>

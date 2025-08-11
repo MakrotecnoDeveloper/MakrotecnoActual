@@ -65,6 +65,7 @@ builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IFlujoCajaService, FlujoCajaService>();
 builder.Services.AddScoped<IGananciaService, GananciaService>();
 builder.Services.AddScoped<IStreamingService, StreamingService>();
+builder.Services.AddScoped<ITercerosService, TercerosService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

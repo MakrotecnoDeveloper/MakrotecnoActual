@@ -1,0 +1,70 @@
+﻿@model OrdenesServicioViewModel
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<style>
+    /* Asegurar que el menú de autocomplete se vea encima */
+    .ui-autocomplete {
+        z-index: 9999 !important;
+        background: white;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
+<form id="formNuevaOrden">
+    <input type="hidden" name="IdOrden" value="@Model.IdOrden" />
+
+    <div class="mb-3">
+        <label>Reparación Detallada</label>
+        <textarea name="ReparacionDet" class="form-control"></textarea>
+    </div>
+
+    @if (Model.MostrarAgregarProductos)
+    {
+        <div id="productosContainer">
+            <div class="producto-item mb-2">
+                <input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar producto..." />
+            </div>
+        </div>
+        <button type="button" id="addProduct" class="btn btn-secondary mt-2">+ Agregar producto</button>
+    }
+
+    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+</form>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+    initAutocomplete(".cod-producto");
+    function initAutocomplete(input) {
+        $(input).autocomplete({
+            source: function (request, response) {
+                $.getJSON('/OrdenServicio/Buscar', { searchTerm: request.term }, function (data) {
+                   response($.map(data, function (item) {
+                        return {
+                            label: item.id
+                        };
+                    }));
+                });
+            },
+            minLength: 2
+        });
+    }
+    $("#addProduct").on("click", function () {
+        var newInput = $('<div class="producto-item mb-2">' +
+                            '<input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar producto..." />' +
+                         '</div>');
+        $("#productosContainer").append(newInput);
+        initAutocomplete(newInput.find(".cod-producto"));
+    });
+
+    $("#formNuevaOrden").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/OrdenServicio/CrearHistOrden',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function () {
+                alert('Historial agregado correctamente');
+                $("#sidePanel").fadeOut();
+            }
+        });
+    });
+</script>

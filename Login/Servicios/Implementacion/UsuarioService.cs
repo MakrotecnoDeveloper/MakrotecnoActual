@@ -14,28 +14,28 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext = dbContext;
             _logger = logger;
         }
-        public async Task<List<Empleado>> ObtenerUsuarios()
+        public async Task<List<Empleados>> ObtenerUsuarios()
         {
             var empleados = await _dbContext.Empleado.ToListAsync();
             return empleados;
         }
-        public async Task<List<Empleado>> ObtenerTodos()
+        public async Task<List<Empleados>> ObtenerTodos()
         {
             return await _dbContext.Empleado.ToListAsync();
         }
 
-        public async Task<Empleado> ObtenerPorCedula(int cedula)
+        public async Task<Empleados> ObtenerPorCedula(int cedula)
         {
             return await _dbContext.Empleado.FindAsync(cedula);
         }
 
-        public async Task InsertarEmpleado(Empleado empleado)
+        public async Task InsertarEmpleado(Empleados empleado)
         {
             _dbContext.Empleado.Add(empleado);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task ActualizarEmpleado(Empleado empleado)
+        public async Task ActualizarEmpleado(Empleados empleado)
         {
             _dbContext.Empleado.Update(empleado);
             await _dbContext.SaveChangesAsync();
@@ -95,9 +95,9 @@ namespace Plataforma.Servicios.Implementacion
                 }
         }
 
-        public Empleado? GetUsuarios(int cedula, string password)
+        public Empleados? GetUsuarios(int cedula, string password)
         {
-            Empleado? usuario_encontrando = _dbContext.Empleado.Where(u => u.Cedula == cedula && u.Contrasena == password).FirstOrDefault();
+            Empleados? usuario_encontrando = _dbContext.Empleado.Where(u => u.Cedula == cedula && u.Contrasena == password).FirstOrDefault();
             if (usuario_encontrando == null)
             {
                 return null;
@@ -124,7 +124,7 @@ namespace Plataforma.Servicios.Implementacion
             
 
         }
-        public async Task<Empleado> SaveUsuario(Empleado modelo)
+        public async Task<Empleados> SaveUsuario(Empleados modelo)
         {
             _dbContext.Empleado.Add(modelo);
             await _dbContext.SaveChangesAsync();
@@ -135,17 +135,17 @@ namespace Plataforma.Servicios.Implementacion
             var empleadoExistente = _dbContext.Empleado.FirstOrDefault(p => p.Cedula == cedula);
             return empleadoExistente != null;
         }
-        public Empleado ObtenerEmpleadoPorId(string cedula)
+        public Empleados ObtenerEmpleadoPorId(string cedula)
         {
             return _dbContext.Empleado.Find(cedula);
         }
 
-        public void AgregarEmpleado(Empleado empleado)
+        public void AgregarEmpleado(Empleados empleado)
         {
             _dbContext.Empleado.Add(empleado);
             _dbContext.SaveChanges();
         }
-        public List<Empleado> BuscarUsuario(int id)
+        public List<Empleados> BuscarUsuario(int id)
         {
             if (id > 0)
             {
@@ -154,10 +154,10 @@ namespace Plataforma.Servicios.Implementacion
             }
             else
             {
-                return new List<Empleado>();
+                return new List<Empleados>();
             }
         }
-        public void EditarEmpleado(Empleado empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
+        public void EditarEmpleado(Empleados empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena)
         {
                 empleado.Cedula = cedula;
                 empleado.Nombre = nombre;
@@ -303,7 +303,7 @@ namespace Plataforma.Servicios.Implementacion
              })
              .ToList();
         }
-        public Empleado? ValidarCedula(int cedula)
+        public Empleados? ValidarCedula(int cedula)
         {
             return _dbContext.Empleado.FirstOrDefault(e => e.Cedula == cedula);
         }
@@ -568,16 +568,18 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return nuevoEstadoPDV;
         }
-        public bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente)
+        public bool InsertAddClient(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente, string correoCliente, string direccionCliente)
         {
 
-            var cliente = new Cliente
+            var cliente = new Clientes
             {
                 CedulaCliente = cedulaCliente,
                 NombreCliente = nombreCliente,
                 EmpresaCliente = empresaCliente,
                 CiudadCliente = ciudadCliente,
-                TelefonoCliente = telefonoCliente
+                TelefonoCliente = telefonoCliente,
+                CorreoCliente = correoCliente,
+                DireccionCliente = direccionCliente
             };
 
             _dbContext.Cliente.Add(cliente);
@@ -592,7 +594,7 @@ namespace Plataforma.Servicios.Implementacion
                 return false;
             }
         }
-        public List<Cliente> ServVisuaCliente()
+        public List<Clientes> ServVisuaCliente()
         {
             var clientes = _dbContext.Cliente.ToList();
             return clientes;
