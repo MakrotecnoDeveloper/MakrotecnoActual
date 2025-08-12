@@ -26,7 +26,6 @@ public partial class BaseAdmContext : DbContext
     public DbSet<ClientesPlataforma> ClientesPlataforma { get; set; }
     public DbSet<Infopdv> Infopdv { get; set; }
     public DbSet<Syncpdv> Syncpdv { get; set; }
-    public DbSet<GananciaPedido> GananciaPedido { get; set; }
     public DbSet<Plataformas> Plataformas { get; set; }
     public DbSet<Proveedores> Proveedores { get; set; }
     public DbSet<Compras> Compras { get; set; }
@@ -46,9 +45,6 @@ public partial class BaseAdmContext : DbContext
     public DbSet<FlujoCaja> FlujoCajas { get; set; }
     public DbSet<VistaGananciaDiaria> VistaGananciaDiarias { get; set; }
     public DbSet<AdicionFactura> AdicionFacturas { get; set; }
-    public DbSet<UnidadNegocio> UnidadesNegocio { get; set; }
-    public DbSet<DistribucionUtilidad> DistribucionesUtilidad { get; set; }
-    public DbSet<ModeloGanancia> ModelosGanancia { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,7 +66,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<ClientesPlataforma>().HasKey(icp => icp.IdCliPltf);
         modelBuilder.Entity<Infopdv>().HasKey(iv => iv.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasKey(ds => ds.Idsync);
-        modelBuilder.Entity<GananciaPedido>().HasKey(ds => ds.IdGP);
         modelBuilder.Entity<Plataformas>().HasKey(iptlf => iptlf.IdPlataforma);
         modelBuilder.Entity<Proveedores>().HasKey(prvd => prvd.IdProveedor);
         modelBuilder.Entity<Compras>().HasKey(prvd => prvd.IdCompra);
@@ -89,9 +84,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<CierreCaja>().HasKey(id => id.IdCierreCaja);
         modelBuilder.Entity<FlujoCaja>().HasKey(id => id.IdFlujoCaja);
         modelBuilder.Entity<AdicionFactura>().HasKey(id => id.IdAdicion);
-        modelBuilder.Entity<UnidadNegocio>().HasKey(id => id.IdUnidadNegocio);
-        modelBuilder.Entity<DistribucionUtilidad>().HasKey(id => id.IdDistribucion);
-        modelBuilder.Entity<ModeloGanancia>().HasKey(id => id.IdModeloGanancia);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -154,22 +146,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<VistaGananciaDiaria>()
             .HasNoKey()
             .ToView("VistaGananciaDiaria");
-
-        // Relaciones y restricciones opcionales
-        modelBuilder.Entity<Empresas>()
-            .HasMany(e => e.UnidadesNegocio)
-            .WithOne(u => u.Empresa)
-            .HasForeignKey(u => u.id_empresa);
-
-        modelBuilder.Entity<Empresas>()
-            .HasMany(e => e.ModelosGanancia)
-            .WithOne(m => m.Empresa)
-            .HasForeignKey(m => m.id_empresa);
-
-        modelBuilder.Entity<UnidadNegocio>()
-            .HasMany(u => u.Distribuciones)
-            .WithOne(d => d.UnidadNegocio)
-            .HasForeignKey(d => d.IdUnidadNegocio);
 
         modelBuilder.Entity<OrdenServicios>()
         .ToTable(t =>
