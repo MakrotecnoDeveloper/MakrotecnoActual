@@ -17,12 +17,13 @@ namespace Plataforma.Servicios.Implementacion
                 return await  _dbContext.TipoDispositivos.ToListAsync();
             }
 
-            public async Task CrearDispositivoAsync(Dispositivos dispositivo, string cedulaClaim)
+            public async Task<Dispositivos> CrearDispositivoAsync(Dispositivos dispositivo, string cedulaClaim)
             {
                 var cliente = await _dbContext.Cliente
                 .Where(c => c.IdCliente == dispositivo.IdCliente)
-                .Select(c => new { c.IdCliente, c.CedulaCliente })
+                .Select(c => new { c.IdCliente, c.CedulaCliente, c.NombreCliente })
                 .FirstOrDefaultAsync();
+
 
                 if (cliente == null)
                     throw new Exception("El cliente no existe.");
@@ -33,17 +34,12 @@ namespace Plataforma.Servicios.Implementacion
                 _dbContext.Dispositivos.Add(dispositivo);
                 await _dbContext.SaveChangesAsync();
 
-                var nuevaOrden = new OrdenServicios
+                dispositivo.Cliente = new Clientes 
                 { 
-                    IdDispositivo = dispositivo.IdDispositivo,
-                    FechaIngreso = dispositivo.FechaIngreso,
-                    ProblemaReportado = dispositivo.Detalle,
-                    Estado = "Ingresada",
-                    Observaciones = "Revision",
-                    Cedula = int.Parse(cedulaClaim)
+                    IdCliente = cliente.IdCliente,
+                    NombreCliente = cliente.NombreCliente
                 };
-                _dbContext.OrdenServicios.Add(nuevaOrden);
-                await _dbContext.SaveChangesAsync();
+                return dispositivo;
             }
 
             public async Task<List<Dispositivos>> ObtenerDispositivosConClientesAsync()

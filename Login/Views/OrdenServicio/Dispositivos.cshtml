@@ -42,23 +42,23 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="clave" class="form-label">Clave o PIN</label>
-                                    <input type="text" class="form-control" id="clave" name="clave">
+                                    <input type="text" class="form-control" id="clave" name="Clave">
                                 </div>
                                 <div class="mb-3">
                                     <label for="patron" class="form-label">Patron</label>
-                                    <input type="text" class="form-control" id="patron" name="patron">
+                                    <input type="text" class="form-control" id="patron" name="Patron">
                                 </div>
                                 <div class="mb-3">
                                     <label for="fecha" class="form-label">Fecha Ingreso</label>
-                                    <input type="datetime" class="form-control" id="fecha" name="fecha">
+                                    <input type="datetime" class="form-control" id="fecha" name="FechaIngreso">
                                 </div>
                                 <div class="mb-3">
                                     <label for="detalle" class="form-label">Detalle</label>
-                                    <input type="text" class="form-control" id="detalle" name="detalle">
+                                    <input type="text" class="form-control" id="detalle" name="Detalle">
                                 </div>
                                 <div class="mb-3">
                                     <label for="detalle" class="form-label">Tipo Dispositivo</label>
-                                    <select name="servicio" id="d_tipodispositivo" class="form-control">
+                                    <select name="TipoDispositivo" id="tipodispositivo" class="form-control">
                                         <option disabled selected>Seleccione un servicio</option>
                                         @foreach (var servicio in Model.TipoDispositivos)
                                         {
@@ -102,7 +102,7 @@
                         <th>Marca</th>
                         <th>Modelo</th>
                         <th>IMEI</th>
-                        <th>Accesorios</th>
+                        <th>Clave</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -115,6 +115,7 @@
                         <td>@item.Marca</td>
                         <td>@item.Modelo</td>
                         <td>@item.IMEI</td>
+                        <td>@item.Clave</td>
                         <td>
                             <a asp-action="Details" asp-route-id="@item.IdDispositivo" class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i> Ver
@@ -140,8 +141,12 @@
             Marca: document.getElementById('marca').value,
             Modelo: document.getElementById('modelo').value,
             IMEI: document.getElementById('imei').value,
-            CedulaCliente: document.getElementById('idCliente').value,
-            Accesorios: document.getElementById('accesorios').value
+            Clave: document.getElementById('clave').value,
+            Patron: document.getElementById('patron').value,
+            FechaIngreso: document.getElementById('fecha').value,
+            Detalle: document.getElementById('detalle').value,
+            TipoDispositivo: document.getElementById('tipodispositivo').value,
+            IdCliente: document.getElementById('idCliente').value
         };
         console.log("Form Data: ", formData);
         fetch('/OrdenServicio/CrearDispositivo', {

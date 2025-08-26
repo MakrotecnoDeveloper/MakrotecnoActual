@@ -11,6 +11,10 @@
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="IdDispositivo" />
             <input type="hidden" asp-for="IdCliente" />
+            <input type="hidden" asp-for="IMEI" />
+            <input type="hidden" asp-for="TipoDispositivo" />
+            <input type="hidden" asp-for="CedulaCliente" />
+            <input type="hidden" asp-for="FechaIngreso" />
 
             <div class="mb-3">
                 <label asp-for="Marca" class="form-label"></label>
@@ -25,9 +29,21 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="IMEI" class="form-label"></label>
-                <input asp-for="IMEI" class="form-control" />
-                <span asp-validation-for="IMEI" class="text-danger"></span>
+                <label asp-for="Clave" class="form-label"></label>
+                <input asp-for="Clave" class="form-control" />
+                <span asp-validation-for="Clave" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Patron" class="form-label"></label>
+                <input asp-for="Patron" class="form-control" />
+                <span asp-validation-for="Patron" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Detalle" class="form-label"></label>
+                <input asp-for="Detalle" class="form-control" />
+                <span asp-validation-for="Detalle" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-success">Guardar Cambios</button>

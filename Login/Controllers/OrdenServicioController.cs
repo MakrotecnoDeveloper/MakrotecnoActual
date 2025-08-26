@@ -47,8 +47,21 @@ namespace Plataforma.Controllers
             try
             {
                 var cedulaClaim = User.FindFirst("Cedula")?.Value;
-                await _dispositivoService.CrearDispositivoAsync(dispositivo, cedulaClaim);
-                return Ok(new { success = true, message = "Dispositivo creado correctamente" });
+                var dispositivoCreado = await _dispositivoService.CrearDispositivoAsync(dispositivo, cedulaClaim);
+
+                return Ok(new 
+                { 
+                    success = true, 
+                    message = "Dispositivo creado correctamente",
+                    díspositivo = new 
+                    {
+                        idDispositivo = dispositivoCreado.IdDispositivo,
+                        imei = dispositivoCreado.IMEI,
+                        detalle = dispositivoCreado.Detalle,
+                        idCliente = dispositivoCreado.IdCliente,
+                        nombreCliente = dispositivoCreado.Cliente?.NombreCliente
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -85,60 +98,7 @@ namespace Plataforma.Controllers
             TempData["Success"] = "Dispositivo actualizado correctamente.";
             return RedirectToAction("Dispositivos");
         }
-        [HttpGet]
-        public async Task<IActionResult> OrdenesServicio()
-        {
-            var model = new OrdenesServicioViewModel
-            {
-                OrdenServicios = await _ordenServicioService.ObtenerTodasAsync()
-            };
-            return View(model);
-        }
 
-        [HttpGet]
-        public IActionResult CreateOrden()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateOrden(OrdenServicios orden)
-        {
-            await _ordenServicioService.CrearAsync(orden);
-            return RedirectToAction("OrdenesServicio");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> EditOrden(int id)
-        {
-            var orden = await _ordenServicioService.ObtenerPorIdAsync(id);
-            if (orden == null)
-                return NotFound();
-
-            return View(orden);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> EditOrden(OrdenServicios orden)
-        {
-            //return View(orden);
-            var cedulaClaim = User.FindFirst("Cedula")?.Value;
-            if (int.TryParse(cedulaClaim, out int cedulaEmpleado))
-            {
-                await _ordenServicioService.ActualizarAsync(orden, cedulaEmpleado);
-            }
-            return RedirectToAction("OrdenesServicio");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DetailsOrden(int id)
-        {
-            var orden = await _ordenServicioService.ObtenerPorIdAsync(id);
-            if (orden == null)
-                return NotFound();
-
-            return View(orden);
-        }
         [HttpGet]
         public async Task<IActionResult> DetalleHistOrden(int id)
         {
@@ -180,6 +140,18 @@ namespace Plataforma.Controllers
             await _ordenServicioService.CrearHistOrdenAsync(model, Cod_Producto, orden.Cedula);
             return Ok();
         }
+        [HttpPost]
+        public async Task<IActionResult> CrearOrden([FromBody] OrdenServicios orden)
+        {
+            var cedulaClaim = User.FindFirst("Cedula")?.Value;
+            var nuevaOrden = await _ordenServicioService.CrearAsync(orden, cedulaClaim);
+            var dto = await _ordenServicioService.GetOrdenRowAsync(nuevaOrden.IdOrden);
+            return Ok(new {
+                    success = true,
+                    message = $"Orden creada exitosamente #{nuevaOrden.IdOrden}",
+                    orden = dto
+                });
+        }
         [HttpGet]
         public IActionResult Buscar(string searchTerm)
         {
@@ -205,11 +177,45 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarOrden(OrdenServicios model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            /*if (!ModelState.IsValid)
+                return BadRequest(ModelState);*/
 
             await _ordenServicioService.ActualizarOrdenAsync(model, User);
             return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> AsignarEmpleado(int id)
+        {
+            try
+            {
+                var empleados = await _ordenServicioService.ObtenerEmpleadosAsync();
+
+                var model = new OrdenesServicioViewModel
+                {
+                    Empleados = empleados,
+                    IdOrden = id
+                    
+                };
+
+                return PartialView("_FormAsignarEmpleado", model);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AsignarTecnico(OrdenServicios model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _ordenServicioService.ActualizarOrdenTecnico(model);
+
+            if (updated == null)
+                return NotFound("Orden no encontrada");
+
+            return Ok(new { success = true, message = $"Empleado asignado a la orden #{updated.IdOrden}" });
         }
     }
 }

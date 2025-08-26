@@ -22,10 +22,10 @@
     {
         <div id="productosContainer">
             <div class="producto-item mb-2">
-                <input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar producto..." />
+                <input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar repuesto..." />
             </div>
         </div>
-        <button type="button" id="addProduct" class="btn btn-secondary mt-2">+ Agregar producto</button>
+        <button type="button" id="addProduct" class="btn btn-secondary mt-2">+ Agregar repuesto</button>
     }
 
     <button type="submit" class="btn btn-primary mt-3">Guardar</button>
@@ -49,7 +49,7 @@
     }
     $("#addProduct").on("click", function () {
         var newInput = $('<div class="producto-item mb-2">' +
-                            '<input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar producto..." />' +
+                            '<input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar repuesto..." />' +
                          '</div>');
         $("#productosContainer").append(newInput);
         initAutocomplete(newInput.find(".cod-producto"));

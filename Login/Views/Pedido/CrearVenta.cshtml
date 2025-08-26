@@ -1,22 +1,35 @@
-﻿@{
+﻿@model OrdenesServicioViewModel
+@{
     ViewData["Title"] = "Crear Venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="content-wrapper">
     <div class="container mt-5">
         <h2 class="text-center mb-4">Crear Nueva Venta</h2>
-        <form method="post" asp-action="CrearVenta" asp-controller="Pedido">
+        <form method="POST" asp-action="CrearVenta" asp-controller="Pedido">
             <div class="mb-3">
                 <label class="form-label">Cédula del Cliente</label>
-                <input type="number" name="CedulaCliente" class="form-control" required />
+                <select name="IdCliente" id="m_cliente" class="form-control">
+                    <option disabled selected>Seleccione un cliente</option>
+                    @foreach (var clientes in Model.Clientes)
+                    {
+                        <option value="@clientes.IdCliente">@clientes.NombreCliente</option>
+                    }
+                </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Método de Pago</label>
-                <select name="MetodoPago" class="form-select">
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Transferencia">Transferencia</option>
-                    <option value="Tarjeta">Tarjeta</option>
+                <label class="form-label">Metodos de Pago</label>
+                <select name="MetodoPago" id="m_metodoPago" class="form-control">
+                    <option disabled selected>Seleccione un metodo de pago</option>
+                    @foreach (var metodoPago in Model.MetodoPagos)
+                    {
+                        <option value="@metodoPago.IdMetodo">@metodoPago.Metodo</option>
+                    }
                 </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Concepto</label>
+                <input type="text" name="Conceptos" class="form-control" />
             </div>
             <div class="mb-3">
                 <label class="form-label">Cédula del Vendedor</label>

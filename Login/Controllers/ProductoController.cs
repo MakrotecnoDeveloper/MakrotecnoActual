@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
@@ -110,32 +111,36 @@ namespace Plataforma.Controllers
             var productosEncontrados = _productoservice.BuscarProSinStock(searchTerm, categoriaTerm);
             return PartialView("_TablaProductos", productosEncontrados);
         }
-        public IActionResult Editar(string id)
+        [HttpGet]
+        public async Task<IActionResult> Editar(string id)
         {
             int categoriaTerm = 0;
             var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
-            foreach (var producto in editarProducto)
+            if (!editarProducto.Any())
             {
-                // Realiza acciones con cada producto, por ejemplo:
-                Console.WriteLine($"ID: {producto.Cod_Producto}, Nombre: {producto.NombreProducto}");
-            }
-            if (editarProducto.Any())
-            {
-                // Oculta la tabla de productos y muestra la tabla temporal
-                return View(editarProducto);
-            }
-            else
-            {
-                // Producto no encontrado, maneja la lógica adecuada
                 Console.WriteLine("No hay productos con ese codigo referenciado");
                 return View("Index");
             }
+
+            // Catálogos para la UI (no se postean)
+            ViewBag.Servicios = await _productoservice.ObtenerServiciosAsync();
+
+            ViewBag.Proveedores = await _productoservice.ObtenerProveedores();
+
+            // Servicio preseleccionado a partir de la categoría del producto
+            var p = editarProducto.First();
+            ViewBag.SelectedServicioId = await _productoservice.SeleccionarServicio(p);
+
+            // (Opcional) Preselección de proveedor si tu entidad Producto tiene IdProveedor
+            ViewBag.SelectedProveedorId = p.idProveedor;
+
+            return View(editarProducto); // @model List<Producto>
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado)
+        public IActionResult EditarProducto(string codigo, float valorNeto, float valorVenta, int valorUnidad, int cantidad)
         {
             // Llama al método EditarProducto del servicio de productos
-            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, valorUnidad, cantidad, categoria, idEmpresa, estado);
+            _productoservice.EditarProducto(codigo, valorNeto, valorVenta, valorUnidad, cantidad);
 
             // Redirige a la acción que deseas después de editar el producto
             return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos

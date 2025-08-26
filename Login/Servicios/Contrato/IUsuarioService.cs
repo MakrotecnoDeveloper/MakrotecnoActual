@@ -16,12 +16,6 @@ namespace Plataforma.Servicios.Contrato
         Empleados? GetUsuarios(int cedula, string password);
         //Task<Empleado> SaveUsuario(Empleado modelo);
 		List<Infopdv> FunValidarPDV(int cedula);
-		//bool ValidarEmpleado(int cedula);
-        //Empleado ObtenerEmpleadoPorId(string id);
-        //void ActualizarEmpleado(Empleado empleado);
-        //void AgregarEmpleado(Empleado empleado);
-        //List<Empleado> BuscarUsuario(int id);
-        //void EditarEmpleado(Empleado empleado, int cedula, string nombre, string apellido, string genero, string correo, string rh, string celular, string contrasena);
         List<TipoCargo> ObtenerCargos();
         Empresas? ValidarExistenciaEmpresa(string nit);
         List<Empresas> ObtenerEmpresas();
@@ -41,11 +35,11 @@ namespace Plataforma.Servicios.Contrato
         bool ObtenerSedePorEmpleado(int cedula);
         List<TipoCargo> ObtenerCargos(string idEmpresa);
         bool InsertarSedeEmpleado(int cedula, int idSede, int idCargo);
-        List<FacProUserViewModel> TraerFactXDia(int cedula, int traerIdNombrePDVActual);
+        Task<List<FacProUserViewModel>> TraerFactXDia(int cedula, int idPDVActual);
         Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma);
         List<Producto> ProductosAbarrotes();
         Task<bool> ActualizarProductoAsync(string id, string campo, string newVal);
-        Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion);
+        Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor);
         Task<bool> EliminarProductoXIdAsync(string id);
         Infopdv? SeleccionarNombrePDV(int selectedPDV);
         int? ValidarExistenteIdPDV(int idPDV, int cedula);

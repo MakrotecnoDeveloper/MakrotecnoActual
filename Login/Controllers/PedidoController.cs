@@ -10,12 +10,14 @@ namespace Plataforma.Controllers
     {
         private readonly IPedidoService _pedidoServicio;
         private readonly IProductoService _productoservice;
+        private readonly ITercerosService _tercerosService;
         private readonly ILogger<HomeController> _logger;
-        public PedidoController(IPedidoService pedidoServicio, IProductoService productoservice, ILogger<HomeController> logger)
+        public PedidoController(IPedidoService pedidoServicio, IProductoService productoservice, ILogger<HomeController> logger, ITercerosService tercerService)
         {
             _pedidoServicio = pedidoServicio;
             _productoservice = productoservice;
             _logger = logger;
+            _tercerosService = tercerService;
         }
         public IActionResult Index()
         {
@@ -24,9 +26,14 @@ namespace Plataforma.Controllers
             return View(facturas);
         }
         [HttpGet]
-        public IActionResult CrearVenta() 
+        public async Task<IActionResult> CrearVenta() 
         {
-            return View();
+            var model = new OrdenesServicioViewModel
+            {
+                Clientes = await _tercerosService.ObtenerClientes(),
+                MetodoPagos = await _tercerosService.ObtenerMetodosPago()
+            };
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> CrearVenta(Ventas venta)

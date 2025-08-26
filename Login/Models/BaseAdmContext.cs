@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using Microsoft.EntityFrameworkCore;
 
 namespace Plataforma.Models;
 
@@ -45,6 +46,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<FlujoCaja> FlujoCajas { get; set; }
     public DbSet<VistaGananciaDiaria> VistaGananciaDiarias { get; set; }
     public DbSet<AdicionFactura> AdicionFacturas { get; set; }
+    public DbSet<MetodoPagos> MetodoPagos { get; set; }
+    public DbSet<GastosMensuales> GastosMensuales { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +87,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<CierreCaja>().HasKey(id => id.IdCierreCaja);
         modelBuilder.Entity<FlujoCaja>().HasKey(id => id.IdFlujoCaja);
         modelBuilder.Entity<AdicionFactura>().HasKey(id => id.IdAdicion);
+        modelBuilder.Entity<MetodoPagos>().HasKey(id => id.IdMetodo);
+        modelBuilder.Entity<GastosMensuales>().HasKey(id => id.IdGasto);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -154,6 +159,11 @@ public partial class BaseAdmContext : DbContext
                 "CK_OrdenServicios_Estado",
                 "Estado IN ('Ingresada','Ejecucion','Pendiente','Finalizada','Rechazada')"
             );
+        });
+        modelBuilder.Entity<GastosMensuales>(eb =>
+        {
+            // Nombre tal cual en SQL Server
+            eb.ToTable(tb => tb.HasTrigger("TR_GastosMensuales_SetUpdated"));
         });
     }
 }

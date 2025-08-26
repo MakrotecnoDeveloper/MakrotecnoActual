@@ -2,87 +2,204 @@
 @{
     ViewData["Title"] = "Editar";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var p = Model?.FirstOrDefault();
+    var servicios = ViewBag.Servicios as IEnumerable<dynamic>;
+    var proveedores = ViewBag.Proveedores as IEnumerable<dynamic>;
+    var selectedServicioId = ViewBag.SelectedServicioId as int?;  // puede venir null
 }
 
-<!-- Contenido principal -->
-<div class="content-wrapper">
-    <!-- Contenido del encabezado -->
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Editar Producto</h1>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="content-wrapper py-4" style="background-color: #f8f9fa;">
+@if (p == null)
+{
+    <div class="container"><div class="alert alert-warning">No se encontró producto para editar.</div></div>
+}
+else
+{
+    <form asp-controller="Producto" asp-action="EditarProducto" method="POST" id="formEditarProducto">
+        @Html.AntiForgeryToken()
 
-    <!-- Formulario -->
-    <section class="content">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Ingrese los datos del producto</h3>
-                        </div>
-                        <!-- /.card-header -->
-                        <!-- Formulario -->
-                        <form role="form" asp-controller="Producto" asp-action="EditarProducto" method="POST">
-                            <div class="card-body">
-                                @foreach (var producto in Model)
-                                {
-                                    <div class="form-group">
-                                        <label for="codigo">Código</label>
-                                        <input type="text" class="form-control" id="codigo" name="codigo" value="@producto.Cod_Producto">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="nombreProducto">Nombre del Producto</label>
-                                        <input type="text" class="form-control" id="nombreProducto" name="nombreProducto" value="@producto.NombreProducto">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valorNeto">Valor Neto</label>
-                                        <input type="number" class="form-control" id="valorNeto" name="valorNeto" value="@producto.ValorNetoProducto">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valorVenta">Valor de Venta</label>
-                                        <input type="number" class="form-control" id="valorVenta" name="valorVenta" value="@producto.ValorVentaProducto">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valorUnidad">Valor Unidad</label>
-                                        <input type="number" class="form-control" id="valorUnidad" name="valorUnidad" value="@producto.ValorUnidad">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="cantidad">Cantidad</label>
-                                        <input type="number" class="form-control" id="cantidad" name="cantidad" value="@producto.CantidadProducto">
-                                    </div>
-                                    <select class="form-group d-none" name="categoria">
-                                        <option class="form-control" value="@producto.IdCatepro">@producto.IdCatepro</option>
-                                    </select>
-                                    <div class="form-group d-none">
-                                        <label for="idProducto">Id Empresa</label>
-                                        <input type="text" class="form-control" id="idProducto" name="idEmpresa" value="@producto.ID_Empresa">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="estado">Estado</label>
-                                        <input type="number" class="form-control" id="estado" name="estado" value="@producto.Estado">
-                                    </div>
-                                }
-                            </div>
-                            <!-- /.card-body -->
-
-                            <div class="card-footer justify-content-end">
-                                <button type="submit" class="btn btn-primary">Editar Producto</button>
-                            </div>
-                        </form>
-                    </div>
-                    <!-- /.card -->
+            <!-- Título -->
+            <div class="row mb-4">
+                <div class="col-md-8 mx-auto text-center">
+                    <h1 class="fw-bold text-primary mb-2"><i class="bi bi-pencil-square"></i> Editar Producto</h1>
+                    <p class="text-muted">Actualiza únicamente Valor Neto, Valor de Venta y Cantidad</p>
+                    <hr class="w-50 mx-auto" />
                 </div>
-                <!-- /.col -->
             </div>
-            <!-- /.row -->
-        </div><!-- /.container -->
-    </section>
-    <!-- /.content -->
+
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="card shadow-lg border-0 rounded-3">
+                        <div class="card-body p-4">
+
+                            <!-- Código (visible, pero se postea como hidden) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Código</label>
+                                <div class="form-control bg-light" readonly>@p.Cod_Producto</div>
+                                <input type="hidden" name="codigo" value="@p.Cod_Producto" />
+                            </div>
+
+                            <!-- Nombre (solo informativo) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nombre</label>
+                                <div class="form-control bg-light" readonly>@p.NombreProducto</div>
+                            </div>
+
+                                <!-- Servicio (UI, no se postea) -->
+                                <div class="mb-3">
+                                    <label for="servicio" class="form-label fw-semibold">Servicio</label>
+                                    <select id="servicio" class="form-select">
+                                        @* Placeholder: dos ramas para evitar C# en atributos *@
+                                        @if (selectedServicioId == null)
+                                        {
+                                            <option disabled selected="selected">Seleccione un servicio</option>
+                                        }
+                                        else
+                                        {
+                                            <option disabled>Seleccione un servicio</option>
+                                        }
+
+                                        @* Items: dos ramas por cada elemento *@
+                                        @if (servicios != null)
+                                        {
+                                            foreach (var s in servicios)
+                                            {
+                                                if (selectedServicioId.HasValue && selectedServicioId.Value == (int)s.IdServicio)
+                                                {
+                                                    <option value="@s.IdServicio" selected="selected">@s.NombreServicio</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@s.IdServicio">@s.NombreServicio</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                    <small class="text-muted">Solo informativo. No se actualiza en este formulario.</small>
+                                </div>
+
+                            <!-- Categorías (depende de Servicio, UI sin name) -->
+                            <div class="mb-3">
+                                <label for="categorias" class="form-label fw-semibold">Categorías</label>
+                                <select id="categorias" class="form-select"></select>
+                                <small class="text-muted">Categoría actual: @p.IdCatepro</small>
+                            </div>
+
+                            <!-- Proveedor (UI, no se postea) -->
+                            <div class="mb-3">
+                                <label for="proveedor" class="form-label fw-semibold">Proveedor</label>
+                                <select id="proveedor" class="form-select">
+                                    <option disabled selected>Seleccione un proveedor</option>
+                                    @if (proveedores != null)
+                                    {
+                                        foreach (var pr in proveedores)
+                                        {
+                                            <option value="@pr.IdProveedor">@pr.RazonSocial</option>
+                                        }
+                                    }
+                                </select>
+                                <small class="text-muted">Solo informativo. No se actualiza en este formulario.</small>
+                            </div>
+
+                            <hr />
+
+                            <!-- Valor Neto -->
+                            <div class="mb-3">
+                                <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
+                                <input type="number" class="form-control" id="valorNeto" name="valorNeto"
+                                       value="@p.ValorNetoProducto" step="0.01" placeholder="0.00" />
+                            </div>
+
+                            <!-- Valor Venta -->
+                            <div class="mb-3">
+                                <label for="valorVenta" class="form-label fw-semibold">Valor de Venta</label>
+                                <input type="number" class="form-control" id="valorVenta" name="valorVenta"
+                                       value="@p.ValorVentaProducto" step="0.01" placeholder="0.00" />
+                            </div>
+
+                            <!-- Valor Unitario -->
+                            <div class="mb-3">
+                                <label for="valorUnitario" class="form-label fw-semibold">Valor Unitario</label>
+                                <input type="number" class="form-control" id="valorUnitario" name="valorUnitario"
+                                       value="@p.ValorUnidad" step="0.01" placeholder="0.00" />
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div class="mb-4">
+                                <label for="cantidad" class="form-label fw-semibold">Cantidad</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad"
+                                       value="@p.CantidadProducto" step="1" min="0" />
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Volver
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Guardar Cambios
+                                </button>
+                            </div>
+
+                            @if (ViewBag.ErrorMessage != null)
+                            {
+                                <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+}
 </div>
-<!-- /.content-wrapper -->
+
+@section Scripts {
+    <script>
+        $(function () {
+            const $servicio = $('#servicio');
+            const $categorias = $('#categorias');
+            const categoriaActual = '@p.IdCatepro';
+
+            function cargarCategorias(idServicio, preseleccion) {
+                if (!idServicio) { $categorias.empty(); return; }
+                $.ajax({
+                    url: '/Producto/ObtenerCategoriaProductos',
+                    type: 'GET',
+                    data: { idServicio: idServicio },
+                    success: function (categorias) {
+                        $categorias.empty();
+                        let found = false;
+                        $.each(categorias, function (i, c) {
+                            const sel = (preseleccion && String(preseleccion) === String(c.idCateProducto)) ? 'selected' : '';
+                            if (sel) found = true;
+                            $categorias.append($('<option>', {
+                                value: c.idCateProducto,
+                                text: c.descripcion,
+                                selected: sel
+                            }));
+                        });
+                        if (!found && $categorias.children().length > 0) {
+                            $categorias.prop('selectedIndex', 0);
+                        }
+                    },
+                    error: function () { alert('Error al cargar las categorías.'); }
+                });
+            }
+
+            // Pre-cargar categorías según el servicio actual
+            const selectedServicio = '@(selectedServicioId?.ToString() ?? "")';
+            if (selectedServicio) {
+                cargarCategorias(selectedServicio, categoriaActual);
+            }
+
+            // Cambiar servicio -> recargar categorías
+            $servicio.on('change', function () {
+                cargarCategorias($(this).val(), null);
+            });
+        });
+    </script>
+}

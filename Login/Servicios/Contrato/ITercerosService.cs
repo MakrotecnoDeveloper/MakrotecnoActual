@@ -5,6 +5,7 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<Clientes> CrearClienteAsync(Clientes cliente);
         Task<List<Clientes>> ObtenerClientes();
+        Task<List<MetodoPagos>> ObtenerMetodosPago();
         Task<List<Proveedores>> ObtenerProveedoresAsync();
     }
 }

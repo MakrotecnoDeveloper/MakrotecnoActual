@@ -15,4 +15,5 @@ public class Ventas
     public DateTime FechaVenta { get; set; }
     public virtual ICollection<Pedidos> Pedidos { get; set; }
     public int CedulaCliente { get; set; }
+    public string Conceptos { get; set; }
 }

@@ -17,8 +17,16 @@ namespace Plataforma.Controllers
         {
             try
             {
-                await _terceroService.CrearClienteAsync(cliente);
-                return Ok(new { success = true });
+                var clienteCreado = await _terceroService.CrearClienteAsync(cliente);
+                return Ok(new { 
+                    success = true,
+                    Cliente = new {
+                        idCliente = clienteCreado.IdCliente,
+                        nombreCliente = clienteCreado.NombreCliente,
+                        telefonoCliente = clienteCreado.TelefonoCliente
+                    }
+                
+                });
             }
             catch (Exception ex)
             {

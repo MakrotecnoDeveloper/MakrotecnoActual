@@ -22,6 +22,10 @@ namespace Plataforma.Servicios.Implementacion
         {
             return await _dbContext.Cliente.ToListAsync();
         }
+        public async Task<List<MetodoPagos>> ObtenerMetodosPago()
+        {
+            return await _dbContext.MetodoPagos.ToListAsync();
+        }
         public async Task<List<Proveedores>> ObtenerProveedoresAsync()
         {
             return await _dbContext.Proveedores.ToListAsync();

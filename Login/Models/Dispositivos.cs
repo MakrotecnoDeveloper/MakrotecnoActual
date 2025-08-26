@@ -10,9 +10,9 @@ public class Dispositivos
     public string? Marca { get; set; }
     public string? Modelo { get; set; }
     public string? IMEI { get; set; }
-    public int CedulaCliente { get; set; }
+    public int? CedulaCliente { get; set; }
     public int IdCliente { get; set; }
-    public Clientes Cliente { get; set; }
+    public Clientes? Cliente { get; set; }
     public string? Clave { get; set; }
     public string? Patron { get; set; }
     public DateTime FechaIngreso { get; set; }

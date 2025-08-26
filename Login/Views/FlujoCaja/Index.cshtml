@@ -1,32 +1,140 @@
-﻿@model List<Plataforma.Models.FlujoCaja>
+﻿@model IndexFlujoCajaVM
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Flujo de Caja";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="content-wrapper">
-    <h2 class="text-center">Flujo de Caja - Hoy</h2>
+    <h2 class="text-center mb-3">Flujo de Caja - @Model.Fecha</h2>
 
-    <table class="table table-bordered mt-3">
-        <thead class="bg-secondary text-white">
-            <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Monto</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var m in Model)
-            {
+    <!-- Resumen de totales -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Ingresos</span>
+                        <span class="text-success fw-bold">@Model.TotalIngresos.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-2 mt-md-0">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Egresos</span>
+                        <span class="text-danger fw-bold">@Model.TotalEgresos.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-2 mt-md-0">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Balance</span>
+                        <span class="fw-bold">@Model.Balance.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movimientos -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="bg-secondary text-white">
                 <tr>
-                    <td>@m.Fecha.ToString("yyyy-MM-dd")</td>
-                    <td>@m.TipoMovimiento</td>
-                    <td>@m.Concepto</td>
-                    <td class="@(m.TipoMovimiento == "Ingreso" ? "text-success" : "text-danger")">
-                        @m.Monto:C
-                    </td>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th class="text-end">Monto</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var m in Model.Movimientos)
+                {
+                    var cssMonto = m.TipoMovimiento == "Ingreso" ? "text-success" :
+                    m.TipoMovimiento == "Egreso" ? "text-danger" : "text-body";
+                    <tr>
+                        <td>@m.Fecha.ToString("yyyy-MM-dd")</td>
+                        <td>@m.TipoMovimiento</td>
+                        <td>@m.Concepto</td>
+                        <td class="@cssMonto text-end">@m.Monto.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cierres del día con desglose -->
+    @if (Model.Cierres.Any())
+    {
+        <div class="mt-4">
+            <h4>Detalle de Cierres del día</h4>
+            <div class="accordion" id="accordionCierres">
+                @for (int i = 0; i < Model.Cierres.Count; i++)
+                {
+                    var c = Model.Cierres[i];
+                    var collapseId = $"collapse_{c.IdFlujoCaja}";
+                    var headingId = $"heading_{c.IdFlujoCaja}";
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="@headingId">
+                            <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#@collapseId"
+                                    aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
+                                <div class="w-100 d-flex justify-content-between">
+                                    <span>
+                                        <strong>Cierre Diario</strong> — @c.Fecha — Cedula: @c.Cedula
+                                    </span>
+                                    <span class="ms-3">Monto cierre: <strong>@c.Monto.ToString("C")</strong></span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#accordionCierres">
+                            <div class="accordion-body">
+                                @if (c.Conceptos != null && c.Conceptos.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:50%">Servicio</th>
+                                                    <th class="text-end" style="width:25%">Total SubTotal</th>
+                                                    <th class="text-end" style="width:25%">Total VNeto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var con in c.Conceptos.OrderBy(x => x.NombreServicio))
+                                                {
+                                                    <tr>
+                                                        <td>@con.NombreServicio</td>
+                                                        <td class="text-end">@con.TotalSubTotal.ToString("C")</td>
+                                                        <td class="text-end">@con.TotalVNeto.ToString("C")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th class="text-end">Totales</th>
+                                                    <th class="text-end">@c.TotalSubTotal.ToString("C")</th>
+                                                    <th class="text-end">@c.TotalVNeto.ToString("C")</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning mb-0">
+                                        Este cierre no tiene conceptos guardados (ConceptosJson vacío o inválido).
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>

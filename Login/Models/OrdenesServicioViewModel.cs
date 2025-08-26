@@ -11,6 +11,8 @@
         public string Estado { get; set; }
         public bool MostrarAgregarProductos { get; set; }
         public OrdenServicios orden { get; set; }
+        public List<MetodoPagos> MetodoPagos { get; set; }
+        public List<Empleados>? Empleados { get; set; }
 
     }
 }

@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // ================== CREAR CLIENTE ==================
 document.getElementById("clienteForm").addEventListener("submit", function (e) {
     e.preventDefault();
-
     const cliente = {
         CedulaCliente: document.getElementById("c_cedula").value,
         NombreCliente: document.getElementById("c_nombre").value,
@@ -37,11 +36,16 @@ document.getElementById("clienteForm").addEventListener("submit", function (e) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cliente)
     })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al crear cliente");
-            return res.json();
-        })
+        .then(res => { if (!res.ok) throw new Error("Error al crear cliente"); return res.json(); })
         .then(data => {
+            if (!data.success) throw new Error(data.message || "Error");
+
+            // ➜ Agregar al select de clientes del modal de dispositivo
+            const sel = document.getElementById("d_cliente");
+            const opt = new Option(data.cliente.nombreCliente, data.cliente.idCliente);
+            sel.add(opt);                // lo agrega al final
+            sel.value = data.cliente.idCliente; // lo selecciona
+
             alert("Cliente agregado correctamente");
             bootstrap.Modal.getInstance(document.getElementById("clienteModal")).hide();
             document.getElementById("clienteForm").reset();
@@ -71,17 +75,54 @@ document.getElementById("deviceForm").addEventListener("submit", function (e) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dispositivo)
     })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al crear dispositivo");
-            return res.json();
-        })
+        .then(res => { if (!res.ok) throw new Error("Error al crear dispositivo"); return res.json(); })
         .then(data => {
+            if (!data.success) throw new Error(data.message || "Error");
+
+            if (!data.dispositivo) {
+                console.error('Respuesta sin "dispositivo":', data);
+                alert(data.message || "Dispositivo creado, pero la respuesta no incluyó el objeto.");
+                return;
+            }
+
+            const sel = document.getElementById("m_dispositivo");
+            const opt = document.createElement('option');
+            opt.value = data.dispositivo.idDispositivo;
+            opt.textContent = data.dispositivo.imei || '(sin IMEI)';
+            opt.setAttribute('data-descripcion', data.dispositivo.detalle || '');
+            sel.appendChild(opt);
+            sel.value = data.dispositivo.idDispositivo;
+            sel.dispatchEvent(new Event('change'));
+
             alert("Dispositivo agregado correctamente");
             bootstrap.Modal.getInstance(document.getElementById("deviceModal")).hide();
             document.getElementById("deviceForm").reset();
         })
-        .catch(err => alert(err.message));
 });
+
+// ================= Agregar Fila a la tabla Principal =============
+function appendOrdenRow(o) {
+    function fmtDateCO(iso) { try { return new Date(iso).toLocaleDateString('es-CO'); } catch { return iso; } }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+    <td>${fmtDateCO(o.fechaIngreso)}</td>
+    <td>${o.cliente ?? ''}</td>
+    <td>${o.telefono ?? ''}</td>
+    <td>${o.password ?? ''}</td>
+    <td>${o.marca ?? ''}</td>
+    <td>${o.modelo ?? ''}</td>
+    <td>${o.descripcion ?? ''}</td>
+    <td>${o.observacion ?? ''}</td>
+    <td>${o.estado ?? ''}</td>
+    <td>${o.cedula ?? ''}</td>
+    <td>
+      <button class="btn btn-sm btn-info modOrdenBtn" data-id="${o.idOrden}">Modificar Orden</button>
+      <button class="btn btn-sm btn-info verOrdenBtn" data-id="${o.idOrden}">Ver Registros</button>
+      <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="${o.idOrden}">Nuevo Registro</button>
+      <button class="btn btn-sm btn-success asignarTecnico" data-id="${o.idOrden}">Asignar Tecnico</button>
+    </td>`;
+    document.querySelector('#mainTable #tbody').prepend(tr);
+}
 
 
 // ================== CREAR ORDEN DE SERVICIO ==================
@@ -89,19 +130,11 @@ document.getElementById("rowForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
     const orden = {
-        Fecha: document.getElementById("m_fecha").value,
-        Cliente: document.getElementById("m_cliente").value,
-        Telefono: document.getElementById("m_telefono").value,
-        Password: document.getElementById("m_password").value,
-        Marca: document.getElementById("m_marca").value,
-        Modelo: document.getElementById("m_modelo").value,
-        Descripcion: document.getElementById("m_descripcion").value,
-        MedioPago: document.getElementById("m_mediopago").value,
-        Proveedor: document.getElementById("m_proveedor").value,
-        Observacion: document.getElementById("m_observacion").value,
-        VRepuesto: document.getElementById("m_vrepuesto").value,
-        VServicio: document.getElementById("m_vservicio").value,
-        Total: document.getElementById("m_total").value
+        FechaIngreso: document.getElementById("m_fecha").value,
+        IdDispositivo: document.getElementById("m_dispositivo").value,
+        ProblemaReportado: document.getElementById("m_descripcion").value,
+        Estado: document.getElementById("m_estado").value,
+        Observaciones: document.getElementById("m_observacion").value
     };
 
     fetch("/OrdenServicio/CrearOrden", {
@@ -109,12 +142,11 @@ document.getElementById("rowForm").addEventListener("submit", function (e) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orden)
     })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al crear la orden");
-            return res.json();
-        })
+        .then(res => { if (!res.ok) throw new Error("Error al crear la orden"); return res.json(); })
         .then(data => {
-            alert("Orden de servicio creada correctamente");
+            if (!data.success) throw new Error(data.message || "Error");
+            appendOrdenRow(data.orden);           // ➜ inserta la fila en caliente
+            alert(data.message);
             bootstrap.Modal.getInstance(document.getElementById("rowModal")).hide();
             document.getElementById("rowForm").reset();
         })
@@ -122,7 +154,7 @@ document.getElementById("rowForm").addEventListener("submit", function (e) {
 });
 
 // ============================== Autocompletado de Descripcion ====================== //
-document.getElementById('m_cliente').addEventListener('change', function () {
+document.getElementById('m_dispositivo').addEventListener('change', function () {
     const selectedOption = this.options[this.selectedIndex];
     const descripcion = selectedOption.getAttribute('data-descripcion') || '';
     document.getElementById('m_descripcion').value = descripcion;
@@ -163,6 +195,18 @@ $(document).ready(function () {
             $("#sidePanel").fadeIn();
         });
     });
+
+    // =================== Abrir panel para asignar tecnico ======================= //
+    $(document).on("click", ".asignarTecnico", function () {
+        const idOrden = $(this).data("id");
+
+        $.get(`/OrdenServicio/AsignarEmpleado/${idOrden}`, function (html) {
+            $("#sidePanelTitle").text("Crear Nueva Orden");
+            $("#sidePanelContent").html(html);
+            $("#sidePanel").fadeIn();
+        });
+    });
+
 
     // =================== Cerrar Panel ======================= //
     $("#closePanel").click(function () {

@@ -1,0 +1,35 @@
+﻿@model OrdenesServicioViewModel
+
+<form id="formAsignarTecnico">
+    <div class="form-group">
+        <label for="empleadoSelect">Seleccionar Empleado</label>
+        <select id="empleadoSelect" class="form-control" name="Cedula">
+            <option disabled selected>-- Seleccione un empleado --</option>
+            @foreach (var emp in Model.Empleados)
+            {
+                <option value="@emp.Cedula">@emp.Nombre @emp.Apellido</option>
+            }
+        </select>
+        <input type="hidden" asp-for="IdOrden" id="IdOrden" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+</form>
+
+
+    <script>
+        $("#formAsignarTecnico").on("submit", function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/OrdenServicio/AsignarTecnico',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function () {
+                    alert('Estado actualizado correctamente');
+                    $("#sidePanel").fadeOut();
+                },
+                error: function () {
+                    alert('Ocurrió un error al actualizar el estado.');
+                }
+            });
+        });
+    </script>

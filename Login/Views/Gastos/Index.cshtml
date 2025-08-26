@@ -1,0 +1,271 @@
+﻿@{
+    ViewData["Title"] = "Gastos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hoy = DateTime.Today;
+}
+<div class="content-wrapper py-4" style="background:#f8f9fa">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-1">Gastos Mensuales</h2>
+                <div class="text-muted">Gestiona y visualiza tus gastos</div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <button class="btn btn-primary" id="btnNuevo"><i class="bi bi-plus-circle"></i> Nuevo gasto</button>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="row g-2 mb-3">
+            <div class="col-auto">
+                <input type="month" class="form-control" id="filtroMes" value="@($"{hoy:yyyy-MM}")">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-secondary" id="btnRefrescar">Refrescar</button>
+            </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex justify-content-between">
+                        <span class="fw-semibold">Total del mes</span>
+                        <span class="fw-bold" id="totalMes">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="tablaGastos">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Frecuencia</th>
+                        <th class="text-end">Monto</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Anti-forgery -->
+    <form id="afForm">@Html.AntiForgeryToken()</form>
+
+    <!-- Modal Crear/Editar -->
+    <div class="modal fade" id="gastoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formGasto">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitulo">Nuevo gasto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="gastoId">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Monto</label>
+                            <input type="number" step="0.01" class="form-control" id="monto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha" value="@($"{hoy:yyyy-MM-dd}")" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Categoría</label>
+                            <input class="form-control" id="categoria" placeholder="Ej: Arriendo, Servicios, Nómina">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Frecuencia</label>
+                            <select class="form-select" id="frecuencia" required>
+                                <option value="1">Semanal</option>
+                                <option value="2">Quincenal</option>
+                                <option value="3" selected>Mensual</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notas (opcional)</label>
+                            <textarea class="form-control" id="notas" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+                        <button class="btn btn-primary" id="btnGuardar" type="submit">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmación Eliminar -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    ¿Eliminar este gasto?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const $tbody = $('#tablaGastos tbody');
+            const $mes = $('#filtroMes');
+            const $totalMes = $('#totalMes');
+            const token = $('#afForm input[name="__RequestVerificationToken"]').val();
+            let gastoAEliminar = null;
+
+            function formatoMoneda(v) {
+                if (v == null) return '$0';
+                return v.toLocaleString(undefined, { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+            }
+            function freqNombre(v) {
+                switch (Number(v)) {
+                    case 1: return 'Semanal';
+                    case 2: return 'Quincenal';
+                    default: return 'Mensual';
+                }
+            }
+
+            async function listar() {
+                const [y, m] = $mes.val().split('-').map(Number);
+                const res = await fetch(`/Gastos/Listar?year=${y}&month=${m}`);
+                const data = await res.json();
+
+                $tbody.empty();
+                let total = 0;
+
+                data.forEach(g => {
+                    total += g.monto;
+                    const tr = $(`
+                        <tr data-id="${g.idGasto}">
+                            <td>${g.fecha?.substring(0,10) ?? ''}</td>
+                            <td>${g.nombre ?? ''}</td>
+                            <td>${g.categoria ?? ''}</td>
+                            <td>${freqNombre(g.frecuencia)}</td>
+                            <td class="text-end">${formatoMoneda(g.monto)}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary btn-edit"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger btn-del ms-1"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`);
+                    $tbody.append(tr);
+                });
+
+                $totalMes.text(formatoMoneda(total));
+            }
+
+            // Abrir modal "nuevo"
+            $('#btnNuevo').on('click', () => {
+                $('#modalTitulo').text('Nuevo gasto');
+                $('#gastoId').val('');
+                $('#nombre').val('');
+                $('#monto').val('');
+                $('#fecha').val(new Date().toISOString().substring(0,10));
+                $('#categoria').val('');
+                $('#frecuencia').val('3');
+                $('#notas').val('');
+                new bootstrap.Modal('#gastoModal').show();
+            });
+
+            // Editar
+            $tbody.on('click', '.btn-edit', async function () {
+                const id = $(this).closest('tr').data('id');
+                const res = await fetch(`/Gastos/Listar?year=1970&month=1`); // no lo usamos; si quieres, crea /Gastos/Obtener?id=...
+                // Mejor: endpoint Obtener
+                const res2 = await fetch(`/Gastos/Obtener?id=${id}`);
+                if (res2.ok) {
+                    const g = await res2.json();
+                    $('#modalTitulo').text('Editar gasto');
+                    $('#gastoId').val(g.idGasto);
+                    $('#nombre').val(g.nombre);
+                    $('#monto').val(g.monto);
+                    $('#fecha').val(g.fecha?.substring(0,10));
+                    $('#categoria').val(g.categoria ?? '');
+                    $('#frecuencia').val(g.frecuencia);
+                    $('#notas').val(g.notas ?? '');
+                    new bootstrap.Modal('#gastoModal').show();
+                }
+            });
+
+            // Guardar (crear/editar)
+            $('#formGasto').on('submit', async function (e) {
+                e.preventDefault();
+                const id = $('#gastoId').val();
+                const payload = {
+                    idGasto: id ? Number(id) : 0,
+                    nombre: $('#nombre').val(),
+                    monto: Number($('#monto').val()),
+                    fecha: $('#fecha').val(),
+                    categoria: $('#categoria').val(),
+                    frecuencia: Number($('#frecuencia').val()),
+                    notas: $('#notas').val()
+                };
+
+                const url = id ? `/Gastos/Editar?id=${id}` : '/Gastos/Crear';
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('gastoModal'))?.hide();
+                    await listar(); // refresca en caliente
+                } else {
+                    alert('Error al guardar el gasto.');
+                }
+            });
+
+            // Eliminar
+            $tbody.on('click', '.btn-del', function () {
+                gastoAEliminar = $(this).closest('tr').data('id');
+                new bootstrap.Modal('#confirmModal').show();
+            });
+
+            $('#btnConfirmEliminar').on('click', async function () {
+                if (!gastoAEliminar) return;
+                const res = await fetch(`/Gastos/Eliminar?id=${gastoAEliminar}`, {
+                    method: 'DELETE',
+                    headers: { 'RequestVerificationToken': token }
+                });
+                bootstrap.Modal.getInstance(document.getElementById('confirmModal'))?.hide();
+                if (res.ok) {
+                    await listar();
+                } else {
+                    alert('No se pudo eliminar.');
+                }
+                gastoAEliminar = null;
+            });
+
+            $('#btnRefrescar').on('click', listar);
+            $('#filtroMes').on('change', listar);
+
+            // Endpoint Obtener (mínimo) - lo agregamos abajo en el controlador
+            // Carga inicial
+            listar();
+        })();
+    </script>
+}

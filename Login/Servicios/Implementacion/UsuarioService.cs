@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Runtime.InteropServices;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -348,54 +349,85 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return true;
         }
-        public List<FacProUserViewModel> TraerFactXDia(int cedula, int idPDVActual)
+        public async Task<List<FacProUserViewModel>> TraerFactXDia(int cedula, int idPDVActual)
         {
-            DateTime fecha = DateTime.UtcNow.Date;
-            DateTime fechaInicio = new(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            DateTime fechaFin = fechaInicio.AddMonths(1).AddDays(-1);
+            // 1) Fechas de "hoy" en zona horaria local (Colombia)
+            var tzId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "SA Pacific Standard Time"    // Windows
+                : "America/Bogota";             // Linux/macOS
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(tzId);
 
-            int totalFacturas = _dbContext.Factura
-                .Where(f => f.FechaEmision == fecha)
-                .Count();
+            var nowUtc = DateTime.UtcNow;
+            var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
 
+            var hoyLocalInicio = nowLocal.Date;           // 00:00 local
+            var mananaLocalInicio = hoyLocalInicio.AddDays(1);
 
-            int totalEmpleados = _dbContext.Empleado.Count();
+            // Si tu columna FechaEmision está guardada en UTC en la BD, convierte el rango a UTC:
+            var hoyUtcInicio = TimeZoneInfo.ConvertTimeToUtc(hoyLocalInicio, tz);
+            var mananaUtcInicio = TimeZoneInfo.ConvertTimeToUtc(mananaLocalInicio, tz);
 
-            int totalProductos = _dbContext.Productos.Count();
+            // ----- IMPORTANTE -----
+            // Usa UNO de los dos bloques siguientes según cómo guardes FechaEmision.
 
-            string rolEmpleado = string.Empty;
-                var rolEmpleadoResult = (from se in _dbContext.Sedeempleado
-                                         join tc in _dbContext.TipoCargo
-                                         on se.Id_cargo equals tc.Id_tipo
-                                         where se.Cedula == cedula
-                                         select tc.NombreCargo).FirstOrDefault();
+            // 2A) Si guardas FechaEmision en HORA LOCAL (común en apps on-prem):
+            int totalFacturas = await _dbContext.Factura
+                .Where(f => f.FechaEmision >= hoyLocalInicio && f.FechaEmision < mananaLocalInicio)
+                .CountAsync();
 
-                if (rolEmpleadoResult != null)
-                {
-                    rolEmpleado = rolEmpleadoResult;
-                }
-                else
-                {
-                    rolEmpleado = "No asignado";
+            decimal totalVendido = await _dbContext.Factura
+                .Where(f => f.FechaEmision >= hoyLocalInicio && f.FechaEmision < mananaLocalInicio)
+                .SumAsync(f => (decimal?)f.Total) ?? 0m;
 
-                }
+            // 2B) Si guardas FechaEmision en UTC (común en apps cloud):
+            //int totalFacturas = await _dbContext.Factura
+            //    .Where(f => f.FechaEmision >= hoyUtcInicio && f.FechaEmision < mananaUtcInicio)
+            //    .CountAsync();
+            //
+            //decimal totalVendido = await _dbContext.Factura
+            //    .Where(f => f.FechaEmision >= hoyUtcInicio && f.FechaEmision < mananaUtcInicio)
+            //    .SumAsync(f => (decimal?)f.Total) ?? 0m;
 
+            // 3) Empleados totales (hasta ahora)
+            int totalEmpleados = await _dbContext.Empleado.CountAsync();
+
+            //InfoPDV
+            string rolEmpleado = string.Empty; 
+            var rolEmpleadoResult = (from se in _dbContext.Sedeempleado 
+                                     join tc in _dbContext.TipoCargo 
+                                     on se.Id_cargo equals tc.Id_tipo 
+                                     where se.Cedula == cedula 
+                                     select tc.NombreCargo).FirstOrDefault(); 
+            if (rolEmpleadoResult != null) 
+            { 
+                rolEmpleado = rolEmpleadoResult; 
+            } 
+            else 
+            { 
+                rolEmpleado = "No asignado"; 
+            }
             string? traerNombrePDV = _dbContext.Infopdv
-          .Where(ce => ce.InfopdvId == idPDVActual)
-          .Select(ce => ce.NombreInfoPDV)
-          .FirstOrDefault();
+                .Where(ce => ce.InfopdvId == idPDVActual)
+                .Select(ce => ce.NombreInfoPDV)
+                .FirstOrDefault();
+            //FinInfoPDV
 
-            FacProUserViewModel viewModel = new()
+            // 4) Productos activos (Estado = 1)
+            int totalProductosActivos = await _dbContext.Productos
+                .Where(p => p.Estado == 1)
+                .CountAsync();
+
+            // 5) Armas tu modelo/vista (agrega una propiedad si quieres mostrar el total vendido hoy)
+            var viewModel = new FacProUserViewModel
             {
                 TotalSumaCodFactura = totalFacturas,
                 TotalEmpleados = totalEmpleados,
-                TotalProductos = totalProductos,
-                RolEmpleado = rolEmpleado,
-                IdPDV = idPDVActual,
-                NombrePDV = traerNombrePDV
+                TotalProductos = totalProductosActivos,
+                TotalVentaDia = totalVendido,
+                IdPDV = idPDVActual
             };
 
-            return new List<FacProUserViewModel> { viewModel };
+            return new List<FacProUserViewModel> { viewModel }; // o solo 'return viewModel;'
         }
         public async Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma)
         {
@@ -477,7 +509,7 @@ namespace Plataforma.Servicios.Implementacion
                 return false;
             }
         }
-        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion)
+        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
             var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 42).OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
@@ -497,16 +529,6 @@ namespace Plataforma.Servicios.Implementacion
             }
             int nuevoCodigo = codigosNumericos.Count > 0 ? codigosNumericos.Max() + 1 : 1;
             string nuevoCodigoStr = nuevoCodigo.ToString();
-            /*_logger.LogInformation("Nuevo Codigo: " + nuevoCodigoStr +
-                                     "Nuevo Producto: " + nombreProducto +
-                                     "Cantidad Producto " + cantidadProducto +
-                                     "Valor Neto " + valorNetoProductoFloat +
-                                     "Valor Venta " + valorVentaProductoFloat +
-                                     "Valor Unidad " + valorUnidadInt +
-                                     "Id_Empresa " + id_empresa +
-                                     "Categoria " + categoria +
-                                     "Estado " + estado +
-                                     "Ubicacion " + ubicacion);*/
             var nuevoProductoInventario = new Producto
             {
                 Cod_Producto = nuevoCodigoStr,
@@ -518,7 +540,8 @@ namespace Plataforma.Servicios.Implementacion
                 ID_Empresa = id_empresa,
                 IdCatepro = categoria,
                 Estado = estado,
-                Ubicacion = ubicacion
+                Ubicacion = ubicacion,
+                idProveedor = IdProveedor
             };
             _dbContext.Productos.Add(nuevoProductoInventario);
             await _dbContext.SaveChangesAsync();
@@ -556,7 +579,6 @@ namespace Plataforma.Servicios.Implementacion
         }
         public Syncpdv AgregarEstadoPDV(int estadopdv, int idPDV, int cedula)
         {
-            Console.WriteLine("La cedula del trabajador es: " + cedula);
             var nuevoEstadoPDV = new Syncpdv
             {
                 InfopdvId = idPDV,

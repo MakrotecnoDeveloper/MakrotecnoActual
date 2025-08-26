@@ -2,6 +2,8 @@
 
 <form id="formEditarOrden">
     <input type="hidden" asp-for="IdOrden" />
+    <input type="hidden" asp-for="FechaIngreso" />
+    <input type="hidden" asp-for="Cedula" />
 
     <div class="mb-3">
         <label asp-for="Estado" class="form-label"></label>
@@ -11,6 +13,18 @@
             <option value="Finalizada">Finalizada</option>
             <option value="Rechazada">Rechazada</option>
         </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label">Observaciones</label>
+        <input asp-for="Observaciones" class="form-control" />
+    </div>
+    <div class="mb-2">
+        <label asp-for="IdDispositivo" class="form-label">IdDispositivo</label>
+        <input asp-for="IdDispositivo" class="form-control" />
+    </div>
+    <div class="mb-2">
+        <label asp-for="ProblemaReportado" class="form-label">Problema Reportado</label>
+        <input asp-for="ProblemaReportado" class="form-control" />
     </div>
 
     <button type="submit" class="btn btn-success">Guardar</button>

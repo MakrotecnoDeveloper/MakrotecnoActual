@@ -138,13 +138,13 @@ namespace Plataforma.Servicios.Implementacion
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 Console.WriteLine("searchTerm");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.Cod_Producto == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto <= 3 && p.Cod_Producto == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
             else if (categoriaTerm > 0)
             {
                 Console.WriteLine("Categoria");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto == 1 && p.IdCatepro == categoriaTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
+                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto <= 3 && p.IdCatepro == categoriaTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
                 return productosProximosSinStock;
             }
             else
@@ -227,10 +227,10 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, string nombreProducto, float valorNeto, float valorVenta, int valorUnidad, int cantidad, int categoria, string idEmpresa, int estado)
+        public void EditarProducto(string codigo, float valorNeto, float valorVenta, int valorUnidad, int cantidad)
         {
 
-            if (codigo == null || nombreProducto == null || categoria <= 0 || idEmpresa == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
+            if (codigo == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
             {
                 Console.WriteLine("Error: Todos los campos deben tener un valor. No se permiten valores nulos.");
                 return;
@@ -241,14 +241,10 @@ namespace Plataforma.Servicios.Implementacion
             if (producto != null)
             {
                 producto.Cod_Producto = codigo;
-                producto.NombreProducto = nombreProducto;
                 producto.CantidadProducto = cantidad;
                 producto.ValorNetoProducto = valorNeto;
                 producto.ValorVentaProducto = valorVenta;
                 producto.ValorUnidad = valorUnidad;
-                producto.ID_Empresa = idEmpresa;
-                producto.IdCatepro = categoria;
-                producto.Estado = estado;
                 try
                 {
                     _dbContext.SaveChanges();
@@ -493,6 +489,13 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<Proveedores>> ObtenerProveedores()
         {
             return await _dbContext.Proveedores.ToListAsync();
+        }
+        public async Task<int?> SeleccionarServicio(Producto p)
+        {
+            return await _dbContext.CategoriaProductos
+                .Where(c => c.IdCateProducto == p.IdCatepro)
+                .Select(c => (int?)c.IdServicio)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Servicio> CrearServicio(Servicio servicio)

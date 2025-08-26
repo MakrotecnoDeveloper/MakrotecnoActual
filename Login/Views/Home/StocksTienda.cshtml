@@ -221,11 +221,12 @@
                             var id_empresa = "1234193470-6";
                             var categoria = 42;
                             var estado = 1;
+                            var IdProveedor = 24;
                             var ubicacion = prompt("Ubicacion ej: Estante #7");
                             $.ajax({
                                 url: '@Url.Action("insertarProInventario", "Home")',
                                 type: 'POST',
-                                data: { nombreProducto: nombreProducto.toUpperCase(), cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion },
+                                data: { nombreProducto: nombreProducto.toUpperCase(), cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion, IdProveedor: IdProveedor },
                                 success: function (data) {
                                     alert('Producto insertado.');
                                 },

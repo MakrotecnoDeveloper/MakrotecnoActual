@@ -33,11 +33,15 @@ namespace Plataforma.Servicios.Implementacion
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
         }
 
-        public async Task CrearAsync(OrdenServicios orden)
+        public async Task<OrdenServicios> CrearAsync(OrdenServicios orden, string cedulaClaim)
         {
+            orden.Cedula = int.Parse(cedulaClaim);
             orden.FechaIngreso = DateTime.Now;
+
             _dbContext.OrdenServicios.Add(orden);
             await _dbContext.SaveChangesAsync();
+
+            return orden;
         }
 
         public async Task ActualizarAsync(OrdenServicios orden, int cedulaEmpleado)
@@ -93,35 +97,73 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task CrearHistOrdenAsync(HistOrdSer baseHistorial, string[]? Cod_Producto, int cedula)
         {
-            // Fecha y cedula para todos
             baseHistorial.FechaRegistro = DateTime.Now;
             baseHistorial.Cedula = cedula;
 
-            if (Cod_Producto != null && Cod_Producto.Any(c => !string.IsNullOrWhiteSpace(c)))
+            // Normaliza lista de códigos
+            var codigos = (Cod_Producto ?? Array.Empty<string>())
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Select(c => c.Trim())
+                .ToList();
+
+            // Transacción para que historial y stock queden coherentes
+            await using var tx = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                // Si hay productos, guardamos un registro por cada uno
-                var registros = Cod_Producto
-                    .Where(c => !string.IsNullOrWhiteSpace(c))
-                    .Select(c => new HistOrdSer
+                if (codigos.Count > 0)
+                {
+                    // 1) Crear registros de historial (uno por código)
+                    var registros = codigos.Select(c => new HistOrdSer
                     {
                         IdOrden = baseHistorial.IdOrden,
                         ReparacionDet = baseHistorial.ReparacionDet,
                         FechaRegistro = baseHistorial.FechaRegistro,
                         Cedula = baseHistorial.Cedula,
                         Cod_Producto = c
-                    })
-                    .ToList();
+                    }).ToList();
 
-                _dbContext.HistOrdServ.AddRange(registros);
+                    _dbContext.HistOrdServ.AddRange(registros);
+
+                    // 2) Descontar stock por cada ocurrencia del código
+                    //    (si el mismo código viene 3 veces, descuenta 3)
+                    var porCodigo = codigos
+                        .GroupBy(x => x)
+                        .ToDictionary(g => g.Key, g => g.Count());
+
+                    // Trae solo los productos involucrados
+                    var productos = await _dbContext.Productos
+                        .Where(p => porCodigo.Keys.Contains(p.Cod_Producto))
+                        .ToListAsync();
+
+                    // (Opcional) códigos no encontrados
+                    // var noEncontrados = porCodigo.Keys.Except(productos.Select(p => p.Cod_Producto)).ToList();
+
+                    foreach (var prod in productos)
+                    {
+                        var desc = porCodigo[prod.Cod_Producto];
+
+                        // Evita negativos; si prefieres lanzar error, cámbialo.
+                        var nuevo = prod.CantidadProducto - desc;
+                        prod.CantidadProducto = nuevo < 0 ? 0 : nuevo;
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    // Sin productos: un historial con Cod_Producto = null
+                    baseHistorial.Cod_Producto = null;
+                    _dbContext.HistOrdServ.Add(baseHistorial);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                await tx.CommitAsync();
             }
-            else
+            catch
             {
-                // Si no hay productos, guardamos solo uno con Cod_Producto null
-                baseHistorial.Cod_Producto = null;
-                _dbContext.HistOrdServ.Add(baseHistorial);
+                await tx.RollbackAsync();
+                throw;
             }
-
-            await _dbContext.SaveChangesAsync();
         }
         public async Task ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario)
         {
@@ -137,7 +179,9 @@ namespace Plataforma.Servicios.Implementacion
 
             // Actualizar solo campos permitidos
             ordenExistente.Estado = orden.Estado;
-            ordenExistente.FechaIngreso = DateTime.Now;
+            ordenExistente.Observaciones = orden.Observaciones;
+            ordenExistente.IdDispositivo = orden.IdDispositivo;
+            ordenExistente.ProblemaReportado = orden.ProblemaReportado;
 
             _dbContext.OrdenServicios.Update(ordenExistente);
 
@@ -209,9 +253,10 @@ namespace Plataforma.Servicios.Implementacion
                     FechaVenta = DateTime.Now,
                     IdCliente = ordenExistente.Dispositivo.IdCliente,
                     Total = subtotal,
-                    MetodoPago = $"Venta generada desde la orden #{orden.IdOrden}",
+                    MetodoPago = "Efectivo",
                     Cedula = cedula,
-                    CedulaCliente = ordenExistente.Dispositivo.CedulaCliente
+                    CedulaCliente = (int)ordenExistente.Dispositivo.CedulaCliente,
+                    Conceptos = $"Venta generada desde la orden #{orden.IdOrden}"
                 };
 
                 _dbContext.Ventas.Add(venta);
@@ -230,8 +275,45 @@ namespace Plataforma.Servicios.Implementacion
 
             await _dbContext.SaveChangesAsync();
         }
+        public async Task<List<Empleados>> ObtenerEmpleadosAsync()
+        {
+            return await _dbContext.Empleado.ToListAsync();
+        }
+        public async Task<OrdenServicios?> ActualizarOrdenTecnico(OrdenServicios orden)
+        {
+            var ordenExistente = await _dbContext.OrdenServicios
+                .FirstOrDefaultAsync(o => o.IdOrden == orden.IdOrden);
 
+            if (ordenExistente == null)
+                return null;
 
+            // 🔹 Actualizas solo lo que venga de la vista
+            ordenExistente.Cedula = orden.Cedula;
 
+            // No cambias los demás campos (quedan igualitos en BD)
+            await _dbContext.SaveChangesAsync();
+
+            return ordenExistente;
+        }
+        public async Task<OrdenServicioRowDTO> GetOrdenRowAsync(int idOrden)
+        {
+            return await _dbContext.OrdenServicios
+                .Where(o => o.IdOrden == idOrden)
+                .Select(o => new OrdenServicioRowDTO
+                {
+                    IdOrden = o.IdOrden,
+                    FechaIngreso = o.FechaIngreso,
+                    Cliente = o.Dispositivo.Cliente.NombreCliente,
+                    Telefono = o.Dispositivo.Cliente.TelefonoCliente,
+                    Password = o.Dispositivo.Clave,
+                    Marca = o.Dispositivo.Marca,
+                    Modelo = o.Dispositivo.Modelo,
+                    Descripcion = o.ProblemaReportado,
+                    Observacion = o.Observaciones,
+                    Estado = o.Estado,
+                    Cedula = o.Cedula
+                })
+                .FirstAsync();
+        }
     }
 }
