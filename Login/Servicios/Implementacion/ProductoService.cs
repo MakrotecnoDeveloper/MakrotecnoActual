@@ -504,5 +504,326 @@ namespace Plataforma.Servicios.Implementacion
             await _dbContext.SaveChangesAsync();
             return servicio;
         }
+        public async Task<PagedResult<ProductoStockVm>> ObtenerStockAsync(
+        int? sedeId, string? q, int page, int pageSize,
+        string? sortBy = null, bool desc = false)
+        {
+            page = page <= 0 ? 1 : page;
+            pageSize = pageSize <= 0 ? 20 : pageSize;
+            q = (q ?? string.Empty).Trim();
+
+            var hasSede = sedeId.HasValue && sedeId.Value > 0;
+
+            IQueryable<ProductoStockVm> baseQuery;
+
+            if (!hasSede)
+            {
+                // TODAS las sedes (agregado por producto)
+                baseQuery =
+                    from i in _dbContext.InventarioSedes
+                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    where p.Estado == 1
+                    group i by new { p.Cod_Producto, p.NombreProducto } into g
+                    select new ProductoStockVm
+                    {
+                        ProductoId = g.Key.Cod_Producto,
+                        Nombre = g.Key.NombreProducto!,
+                        Cantidad = g.Sum(x => x.Cantidad)
+                    };
+            }
+            else
+            {
+                // SOLO la sede seleccionada
+                var sedeNombre = await _dbContext.Sede
+                    .Where(s => s.Id_sede == sedeId.Value)
+                    .Select(s => s.NombreSede)
+                    .FirstOrDefaultAsync();
+
+                baseQuery =
+                    from i in _dbContext.InventarioSedes
+                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    where p.Estado == 1 && i.SedeId == sedeId.Value
+                    select new ProductoStockVm
+                    {
+                        ProductoId = p.Cod_Producto!,
+                        Nombre = p.NombreProducto!,
+                        Cantidad = i.Cantidad,
+                        SedeId = sedeId.Value,
+                        SedeNombre = sedeNombre
+                    };
+            }
+
+            // Filtro de búsqueda (SKU o Nombre)
+            if (!string.IsNullOrEmpty(q))
+            {
+                var qLower = q.ToLower();
+                baseQuery = baseQuery.Where(x =>
+                    x.ProductoId.ToLower().Contains(qLower) ||
+                    x.Nombre.ToLower().Contains(qLower)
+                );
+            }
+
+            // Orden
+            baseQuery = (sortBy?.ToLower()) switch
+            {
+                "cantidad" => desc ? baseQuery.OrderByDescending(x => x.Cantidad)
+                                   : baseQuery.OrderBy(x => x.Cantidad),
+                _ => desc ? baseQuery.OrderByDescending(x => x.Nombre)
+                                   : baseQuery.OrderBy(x => x.Nombre),
+            };
+
+            var totalRows = await baseQuery.CountAsync();
+            var rows = await baseQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<ProductoStockVm>
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalRows = totalRows,
+                Rows = rows
+            };
+        }
+
+
+        public async Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(int? sedeId, string? q)
+        {
+            // Construimos la misma base de datos que arriba pero solo para sumar
+            IQueryable<ProductoStockVm> baseQuery;
+
+            if (sedeId == null)
+            {
+                baseQuery =
+                    from i in _dbContext.InventarioSedes
+                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    where p.Estado == 1
+                    group i by new { p.Cod_Producto, p.NombreProducto } into g
+                    select new ProductoStockVm
+                    {
+                        ProductoId = g.Key.Cod_Producto,
+                        Nombre = g.Key.NombreProducto,
+                        Cantidad = g.Sum(x => x.Cantidad) // suma aunque sea 0
+                    };
+            }
+            else
+            {
+                baseQuery =
+                    from p in _dbContext.Productos
+                    where p.Estado == 1
+                    join i in _dbContext.InventarioSedes.Where(x => x.SedeId == sedeId.Value)
+                        on p.Cod_Producto equals i.ProductoId into gi
+                    from i in gi.DefaultIfEmpty()
+                    select new ProductoStockVm
+                    {
+                        ProductoId = p.Cod_Producto,
+                        Nombre = p.NombreProducto,
+                        Cantidad = i != null ? i.Cantidad : 0
+                    };
+            }
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                var qLower = q.ToLower();
+                baseQuery = baseQuery.Where(x =>
+                    x.Nombre.ToLower().Contains(qLower));
+            }
+
+            var totalUnidades = await baseQuery.SumAsync(x => (decimal?)x.Cantidad) ?? 0;
+            var skusConStock = await baseQuery.CountAsync(x => x.Cantidad > 0);
+            return (totalUnidades, skusConStock);
+        }
+
+        public async Task AplicarMovimientoAsync(int productoId, int sedeId, decimal delta, string? motivo = null)
+        {
+            var conn = _dbContext.Database.GetDbConnection();
+            await _dbContext.Database.OpenConnectionAsync();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "dbo.sp_Inventario_AplicarMovimiento";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+            var p1 = cmd.CreateParameter(); p1.ParameterName = "@ProductoId"; p1.Value = productoId; cmd.Parameters.Add(p1);
+            var p2 = cmd.CreateParameter(); p2.ParameterName = "@SedeId"; p2.Value = sedeId; cmd.Parameters.Add(p2);
+            var p3 = cmd.CreateParameter(); p3.ParameterName = "@Delta"; p3.Value = delta; cmd.Parameters.Add(p3);
+            var p4 = cmd.CreateParameter(); p4.ParameterName = "@Motivo"; p4.Value = (object?)motivo ?? DBNull.Value; cmd.Parameters.Add(p4);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+        public async Task<decimal> ObtenerTotalStockAsync(int? sedeId)
+        {
+            if (sedeId == null)
+            {
+                return await _dbContext.InventarioSedes.SumAsync(x => (decimal?)x.Cantidad) ?? 0;
+            }
+            else
+            {
+                return await _dbContext.InventarioSedes
+                    .Where(x => x.SedeId == sedeId.Value)
+                    .SumAsync(x => (decimal?)x.Cantidad) ?? 0;
+            }
+        }
+
+        public async Task<int> ObtenerSkusConStockAsync(int? sedeId)
+        {
+            if (sedeId == null)
+            {
+                return await _dbContext.InventarioSedes
+                    .GroupBy(x => x.ProductoId)
+                    .CountAsync(g => g.Sum(x => x.Cantidad) > 0);
+            }
+            else
+            {
+                return await _dbContext.InventarioSedes
+                    .Where(x => x.SedeId == sedeId.Value)
+                    .CountAsync(x => x.Cantidad > 0);
+            }
+        }
+        public async Task<(int insertados, int omitidos)> InsertarLoteAsync(IEnumerable<ProductoInsertDto> lote)
+        {
+            int ok = 0, omit = 0;
+
+            // Trae catálogos para validar (minimiza roundtrips)
+            var catsByServicio = (await _dbContext.CategoriaProductos
+                .Select(c => new { c.IdCateProducto, c.Descripcion, c.IdServicio })
+                .ToListAsync())
+                .GroupBy(x => x.IdServicio)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.IdServicio).ToHashSet());
+
+            var proveedores = await _dbContext.Proveedores.Select(p => p.IdProveedor).ToListAsync();
+            var proveedoresSet = proveedores.ToHashSet();
+
+            // Evitar duplicados por código existente
+            var cods = lote.Where(x => !string.IsNullOrWhiteSpace(x.Cod_Producto))
+                           .Select(x => x.Cod_Producto!.Trim())
+                           .Distinct()
+                           .ToList();
+
+            var existentes = await _dbContext.Productos
+                .Where(p => cods.Contains(p.Cod_Producto!))
+                .Select(p => p.Cod_Producto!)
+                .ToListAsync();
+            var existentesSet = existentes.ToHashSet();
+
+            var nuevos = new List<Producto>();
+
+            foreach (var x in lote)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(x.Cod_Producto) ||
+                        string.IsNullOrWhiteSpace(x.NombreProducto) ||
+                        x.IdCatepro <= 0 || x.idProveedor <= 0)
+                    { omit++; continue; }
+
+                    // valida relación categoría ↔ servicio
+                    if (!catsByServicio.TryGetValue(x.ServicioId, out var bucket) || !bucket.Contains(x.IdCatepro))
+                    { omit++; continue; }
+
+                    var codigo = x.Cod_Producto!.Trim();
+                    if (existentesSet.Contains(codigo))
+                    { omit++; continue; }
+
+                    nuevos.Add(new Producto
+                    {
+                        Cod_Producto = codigo,
+                        NombreProducto = x.NombreProducto!.Trim(),
+                        CantidadProducto = x.CantidadProducto,
+                        ValorNetoProducto = x.ValorNetoProducto,
+                        ValorVentaProducto = x.ValorVentaProducto,
+                        ValorUnidad = x.ValorUnidad,
+                        ID_Empresa = x.ID_Empresa,
+                        Estado = x.Estado,
+                        Ubicacion = x.Ubicacion,
+                        IdCatepro = x.IdCatepro,
+                        idProveedor = x.idProveedor
+                    });
+                    ok++;
+                }
+                catch { omit++; }
+            }
+
+            if (nuevos.Count > 0)
+            {
+                _dbContext.Productos.AddRange(nuevos);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return (ok, omit);
+        }
+
+        public async Task<List<Servicio>> GetServiciosAsync()
+            => await _dbContext.Servicio
+                .OrderBy(s => s.NombreServicio)
+                .Select(s => new Servicio { IdServicio = s.IdServicio, DescripcionServicio = s.DescripcionServicio })
+                .ToListAsync();
+
+        public async Task<List<CategoriaProductos>> GetCategoriasPorServicioAsync(int servicioId)
+            => await _dbContext.CategoriaProductos
+                .Where(c => c.IdServicio == servicioId)
+                .OrderBy(c => c.Descripcion)
+                .Select(c => new CategoriaProductos { IdCateProducto = c.IdCateProducto, Descripcion = c.Descripcion })
+                .ToListAsync();
+
+        public async Task<List<Proveedores>> GetProveedoresAsync()
+            => await _dbContext.Proveedores
+                .OrderBy(p => p.RazonSocial)
+                .Select(p => new Proveedores { IdProveedor = p.IdProveedor, RazonSocial = p.RazonSocial })
+                .ToListAsync();
+        public bool ValidarSedeAsignacionProducto(int idSede)
+        {
+            return _dbContext.Sede.Any(idsede => idsede.Id_sede == idSede);
+        }
+        public bool ValidarProductoAsignacion(string producto)
+        {
+            return _dbContext.Productos.Any(codProducto => codProducto.Cod_Producto == producto);
+        }
+        public bool ValidarCantidadProducto(string producto, decimal cantidad)
+        {
+            // Busca la cantidad disponible del producto
+            var stock = _dbContext.Productos
+                .Where(cp => cp.Cod_Producto == producto)
+                .Select(c => c.CantidadProducto)
+                .FirstOrDefault();
+
+            // Si no existe el producto o la cantidad es insuficiente, retorna false
+            return stock >= cantidad;
+        }
+        public InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim)
+        {
+                var cedula = int.Parse(cedulaClaim);
+                var inventario = _dbContext.InventarioSedes
+                .FirstOrDefault(cod => cod.ProductoId == producto && cod.SedeId == sede);
+                if (inventario != null) 
+                { 
+                    inventario.Cantidad += cantidad;
+                    inventario.ActualizadoEn = DateTime.Now;
+                    inventario.Cedula = cedula;
+                }else
+                {
+                    inventario = new InventarioSede
+                    {
+                        ProductoId = producto,
+                        SedeId = sede,
+                        Cantidad = cantidad,
+                        PrecioUnitario = valorUnitario,
+                        ActualizadoEn = DateTime.Now,
+                        Cedula = cedula
+                    };
+                    _dbContext.InventarioSedes.Add(inventario);
+                    _dbContext.SaveChanges();
+                }
+                var prod = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == producto);
+                prod.CantidadProducto -= cantidad;
+                _dbContext.SaveChanges();
+
+                return inventario;
+
+        }
+        public List<Producto> TraerProductosInactivos()
+        {
+            return _dbContext.Productos.Where(est => est.Estado == 0).ToList();
+        }
     }
+
 }

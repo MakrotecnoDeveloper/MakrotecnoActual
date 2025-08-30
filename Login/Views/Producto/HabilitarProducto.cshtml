@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Plataforma.Models.Producto>
+
+@{
+    ViewData["Title"] = "Activar Productos";
+}
+<div class="content-wrapper">
+    <h2>Activar Productos</h2>
+
+    <input type="text" id="buscarProducto" placeholder="Buscar por código o nombre" class="form-control" />
+
+    <div id="detalleProducto" style="margin-top:20px; display:none;">
+        <h4>Detalle del Producto</h4>
+        <p><b>Código:</b> <span id="codigoProd"></span></p>
+        <p><b>Nombre:</b> <span id="nombreProd"></span></p>
+        <p><b>Estado:</b> <span id="estadoProd"></span></p>
+
+        <form method="post" asp-action="CambiarEstado">
+            <input type="hidden" name="codigo" id="codigoHidden" />
+            <button type="submit" class="btn btn-success">Activar</button>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+
+    <script>
+        var productos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+
+        $("#buscarProducto").autocomplete({
+            source: productos.map(p => ({
+                label: p.Cod_Producto + " - " + p.NombreProducto,
+                value: p.Cod_Producto,
+                data: p
+            })),
+            select: function (event, ui) {
+                let producto = ui.item.data;
+
+                $("#codigoProd").text(producto.Cod_Producto);
+                $("#nombreProd").text(producto.NombreProducto);
+                $("#estadoProd").text(producto.Estado === 0 ? "Inactivo" : "Activo");
+                $("#codigoHidden").val(producto.Cod_Producto);
+
+                $("#detalleProducto").show();
+            }
+        });
+    </script>
+}

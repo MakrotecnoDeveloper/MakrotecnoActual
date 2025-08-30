@@ -1,0 +1,433 @@
+﻿@model ProductosIndexVm
+@{
+    ViewData["Title"] = "Inventario por sede";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <label asp-for="FiltroSedeId" class="form-label">Sede</label>
+            <select asp-for="FiltroSedeId" class="form-select">
+                    <option value="">Todas las sedes</option>
+                @foreach (var sede in Model.Sede)
+                {
+                    <option value="@sede.Id_sede">@sede.NombreSede</option>
+                }
+            </select>
+        </div>
+    </div>
+      <div class="col-md-4">
+        <label class="form-label">Buscar (SKU/Producto)</label>
+        <input id="q" class="form-control" value="@Model.Q" placeholder="Ej: ABC123 / Shampo Hidratante" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tamaño página</label>
+        <select id="pageSize" class="form-select">
+          <option>10</option>
+          <option selected>20</option>
+          <option>50</option>
+          <option>100</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button id="btnBuscar" class="btn btn-primary">Buscar</button>
+        <button id="btnExcel" class="btn btn-success">Exportar Excel</button>
+        <button id="btnAsignarCantidad" class="btn btn-success">Asignar Cantidad</button>
+      </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <span id="resumen" class="badge bg-secondary">Cargando...</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <label class="form-label m-0">Ordenar por:</label>
+        <select id="sortBy" class="form-select form-select-sm">
+          <option value="nombre">Nombre</option>
+          <option value="cantidad">Cantidad</option>
+        </select>
+        <select id="sortDir" class="form-select form-select-sm">
+          <option value="false">Asc</option>
+          <option value="true">Desc</option>
+        </select>
+      </div>
+    </div>
+
+    <table class="table table-striped" id="tablaStock">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Producto</th>
+          <th class="text-end">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <nav>
+      <ul id="paginador" class="pagination"></ul>
+    </nav>
+
+    <hr class="my-4" />
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-boxes"></i> Agregar productos (múltiples filas)
+                </h5>
+                <div class="d-flex gap-2">
+                    <button id="btnAgregarFila" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Añadir fila
+                    </button>
+                    <button id="btnGuardarLote" class="btn btn-primary btn-sm">
+                        <i class="bi bi-save2"></i> Guardar lote
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Empresa</label>
+                    <input id="empresaDefault" class="form-control" value="1234193470-6" />
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle" id="tablaInsert">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Cod_Producto</th>
+                            <th>NombreProducto</th>
+                            <th>Cantidad</th>
+                            <th>ValorNeto</th>
+                            <th>ValorVenta</th>
+                            <th>ValorUnidad</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Servicio</th>
+                            <th>Categoría</th>
+                            <th>Proveedor</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody><!-- filas dinámicas --></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL: Asignar Cantidad -->
+    <div class="modal fade" id="cantidadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" asp-action="AsignacionSedeProducto" asp-controller="Producto">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Asignar Cantidad a Sede</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2"><label>Producto</label><select id="producto" name="producto" class="form-select">
+                            @foreach (var producto in Model.Productos)
+                            {
+                                <option value="@producto.Cod_Producto"
+                                        data-vv="@producto.ValorVentaProducto"
+                                        data-vn="@producto.ValorNetoProducto">
+                                    @producto.NombreProducto
+                                </option>
+                            }
+                        </select></div>
+                        <div class="mb-2"><label>Sedes</label>
+                        <select id="sede" name="sede" class="form-select">
+                            @foreach (var sede in Model.Sede)
+                            {
+                                <option value="@sede.Id_sede">@sede.NombreSede</option>
+                            }
+                        </select></div>
+                        <div class="mb-2"><label>Cantidad</label><input type="number" id="cantidad" class="form-control" name="cantidad"></div>
+                        <div class="mb-2"><label>Valor Unitario</label><input type="number" id="valorUnitario" class="form-control" name="valorUnitario"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cerrar</button>
+                        <button class="btn btn-success" type="submit">Agregar Cantidad</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // cuando cambie el producto, llena valorUnitario
+        $('#producto').on('change', function () {
+          const $opt = $(this).find('option:selected');
+          // prioriza valor de venta; si no hay, usa valor neto
+          const vv = $opt.data('vv');
+          const vn = $opt.data('vn');
+          const valor = (vv ?? vn) ?? '';
+          $('#valorUnitario').val(valor);
+        });
+
+        // al abrir el modal, dispara el cambio para precargar
+        $('#cantidadModal').on('shown.bs.modal', function () {
+          $('#producto').trigger('change');
+        });
+    </script>
+    <script>
+        (function ($) {
+          // =====================
+          // LISTADO DE STOCK
+          // =====================
+          const $sede       = $('#FiltroSedeId'); // corregido
+          const $q          = $('#q');
+          const $pageSize   = $('#pageSize');
+          const $sortBy     = $('#sortBy');
+          const $sortDir    = $('#sortDir');
+          const $resumen    = $('#resumen');
+          const $tbodyStock = $('#tablaStock tbody');
+          const $paginador  = $('#paginador');
+
+          const state = {
+            sedeId: $sede.val() || null,
+            q: $q.val() || '',
+            page: 1,
+            pageSize: parseInt($pageSize.val(), 10) || 20,
+            sortBy: $sortBy.val() || 'nombre',
+            desc: $sortDir.val() === 'true'
+          };
+
+          function cargarStock() {
+            $resumen.text('Cargando...');
+            const params = {
+              sedeId: state.sedeId || null,
+              q: state.q,
+              page: state.page,
+              pageSize: state.pageSize,
+              sortBy: state.sortBy,
+              desc: state.desc
+            };
+
+            $.get('@Url.Action("StockAsignacionProductoSede", "Producto")', params)
+              .done(function (resp) {
+                if (!resp || !resp.ok) return;
+
+                $tbodyStock.empty();
+                resp.data.forEach(row => {
+                  $tbodyStock.append(
+                    `<tr>
+                       <td>${row.productoId}</td>
+                       <td>${row.nombre}</td>
+                       <td class="text-end">${Number(row.cantidad).toLocaleString()}</td>
+                     </tr>`
+                  );
+                });
+
+                $resumen.text(
+                  `Unidades: ${Number(resp.totalUnidades).toLocaleString()} | ` +
+                  `Página ${resp.page} / ${resp.totalPages} (Total filas: ${resp.totalRows})`
+                );
+
+                renderPaginador(resp.page, resp.totalPages);
+              })
+              .fail(() => $resumen.text('Error al cargar.'));
+          }
+
+          function renderPaginador(page, totalPages) {
+            $paginador.empty();
+            function li(p, text, disabled=false, active=false){
+              return `<li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${p}">${text}</a>
+                      </li>`;
+            }
+            $paginador.append(li(1, '&laquo;', page === 1));
+            $paginador.append(li(page-1, '&lsaquo;', page === 1));
+            const start = Math.max(1, page - 2);
+            const end   = Math.min(totalPages, page + 2);
+            for (let i = start; i <= end; i++) $paginador.append(li(i, i, false, i === page));
+            $paginador.append(li(page+1, '&rsaquo;', page === totalPages));
+            $paginador.append(li(totalPages, '&raquo;', page === totalPages));
+          }
+
+          // Eventos listado
+          $paginador.on('click', 'a.page-link', function(e){
+            e.preventDefault();
+            const p = parseInt($(this).data('page'), 10);
+            if (!isNaN(p)) { state.page = p; cargarStock(); }
+          });
+          $sede.on('change', function(){ state.sedeId = $(this).val() || null; state.page = 1; cargarStock(); });
+          $pageSize.on('change', function(){ state.pageSize = parseInt($(this).val(), 10) || 20; state.page = 1; cargarStock(); });
+          $('#btnBuscar').on('click', function(){ state.q = $q.val() || ''; state.page = 1; cargarStock(); });
+          $sortBy.add($sortDir).on('change', function(){
+            state.sortBy = $sortBy.val();
+            state.desc   = ($sortDir.val() === 'true');
+            state.page   = 1;
+            cargarStock();
+          });
+          $('#btnExcel').on('click', function(){
+            const params = $.param({
+              sedeId: state.sedeId || '',
+              q: state.q || '',
+              sortBy: state.sortBy || '',
+              desc: state.desc
+            });
+            window.location = '@Url.Action("ExportarExcel", "Producto")' + '?' + params;
+          });
+
+          // =====================
+          // AGREGAR MÚLTIPLES (opcional: solo si existe la UI)
+          // =====================
+          const $tablaInsert      = $('#tablaInsert');
+          const $empresaDefault   = $('#empresaDefault');
+          let rowSeq = 0;
+
+          function getToken(){
+            return $('input[name="__RequestVerificationToken"]').val() || '';
+          }
+          function cargarProveedores($select) {
+            $.get('@Url.Action("GetProveedores", "Producto")', function(list){
+              $select.empty().append('<option disabled selected>Seleccione</option>');
+              list.forEach(x => $select.append(`<option value="${x.id}">${x.nombre}</option>`));
+            });
+          }
+          function cargarServicios($select, done) {
+            $.get('@Url.Action("GetServicios", "Producto")', function(list){
+              $select.empty().append('<option disabled selected>Seleccione</option>');
+              list.forEach(x => $select.append(`<option value="${x.id}">${x.nombre}</option>`));
+              if (done) done();
+            });
+          }
+          function cargarCategoriasPorServicio(servicioId, $select) {
+            if (!servicioId) { $select.empty(); return; }
+            $.get('@Url.Action("GetCategoriasPorServicio", "Producto")', { servicioId }, function(list){
+              $select.empty().append('<option disabled selected>Seleccione</option>');
+              list.forEach(x => $select.append(`<option value="${x.id}">${x.nombre}</option>`));
+            });
+          }
+
+          function nuevaFila(data) {
+            rowSeq++;
+            const rid = rowSeq;
+            const $tr = $(`
+              <tr class="prod-row" data-rid="${rid}">
+                <td><input class="form-control form-control-sm cod"     placeholder="Código"></td>
+                <td><input class="form-control form-control-sm nombre"  placeholder="Nombre"></td>
+                <td><input type="number" step="0.001" min="0" class="form-control form-control-sm cant"   placeholder="0"></td>
+                <td><input type="number" step="0.01"  min="0" class="form-control form-control-sm vneto"  placeholder="0"></td>
+                <td><input type="number" step="0.01"  min="0" class="form-control form-control-sm vventa" placeholder="0"></td>
+                <td><input type="number" step="1"     min="0" class="form-control form-control-sm vunidad" placeholder="1"></td>
+                <td><input class="form-control form-control-sm ubic"    placeholder="Ubicación"></td>
+                <td>
+                  <select class="form-select form-select-sm estado">
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                  </select>
+                </td>
+                <td><select class="form-select form-select-sm serv"></select></td>
+                <td><select class="form-select form-select-sm cate"></select></td>
+                <td><select class="form-select form-select-sm prov"></select></td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-danger btnQuitar" title="Quitar fila">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </td>
+              </tr>
+            `);
+
+            // listas dependientes
+            cargarServicios($tr.find('select.serv'), function(){
+              if (data?.ServicioId) $tr.find('select.serv').val(data.ServicioId);
+              const sid = $tr.find('select.serv').val();
+              if (sid) cargarCategoriasPorServicio(sid, $tr.find('select.cate'));
+            });
+            cargarProveedores($tr.find('select.prov'));
+
+            $tr.on('change', 'select.serv', function(){
+              const sid = $(this).val();
+              cargarCategoriasPorServicio(sid, $tr.find('select.cate'));
+            });
+            $tr.on('click', '.btnQuitar', function(e){
+              e.preventDefault();
+              $tr.remove();
+            });
+
+            // valores por defecto
+            $tr.find('.cod').val(data?.Cod_Producto || '');
+            $tr.find('.nombre').val(data?.NombreProducto || '');
+            $tr.find('.cant').val(data?.CantidadProducto ?? '');
+            $tr.find('.vneto').val(data?.ValorNetoProducto ?? '');
+            $tr.find('.vventa').val(data?.ValorVentaProducto ?? '');
+            $tr.find('.vunidad').val(data?.ValorUnidad ?? 1);
+            $tr.find('.ubic').val(data?.Ubicacion || '');
+            $tr.find('.estado').val(data?.Estado ?? 1);
+
+            $tablaInsert.find('tbody').append($tr);
+          }
+
+          function setupAgregarMultiplesIfExists(){
+            if (!$tablaInsert.length) return; // si no hay UI, no configura nada
+
+            $('#btnAgregarFila').on('click', function(e){ e.preventDefault(); nuevaFila(); });
+
+            $('#btnGuardarLote').on('click', function(e){
+              e.preventDefault();
+              const empresa = ($empresaDefault.val() || '').trim();
+              if (!empresa) { alert('Especifique la empresa.'); return; }
+              const lote = [];
+              let invalid = false;
+
+              $tablaInsert.find('tbody tr.prod-row').each(function(){
+                const $r = $(this);
+                const item = {
+                  Cod_Producto: ($r.find('.cod').val() || '').trim(),
+                  NombreProducto: ($r.find('.nombre').val() || '').trim(),
+                  CantidadProducto: parseFloat($r.find('.cant').val()) || 0,
+                  ValorNetoProducto: parseFloat($r.find('.vneto').val()) || 0,
+                  ValorVentaProducto: parseFloat($r.find('.vventa').val()) || 0,
+                  ValorUnidad: parseInt($r.find('.vunidad').val(), 10) || 1,
+                  Ubicacion: ($r.find('.ubic').val() || '').trim(),
+                  Estado: parseInt($r.find('.estado').val(), 10),
+                  ID_Empresa: empresa,
+                  idProveedor: parseInt($r.find('.prov').val(), 10) || 0,
+                  IdCatepro: parseInt($r.find('.cate').val(), 10) || 0,
+                  ServicioId: parseInt($r.find('.serv').val(), 10) || 0
+                };
+                if (!item.Cod_Producto || !item.NombreProducto || !item.IdCatepro || !item.idProveedor) invalid = true;
+                lote.push(item);
+              });
+
+              if (!lote.length) { alert('Agrega al menos una fila.'); return; }
+              if (invalid) { alert('Revisa: Código, Nombre, Categoría y Proveedor son obligatorios.'); return; }
+
+              $.ajax({
+                type: 'POST',
+                url: '@Url.Action("InsertarLote", "Producto")',
+                data: JSON.stringify(lote),
+                contentType: 'application/json',
+                headers: { 'RequestVerificationToken': getToken() }
+              })
+              .done(function(resp){
+                if (resp?.ok) {
+                  alert(`Guardados: ${resp.insertados}. Omitidos: ${resp.omitidos || 0}`);
+                  $tablaInsert.find('tbody').empty();
+                  cargarStock();
+                } else {
+                  alert('No se pudo guardar el lote.');
+                }
+              })
+              .fail(() => alert('Error al guardar el lote.'));
+            });
+
+            // primera fila por usabilidad
+            nuevaFila();
+          }
+
+          // Inicializaciones
+          cargarStock();
+          setupAgregarMultiplesIfExists();
+
+        })(jQuery);
+
+
+            // Abrir modal Agregar Cliente
+            document.getElementById("btnAsignarCantidad").addEventListener("click", function () {
+            new bootstrap.Modal(document.getElementById("cantidadModal")).show();
+        });
+    </script>
+}

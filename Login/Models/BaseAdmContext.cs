@@ -48,6 +48,7 @@ public partial class BaseAdmContext : DbContext
     public DbSet<AdicionFactura> AdicionFacturas { get; set; }
     public DbSet<MetodoPagos> MetodoPagos { get; set; }
     public DbSet<GastosMensuales> GastosMensuales { get; set; }
+    public DbSet<InventarioSede> InventarioSedes => Set<InventarioSede>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -89,6 +90,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<AdicionFactura>().HasKey(id => id.IdAdicion);
         modelBuilder.Entity<MetodoPagos>().HasKey(id => id.IdMetodo);
         modelBuilder.Entity<GastosMensuales>().HasKey(id => id.IdGasto);
+        modelBuilder.Entity<InventarioSede>().HasKey(id => id.IdInventario);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -134,6 +136,9 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<FlujoCaja>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<Ganancias>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<AdicionFactura>().HasOne(a => a.Factura).WithMany(f => f.Adiciones).HasForeignKey(a => a.IdFactura).HasConstraintName("FK_AdicionFactura_Factura");
+        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Producto).WithMany().HasForeignKey(i => i.ProductoId);
+        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Sede).WithMany().HasForeignKey(i => i.SedeId);
+        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Empleado).WithMany().HasForeignKey(i => i.Cedula);
 
 
         modelBuilder.Entity<GestionRealizada>()

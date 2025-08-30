@@ -33,5 +33,22 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Proveedores>> ObtenerProveedores();
         Task<int?> SeleccionarServicio(Producto p);
         Task<Servicio> CrearServicio(Servicio servicio);
+        Task<decimal> ObtenerTotalStockAsync(int? sedeId);
+        Task<int> ObtenerSkusConStockAsync(int? sedeId);
+        Task<PagedResult<ProductoStockVm>> ObtenerStockAsync(
+            int? sedeId, string? q, int page, int pageSize,
+            string? sortBy = null, bool desc = false);
+        Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(int? sedeId, string? q);
+
+        Task AplicarMovimientoAsync(int productoId, int sedeId, decimal delta, string? motivo = null);
+        Task<(int insertados, int omitidos)> InsertarLoteAsync(IEnumerable<ProductoInsertDto> lote);
+        Task<List<Servicio>> GetServiciosAsync();
+        Task<List<CategoriaProductos>> GetCategoriasPorServicioAsync(int servicioId);
+        Task<List<Proveedores>> GetProveedoresAsync();
+        InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim);
+        bool ValidarSedeAsignacionProducto(int idSede);
+        bool ValidarProductoAsignacion(string producto);
+        bool ValidarCantidadProducto(string producto, decimal cantidad);
+        List<Producto> TraerProductosInactivos();
     }
 }

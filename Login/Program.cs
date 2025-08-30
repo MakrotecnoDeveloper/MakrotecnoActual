@@ -44,6 +44,8 @@ var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
     options.UseSqlServer(connectionString);
+    options.EnableSensitiveDataLogging();
+    options.LogTo(Console.WriteLine, LogLevel.Information);
 });
 
 //Limite de envio de correos
