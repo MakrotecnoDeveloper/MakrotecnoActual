@@ -684,5 +684,60 @@ namespace Plataforma.Servicios.Implementacion
                 return false;
             }
         }
+        public async Task<Clientes?> ObtenerPorIdAsync(int id)
+        {
+            return await _dbContext.Cliente
+                .FirstOrDefaultAsync(o => o.IdCliente == id);
+        }
+
+        public async Task<Proveedores?> ObtenerPorIdAsyncProveedor(int id)
+        {
+            return await _dbContext.Proveedores
+                .FirstOrDefaultAsync(o => o.IdProveedor == id);
+        }
+
+        public async Task ActualizarProveedorAsync(Proveedores proveedores)
+        {
+            var proveedorExistente = await _dbContext.Proveedores
+                .FirstOrDefaultAsync(o => o.IdProveedor == proveedores.IdProveedor);
+
+            if (proveedorExistente == null)
+            {
+
+            }
+            else
+            {
+                proveedorExistente.Nit = proveedores.Nit;
+                proveedorExistente.RazonSocial = proveedores.RazonSocial;
+                proveedorExistente.Direccion = proveedores.Direccion;
+                proveedorExistente.Celular = proveedores.Celular;
+                proveedorExistente.Correo = proveedores.Correo;
+
+                _dbContext.Proveedores.Update(proveedorExistente);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+        public async Task ActualizarClienteAsync(Clientes clientes)
+        {
+            var clienteExistente = await _dbContext.Cliente
+                .FirstOrDefaultAsync(o => o.IdCliente == clientes.IdCliente);
+
+            if(clienteExistente == null)
+            {
+
+            }else
+            {
+                clienteExistente.NombreCliente = clientes.NombreCliente;
+                clienteExistente.CiudadCliente = clientes.CiudadCliente;
+                clienteExistente.TelefonoCliente = clientes.TelefonoCliente;
+                clienteExistente.EmpresaCliente = clientes.EmpresaCliente;
+                clienteExistente.CorreoCliente = clientes.CorreoCliente;
+                clienteExistente.DireccionCliente = clientes.DireccionCliente;
+                clienteExistente.CedulaCliente = clientes.CedulaCliente;
+
+                _dbContext.Cliente.Update(clienteExistente);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

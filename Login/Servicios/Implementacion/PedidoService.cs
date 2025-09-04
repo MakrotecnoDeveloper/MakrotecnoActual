@@ -35,7 +35,6 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo)
         {
-            Console.WriteLine(codigo);
             var producto = await _dbContext.Productos
                 .Where(p => p.Cod_Producto == codigo)
                 .Select(p => new
@@ -54,8 +53,8 @@ namespace Plataforma.Servicios.Implementacion
         {
             try
             {
-                var cantidad = await _dbContext.Productos.Where(x => x.Cod_Producto == codigo).FirstOrDefaultAsync();
-                return cantidad.CantidadProducto;
+                var cantidad = await _dbContext.InventarioSedes.Where(x => x.ProductoId == codigo).FirstOrDefaultAsync();
+                return cantidad.Cantidad;
             }
             catch (Exception)
             {
@@ -94,11 +93,11 @@ namespace Plataforma.Servicios.Implementacion
             foreach (var pedido in pedidos)
             {
 
-                var productoExistente = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == pedido.Codigo);
+                var productoExistente = _dbContext.InventarioSedes.FirstOrDefault(p => p.ProductoId == pedido.Codigo);
                 if (productoExistente != null)
                 {
-                    productoExistente.CantidadProducto -= pedido.Stock;
-                    _dbContext.Productos.Update(productoExistente);
+                    productoExistente.Cantidad -= pedido.Stock;
+                    _dbContext.InventarioSedes.Update(productoExistente);
                 }
                 //Calcular subtotal de este pedido
                 pedido.IdVenta = idVenta;
@@ -303,6 +302,17 @@ namespace Plataforma.Servicios.Implementacion
         public List<AdicionFactura> ObtenerConceptosCompletos()
         {
             return _dbContext.AdicionFacturas.ToList();
+        }
+        public List<InventarioSede> ValidarProductoPorCodigo(string Codigo)
+        {
+            return _dbContext.InventarioSedes.Where(cd => cd.ProductoId == Codigo).ToList();
+        }
+        public async Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo)
+        {
+            return await _dbContext.Set<InventarioSede>()
+                                 .Include(p => p.Producto)
+                                 .Where(p => p.ProductoId.Contains(codigo))
+                                 .ToListAsync();
         }
 
     }

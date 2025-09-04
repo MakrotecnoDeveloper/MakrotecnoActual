@@ -27,5 +27,7 @@ namespace Plataforma.Servicios.Contrato
         Task<Factura> ObtenerFacturaConAdicionesAsync(int IdFactura);
         Task<bool> AgregarAdicionFacturaAsync(int IdFactura, decimal valor, string descripcion, int cedulaEmpleado, string EstadoAdicion);
         List<AdicionFactura> ObtenerConceptosCompletos();
+        List<InventarioSede> ValidarProductoPorCodigo(string Codigo);
+        Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo);
     }
 }

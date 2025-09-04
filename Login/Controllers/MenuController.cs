@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -11,6 +12,8 @@ namespace Plataforma.Controllers
         {
             _menuService = menuService;
         }
+        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> ConfiguracionMenu()
         {
             var cargos = await _menuService.ObtenerTodosLosCargosAsync(); // tabla TipoCargo

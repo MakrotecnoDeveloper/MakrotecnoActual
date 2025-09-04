@@ -1,0 +1,36 @@
+﻿@model Plataforma.Models.Proveedores
+
+<form id="proveedorForm">
+    <div class="modal-body">
+        <input type="hidden" asp-for="IdProveedor" />
+        <div class="mb-2"><label>NIT</label><input asp-for="Nit" class="form-control"></div>
+        <div class="mb-2"><label>Razon Social</label><input asp-for="RazonSocial" class="form-control"></div>
+        <div class="mb-2"><label>Direccion</label><input asp-for="Direccion" class="form-control"></div>
+        <div class="mb-2"><label>Celular</label><input asp-for="Celular" class="form-control"></div>
+        <div class="mb-2"><label>Correo</label><input asp-for="Correo" class="form-control"></div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Actualizar Cliente</button>
+    </div>
+</form>
+
+
+<script>
+    $("#proveedorForm").on("submit", function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Usuario/EditarProveedor',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function () {
+                alert('Proveedor actualizado correctamente');
+                $("#modalEditarOrden").modal('hide'); // o tu método de cerrar panel
+                location.reload(); // Recarga la lista
+            },
+            error: function () {
+                alert('Ocurrió un error al actualizar el estado.');
+            }
+        });
+    });
+</script>

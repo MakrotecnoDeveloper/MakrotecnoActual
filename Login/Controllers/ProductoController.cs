@@ -175,6 +175,8 @@ namespace Plataforma.Controllers
             return View(traerProductos);
         }
         /*Visualizacion de  Recargas de Plataformas */
+        [Authorize]
+        [HttpGet]
         public IActionResult FormPlataforma()
         {
             var traerPlataformasExistentes = _productoservice.TraerPlataformasExistentes();
@@ -194,6 +196,8 @@ namespace Plataforma.Controllers
                 return View("FormPlataforma");
             }
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult FormInserClienPlatf()
         {
             var traerPlataformas = _productoservice.SuscripcionesActivas();
@@ -204,11 +208,15 @@ namespace Plataforma.Controllers
             _productoservice.ServicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
             return RedirectToAction("formInserClienPlatf", "Producto");
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult FormVisuPlatf()
         {
             var searchPlataform = _productoservice.TraerPlataformasExistentes();
             return View(searchPlataform);
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult FormVisuCta()
         {
             var searchPlataform = _productoservice.TraerPlataformasExistentes();

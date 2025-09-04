@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using Plataforma.Servicios.Implementacion;
 
 namespace Plataforma.Controllers
 {
@@ -89,6 +91,8 @@ namespace Plataforma.Controllers
                     return RedirectToAction("Cargos");
                 }
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult Empresas()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
@@ -113,6 +117,8 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Empresas");
             }
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult Sedes()
         {
             var empresas = _usuarioService.ObtenerSedes();
@@ -138,6 +144,8 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Sedes");
             }
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult EmpleadoEmpresa()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
@@ -166,6 +174,8 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Index");
             }
         }
+        [Authorize]
+        [HttpGet]
         public IActionResult EmpleadoSedes()
         {
             var empresaSedeViewModel = _usuarioService.EmpleadoSede();
@@ -285,6 +295,25 @@ namespace Plataforma.Controllers
             }
             return View(visualizarClientes);
         }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> ModProveedor(int id)
+        {
+            var proveedor = await _usuarioService.ObtenerPorIdAsyncProveedor(id);
+            if (proveedor == null)
+                return NotFound();
+
+            return PartialView("_EditarProveedor", proveedor);
+        }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> EditarProveedor(Proveedores model)
+        {
+            await _usuarioService.ActualizarProveedorAsync(model);
+            return Ok();
+        }
+        [Authorize]
+        [HttpGet]
         public IActionResult CrearPDV()
         {
             var traerSedes = _usuarioService.ObtenerSedes();
@@ -319,6 +348,24 @@ namespace Plataforma.Controllers
                 var sedes = _usuarioService.ObtenerSedes();
                 return View("CrearPDV", sedes);
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> ModCliente(int id)
+        {
+            var cliente = await _usuarioService.ObtenerPorIdAsync(id);
+            if (cliente == null)
+                return NotFound();
+
+            return PartialView("_EditarCliente", cliente);
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditarCliente(Clientes model)
+        {
+            /*if (!ModelState.IsValid)
+                return BadRequest(ModelState);*/
+
+            await _usuarioService.ActualizarClienteAsync(model);
+            return Ok();
         }
     }
 }

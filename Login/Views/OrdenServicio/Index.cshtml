@@ -98,7 +98,7 @@
                                     <option disabled selected>Seleccione un dispositivo</option>
                                     @foreach (var dispositivo in Model.Dispositivos)
                                     {
-                                        <option value="@dispositivo.IdDispositivo" data-descripcion="@dispositivo.Detalle">@dispositivo.IMEI</option>
+                                        <option value="@dispositivo.IdDispositivo" data-descripcion="@dispositivo.Detalle">@dispositivo.IdDispositivo - @dispositivo.Cliente.NombreCliente - @dispositivo.FechaIngreso</option>
                                     }
                                 </select>
                             </div>

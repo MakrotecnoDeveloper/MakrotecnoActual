@@ -119,9 +119,9 @@ namespace Plataforma.Controllers
                     var codigo = producto.Codigo.ToString();
                     var cantidadActual = await _pedidoServicio.ObtenerCantidadProductoActual(codigo);
                     //Validar cantidad es mayor al stock.. (pendiente mañana)
-                    if (cantidadActual <= 0.0m)
+                    if (cantidadActual < producto.Stock)
                     {
-                        TempData["ErrorMessage"] = $"Error: El producto '{producto.Codigo}' no tiene stock.";
+                        TempData["ErrorMessage"] = $"Error: El producto '{producto.Codigo}' no tiene el stock para la venta.";
                         return RedirectToAction("Error", "Errores");
                     } 
                 }
@@ -255,6 +255,20 @@ namespace Plataforma.Controllers
             //var facturas = _pedidoServicio.ObtenerFacturasFechaDescendente();
             var traerConceptos = _pedidoServicio.ObtenerConceptosCompletos();
             return View(traerConceptos);
+        }
+        [HttpGet]
+        public async Task<IActionResult> BuscarProductoPorCodigoVenta(string codigo)
+        {
+            //Console.WriteLine("Me oprimiste aca" + codigo);
+            var productos = await _pedidoServicio.BuscarProductosPorCodigo(codigo);
+            var resultados = productos.Select(p => new {
+                label = $"{p.ProductoId} - {p.Producto.NombreProducto}",
+                value = p.ProductoId,
+                valorNeto = p.Producto.ValorVentaProducto,
+                valorVenta = p.Producto.ValorVentaProducto
+            });
+
+            return Json(resultados);
         }
     }
 }

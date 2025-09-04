@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IUsuarioService
@@ -52,5 +53,9 @@ namespace Plataforma.Servicios.Contrato
         Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa);
         Task<string> ObtenerIdEmpresaAsync(int cargoId);
         Task<bool> CrearPuntoVentaAsync(Infopdv infopdv);
+        Task<Clientes?> ObtenerPorIdAsync(int id);
+        Task<Proveedores?> ObtenerPorIdAsyncProveedor(int id);
+        Task ActualizarProveedorAsync(Proveedores proveedores);
+        Task ActualizarClienteAsync(Clientes clientes);
     }
 }

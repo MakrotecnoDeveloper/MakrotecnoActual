@@ -1,0 +1,38 @@
+﻿@model Plataforma.Models.Clientes
+
+<form id="clienteForm">
+    <div class="modal-body">
+        <input type="hidden" asp-for="IdCliente" />
+        <div class="mb-2"><label>Cedula</label><input asp-for="CedulaCliente" class="form-control"></div>
+        <div class="mb-2"><label>Nombre</label><input asp-for="NombreCliente" class="form-control"></div>
+        <div class="mb-2"><label>Empresa</label><input asp-for="EmpresaCliente" class="form-control"></div>
+        <div class="mb-2"><label>Ciudad</label><input asp-for="CiudadCliente" class="form-control"></div>
+        <div class="mb-2"><label>Teléfono</label><input asp-for="TelefonoCliente" class="form-control"></div>
+        <div class="mb-2"><label>Correo</label><input asp-for="CorreoCliente" class="form-control"></div>
+        <div class="mb-2"><label>Direccion</label><input asp-for="DireccionCliente" class="form-control"></div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Actualizar Cliente</button>
+    </div>
+</form>
+
+
+<script>
+    $("#clienteForm").on("submit", function (e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '/Usuario/EditarCliente',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function () {
+                alert('Cliente actualizado correctamente');
+                $("#modalEditarOrden").modal('hide'); // o tu método de cerrar panel
+                location.reload(); // Recarga la lista
+            },
+            error: function () {
+                alert('Ocurrió un error al actualizar el estado.');
+            }
+        });
+    });
+</script>
