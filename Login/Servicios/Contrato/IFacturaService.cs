@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plataforma.Services.Contracts
+namespace Plataforma.Servicios.Contrato
 {
     public interface IFacturaService
     {

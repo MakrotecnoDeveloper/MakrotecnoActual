@@ -30,7 +30,8 @@ namespace Plataforma.Servicios.Implementacion
                     .ToList();
                 return categorias;
         }
-       // public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
+       // public Task<bool> AgregarProductoAsync(string id_empresa, string codigo,
+       // string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias)
         public Task<bool> AgregarProductoAsync(Producto model)
         {
             try
@@ -228,7 +229,6 @@ namespace Plataforma.Servicios.Implementacion
             }
         }
 
-        
         public List<Producto> TraerProductosXCategoria(int categoria)
         {
             var productos = _dbContext.Productos

@@ -2,15 +2,14 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Plataforma.Models;
-using Plataforma.Services.Contracts;
-using Plataforma.Servicios.Implementacion;
+using Plataforma.Servicios.Contrato;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plataforma.Services
+namespace Plataforma.Servicios.Implementacion
 {
     public class FacturaService : IFacturaService
     {

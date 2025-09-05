@@ -103,7 +103,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 //establece una ruta predeterminada para la aplicaci�n web
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+        name: "default",
+        pattern: "{controller=Home}/{action=Login}/{id?}");
 
 app.Run();

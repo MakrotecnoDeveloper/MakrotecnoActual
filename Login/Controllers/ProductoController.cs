@@ -11,11 +11,13 @@ namespace Plataforma.Controllers
     public class ProductoController : Controller
     {
         private readonly IProductoService _productoservice;
+        private readonly IFacturaService _facturaService;
         private readonly ILogger<ProductoService> _logger;
 
-        public ProductoController(IProductoService productoservice, ILogger<ProductoService> logger)
+        public ProductoController(IProductoService productoservice, IFacturaService facturaService ,ILogger<ProductoService> logger)
         {
             _productoservice = productoservice;
+            _facturaService = facturaService;
             _logger = logger;
         }
         public IActionResult Index()
@@ -90,7 +92,7 @@ namespace Plataforma.Controllers
                         productosEncontrados = productosEncontrados
                             .Where(p => p.CantidadProducto == 0).ToList();
                         break;
-                    case 3: // Buscar por categoría
+                    case 3: // Buscar por Cantidad ya para acabarse
                         productosEncontrados = productosEncontrados
                             .Where(p => p.CantidadProducto < 5).ToList();
                         break;
@@ -111,37 +113,53 @@ namespace Plataforma.Controllers
             }
         }
         [HttpGet]
-        public IActionResult BuscarSinStock(string searchTerm, int categoriaTerm)
+        public async Task<IActionResult> BuscarSinStock(string searchTerm, int categoriaTerm)
         {
-            if (string.IsNullOrEmpty(searchTerm))
-            {
+            if (string.IsNullOrEmpty(searchTerm)) 
                 searchTerm = "";
-            }
-            else
-            {
-                categoriaTerm = 0;
-            }
-            var productosSinStock = _productoservice.SinStock(searchTerm, categoriaTerm);
+                    categoriaTerm = 0;
+
+
+            var productosSinStock = (await _productoservice
+                .FindListByFunction(p => p.Cod_Producto == searchTerm || p.IdCatepro == categoriaTerm && p.Estado == 1))
+                .Where(p => p.CantidadProducto == 0)            
+                .ToList();
+
+
             return PartialView("_TablaProductos", productosSinStock);
         }
         [HttpGet]
-        public IActionResult BuscarProximosSinStock(string searchTerm, int categoriaTerm)
+        public async  Task<IActionResult> BuscarProximosSinStock(string searchTerm, int categoriaTerm)
         {
-            if (string.IsNullOrEmpty(searchTerm))
+            try
             {
-                searchTerm = "";
-            }
-            else
-            {
+
+                if (string.IsNullOrEmpty(searchTerm))
+                    searchTerm = "";
                 categoriaTerm = 0;
+
+
+                var productosEncontrados = 
+                    await _productoservice .FindListByFunction( p => p.IdCatepro == categoriaTerm && p.Estado == 1 && p.CantidadProducto < 5 );
+
+                return PartialView("_TablaProductos", productosEncontrados);
+
             }
-            var productosEncontrados = _productoservice.BuscarProSinStock(searchTerm, categoriaTerm);
-            return PartialView("_TablaProductos", productosEncontrados);
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
         }
-        public IActionResult Editar(string id)
+        public async Task<IActionResult> Editar(string id)
         {
-            int categoriaTerm = 0;
-            var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
+            //Validar logica ya que edita todos los productos con el mismo ID
+            //int categoriaTerm = 0;
+            //var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
+
+            var editarProducto = await _productoservice.FindListByFunction(p => p.Cod_Producto == id && p.Estado == 1);
+
             foreach (var producto in editarProducto)
             {
                 // Realiza acciones con cada producto, por ejemplo:
@@ -189,89 +207,23 @@ namespace Plataforma.Controllers
 
         public IActionResult VisualizarProducto(string id)
         {
-            int categoriaTerm = 0;
-            string searchTerm = id;
-            var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            return View(traerProductos);
-        }
-        
-        /*Visualizacion de  Recargas de Plataformas */
-        public IActionResult FormPlataforma()
-        {
-            var traerPlataformasExistentes = _productoservice.TraerPlataformasExistentes();
-            return View(traerPlataformasExistentes);
-        }
-        [HttpPost]
-        public IActionResult InsertPlataforma(int idPlataforma, string plataformas, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado) 
-        {
-            if(string.IsNullOrEmpty(descripcion) || valorventa <= 0 || valorneto <= 0 || fechaInipago == DateTime.MinValue || fechaFinpago == DateTime.MinValue || cantidad <= 0 || string.IsNullOrEmpty(correo) || string.IsNullOrEmpty(contrasena) || cedula <= 0 || estado <= 0)
+            try
             {
-                var mensaje = "Error: Hay campos sin informacion digitada, revisar todo lo llenado.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }else
-            {
-                _productoservice.InserPlataformaService(idPlataforma, descripcion, valorventa, valorneto, fechaInipago, fechaFinpago, cantidad, correo, contrasena, cedula, estado);
-                return View("FormPlataforma");
+                int categoriaTerm = 0;
+                string searchTerm = id;
+                var traerProductos = _productoservice.FindListByFunction(x => x.Cod_Producto == searchTerm || x.IdCatepro == categoriaTerm);
+                return View(traerProductos);
             }
-        }
-        public IActionResult FormInserClienPlatf()
-        {
-            var traerPlataformas = _productoservice.SuscripcionesActivas();
-            return View(traerPlataformas);
-        }
-        public IActionResult InsertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
-        {
-            _productoservice.ServicioInsertarVentClientPlataforma(nombrecliente, celularcliente, correo, contrasena, idPltfSuscripcion, cantidad, ppm, feciniplat, fecfinplat, valorventa, valorneto, cedula, estado, clave);
-            return RedirectToAction("formInserClienPlatf", "Producto");
-        }
-        public IActionResult FormVisuPlatf()
-        {
-            var searchPlataform = _productoservice.TraerPlataformasExistentes();
-            return View(searchPlataform);
-        }
-        public IActionResult FormVisuCta()
-        {
-            var searchPlataform = _productoservice.TraerPlataformasExistentes();
-            return View(searchPlataform);
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetSuscripcionesActivas(int plataformaId)
-        {
-                var suscripciones = await _productoservice.ObtenerSuscripcionesActivas(plataformaId);
-                return Json(suscripciones);
+            catch (Exception)
+            {
+                //Implementar un log error con modal
+                _logger.LogError("Error al visualizar el producto con ID: {Id}", id);
+                throw;
+            }
         }
 
-        // Obtener datos de clientes relacionados con una suscripción
-        [HttpGet]
-        public async Task<IActionResult> GetDatosSuscripcion(int suscripcionId)
-        {
-            var datos = await _productoservice.ObtenerDatosSuscripcion(suscripcionId);
-            return Json(datos);
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetDatosPlataforma(int suscripcionId)
-        {
-            var datos = await _productoservice.ObtenerDatosPlataforma(suscripcionId);
-            return Json(datos);
-        }
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var resultado = await _productoservice.EliminarClienteAsync(id);
-            if (resultado)
-            {
-                return Ok(new { message = "Cliente eliminado con éxito." });
-            }
-            return BadRequest(new { message = "Error al eliminar el cliente o cliente no encontrado." });
-        }
-        [HttpPost]
-        public async Task<IActionResult> EditarEstadoCta(int id, int estado, int idCliente)
-        {
-            Console.WriteLine("IDCLIENTEPLATAFORMA: " + id + " ESTADO: " + estado + " IDCLIENTE " + idCliente);
-                await _productoservice.ActualizarCliente(id, estado, idCliente);
-                return Json(new { success = true });
-        }
+      
+        #region Productos Existentes para Venta
         //Visualizar productos existentes para vender en la pagina inicial
         [HttpGet]
         public IActionResult ProductosExistentesVenta(int IdServicio)
@@ -297,32 +249,38 @@ namespace Plataforma.Controllers
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
-                
+
         }
+#endregion
+
         [HttpPost]
         public IActionResult GuardarHistoricoCompra(List<ProductoViewModel> productos, int codfact, DateTime fechaRegistro, string tpventa)
         {
-            int idPDv = 1;
-            decimal StockDecimal = 0;
-            decimal total = 0;
-            foreach (var producto in productos)
+            try
             {
+                int idPDv = 1;
+                decimal StockDecimal = 0;
+                decimal total = 0;
+                foreach (var producto in productos)
+                {
 
-                    if(producto.Stock.Contains("/"))
+                    if (producto.Stock.Contains("/"))
                     {
                         var partes = producto.Stock.Split('/');
-                        if(partes.Length == 2 && decimal.TryParse(partes[0], out decimal numerador) && decimal.TryParse(partes[1], out decimal denominador) && denominador != 0) 
+                        if (partes.Length == 2 && decimal.TryParse(partes[0], out decimal numerador) && decimal.TryParse(partes[1], out decimal denominador) && denominador != 0)
                         {
                             StockDecimal = numerador / denominador;
-                        }else
+                        }
+                        else
                         {
                             var mensaje = $"Fraccion invalida en Cantidad: {producto.Stock}";
                             TempData["ErrorMessage"] = mensaje;
                             return RedirectToAction("Error", "Errores");
+                        }
                     }
-                    }else
+                    else
                     {
-                        if(!decimal.TryParse(producto.Stock, out StockDecimal))
+                        if (!decimal.TryParse(producto.Stock, out StockDecimal))
                         {
                             var mensaje = $"Stock invalido: {producto.Stock}";
                             TempData["ErrorMessage"] = mensaje;
@@ -331,21 +289,31 @@ namespace Plataforma.Controllers
                     }
                     total = StockDecimal * producto.VNeto;
                     //Console.WriteLine($"Producto: {producto.Codigo} | Vneto: {producto.VNeto} | Cantidad: {StockDecimal} | Total: {total}");
-                // Insertar pedido por cada producto
-                _productoservice.HistoricoCompra(
-                    codfact,
-                    producto.Codigo,
-                    StockDecimal,
-                    producto.UnidadMedida,
-                    producto.VNeto,
-                    total,
-                    fechaRegistro,
-                    tpventa,
-                    idPDv
-                );
+                    // Insertar pedido por cada producto
+                    _productoservice.HistoricoCompra(
+                        codfact,
+                        producto.Codigo,
+                        StockDecimal,
+                        producto.UnidadMedida,
+                        producto.VNeto,
+                        total,
+                        fechaRegistro,
+                        tpventa,
+                        idPDv
+                    );
+                }
+                return RedirectToAction("ComprasProductos");
             }
-            return RedirectToAction("ComprasProductos");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al guardar el historico de compra.");
+                var mensaje = "Ocurrió un error al procesar la compra. Por favor, inténtelo de nuevo más tarde.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
         }
+
+        #region Facturacion
         public IActionResult VisualizarCompras()
         {
             return View();
@@ -356,7 +324,7 @@ namespace Plataforma.Controllers
             var cedulaClaim = User.FindFirst("Cedula");
             if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
             {
-                var facturas = _productoservice.ObtenerFacturasPorFechaYUsuario(fechaEscoger, cedula);
+                var facturas = _facturaService.ObtenerFacturasPorFechaYUsuario(fechaEscoger, cedula);
 
                 // Transformar las facturas a un objeto más ligero si es necesario
                 var result = facturas.Select(f => new
@@ -378,7 +346,8 @@ namespace Plataforma.Controllers
         [HttpGet]
         public IActionResult ObtenerDetallesFactura(int codFactura)
         {
-            var detallesFactura = _productoservice.ObtenerDetallesFactura(codFactura); // Llama al servicio para obtener los detalles
+            // Llama al servicio para obtener los detalles
+            var detallesFactura = _facturaService.ObtenerDetallesFactura(codFactura); 
 
             if (detallesFactura == null)
             {
@@ -391,5 +360,7 @@ namespace Plataforma.Controllers
             return PartialView("_DetallesFactura", detallesFactura);
         }
 
+        #endregion
     }
 }
+ 

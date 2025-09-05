@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plataforma.Services
+namespace Plataforma.Servicios.Contrato
 {
-    public class ProductosService
+    public interface IClienteService
     {
+
+
     }
 }

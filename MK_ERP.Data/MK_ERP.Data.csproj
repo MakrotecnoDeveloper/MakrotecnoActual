@@ -1,37 +1,35 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <Folder Include="Contracts\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	  <None Update="epplus.license.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\AdminLTE\" />
-    <Folder Include="wwwroot\uploads\" />
+    <ProjectReference Include="..\Login\Plataforma.csproj" />
+    <ProjectReference Include="..\MK_ERP.Models\MK_ERP.Models.csproj" />
   </ItemGroup>
 
 </Project>
