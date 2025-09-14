@@ -178,11 +178,12 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarOrden(OrdenServicios model)
         {
-            /*if (!ModelState.IsValid)
-                return BadRequest(ModelState);*/
-
-            await _ordenServicioService.ActualizarOrdenAsync(model, User);
-            return Ok();
+            bool procesado = await _ordenServicioService.ActualizarOrdenAsync(model, User);
+            if(!procesado)
+            {
+                return Json(new { ok = true, mensaje = "La orden fue rechazada correctamente" });
+            }
+                return Json(new { ok = true, mensaje = "Orden actualizada con exito" });
         }
         [HttpGet]
         public async Task<IActionResult> AsignarEmpleado(int id)

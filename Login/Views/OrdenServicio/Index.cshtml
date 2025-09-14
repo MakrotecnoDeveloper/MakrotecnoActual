@@ -52,17 +52,20 @@
                                     <td>@ordenServicio.Estado</td>
                                     <td>@ordenServicio.Cedula</td>
                                     <td>
-                                        <button class="btn btn-sm btn-info modOrdenBtn" data-id="@ordenServicio.IdOrden">
-                                            Modificar Orden
-                                        </button>
+                                        @if (ordenServicio.Estado != "Rechazada" && ordenServicio.Estado != "Finalizada")
+                                        {
+                                            <button class="btn btn-sm btn-info modOrdenBtn" data-id="@ordenServicio.IdOrden">
+                                                Modificar Orden
+                                            </button>
+                                            <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="@ordenServicio.IdOrden">
+                                                Nuevo Registro
+                                            </button>
+                                            <button class="btn btn-sm btn-success asignarTecnico" data-id="@ordenServicio.IdOrden">
+                                                Asignar Tecnico
+                                            </button>
+                                        }
                                         <button class="btn btn-sm btn-info verOrdenBtn" data-id="@ordenServicio.IdOrden">
                                             Ver Registros
-                                        </button>
-                                        <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="@ordenServicio.IdOrden">
-                                            Nuevo Registro
-                                        </button>
-                                        <button class="btn btn-sm btn-success asignarTecnico" data-id="@ordenServicio.IdOrden">
-                                            Asignar Tecnico
                                         </button>
                                     </td>
                                 </tr>

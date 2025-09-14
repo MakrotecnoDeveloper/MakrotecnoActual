@@ -7,7 +7,7 @@ public class Ventas
     [Key]
     public int IdVenta { get; set; }
     public int IdCliente { get; set; }
-    public string MetodoPago { get; set; }
+    public int MetodoPago { get; set; }
     [Column(TypeName = "decimal(10,2)")]
     public decimal Total { get; set; }
     public string EstadoVenta { get; set; }
@@ -16,4 +16,5 @@ public class Ventas
     public virtual ICollection<Pedidos> Pedidos { get; set; }
     public int CedulaCliente { get; set; }
     public string Conceptos { get; set; }
+    public virtual MetodoPagos MetodoPagos { get; set; }
 }

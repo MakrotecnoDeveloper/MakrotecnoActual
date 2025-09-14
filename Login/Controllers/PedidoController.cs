@@ -149,7 +149,7 @@ namespace Plataforma.Controllers
                 return RedirectToAction("AgregarFactura");
             }
             //decimal iva = subtotal * 0.19M;
-            decimal total = venta.Pedidos.Sum(p => p.SubTotal);
+            decimal total = (decimal)venta.Pedidos.Sum(p => p.SubTotal);
             decimal totalIva = ((total * Iva) / 100);
             if (totalIva > 0)
             {

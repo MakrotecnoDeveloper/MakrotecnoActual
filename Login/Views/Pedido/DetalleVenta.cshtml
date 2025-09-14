@@ -54,7 +54,40 @@
             }
             @if (Model.EstadoVenta == "Aprobada")
             {
-                <a asp-action="CrearFactura" asp-route-idVenta="@Model.IdVenta" class="btn btn-primary">Crear Factura</a>
+                <div class="card p-3 mt-3">
+                    <h5 class="mb-3">Método de Pago: @Model.MetodoPago</h5>
+
+                    @if (Model.MetodoPago == 1 || Model.MetodoPago == 4)
+                    {
+                        <a asp-action="CrearFactura" asp-route-idVenta="@Model.IdVenta" class="btn btn-primary">
+                            Generar Factura
+                        </a>
+                    }
+                    else if (Model.MetodoPago == 3)
+                    {
+                        <form asp-action="CrearFactura" method="post" class="row g-2">
+                            <input type="hidden" name="idVenta" value="@Model.IdVenta" />
+                            <div class="col-md-6">
+                                <input type="text" name="numeroTDC" class="form-control" placeholder="Número de Venta TDC" required />
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">Confirmar y Facturar</button>
+                            </div>
+                        </form>
+                    }
+                    else if (Model.MetodoPago == 2)
+                    {
+                        <form asp-action="CrearFactura" method="post" class="row g-2">
+                            <input type="hidden" name="idVenta" value="@Model.IdVenta" />
+                            <div class="col-md-6">
+                                <input type="text" name="numeroConsignacion" class="form-control" placeholder="Número de consignación" required />
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">Confirmar y Facturar</button>
+                            </div>
+                        </form>
+                    }
+                </div>
             }
             <a asp-action="ListaVentas" class="btn btn-secondary">Volver</a>
         </div>

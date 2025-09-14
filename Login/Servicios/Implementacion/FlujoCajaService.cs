@@ -144,8 +144,8 @@ namespace Plataforma.Servicios.Implementacion
                         {
                             IdServicio = g.Key.IdServicio,
                             NombreServicio = g.Key.NombreServicio,
-                            TotalSubTotal = g.Sum(x => x.ped.SubTotal),
-                            TotalVNeto = g.Sum(x => x.ped.VNeto)
+                            TotalSubTotal = (decimal)g.Sum(x => x.ped.SubTotal),
+                            TotalVNeto = (decimal)g.Sum(x => x.ped.VNeto)
                         };
 
             return await query

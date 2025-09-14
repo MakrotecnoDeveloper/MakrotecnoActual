@@ -55,6 +55,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<DetalleConceptosEmpleado> DetallesConceptosEmpleado { get; set; }
     public DbSet<LiquidacionNomina> LiquidacionesNomina { get; set; }
     public DbSet<DetalleLiquidacion> DetallesLiquidacion { get; set; }
+    public DbSet<CxcVenta> CxcVentas { get; set; }
+    public DbSet<CxcPago> CxcPagos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

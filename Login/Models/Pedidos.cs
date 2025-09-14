@@ -9,10 +9,10 @@ public class Pedidos
     public int IdVenta { get; set; }
     public string? Codigo { get; set; }
     public decimal Stock { get; set; }
-    public int VNeto { get; set; }
-    public int VVenta { get; set; }
+    public decimal? VNeto { get; set; }
+    public decimal? VVenta { get; set; }
     public int InfopdvId { get; set; }
     public DateTime FechaRegistro { get; set; }
-    public decimal SubTotal { get; set; }
+    public decimal? SubTotal { get; set; }
     public virtual Ventas Venta { get; set; }
 }

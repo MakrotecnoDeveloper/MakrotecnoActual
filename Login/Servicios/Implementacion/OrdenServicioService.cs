@@ -67,7 +67,7 @@ namespace Plataforma.Servicios.Implementacion
                         FechaVenta = DateTime.Now,
                         IdCliente = ordenExistente.Dispositivo.IdCliente,
                         Total = 0, // lo puedes ajustar según reglas
-                        MetodoPago = $"Venta generada desde la orden #{orden.IdOrden}",
+                        MetodoPago = 1,
                         Cedula = cedulaEmpleado
                     };
 
@@ -165,7 +165,7 @@ namespace Plataforma.Servicios.Implementacion
                 throw;
             }
         }
-        public async Task ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario)
+        public async Task<bool> ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario)
         {
             var ordenExistente = await _dbContext.OrdenServicios
                 .Include(o => o.Dispositivo)
@@ -237,11 +237,11 @@ namespace Plataforma.Servicios.Implementacion
                         {
                             Codigo = prod.Cod_Producto,
                             Stock = 1,
-                            VNeto = (int)prod.ValorNetoProducto,
-                            VVenta = (int)prod.ValorVentaProducto,
+                            VNeto = prod.ValorNetoProducto,
+                            VVenta = prod.ValorVentaProducto,
                             InfopdvId = infoPdvId,
                             FechaRegistro = DateTime.Now,
-                            SubTotal = (decimal)prod.ValorVentaProducto
+                            SubTotal = prod.ValorVentaProducto
                         });
                     }
                 }
@@ -253,7 +253,7 @@ namespace Plataforma.Servicios.Implementacion
                     FechaVenta = DateTime.Now,
                     IdCliente = ordenExistente.Dispositivo.IdCliente,
                     Total = subtotal,
-                    MetodoPago = "Efectivo",
+                    MetodoPago = 1,
                     Cedula = cedula,
                     CedulaCliente = (int)ordenExistente.Dispositivo.CedulaCliente,
                     Conceptos = $"Venta generada desde la orden #{orden.IdOrden}"
@@ -272,8 +272,13 @@ namespace Plataforma.Servicios.Implementacion
                     }
                 }
             }
-
-            await _dbContext.SaveChangesAsync();
+            if(orden.Estado == "Rechazada")
+            {
+                await _dbContext.SaveChangesAsync();
+                return false;
+            }
+                await _dbContext.SaveChangesAsync();
+                return true;
         }
         public async Task<List<Empleados>> ObtenerEmpleadosAsync()
         {

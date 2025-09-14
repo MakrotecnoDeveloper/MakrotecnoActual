@@ -38,10 +38,12 @@
             url: '/OrdenServicio/EditarOrden',
             type: 'POST',
             data: $(this).serialize(),
-            success: function () {
-                alert('Estado actualizado correctamente');
-                $("#modalEditarOrden").modal('hide'); // o tu método de cerrar panel
-                location.reload(); // Recarga la lista
+            success: function (resp) {
+                // resp.mensaje viene del controlador
+                alert(resp.mensaje);
+
+                $("#modalEditarOrden").modal('hide');
+                location.reload();
             },
             error: function () {
                 alert('Ocurrió un error al actualizar el estado.');
