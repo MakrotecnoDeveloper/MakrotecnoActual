@@ -10,73 +10,72 @@ namespace Plataforma.Controllers
 {
     public class UsuarioController : Controller
     {
+        private readonly BaseAdmContext _dbContext;
         private readonly IUsuarioService _usuarioService;
-        public UsuarioController(IUsuarioService usuarioService)
+        public UsuarioController(IUsuarioService usuarioService, BaseAdmContext dbContext)
         {
             _usuarioService = usuarioService;
+            _dbContext = dbContext;
         }
+        [Authorize]
+        [HttpGet]
+        //Vista para visualizar los empleados
         public async Task<IActionResult> Index()
         {
             var empleado = await _usuarioService.ObtenerUsuarios();
             return View(empleado);
         }
-        public IActionResult _AgregarEmpleado()
-        {
-            return PartialView(new Empleados());
-        }
-
+        [Authorize]
         [HttpPost]
+        //POST para agregar empleado
         public async Task<IActionResult> AgregarEmpleado(Empleados emp)
         {
             await _usuarioService.InsertarEmpleado(emp);
             return Ok();
         }
-
+        [Authorize]
+        [HttpGet]
+        //Vista parcial para visualizar la informacion del empleado
         public async Task<IActionResult> _VerEmpleado(int cedula)
         {
             var empleado = await _usuarioService.ObtenerPorCedula(cedula);
             return PartialView(empleado);
         }
-
+        [Authorize]
+        [HttpGet]
+        //Vista parcial para editar un empleado
         public async Task<IActionResult> _EditarEmpleado(int cedula)
         {
             var empleado = await _usuarioService.ObtenerPorCedula(cedula);
             return PartialView(empleado);
         }
-
+        [Authorize]
         [HttpPost]
+        //Vista para editar empleado.
         public async Task<IActionResult> EditarEmpleado(Empleados emp)
         {
             await _usuarioService.ActualizarEmpleado(emp);
             return Ok();
         }
-        public IActionResult FormEmpleadoCompania(int cedula)
-        {
-            var empresaEncontrada = _usuarioService.ObtenerEmpresas();
-            if (empresaEncontrada.Any())
-            {
-                ViewBag.cedula = cedula;
-                return View(empresaEncontrada);
-            }
-            else
-            {
-                var mensaje = "Error: No hay empresas anexadas al sistema";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
-            }
-        }
         [Authorize]
+        [HttpGet]
+        //Vista donde se visualiza los cargos
         public IActionResult Cargos()
         {
             var cargos = _usuarioService.ObtenerCargos();
             return View(cargos);
         }
+        [Authorize]
+        [HttpGet]
+        //Vista donde se visualiza el formulario de cargos
         public IActionResult FormCargos()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
             return View(empresas);
         }
+        [Authorize]
         [HttpPost]
+        //POST para agregar los cargos.
         public IActionResult InsertarTabla(string nombreCargo, string descripcionCargo, string id_empresa)
         {
                 var insertCargo = _usuarioService.ValidarCargo(nombreCargo);
@@ -93,16 +92,22 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista para visualizar las empresas
         public IActionResult Empresas()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
             return View(empresas);
         }
+        [Authorize]
+        [HttpGet]
+        //Vista-Formulario para agregar una empresa
         public IActionResult FormEmpresas()
         {
             return View();
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar una empresa nueva
         public IActionResult InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
         {
             var verificarExisEmpresa = _usuarioService.ValidarExistenciaEmpresa(nit);
@@ -119,17 +124,23 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista para visualizar las sedes de una empresa
         public IActionResult Sedes()
         {
             var empresas = _usuarioService.ObtenerSedes();
             return View(empresas);
         }
+        [Authorize]
+        [HttpGet]
+        //Vista-Formulario para agregar una sede
         public IActionResult FormSedes()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
             return View(empresas);
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar una sede
         public IActionResult InsertarSedes(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono)
         {
             var verificarExisSede = _usuarioService.ValidarExistenciaSede(nombreSede);
@@ -146,19 +157,24 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista para visualizar las empresas y agregar empleado a dichas empresas
         public IActionResult EmpleadoEmpresa()
         {
             var empresas = _usuarioService.ObtenerEmpresas();
             return View(empresas);
         }
+        [Authorize]
         [HttpGet]
-        public IActionResult FormEmpleadoEmpresa(string id_empresa)
+        //Vista-Formulario para hacer sincronizacion entre empresa-empleado
+        public async Task<IActionResult> FormEmpleadoEmpresa(string id_empresa)
         {
-            var empleado = _usuarioService.ObtenerUsuarios();
+            var empleado = await _usuarioService.ObtenerUsuarios();
             ViewBag.id_empresa = id_empresa;
             return View(empleado);
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar la sincronizacion entre empresa-empleado
         public IActionResult InsertarEE(string id_empresa, int cedula)
         {
             var ValidarExisEmpleadoEmpresa = _usuarioService.ValidarExisEmpleadoEmpresa(id_empresa, cedula);
@@ -176,11 +192,15 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista para ver los usuarios con sedes y validar una cedula si esta en una sede o no
         public IActionResult EmpleadoSedes()
         {
             var empresaSedeViewModel = _usuarioService.EmpleadoSede();
             return View(empresaSedeViewModel);
         }
+        [Authorize]
+        [HttpPost]
+        //POST para validar si una cedula esta enlazado con una sede o no
         public IActionResult ValidarCedula(int cedula)
         {
             var empleado = _usuarioService.ValidarCedula(cedula);
@@ -222,24 +242,31 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar una sincronizacion entre empleado-sede
         public IActionResult GuardarSedeYCargo(int cedula, int idSede, int idCargo)
         {
             _usuarioService.InsertarSedeEmpleado(cedula, idSede, idCargo);
             return RedirectToAction("Index");
         }
-
+        /*[Authorize]
         [HttpGet]
         public JsonResult GetSedes(string empresaId)
         {
             var sedes = _usuarioService.GetSedesByEmpresaId(empresaId);
             return Json(sedes);
-        }
+        }*/
+        [Authorize]
+        [HttpGet]
+        //Vista-Formulario para insertar un cliente
         public IActionResult FormCrearCliente() 
         {
             return View();
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar un cliente
         public IActionResult AddCliente(int cedulaCliente, string nombreCliente, string empresaCliente, string ciudadCliente, string telefonoCliente, string correoCliente, string direccionCliente)
         {
             var validacionInserClient = _usuarioService.InsertAddClient(cedulaCliente, nombreCliente, empresaCliente, ciudadCliente, telefonoCliente, correoCliente, direccionCliente);
@@ -254,11 +281,16 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
         }
+        [Authorize]
+        [HttpGet]
+        //Vista-Formulario para insertar un proveedor
         public IActionResult FormCrearProveedor()
         {
             return View();
         }
+        [Authorize]
         [HttpPost]
+        //POST para insertar un proveedor
         public IActionResult AddProveedor(string nit, string razonSocial, string direccion, string celular, string correo)
         {
             var validacionInserProveedor = _usuarioService.InsertAddProveedor(nit, razonSocial, direccion, celular, correo);
@@ -273,6 +305,9 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
         }
+        [Authorize]
+        [HttpGet]
+        //Vista para ver los clientes.
         public IActionResult TblVisuCliente()
         {
             var visualizarClientes = _usuarioService.ServVisuaCliente();
@@ -284,6 +319,9 @@ namespace Plataforma.Controllers
             }
             return View(visualizarClientes);
         }
+        [Authorize]
+        [HttpGet]
+        //Vista para ver los proveedores.
         public IActionResult TblVisuProveedor()
         {
             var visualizarClientes = _usuarioService.ServVisuaProveedor();
@@ -297,6 +335,7 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista-Formulario para actualizar un proveedor
         public async Task<IActionResult> ModProveedor(int id)
         {
             var proveedor = await _usuarioService.ObtenerPorIdAsyncProveedor(id);
@@ -307,6 +346,7 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpPost]
+        //POST para actualizar el proveedor
         public async Task<IActionResult> EditarProveedor(Proveedores model)
         {
             await _usuarioService.ActualizarProveedorAsync(model);
@@ -314,12 +354,50 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
+        //Vista para registrar punto de venta y sincronizar empleado-punto de venta.
         public IActionResult CrearPDV()
         {
             var traerSedes = _usuarioService.ObtenerSedes();
             return View(traerSedes);
         }
+        [Authorize]
+        [HttpGet]
+        //Vista-Formulario para generar la sincronizacion entre empleado-pdv
+        public async Task<IActionResult> _AsignarUserPDV()
+        {
+            var cedula = User.Claims.FirstOrDefault(c => c.Type == "Cedula")?.Value;
+
+            if (string.IsNullOrEmpty(cedula))
+                return BadRequest("Usuario logueado no tiene cédula en los claims.");
+
+            var vm = await _usuarioService.ObtenerDatosAsignacion(cedula);
+
+            return PartialView("_AsignarUserPDV", vm);
+        }
+        [Authorize]
         [HttpPost]
+        //POST para insertar la sincronizacion entre empleado-pdv
+        public async Task<IActionResult> AsignarEmpleadoAPDV(string cedulaEmpleado, int idPdv)
+        {
+            if (string.IsNullOrEmpty(cedulaEmpleado) || idPdv == 0)
+                return BadRequest("Datos incompletos.");
+
+            var asignacion = new Syncpdv
+            {
+                InfopdvId = idPdv,
+                Estado = 0,
+                FechaEstado = DateTime.Now,
+                Cedula = int.Parse(cedulaEmpleado)
+            };
+
+            _dbContext.Syncpdv.Add(asignacion);
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("CrearPDV");
+        }
+        [Authorize]
+        [HttpPost]
+        //POST para insertar una pdv
         public async Task<IActionResult> Crear(string nombrePDV, int idSede)
         {
             if (string.IsNullOrWhiteSpace(nombrePDV) || idSede == 0)
@@ -349,7 +427,9 @@ namespace Plataforma.Controllers
                 return View("CrearPDV", sedes);
             }
         }
+        [Authorize]
         [HttpGet]
+        //Vista-Formulario para modificar un cliente
         public async Task<IActionResult> ModCliente(int id)
         {
             var cliente = await _usuarioService.ObtenerPorIdAsync(id);
@@ -358,7 +438,9 @@ namespace Plataforma.Controllers
 
             return PartialView("_EditarCliente", cliente);
         }
+        [Authorize]
         [HttpPost]
+        //POST para modificar un cliente
         public async Task<IActionResult> EditarCliente(Clientes model)
         {
             /*if (!ModelState.IsValid)

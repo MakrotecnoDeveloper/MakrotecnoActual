@@ -7,7 +7,7 @@ public class Clientes
 {
     [Key]
     public int IdCliente { get; set; }
-    public int CedulaCliente { get; set; }
+    public int? CedulaCliente { get; set; } = 0;
     public string? NombreCliente { get; set; }
     public string? EmpresaCliente { get; set; }
     public string? CiudadCliente { get; set; }

@@ -370,26 +370,34 @@ namespace Plataforma.Servicios.Implementacion
             // ----- IMPORTANTE -----
             // Usa UNO de los dos bloques siguientes según cómo guardes FechaEmision.
 
+            // 1. Obtener el id_sede del usuario logueado
+            var idSedeUsuario = await _dbContext.Sedeempleado
+                .Where(se => se.Cedula == cedula)
+                .Select(se => se.Id_sede)
+                .FirstOrDefaultAsync();
+
+            // 2. Obtener todas las cédulas de empleados en esa sede
+            var cedulasEnSede = await _dbContext.Sedeempleado
+                .Where(se => se.Id_sede == idSedeUsuario)
+                .Select(se => se.Cedula)
+                .ToListAsync();
+
+            // 3. Obtener las facturas relacionadas a esas cédulas (por ventas)
+            var facturasQuery = _dbContext.Factura
+                .Where(f => f.FechaEmision >= hoyLocalInicio && f.FechaEmision < mananaLocalInicio)
+                .Where(f => _dbContext.Ventas
+                    .Where(v => cedulasEnSede.Contains(v.Cedula))
+                    .Select(v => v.IdVenta)
+                    .Contains(f.IdVenta));
+
             // 2A) Si guardas FechaEmision en HORA LOCAL (común en apps on-prem):
-            int totalFacturas = await _dbContext.Factura
-                .Where(f => f.FechaEmision >= hoyLocalInicio && f.FechaEmision < mananaLocalInicio)
-                .CountAsync();
+            int totalFacturas = await facturasQuery.CountAsync();
 
-            decimal totalVendido = await _dbContext.Factura
-                .Where(f => f.FechaEmision >= hoyLocalInicio && f.FechaEmision < mananaLocalInicio)
-                .SumAsync(f => (decimal?)f.Total) ?? 0m;
-
-            // 2B) Si guardas FechaEmision en UTC (común en apps cloud):
-            //int totalFacturas = await _dbContext.Factura
-            //    .Where(f => f.FechaEmision >= hoyUtcInicio && f.FechaEmision < mananaUtcInicio)
-            //    .CountAsync();
-            //
-            //decimal totalVendido = await _dbContext.Factura
-            //    .Where(f => f.FechaEmision >= hoyUtcInicio && f.FechaEmision < mananaUtcInicio)
-            //    .SumAsync(f => (decimal?)f.Total) ?? 0m;
+            decimal totalVendido = await facturasQuery
+            .SumAsync(f => (decimal?)f.Total) ?? 0m;
 
             // 3) Empleados totales (hasta ahora)
-            int totalEmpleados = await _dbContext.Empleado.CountAsync();
+            var totalEmpleados = cedulasEnSede.Count;
 
             //InfoPDV
             string rolEmpleado = string.Empty; 
@@ -413,8 +421,7 @@ namespace Plataforma.Servicios.Implementacion
             //FinInfoPDV
 
             // 4) Productos activos (Estado = 1)
-            int totalProductosActivos = await _dbContext.Productos
-                .Where(p => p.Estado == 1)
+            int totalProductosActivos = await _dbContext.InventarioSedes
                 .CountAsync();
 
             // 5) Armas tu modelo/vista (agrega una propiedad si quieres mostrar el total vendido hoy)
@@ -459,15 +466,15 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<bool> ActualizarProductoAsync(string id, string campo, string newVal)
         {
-                var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == id);
+            var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == id);
 
-                if (producto == null)
-                {
-                    return false;
-                }
+            if (producto == null)
+            {
+                return false;
+            }
+
             try
             {
-                //Console.WriteLine(campo);
                 // Obtener información de la propiedad usando reflexión
                 var property = producto.GetType().GetProperty(campo);
 
@@ -476,8 +483,46 @@ namespace Plataforma.Servicios.Implementacion
                     throw new ArgumentException($"El campo '{campo}' no existe en la clase Producto.");
                 }
 
-                // Intentar convertir y asignar el nuevo valor
-                var convertedValue = Convert.ChangeType(newVal, property.PropertyType);
+                object? convertedValue;
+
+                // Conversión segura dependiendo del tipo
+                if (property.PropertyType == typeof(decimal) || property.PropertyType == typeof(decimal?))
+                {
+                    if (string.IsNullOrWhiteSpace(newVal))
+                    {
+                        convertedValue = null;
+                    }
+                    else if (decimal.TryParse(newVal, System.Globalization.NumberStyles.Any,
+                                              System.Globalization.CultureInfo.InvariantCulture, out var parsedDecimal))
+                    {
+                        convertedValue = parsedDecimal;
+                    }
+                    else
+                    {
+                        throw new FormatException($"El valor '{newVal}' no es un número decimal válido.");
+                    }
+                }
+                else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
+                {
+                    if (string.IsNullOrWhiteSpace(newVal))
+                    {
+                        convertedValue = null;
+                    }
+                    else if (int.TryParse(newVal, out var parsedInt))
+                    {
+                        convertedValue = parsedInt;
+                    }
+                    else
+                    {
+                        throw new FormatException($"El valor '{newVal}' no es un número entero válido.");
+                    }
+                }
+                else
+                {
+                    convertedValue = Convert.ChangeType(newVal, property.PropertyType);
+                }
+
+                // Asignar el valor convertido
                 property.SetValue(producto, convertedValue);
 
                 // Guardar cambios en la base de datos
@@ -486,30 +531,27 @@ namespace Plataforma.Servicios.Implementacion
             }
             catch (FormatException ex)
             {
-                // Error en la conversión de tipo
                 Console.WriteLine($"Error de formato: {ex.Message}");
                 return false;
             }
             catch (InvalidCastException ex)
             {
-                // Error de conversión de tipo
                 Console.WriteLine($"Error de conversión: {ex.Message}");
                 return false;
             }
             catch (ArgumentException ex)
             {
-                // Error por un argumento inválido
                 Console.WriteLine($"Argumento inválido: {ex.Message}");
                 return false;
             }
             catch (Exception ex)
             {
-                // Otros errores no específicos
                 Console.WriteLine($"Error inesperado: {ex.Message}");
                 return false;
             }
         }
-        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
+
+        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
             var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 42).OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
@@ -738,6 +780,43 @@ namespace Plataforma.Servicios.Implementacion
                 _dbContext.Cliente.Update(clienteExistente);
                 await _dbContext.SaveChangesAsync();
             }
+        }
+        public async Task<EmpleadoPdvViewModel> ObtenerDatosAsignacion(string cedulaUsuario)
+        {
+            var cedulaEmpleado = int.Parse(cedulaUsuario);
+            // Paso 1: buscar la sede del usuario logueado
+            var sedeEmpleadoUsuario = await _dbContext.Sedeempleado
+                .FirstOrDefaultAsync(se => se.Cedula == cedulaEmpleado);
+
+            if (sedeEmpleadoUsuario == null)
+            {
+                return new EmpleadoPdvViewModel
+                {
+                    Empleados = new List<Empleados>(),
+                    PuntosDeVenta = new List<Infopdv>()
+                };
+            }
+
+            var idSede = sedeEmpleadoUsuario.Id_sede;
+
+            // Paso 2: empleados que tienen un registro en SedeEmpleado con el mismo id_sede
+            var empleados = await (
+                from se in _dbContext.Sedeempleado
+                join e in _dbContext.Empleado on se.Cedula equals e.Cedula
+                where se.Id_sede == idSede
+                select e
+            ).ToListAsync();
+
+            // Paso 3: PDVs de esa sede
+            var pdvs = await _dbContext.Infopdv
+                .Where(p => p.Id_Sede == idSede)
+                .ToListAsync();
+
+            return new EmpleadoPdvViewModel
+            {
+                Empleados = empleados,
+                PuntosDeVenta = pdvs
+            };
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Plataforma.Controllers
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor)
         {
 
             if (ModelState.IsValid)
@@ -141,7 +141,7 @@ namespace Plataforma.Controllers
             return View(editarProducto); // @model List<Producto>
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, float valorNeto, float valorVenta, int valorUnidad, int cantidad)
+        public IActionResult EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad)
         {
             // Llama al método EditarProducto del servicio de productos
             _productoservice.EditarProducto(codigo, valorNeto, valorVenta, valorUnidad, cantidad);
@@ -449,7 +449,7 @@ namespace Plataforma.Controllers
             return Json(data.Select(x => new { id = x.IdProveedor, nombre = x.RazonSocial }));
         }
         [HttpPost]
-        public IActionResult AsignacionSedeProducto(string producto, int sede, int cantidad, int valorUnitario)
+        public IActionResult AsignacionSedeProducto(string producto, int sede, int cantidad, int valorUnitario, int valorNeto)
         {
             var cedulaClaim = User.FindFirst("Cedula")?.Value;
             var validarSede = _productoservice.ValidarSedeAsignacionProducto(sede);
@@ -458,18 +458,30 @@ namespace Plataforma.Controllers
                 var validarProducto = _productoservice.ValidarProductoAsignacion(producto);
                 if(validarProducto)
                 {
-                    var validarCantidadProducto = _productoservice.ValidarCantidadProducto(producto, cantidad);
-                    if (validarCantidadProducto)
+                    var validarProductoSede = _productoservice.ValidarProductoSede(producto, sede);
+                    if (!validarProductoSede) 
                     {
-                        var resultado = _productoservice.AsignarProductoSede(producto, sede, cantidad, valorUnitario, cedulaClaim);
-                        return RedirectToAction("ProductosLista");
-                    }else
+
+                        var validarCantidadProducto = _productoservice.ValidarCantidadProducto(producto, cantidad);
+                        if (validarCantidadProducto)
+                        {
+                            var resultado = _productoservice.AsignarProductoSede(producto, sede, cantidad, valorUnitario, cedulaClaim, valorNeto);
+                            return RedirectToAction("ProductosLista");
+                        }
+                        else
+                        {
+                            var mensaje = "Error: La cantidad que desea asignar es mayor a la que tiene el producto en bodega.";
+                            TempData["ErrorMessage"] = mensaje;
+                            return RedirectToAction("Error", "Errores");
+                        }
+
+                    }
+                    else
                     {
-                        var mensaje = "Error: La cantidad que desea asignar es mayor a la que tiene el producto en bodega.";
+                        var mensaje = "Error: Ya existe una relacion entre la sede y el producto creados, editar la informacion internamente.";
                         TempData["ErrorMessage"] = mensaje;
                         return RedirectToAction("Error", "Errores");
                     }
-                    
                 }
                 else
                 {
@@ -503,6 +515,67 @@ namespace Plataforma.Controllers
             }
 
             return RedirectToAction("HabilitarProducto");
+        }
+        [HttpGet]
+        public async Task<IActionResult> BuscarProductoPorCodigoVenta(string codigo)
+        {
+            var productos = await _productoservice.BuscarProductosPorCodigo(codigo);
+            var resultados = productos.Select(p => new {
+                label = $"{p.Cod_Producto} - {p.NombreProducto}",
+                value = p.Cod_Producto,
+                valorNeto = p.ValorNetoProducto,
+                valorVenta = p.ValorVentaProducto
+            });
+
+            return Json(resultados);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerProductoPorId(string id)
+        {
+            var producto = await _dbContext.InventarioSedes
+                .Include(i => i.Producto)
+                .FirstOrDefaultAsync(i => i.ProductoId == id);
+
+            if (producto == null) return NotFound();
+
+            return Json(new
+            {
+                productoId = producto.ProductoId,
+                nombre = producto.Producto.NombreProducto,
+                valorNeto = producto.ValorNeto,
+                valorVenta = producto.PrecioUnitario,
+                cantidad = producto.Cantidad
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActualizarProducto([FromForm] ProductoUpdateDto model)
+        {
+            var productoInventarioSede = await _dbContext.InventarioSedes
+                .FirstOrDefaultAsync(i => i.ProductoId == model.ProductoId);
+
+            var producto = await _dbContext.Productos
+                .FirstOrDefaultAsync(i => i.Cod_Producto == model.ProductoId);
+            // 5 >= 2
+            if (producto.CantidadProducto >= model.Cantidad)
+            {
+                if (producto == null) return Json(new { ok = false });
+
+                productoInventarioSede.ValorNeto = (int?)model.ValorNeto;
+                productoInventarioSede.PrecioUnitario = (int?)model.ValorVenta;
+                //10 = 10+5 = 15
+                productoInventarioSede.Cantidad = productoInventarioSede.Cantidad + model.Cantidad;
+                //5 = 5-5 = 0
+                producto.CantidadProducto = producto.CantidadProducto - model.Cantidad;
+                await _dbContext.SaveChangesAsync();
+
+                return Json(new { ok = true });
+            }else
+            {
+                var mensaje = "Error: La cantidad que desea asignar es mayor a la que tiene el producto en bodega.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
+            }
         }
     }
 }

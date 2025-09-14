@@ -185,7 +185,7 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, float valorNetoProductoFloat, float valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
+        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
             try
             {

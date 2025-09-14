@@ -12,9 +12,9 @@ public class Producto
         [Column("cantidadProducto")]
         public decimal CantidadProducto { get; set; }
         [Column("valorNetoProducto")]
-        public float ValorNetoProducto { get; set; }
+        public decimal? ValorNetoProducto { get; set; }
         [Column("valorVentaProducto")]
-        public float ValorVentaProducto { get; set; }
+        public decimal? ValorVentaProducto { get; set; }
         [Column("valorUnidad")]
         public int ValorUnidad {  get; set; }
         [Column("id_empresa")]

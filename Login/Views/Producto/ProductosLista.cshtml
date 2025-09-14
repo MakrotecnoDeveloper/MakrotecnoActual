@@ -57,7 +57,10 @@
         <tr>
           <th>Codigo</th>
           <th>Producto</th>
-          <th class="text-end">Cantidad</th>
+          <th>Cantidad</th>
+          <th>Valor Venta</th>
+          <th>Valor Costo</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -124,16 +127,13 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-2"><label>Producto</label><select id="producto" name="producto" class="form-select">
-                            @foreach (var producto in Model.Productos)
-                            {
-                                <option value="@producto.Cod_Producto"
-                                        data-vv="@producto.ValorVentaProducto"
-                                        data-vn="@producto.ValorNetoProducto">
-                                    @producto.NombreProducto
-                                </option>
-                            }
-                        </select></div>
+                        <div class="mb-2">
+                            <label>Producto</label>
+                            <input type="text" id="producto" class="form-control codigoProducto" placeholder="Escribe el nombre del producto..." name="producto" />
+                            <div class="opcionesCodigosProducto small text-muted"></div>
+                        </div>
+
+                        <ul id="autocomplete-results" class="list-group position-absolute w-100" style="z-index:1000; display:none;"></ul>
                         <div class="mb-2"><label>Sedes</label>
                         <select id="sede" name="sede" class="form-select">
                             @foreach (var sede in Model.Sede)
@@ -142,13 +142,52 @@
                             }
                         </select></div>
                         <div class="mb-2"><label>Cantidad</label><input type="number" id="cantidad" class="form-control" name="cantidad"></div>
-                        <div class="mb-2"><label>Valor Unitario</label><input type="number" id="valorUnitario" class="form-control" name="valorUnitario"></div>
+                        <div class="mb-2"><label>Valor Neto</label><input type="number" id="vneto" class="form-control" name="valorNeto"></div>
+                        <div class="mb-2"><label>Valor Venta</label><input type="number" id="vventa" class="form-control" name="valorUnitario"></div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cerrar</button>
                         <button class="btn btn-success" type="submit">Agregar Cantidad</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEditarProducto" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarProducto">
+                        <div class="mb-3">
+                            <label class="form-label">Código</label>
+                            <input type="text" id="editProductoId" class="form-control" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="editNombre" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor Neto</label>
+                            <input type="number" id="editValorNeto" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor Venta</label>
+                            <input type="number" id="editValorVenta" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" id="editCantidad" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btnGuardarProducto" class="btn btn-primary">Guardar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -169,8 +208,7 @@
         $('#cantidadModal').on('shown.bs.modal', function () {
           $('#producto').trigger('change');
         });
-    </script>
-    <script>
+
         (function ($) {
           // =====================
           // LISTADO DE STOCK
@@ -194,6 +232,7 @@
           };
 
           function cargarStock() {
+            window.cargarStock = cargarStock;
             $resumen.text('Cargando...');
             const params = {
               sedeId: state.sedeId || null,
@@ -214,7 +253,15 @@
                     `<tr>
                        <td>${row.productoId}</td>
                        <td>${row.nombre}</td>
-                       <td class="text-end">${Number(row.cantidad).toLocaleString()}</td>
+                       <td>${Number(row.cantidad).toLocaleString()}</td>
+                       <td>${row.valorVenta != null ? Number(row.valorVenta).toLocaleString() : '-'}</td>
+                       <td>${row.valorNeto != null ? Number(row.valorNeto).toLocaleString() : '-'}</td>
+                        <td>
+                           <button class="btn btn-sm btn-primary btn-editar"
+                                   data-id="${row.productoId}">
+                             Editar
+                           </button>
+                        </td>
                      </tr>`
                   );
                 });
@@ -428,6 +475,116 @@
             // Abrir modal Agregar Cliente
             document.getElementById("btnAsignarCantidad").addEventListener("click", function () {
             new bootstrap.Modal(document.getElementById("cantidadModal")).show();
+        });
+
+
+        //Ajax para autocompletado de producto por codigo o nombre
+        function mostrarOpcionesAutocompletado(opciones, container) {
+            var opcionesHtml = '';
+            opciones.forEach(function (opcion) {
+                opcionesHtml += '<div class="opcion" data-value="' + opcion.value + '">' + opcion.label + '</div>';
+            });
+            container.html(opcionesHtml);
+        }
+        $(document).on('input', '.codigoProducto', function () {
+            var inputActual = $(this); // Input que se está editando
+            var codigo = inputActual.val(); // Valor del input actual
+            var contenedorOpciones = inputActual.siblings('.opcionesCodigosProducto'); // Contenedor asociado a este input
+
+            if (codigo.length >= 3) {
+                // Llamada AJAX para obtener las opciones de autocompletado
+                $.ajax({
+                    url: '/Producto/BuscarProductoPorCodigoVenta',
+                    type: 'GET',
+                    data: { codigo: codigo },
+                    success: function (response) {
+                        // Mostrar las opciones en el contenedor asociado
+                        mostrarOpcionesAutocompletado(response, contenedorOpciones);
+                    },
+                    error: function () {
+                        console.error('Error al obtener los códigos.');
+                        contenedorOpciones.empty(); // Limpiar opciones en caso de error
+                    }
+                });
+            } else {
+                contenedorOpciones.empty(); // Limpiar opciones si el texto es muy corto
+            }
+        });
+
+        // Manejar la selección de una opción de autocompletado
+        $(document).on('click', '.opcion', function () {
+            var codigo = $(this).data('value'); // Obtener el texto de la opción seleccionada
+            var contenedorOpciones = $(this).closest('.opcionesCodigosProducto'); // Contenedor asociado
+            var inputCodigo = contenedorOpciones.siblings('.codigoProducto'); // Input asociado
+            var fila = contenedorOpciones.closest('tr'); // Fila de la tabla donde se encuentra el input
+
+            // Asignar el código seleccionado al input
+            inputCodigo.val(codigo);
+            contenedorOpciones.empty(); // Limpiar las opciones de autocompletado
+
+            // Llamada AJAX para obtener los detalles del producto y autocompletar los campos
+            $.ajax({
+                url: '/Producto/BuscarProductoPorCodigoVenta',
+                type: 'GET',
+                data: { codigo: codigo },
+                success: function (data) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        var producto = data[0];
+                        // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
+                        $('#vneto').val(producto.valorNeto);
+                        $('#vventa').val(producto.valorVenta);
+                    }
+                },
+                error: function () {
+                    console.error('Error al obtener los datos del producto.');
+                }
+            });
+        });
+
+        //Capturar modal de editar producto
+        $(document).on('click', '.btn-editar', function () {
+            const productoId = $(this).data('id');
+
+            // Llamada AJAX para traer datos del producto
+            $.get('/Producto/ObtenerProductoPorId', { id: productoId })
+              .done(function (data) {
+                if (data) {
+                  $('#editProductoId').val(data.productoId);
+                  $('#editNombre').val(data.nombre);
+                  $('#editValorNeto').val(data.valorNeto);
+                  $('#editValorVenta').val(data.valorVenta);
+
+                  // Mostrar modal
+                  const modal = new bootstrap.Modal(document.getElementById('modalEditarProducto'));
+                  modal.show();
+                }
+              })
+              .fail(function () {
+                alert('Error al cargar el producto.');
+              });
+        });
+
+        //Guardar cambios realizados en el modal de editar producto
+        $('#btnGuardarProducto').on('click', function () {
+          const datos = {
+            productoId: $('#editProductoId').val(),
+            nombre: $('#editNombre').val(),
+            valorNeto: $('#editValorNeto').val(),
+            valorVenta: $('#editValorVenta').val(),
+            cantidad: $('#editCantidad').val()
+          };
+
+          $.post('/Producto/ActualizarProducto', datos)
+            .done(function (resp) {
+              if (resp.ok) {
+                alert('Producto actualizado correctamente');
+                $('#modalEditarProducto').modal('hide');
+                cargarStock(); // Recargar tabla
+              } else {
+                alert('Error al actualizar el producto');
+              }
+            })
+            .fail(() => alert('Error al intentar actualizar el producto.'));
         });
     </script>
 }

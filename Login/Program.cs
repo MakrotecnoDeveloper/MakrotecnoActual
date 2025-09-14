@@ -44,8 +44,6 @@ var connectionString = builder.Configuration.GetConnectionString("cadenaSQL")
 builder.Services.AddDbContext<BaseAdmContext>(options =>
 {
     options.UseSqlServer(connectionString);
-    options.EnableSensitiveDataLogging();
-    options.LogTo(Console.WriteLine, LogLevel.Information);
 });
 
 //Limite de envio de correos
@@ -70,6 +68,7 @@ builder.Services.AddScoped<IStreamingService, StreamingService>();
 builder.Services.AddScoped<ITercerosService, TercerosService>();
 builder.Services.AddScoped<IGastosService, GastosService>();
 builder.Services.AddScoped<IInicioService, InicioService>();
+builder.Services.AddScoped<INominaService, NominaService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -79,7 +78,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Home/Login";
         options.LogoutPath = "/Home/Logout";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-        options.SlidingExpiration = true;
+        options.SlidingExpiration = false;
 
         options.Events = new CookieAuthenticationEvents
         {

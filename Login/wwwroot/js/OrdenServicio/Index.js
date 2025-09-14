@@ -1,129 +1,100 @@
-﻿// APERTURA DE MODALS //
-document.addEventListener("DOMContentLoaded", function () {
-    // Abrir modal Agregar Fila
-    document.getElementById("openRowFormBtn").addEventListener("click", function () {
-        new bootstrap.Modal(document.getElementById("rowModal")).show();
-    });
+﻿function openUnifiedModal() {
+    new bootstrap.Modal(document.getElementById("unifiedModal")).show();
+}
 
-    // Abrir modal Agregar Dispositivo
-    document.getElementById("openDeviceBtn").addEventListener("click", function () {
-        new bootstrap.Modal(document.getElementById("deviceModal")).show();
-    });
 
-    // Abrir modal Agregar Cliente
-    document.getElementById("openClienteBtn").addEventListener("click", function () {
-        new bootstrap.Modal(document.getElementById("clienteModal")).show();
-    });
-
-});
-// FIN APERTURA MODALS //
-
-// ================== CREAR CLIENTE ==================
-document.getElementById("clienteForm").addEventListener("submit", function (e) {
+$("#clienteForm").submit(function (e) {
     e.preventDefault();
+
     const cliente = {
-        CedulaCliente: document.getElementById("c_cedula").value,
-        NombreCliente: document.getElementById("c_nombre").value,
-        EmpresaCliente: document.getElementById("c_empresa").value,
-        CiudadCliente: document.getElementById("c_ciudad").value,
-        TelefonoCliente: document.getElementById("c_telefono").value,
-        CorreoCliente: document.getElementById("c_correo").value,
-        DireccionCliente: document.getElementById("c_direccion").value
+        CedulaCliente: $("#c_cedula").val(),
+        NombreCliente: $("#c_nombre").val(),
+        EmpresaCliente: $("#c_empresa").val(),
+        CiudadCliente: $("#c_ciudad").val(),
+        TelefonoCliente: $("#c_telefono").val(),
+        CorreoCliente: $("#c_correo").val(),
+        DireccionCliente: $("#c_direccion").val()
     };
 
-    fetch("/Terceros/CrearCliente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cliente)
-    })
-        .then(res => { if (!res.ok) throw new Error("Error al crear cliente"); return res.json(); })
-        .then(data => {
-            if (!data.success) throw new Error(data.message || "Error");
+    $.ajax({
+        url: '/Terceros/CrearCliente',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',  // 👈 obligatorio
+        data: JSON.stringify(cliente),                  // 👈 manda JSON
+        success: function (data) {
+            if (data.success) {
+                // 👉 Agregar nuevo cliente al select de dispositivos
+                const sel = $("#d_cliente");
+                const opt = new Option(data.cliente.nombreCliente, data.cliente.idCliente);
+                sel.append(opt);                     // lo añade al final
+                sel.val(data.cliente.idCliente);     // lo selecciona
 
-            // ➜ Agregar al select de clientes del modal de dispositivo
-            const sel = document.getElementById("d_cliente");
-            const opt = new Option(data.cliente.nombreCliente, data.cliente.idCliente);
-            sel.add(opt);                // lo agrega al final
-            sel.value = data.cliente.idCliente; // lo selecciona
+                alert("Cliente agregado con éxito 🚀");
+                $("#clienteForm")[0].reset();
 
-            alert("Cliente agregado correctamente");
-            bootstrap.Modal.getInstance(document.getElementById("clienteModal")).hide();
-            document.getElementById("clienteForm").reset();
-        })
-        .catch(err => alert(err.message));
+                // 👉 Opción: permanecer en el modal pero cambiar a la pestaña Dispositivo
+                const tabTrigger = document.querySelector('#dispositivo-tab');
+                bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+
+            } else {
+                alert(data.message || "Error en el servidor ❌");
+            }
+        },
+        error: function (xhr) {
+            alert("Error al guardar el cliente ❌ " + xhr.status);
+        }
+    });
 });
 
 
-// ================== CREAR DISPOSITIVO ==================
-document.getElementById("deviceForm").addEventListener("submit", function (e) {
+//Dispositivo
+$("#deviceForm").submit(function (e) {
     e.preventDefault();
 
     const dispositivo = {
-        FechaIngreso: document.getElementById("d_fecha").value,
-        Marca: document.getElementById("d_marca").value,
-        Modelo: document.getElementById("d_modelo").value,
-        Detalle: document.getElementById("d_detalle").value,
-        IdCliente: document.getElementById("d_cliente").value,
-        IMEI: document.getElementById("d_imei").value,
-        Clave: document.getElementById("d_clave").value,
-        Patron: document.getElementById("d_patron").value,
-        TipoDispositivo: document.getElementById("d_tipodispositivo").value
+        FechaIngreso: $("#d_fecha").val(),
+        Marca: $("#d_marca").val(),
+        Modelo: $("#d_modelo").val(),
+        Detalle: $("#d_detalle").val(),
+        IdCliente: $("#d_cliente").val(),
+        IMEI: $("#d_imei").val(),
+        Clave: $("#d_clave").val(),
+        Patron: $("#d_patron").val(),
+        TipoDispositivo: $("#d_tipodispositivo").val()
     };
 
-    fetch("/OrdenServicio/CrearDispositivo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dispositivo)
-    })
-        .then(res => { if (!res.ok) throw new Error("Error al crear dispositivo"); return res.json(); })
-        .then(data => {
-            if (!data.success) throw new Error(data.message || "Error");
+    $.ajax({
+        url: '/OrdenServicio/CrearDispositivo',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(dispositivo),
+        success: function (data) {
+            if (data.success) {
+                console.log(data);
+                // 👉 Agregar nuevo dispositivo al select de Orden
+                const sel = $("#m_dispositivo");
+                const optText = `${data.dispositivo.idDispositivo} - ${data.dispositivo.nombreCliente} - ${data.dispositivo.fechaCliente}`;
+                const opt = new Option(optText, data.dispositivo.idDispositivo);
+                $(opt).attr("data-descripcion", data.dispositivo.detalle); // atributo extra
+                sel.append(opt);
+                sel.val(data.dispositivo.idDispositivo); // selecciona recién creado
 
-            if (!data.dispositivo) {
-                console.error('Respuesta sin "dispositivo":', data);
-                alert(data.message || "Dispositivo creado, pero la respuesta no incluyó el objeto.");
-                return;
+                alert("Dispositivo agregado con éxito 🚀");
+                $("#deviceForm")[0].reset();
+
+                // 👉 Pasar a la pestaña Orden
+                const tabTrigger = document.querySelector('#orden-tab');
+                bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+
+            } else {
+                alert(data.message || "Error en el servidor ❌");
             }
-
-            const sel = document.getElementById("m_dispositivo");
-            const opt = document.createElement('option');
-            opt.value = data.dispositivo.idDispositivo;
-            opt.textContent = data.dispositivo.imei || '(sin IMEI)';
-            opt.setAttribute('data-descripcion', data.dispositivo.detalle || '');
-            sel.appendChild(opt);
-            sel.value = data.dispositivo.idDispositivo;
-            sel.dispatchEvent(new Event('change'));
-
-            alert("Dispositivo agregado correctamente");
-            bootstrap.Modal.getInstance(document.getElementById("deviceModal")).hide();
-            document.getElementById("deviceForm").reset();
-        })
+        },
+        error: function (xhr) {
+            alert("Error al guardar el dispositivo ❌ " + xhr.status);
+        }
+    });
 });
-
-// ================= Agregar Fila a la tabla Principal =============
-function appendOrdenRow(o) {
-    function fmtDateCO(iso) { try { return new Date(iso).toLocaleDateString('es-CO'); } catch { return iso; } }
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-    <td>${fmtDateCO(o.fechaIngreso)}</td>
-    <td>${o.cliente ?? ''}</td>
-    <td>${o.telefono ?? ''}</td>
-    <td>${o.password ?? ''}</td>
-    <td>${o.marca ?? ''}</td>
-    <td>${o.modelo ?? ''}</td>
-    <td>${o.descripcion ?? ''}</td>
-    <td>${o.observacion ?? ''}</td>
-    <td>${o.estado ?? ''}</td>
-    <td>${o.cedula ?? ''}</td>
-    <td>
-      <button class="btn btn-sm btn-info modOrdenBtn" data-id="${o.idOrden}">Modificar Orden</button>
-      <button class="btn btn-sm btn-info verOrdenBtn" data-id="${o.idOrden}">Ver Registros</button>
-      <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="${o.idOrden}">Nuevo Registro</button>
-      <button class="btn btn-sm btn-success asignarTecnico" data-id="${o.idOrden}">Asignar Tecnico</button>
-    </td>`;
-    document.querySelector('#mainTable #tbody').prepend(tr);
-}
-
 
 // ================== CREAR ORDEN DE SERVICIO ==================
 document.getElementById("rowForm").addEventListener("submit", function (e) {
@@ -147,8 +118,12 @@ document.getElementById("rowForm").addEventListener("submit", function (e) {
             if (!data.success) throw new Error(data.message || "Error");
             appendOrdenRow(data.orden);           // ➜ inserta la fila en caliente
             alert(data.message);
-            bootstrap.Modal.getInstance(document.getElementById("rowModal")).hide();
-            document.getElementById("rowForm").reset();
+            $("#rowForm")[0].reset();
+            // Cerrar modal
+            const modalElement = document.getElementById("unifiedModal");
+            const modal = bootstrap.Modal.getInstance(modalElement)
+                || new bootstrap.Modal(modalElement);
+            modal.hide();
         })
         .catch(err => alert(err.message));
 });
@@ -160,13 +135,38 @@ document.getElementById('m_dispositivo').addEventListener('change', function () 
     document.getElementById('m_descripcion').value = descripcion;
 });
 
+// ================= Agregar Fila a la tabla Principal =============
+function appendOrdenRow(o) {
+    function fmtDateCO(iso) { try { return new Date(iso).toLocaleDateString('es-CO'); } catch { return iso; } }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${fmtDateCO(o.fechaIngreso)}</td>
+        <td>${o.cliente ?? ''}</td>
+        <td>${o.telefono ?? ''}</td>
+        <td>${o.password ?? ''}</td>
+        <td>${o.marca ?? ''}</td>
+        <td>${o.modelo ?? ''}</td>
+        <td>${o.descripcion ?? ''}</td>
+        <td>${o.observacion ?? ''}</td>
+        <td>${o.estado ?? ''}</td>
+        <td>${o.cedula ?? ''}</td>
+        <td>
+          <button class="btn btn-sm btn-info modOrdenBtn" data-id="${o.idOrden}">Modificar Orden</button>
+          <button class="btn btn-sm btn-info verOrdenBtn" data-id="${o.idOrden}">Ver Registros</button>
+          <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="${o.idOrden}">Nuevo Registro</button>
+          <button class="btn btn-sm btn-success asignarTecnico" data-id="${o.idOrden}">Asignar Tecnico</button>
+        </td>`;
+    document.querySelector('#mainTable #tbody').prepend(tr);
+}
+
+
 // == Ventana flotante para ver el historico de las ordenes y crear un historico ===== //
 $(document).ready(function () {
 
     // Abrir panel para visualizar orden
     $(document).on("click", ".verOrdenBtn", function () {
         const idOrden = $(this).data("id");
-
+        console.log("Click verOrdenBtn, id:", idOrden); // 👈 prueba
         $.get(`/OrdenServicio/DetalleHistOrden/${idOrden}`, function (html) {
             $("#sidePanelTitle").text("Detalle de la Orden");
             $("#sidePanelContent").html(html);
@@ -174,23 +174,23 @@ $(document).ready(function () {
         });
     });
 
-// =================== Abrir panel para nueva orden ======================= //
+    // =================== Abrir panel para nueva orden ======================= //
     $(document).on("click", ".nuevaOrdenBtn", function () {
         const idOrden = $(this).data("id");
 
         $.get(`/OrdenServicio/CrearHistOrden/${idOrden}`, function (html) {
-            $("#sidePanelTitle").text("Crear Nueva Orden");
+            $("#sidePanelTitle").text("Crear Nuevo Historico");
             $("#sidePanelContent").html(html);
             $("#sidePanel").fadeIn();
         });
     });
 
-// =================== Abrir panel para modificar orden ======================= //
+    // =================== Abrir panel para modificar orden ======================= //
     $(document).on("click", ".modOrdenBtn", function () {
         const idOrden = $(this).data("id");
 
         $.get(`/OrdenServicio/ModOrden/${idOrden}`, function (html) {
-            $("#sidePanelTitle").text("Crear Nueva Orden");
+            $("#sidePanelTitle").text("Modificar Orden");
             $("#sidePanelContent").html(html);
             $("#sidePanel").fadeIn();
         });
@@ -201,12 +201,11 @@ $(document).ready(function () {
         const idOrden = $(this).data("id");
 
         $.get(`/OrdenServicio/AsignarEmpleado/${idOrden}`, function (html) {
-            $("#sidePanelTitle").text("Crear Nueva Orden");
+            $("#sidePanelTitle").text("Asignar Tecnico");
             $("#sidePanelContent").html(html);
             $("#sidePanel").fadeIn();
         });
     });
-
 
     // =================== Cerrar Panel ======================= //
     $("#closePanel").click(function () {

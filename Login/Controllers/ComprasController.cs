@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 
@@ -11,13 +12,14 @@ namespace Plataforma.Controllers
         {
             _comprasService = comprasService;
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> InsertarCompra()
         {
             ViewBag.Proveedores = await _comprasService.ObtenerProveedoresAsync();
             return View(new CompraViewModel());
         }
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> InsertarCompraCreate([FromForm] CompraViewModel model)
         {
@@ -49,14 +51,14 @@ namespace Plataforma.Controllers
             return View(model);
         }
 
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var compras = await _comprasService.ObtenerComprasAsync();
             return View(compras);
         }
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> BuscarProductoPorCodigo(string codigo)
         {

@@ -166,7 +166,7 @@
         function mostrarOpcionesAutocompletado(opciones, container) {
             var opcionesHtml = '';
             opciones.forEach(function (opcion) {
-                opcionesHtml += '<div class="opcion">' + opcion.value + '</div>';
+                opcionesHtml += '<div class="opcion" data-value="' + opcion.value + '">' + opcion.label + '</div>';
             });
             container.html(opcionesHtml);
         }
@@ -199,23 +199,24 @@
 
         // Manejar la selección de una opción de autocompletado
         $(document).on('click', '.opcion', function () {
-            var codigoSeleccionado = $(this).text(); // Obtener el texto de la opción seleccionada
+            var codigo = $(this).data('value'); // Obtener el texto de la opción seleccionada
             var contenedorOpciones = $(this).closest('.opcionesCodigosProducto'); // Contenedor asociado
             var inputCodigo = contenedorOpciones.siblings('.codigoProducto'); // Input asociado
             var fila = contenedorOpciones.closest('tr'); // Fila de la tabla donde se encuentra el input
 
             // Asignar el código seleccionado al input
-            inputCodigo.val(codigoSeleccionado);
+            inputCodigo.val(codigo);
             contenedorOpciones.empty(); // Limpiar las opciones de autocompletado
 
             // Llamada AJAX para obtener los detalles del producto y autocompletar los campos
             $.ajax({
-                url: '/Compras/BuscarProductoPorCodigo',
+                url: '/Pedido/BuscarProductoPorCodigoVenta',
                 type: 'GET',
-                data: { codigo: codigoSeleccionado },
+                data: { codigo: codigo },
                 success: function (data) {
                     if (Array.isArray(data) && data.length > 0) {
                         var producto = data[0];
+                        console.log(data);
                         // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
                         fila.find('#vneto' + fila.index()).val(producto.valorNeto);
                         fila.find('#vventa' + fila.index()).val(producto.valorVenta);

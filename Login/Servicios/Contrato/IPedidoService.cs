@@ -6,7 +6,7 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<bool> CrearVentaAsync(Ventas venta);
         Task<List<Ventas>> ObtenerTodasLasVentasAsync();
-        Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
+        Task<(decimal? valorVenta, decimal? valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
         Task<decimal> ObtenerCantidadProductoActual(string codigo);
         Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario);
         //Task GuardarPedidosAsync(List<Pedidos> pedidos);

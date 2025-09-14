@@ -169,16 +169,18 @@
                     var elemento = document.getElementById(id);
                     var currentVal = elemento.textContent.trim();
                     var campo = id.split('_')[0];
+                    var dato;
+
                     if (campo == "NombreProducto") {
-                        var dato = "Nombre del producto";
+                        dato = "Nombre del producto";
                     } else if (campo == "ValorVentaProducto") {
-                        var dato = "Valor Venta";
+                        dato = "Valor Venta";
                     } else if (campo == "ValorNetoProducto") {
-                        var dato = "Valor Paca";
+                        dato = "Valor Paca";
                     } else if (campo == "ValorUnidad") {
-                        var dato = "Valor Unidad";
+                        dato = "Valor Unidad";
                     } else if (campo == "Ubicacion") {
-                        var dato = "Ubicacion";
+                        dato = "Ubicacion";
                     }
                     var newVal = prompt(dato + "\n\nIntroduce el nuevo valor:", currentVal);
 
@@ -186,6 +188,16 @@
                         campo = id.split('_')[0]; // Campo a actualizar (p.ej., 'nombreProducto')
                         var codProducto = id.split('_')[1]; // Código del producto
                         //console.log("Valor Nuevo: " + newVal + " Campo a Actualizar: " + campo + " ID Producto: " + codProducto);
+                    if (["ValorVentaProducto", "ValorNetoProducto", "ValorUnidad"].includes(campo)) {
+                        var parsed = Number(newVal.replace(/,/g, '.')); // Convierte cualquier , a . para parseFloat
+                        if (isNaN(parsed)) {
+                            toastr.error("Debes ingresar un número válido para " + dato);
+                            return;
+                        }
+                        // Enviar en formato invariante para que el servidor lo reciba simple
+                        newVal = parsed.toString(); // Esto manda "123.45"
+                    }
+
                         $.ajax({
                             url: '@Url.Action("modificarProInventario", "Home")',
                             type: 'POST',

@@ -3,7 +3,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor);
+        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor);
         List<CategoriaProductos> ObtenerCategorias();
         List<Producto> ObtenerProductos();
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
@@ -14,7 +14,7 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
-        void EditarProducto(string codigo, float valorNeto, float valorVenta, int valorUnidad, int cantidad);
+        void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad);
         void EliminarProducto(string id);
         void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
         List<Plataformas> TraerPlataformasExistentes();
@@ -45,10 +45,12 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Servicio>> GetServiciosAsync();
         Task<List<CategoriaProductos>> GetCategoriasPorServicioAsync(int servicioId);
         Task<List<Proveedores>> GetProveedoresAsync();
-        InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim);
+        InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim, int valorNeto);
         bool ValidarSedeAsignacionProducto(int idSede);
         bool ValidarProductoAsignacion(string producto);
         bool ValidarCantidadProducto(string producto, decimal cantidad);
+        bool ValidarProductoSede(string producto, int idSede);
         List<Producto> TraerProductosInactivos();
+        Task<List<Producto>> BuscarProductosPorCodigo(string codigo);
     }
 }

@@ -35,7 +35,7 @@
                         <td>@proveedor.Celular</td>
                         <td>@proveedor.Correo</td>
                         <td>
-                            <button class="btn btn-sm btn-info modProveedorEditar" data-id="@proveedor.IdProveedor">Modificar Cliente</button>
+                            <button class="btn btn-sm btn-info modProveedorEditar" data-id="@proveedor.IdProveedor">Modificar Proveedor</button>
                         </td>
                     </tr>
                 }
@@ -64,7 +64,7 @@
             const idProveedor = $(this).data("id");
 
             $.get(`/Usuario/ModProveedor/${idProveedor}`, function (html) {
-                $("#sidePanelTitle").text("Editar Cliente");
+                $("#sidePanelTitle").text("Editar Proveedor");
                 $("#sidePanelContent").html(html);
                 $("#sidePanel").fadeIn();
             });

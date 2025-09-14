@@ -53,13 +53,14 @@ namespace Plataforma.Controllers
                 { 
                     success = true, 
                     message = "Dispositivo creado correctamente",
-                    díspositivo = new 
+                    dispositivo = new 
                     {
                         idDispositivo = dispositivoCreado.IdDispositivo,
                         imei = dispositivoCreado.IMEI,
                         detalle = dispositivoCreado.Detalle,
                         idCliente = dispositivoCreado.IdCliente,
-                        nombreCliente = dispositivoCreado.Cliente?.NombreCliente
+                        nombreCliente = dispositivoCreado.Cliente?.NombreCliente,
+                        fechaCliente = dispositivoCreado.FechaIngreso
                     }
                 });
             }

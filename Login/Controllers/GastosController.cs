@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
@@ -19,13 +20,14 @@ namespace Plataforma.Controllers
 
         // --- API JSON para la vista ---
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Listar(int year, int month)
         {
             var data = await _gastosService.ListarPorMesAsync(year, month);
             return Json(data);
         }
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear([FromBody] GastosMensuales input)
@@ -34,7 +36,7 @@ namespace Plataforma.Controllers
             var creado = await _gastosService.CrearAsync(input);
             return Json(creado);
         }
-
+        [Authorize]
         [HttpPut]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, [FromBody] GastosMensuales input)
@@ -43,7 +45,7 @@ namespace Plataforma.Controllers
             if (editado == null) return NotFound();
             return Json(editado);
         }
-
+        [Authorize]
         [HttpDelete]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Eliminar(int id)
@@ -51,6 +53,7 @@ namespace Plataforma.Controllers
             var ok = await _gastosService.EliminarAsync(id);
             return ok ? Ok() : NotFound();
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Obtener(int id)
         {

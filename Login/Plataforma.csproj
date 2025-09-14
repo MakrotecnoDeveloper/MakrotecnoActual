@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Recursos\" />
     <Folder Include="wwwroot\AdminLTE\" />
     <Folder Include="wwwroot\logs\" />
     <Folder Include="wwwroot\uploads\" />

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace Plataforma.Models;
 [Table("FlujoCaja", Schema = "dbo")]
@@ -24,4 +25,22 @@ public class FlujoCaja
     public int Cedula { get; set; }
     public DateTime Fecha { get; set; }
     public string? ConceptosJson { get; set; }
+
+    // 🔑 Método helper para deserializar ConceptosJson
+    public List<ConceptoServicioVM> GetConceptos()
+    {
+        if (string.IsNullOrWhiteSpace(ConceptosJson))
+            return new List<ConceptoServicioVM>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<ConceptoServicioVM>>(ConceptosJson)
+                   ?? new List<ConceptoServicioVM>();
+        }
+        catch
+        {
+            // Manejo simple si el JSON está corrupto
+            return new List<ConceptoServicioVM>();
+        }
+    }
 }

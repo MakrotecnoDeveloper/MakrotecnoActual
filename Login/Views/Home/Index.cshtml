@@ -1,4 +1,4 @@
-@model List<Servicio>
+锘緻model List<Servicio>
 @{
     Layout = null;
 }
@@ -8,9 +8,9 @@
     <title>Makrotecno - Soluciones tecnologicas a la medida</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Makrotecno es una empresa especializada en el desarrollo de plataformas web, software personalizado, soporte t閏nico a empresas y venta de accesorios para celular y computadores.">
+    <meta name="description" content="Makrotecno es una empresa especializada en el desarrollo de plataformas web, software personalizado, soporte t茅cnico a empresas y venta de accesorios para celular y computadores.">
     <meta name="author" content="Equipo Makrotecno">
-    <meta name="keywords" content="Makrotecno, desarrollo web, software, tecnolog韆, soporte t閏nico, soluciones tecnol骻icas, cargadores, audifonos, cables de datos, adaptadores, netflix, amazon" />
+    <meta name="keywords" content="Makrotecno, desarrollo web, software, tecnolog铆a, soporte t茅cnico, soluciones tecnol贸gicas, cargadores, audifonos, cables de datos, adaptadores, netflix, amazon" />
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -24,312 +24,291 @@
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="~/css/index-style.css" />
-    <link rel="stylesheet" href="~/css/styles.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/resume.min.css" />
 </head>
-    <body>
-        <!-- Navigation-->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container px-4 px-lg-5">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Makrotecno</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+<body id="page-top">
+    <div class="content-wrapper">
+        <div class="container-fluid">
+
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+                <a class="navbar-brand js-scroll-trigger text-center py-4" href="#page-top">
+                    <span class="d-block d-lg-none">Makrotecno</span>
+                    <span class="d-none d-lg-block">
+                        <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="~/img/Logo.png" alt="Logo MakroTecno" style="width: 120px; height: 120px;">
+                    </span>
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                        <li class="nav-item"><a class="nav-link" href="#!">Nosotros</a></li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Tienda</a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                @if (Model != null && Model.Count >= 3)
-                                {
-                                    <li><a class="dropdown-item" href="#!">All Products</a></li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" href="#!">Popular Items</a></li>
-                                    <li><a class="dropdown-item" href="#!">New Arrivals</a></li>
-                                }
-                                else
-                                {
-                                    <p class="text-danger">No hay suficientes servicios disponibles para mostrar.</p>
-                                }
-                            </ul>
+                    <ul class="navbar-nav flex-column w-100 text-center">
+                        <li class="nav-item my-2">
+                            <a class="nav-link js-scroll-trigger text-light fw-semibold" href="#inicio">
+                                <i class="fas fa-home me-2"></i>Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a class="nav-link js-scroll-trigger text-light fw-semibold" href="#nosotros">
+                                <i class="fas fa-users me-2"></i>Nosotros
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a class="nav-link js-scroll-trigger text-light fw-semibold" href="#portfServicios">
+                                <i class="fas fa-briefcase me-2"></i>Portafolio
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a class="nav-link js-scroll-trigger text-light fw-semibold" href="#contacto">
+                                <i class="fas fa-envelope me-2"></i>Contacto
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a class="nav-link js-scroll-trigger text-light fw-semibold" asp-controller="Home" asp-action="Login">
+                                <i class="fas fa-sign-in-alt me-2"></i>Portal
+                            </a>
                         </li>
                     </ul>
-                    <form class="d-flex">
-                        <button class="btn btn-outline-dark" type="submit">
-                            <i class="bi-cart-fill me-1"></i>
-                            Cart
-                            <span class="badge bg-dark text-white ms-1 rounded-pill">0</span>
-                        </button>
-                    </form>
                 </div>
-            </div>
-        </nav>
-        <!-- Header-->
-        <header class="bg-dark py-5">
-            <div class="container px-4 px-lg-5 my-5">
-                <div class="text-center text-white">
-                    <h1 class="display-4 fw-bolder">Shop in style</h1>
-                    <p class="lead fw-normal text-white-50 mb-0">With this shop hompeage template</p>
+            </nav>
+
+            <section class="resume-section text-center p-4 bg-light" id="inicio">
+                <div class="container">
+                    <h1 class="mb-3 display-4 fw-bold text-primary">Makro Tecno</h1>
+                    <p class="lead text-secondary">隆Tecnolog铆a a tu alcance!</p>
                 </div>
-            </div>
-        </header>
-        <!-- Section-->
-        <section class="py-5">
-            <div class="container px-4 px-lg-5 mt-5">
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Fancy Product</h5>
-                                    <!-- Product price-->
-                                    $40.00 - $80.00
+            </section>
+
+            <hr class="my-5">
+            <section class="resume-section p-5 bg-white nosotros" id="nosotros">
+                <div class="container nosotros">
+                    <h2 class="text-center fw-bold mb-4 text-primary">Nosotros</h2>
+                    <div class="row gy-4 justify-content-center">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="h-100 shadow-lg border-0 rounded-3">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center text-primary">驴Qui茅nes Somos?</h5>
+                                    <p class="card-text text-center">Makrotecno somos una empresa especializada en el desarrollo de soluciones tecnol贸gicas a la medida. Nos enfocamos en crear plataformas web, sistemas inform谩ticos personalizados y brindar soporte t茅cnico integral que potencie el crecimiento de nuestros clientes.</p>
                                 </div>
                             </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">View options</a></div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="h-100 shadow-lg border-0 rounded-3">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center text-primary">Nuestra Misi贸n</h5>
+                                    <p class="card-text text-center">Impulsar la transformaci贸n digital de nuestros clientes mediante el uso estrat茅gico de la tecnolog铆a.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="h-100 shadow-lg border-0 rounded-3">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center text-primary">Nuestra Visi贸n</h5>
+                                    <p class="card-text text-center">Ser una empresa l铆der en soluciones tecnol贸gicas en la regi贸n, reconocida por su compromiso, innovaci贸n y calidad de servicio.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Sale badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Special Item</h5>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small text-warning mb-2">
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <section class="resume-section p-5 bg-light" id="portfServicios">
+                <div class="container">
+                    <h2 class="text-center fw-bold text-primary mb-4">Portafolio de Servicios</h2>
+                    @if (Model != null && Model.Count >= 3)
+                    {
+                        <div class="row gy-4">
+                            <!-- Accesorios Tecnol贸gicos -->
+                            <div class="col-md-4">
+                                <div class="h-100 shadow-sm border-0 position-relative">
+                                    <div class="split-images">
+                                        <img class="left-img" src="~/img/accesorio1.png" alt="Accesorios tecnol贸gicos">
+                                        <img class="right-img" src="~/img/accesorio2.png" alt="Accesorios tecnol贸gicos">
                                     </div>
-                                    <!-- Product price-->
-                                    <span class="text-muted text-decoration-line-through">$20.00</span>
-                                    $18.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Sale badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Sale Item</h5>
-                                    <!-- Product price-->
-                                    <span class="text-muted text-decoration-line-through">$50.00</span>
-                                    $25.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Popular Item</h5>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small text-warning mb-2">
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold">@Model[0].NombreServicio</h5>
+                                        <p class="card-text">@Model[0].DescripcionServicio</p>
+                                        <a href="@Url.Action("ProductosExistentesVenta", "Producto", new { IdServicio = Model[0].IdServicio })"
+                                           class="btn btn-outline-primary btn-sm">Ver M谩s</a>
                                     </div>
-                                    <!-- Product price-->
-                                    $40.00
                                 </div>
                             </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Sale badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Sale Item</h5>
-                                    <!-- Product price-->
-                                    <span class="text-muted text-decoration-line-through">$50.00</span>
-                                    $25.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Fancy Product</h5>
-                                    <!-- Product price-->
-                                    $120.00 - $280.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">View options</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Sale badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Special Item</h5>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small text-warning mb-2">
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
+
+                            <!-- Outsourcing Empresarial -->
+                            <div class="col-md-4">
+                                <div class="h-100 shadow-sm border-0 position-relative">
+                                    <div class="split-images">
+                                        <img class="left-img" src="~/img/outsourcing1.jpg" alt="Outsourcing Empresarial">
+                                        <img class="right-img" src="~/img/outsourcing2.jpg" alt="Outsourcing Empresarial">
                                     </div>
-                                    <!-- Product price-->
-                                    <span class="text-muted text-decoration-line-through">$20.00</span>
-                                    $18.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Popular Item</h5>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small text-warning mb-2">
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold">@Model[1].NombreServicio</h5>
+                                        <p class="card-text">@Model[1].DescripcionServicio</p>
+                                        <a href="@Url.Action("ProductosExistentesVenta", "Producto", new { IdServicio = Model[1].IdServicio })"
+                                           class="btn btn-outline-primary btn-sm">Ver M谩s</a>
                                     </div>
-                                    <!-- Product price-->
-                                    $40.00
                                 </div>
                             </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
+
+                            <!-- Servicios Adicionales -->
+                            <div class="col-md-4">
+                                <div class="h-100 shadow-sm border-0 position-relative">
+                                    <div class="split-images">
+                                        <img class="left-img" src="~/img/servicios.jpg" alt="Servicios Adicionales">
+                                        <img class="right-img" src="~/img/servicios2.jpg" alt="Servicios Adicionales">
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold">@Model[2].NombreServicio</h5>
+                                        <p class="card-text">@Model[2].DescripcionServicio</p>
+                                        <a href="@Url.Action("ProductosExistentesVenta", "Producto", new { IdServicio = Model[2].IdServicio })"
+                                           class="btn btn-outline-primary btn-sm">Ver M谩s</a>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-danger">No hay suficientes servicios disponibles para mostrar.</p>
+                    }
+                </div>
+            </section>
+
+            <hr class="my-5">
+
+            <section class="resume-section p-5 bg-white" id="contacto">
+                <div class="container">
+                    <h2 class="text-center fw-bold text-primary mb-4">Contacto</h2>
+                    <div class="row">
+                        <div class="col-md-6 text-center mb-4">
+                            <img src="https://image.ibb.co/kUASdV/contact-image.png" alt="Contacto" class="mb-3 img-fluid" style="max-width: 100px;">
+                            <h4>隆Estamos para ayudarte!</h4>
+                            <p>Quejas, dudas, reclamos y solicitudes.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Mensaje de 茅xito -->
+                            @if (TempData["SuccessMessage"] != null)
+                            {
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <strong>隆脡xito!</strong> @TempData["SuccessMessage"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            }
+
+                            <!-- Mensaje de error -->
+                            @if (TempData["ErrorMessage"] != null)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <strong>隆Error!</strong> @TempData["ErrorMessage"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            }
+
+                            <!-- Errores de validaci贸n -->
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <strong>隆Atenci贸n!</strong> Corrige los errores antes de enviar el formulario.
+                                    <ul>
+                                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            }
+
+                            <!-- Formulario -->
+                            <form asp-action="SendContactMessage" asp-controller="Home" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="fname" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" id="fname" name="FirstName" placeholder="Escribe tu nombre" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="lname" class="form-label">Apellido</label>
+                                    <input type="text" class="form-control" id="lname" name="LastName" placeholder="Escribe tu apellido" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Correo</label>
+                                    <input type="email" class="form-control" id="email" name="Email" placeholder="ejemplo@correo.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Comentario</label>
+                                    <textarea class="form-control" id="comment" name="Message" rows="4" placeholder="Escribe tu mensaje" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="fichero" class="form-label">Adjuntar archivo</label>
+                                    <input type="file" class="form-control" id="fichero" name="Attachment">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                            </form>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    <!-- FOOTER -->
-    <footer class="text-white pt-5" style="background: linear-gradient(135deg, #1d1f21, #343a40)">
-        <div class="container">
-            <div class="row gy-4">
+            </section>
 
-                <!-- Logo y descripci髇 -->
-                <div class="col-lg-4 col-md-6">
-                    <h4 class="fw-bold text-white mb-3">Makro Tecno</h4>
-                    <p class="text-light small">
-                        Accesorios tecnol骻icos de alta calidad con precios competitivos. Comprometidos con la innovaci髇 y la satisfacci髇 de nuestros clientes.
-                    </p>
 
-                    <!-- Redes sociales -->
-                    <div class="mt-4">
-                        <a href="https://www.facebook.com/makrotecno" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/makro_tecno/?hl=es" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-instagram"></i></a>
-                        <a href="https://wa.me/573185313379" class="text-white social-icon" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <!-- FOOTER -->
+            <footer class="text-white pt-5" style="background: linear-gradient(135deg, #1d1f21, #343a40)">
+                <div class="container">
+                    <div class="row gy-4">
+
+                        <!-- Logo y descripci贸n -->
+                        <div class="col-lg-4 col-md-6">
+                            <h4 class="fw-bold text-white mb-3">Makro Tecno</h4>
+                            <p class="text-light small">
+                                Accesorios tecnol贸gicos de alta calidad con precios competitivos. Comprometidos con la innovaci贸n y la satisfacci贸n de nuestros clientes.
+                            </p>
+
+                            <!-- Redes sociales -->
+                            <div class="mt-4">
+                                <a href="https://www.facebook.com/makrotecno" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                                <a href="https://www.instagram.com/makro_tecno/?hl=es" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-instagram"></i></a>
+                                <a href="https://wa.me/573185313379" class="text-white social-icon" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                            </div>
+                        </div>
+
+                        <!-- Enlaces -->
+                        <div class="col-lg-2 col-md-6">
+                            <h6 class="text-uppercase fw-bold mb-3">Enlaces</h6>
+                            <ul class="list-unstyled small text-light">
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Inicio</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Sobre Nosotros</a></li>
+                                <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Servicios</a></li>
+                                <li><a href="#" class="text-decoration-none text-white-50">Contacto</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Contacto -->
+                        <div class="col-lg-3 col-md-6">
+                            <h6 class="text-uppercase fw-bold mb-3">Contacto</h6>
+                            <ul class="list-unstyled small text-light">
+                                <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-primary"></i> Calle 33E # 25-11</li>
+                                <li class="mb-2"><i class="fa-solid fa-phone me-2 text-primary"></i> +57 318 531 3379</li>
+                                <li><i class="fa-solid fa-envelope me-2 text-primary"></i> makrotecnocomercio@gmail.com</li>
+                            </ul>
+                        </div>
+
+                        <!-- Mapa -->
+                        <div class="col-lg-3 col-md-6">
+                            <h6 class="text-uppercase fw-bold mb-3">Ubicaci贸n</h6>
+                            <div class="ratio ratio-4x3 rounded overflow-hidden shadow">
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3982.650970142374!2d-76.51065182527614!3d3.4348313513306303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e30a76597bc4a7d%3A0x4af277e7656f9c62!2sMakrotecno!5e0!3m2!1ses-419!2sco!4v1717456172294!5m2!1ses-419!2sco" style="border:0;" allowfullscreen loading="lazy"></iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5 pt-4 border-top border-secondary">
+                        <small class="text-white-50">&copy; 2024 Makro Tecno. Todos los derechos reservados.</small>
                     </div>
                 </div>
+            </footer>
+            <!-- FIN FOOTER -->
 
-                <!-- Enlaces -->
-                <div class="col-lg-2 col-md-6">
-                    <h6 class="text-uppercase fw-bold mb-3">Enlaces</h6>
-                    <ul class="list-unstyled small text-light">
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Inicio</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Sobre Nosotros</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Servicios</a></li>
-                        <li><a href="#" class="text-decoration-none text-white-50">Contacto</a></li>
-                    </ul>
-                </div>
-
-                <!-- Contacto -->
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="text-uppercase fw-bold mb-3">Contacto</h6>
-                    <ul class="list-unstyled small text-light">
-                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-primary"></i> Calle 33E # 25-11</li>
-                        <li class="mb-2"><i class="fa-solid fa-phone me-2 text-primary"></i> +57 318 531 3379</li>
-                        <li><i class="fa-solid fa-envelope me-2 text-primary"></i> makrotecnocomercio@gmail.com</li>
-                    </ul>
-                </div>
-
-                <!-- Mapa -->
-                <div class="col-lg-3 col-md-6">
-                    <h6 class="text-uppercase fw-bold mb-3">Ubicaci髇</h6>
-                    <div class="ratio ratio-4x3 rounded overflow-hidden shadow">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3982.650970142374!2d-76.51065182527614!3d3.4348313513306303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e30a76597bc4a7d%3A0x4af277e7656f9c62!2sMakrotecno!5e0!3m2!1ses-419!2sco!4v1717456172294!5m2!1ses-419!2sco" style="border:0;" allowfullscreen loading="lazy"></iframe>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-5 pt-4 border-top border-secondary">
-                <small class="text-white-50">&copy; 2024 Makro Tecno. Todos los derechos reservados.</small>
-            </div>
         </div>
-    </footer>
-    <!-- FIN FOOTER -->
+    </div>
+
     <!-- JavaScript dependencies -->
     <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
@@ -337,6 +316,5 @@
 
     <!-- Custom scripts -->
     <script src="~/js/resume.js"></script>
-    <script src="~/js/SiteWeb/scripts.js"></script>
-    </body>
+</body>
 </html>

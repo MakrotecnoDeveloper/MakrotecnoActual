@@ -141,47 +141,6 @@
                                         <p>Asignacion Menu</p>
                                     </a>
                                  </li>
-                                    <li class="nav-item">
-                                        <a href="#" class="nav-link">
-                                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                                            <p>
-                                                Area Transaccional
-                                                <i class="right fas fa-angle-left"></i>
-                                            </p>
-                                        </a>
-                                        <ul class="nav nav-treeview">
-                                            <li class="nav-item">
-                                                <a asp-controller="Producto" asp-action="FormPlataforma" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Crear Plataforma</p>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <ul class="nav nav-treeview">
-                                            <li class="nav-item">
-                                                <a asp-controller="Producto" asp-action="FormInserClienPlatf" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Insertar Venta</p>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <ul class="nav nav-treeview">
-                                            <li class="nav-item">
-                                                <a asp-controller="Producto" asp-action="FormVisuPlatf" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Visualizar Plataforma</p>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <ul class="nav nav-treeview">
-                                            <li class="nav-item">
-                                                <a asp-controller="Producto" asp-action="FormVisuCta" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Visualizar Cuentas</p>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </li>
                                      <li class="nav-item">
                                         <a href="#" class="nav-link">
                                             <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -298,6 +257,50 @@
                                             <p>Listado por Sede</p>
                                         </a>
                                     </li>
+                                    @if (menusActivos.Contains(9))
+                                    {
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link">
+                                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                                <p>
+                                                    Modulo Plataformas
+                                                    <i class="right fas fa-angle-left"></i>
+                                                </p>
+                                            </a>
+                                            <ul class="nav nav-treeview">
+                                                <li class="nav-item">
+                                                    <a asp-controller="Producto" asp-action="FormPlataforma" class="nav-link">
+                                                        <i class="far fa-circle nav-icon"></i>
+                                                        <p>Crear Plataforma</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <ul class="nav nav-treeview">
+                                                <li class="nav-item">
+                                                    <a asp-controller="Producto" asp-action="FormInserClienPlatf" class="nav-link">
+                                                        <i class="far fa-circle nav-icon"></i>
+                                                        <p>Insertar Venta</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <ul class="nav nav-treeview">
+                                                <li class="nav-item">
+                                                    <a asp-controller="Producto" asp-action="FormVisuPlatf" class="nav-link">
+                                                        <i class="far fa-circle nav-icon"></i>
+                                                        <p>Visualizar Plataforma</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                            <ul class="nav nav-treeview">
+                                                <li class="nav-item">
+                                                    <a asp-controller="Producto" asp-action="FormVisuCta" class="nav-link">
+                                                        <i class="far fa-circle nav-icon"></i>
+                                                        <p>Visualizar Cuentas</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
                                 </ul>
                             </li>
                             <li class="nav-item">
@@ -498,6 +501,12 @@
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
+                                        <a asp-controller="Reporte" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ver Reportes</p> <!-- o "Reporte General" si aplica -->
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a asp-controller="Reporte" asp-action="Diario" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Reporte Diario</p> <!-- o "Reporte General" si aplica -->
@@ -507,6 +516,27 @@
                                         <a asp-controller="Pedido" asp-action="VerConceptos" class="nav-link">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Conceptos y Adiciones</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        @if (menusActivos.Contains(1008))
+                        {
+                            <li class="nav-header">MODULO NOMINA</li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-chart-line"></i>
+                                    <p>
+                                        Gestion Personal
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-controller="Nomina" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Gestionar Nomina</p> <!-- o "Reporte General" si aplica -->
                                         </a>
                                     </li>
                                 </ul>

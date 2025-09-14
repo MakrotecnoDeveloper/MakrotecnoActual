@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
@@ -46,7 +47,7 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(c => c.IdServicio == idServicio)
                 .ToListAsync();
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor)
         {
             try
             {
@@ -227,7 +228,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, float valorNeto, float valorVenta, int valorUnidad, int cantidad)
+        public void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad)
         {
 
             if (codigo == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
@@ -520,16 +521,17 @@ namespace Plataforma.Servicios.Implementacion
             {
                 // TODAS las sedes (agregado por producto)
                 baseQuery =
-                    from i in _dbContext.InventarioSedes
-                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
-                    where p.Estado == 1
-                    group i by new { p.Cod_Producto, p.NombreProducto } into g
-                    select new ProductoStockVm
-                    {
-                        ProductoId = g.Key.Cod_Producto,
-                        Nombre = g.Key.NombreProducto!,
-                        Cantidad = g.Sum(x => x.Cantidad)
-                    };
+                from i in _dbContext.InventarioSedes
+                join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                where p.Estado == 1
+                select new ProductoStockVm
+                {
+                    ProductoId = p.Cod_Producto,
+                    Nombre = p.NombreProducto,
+                    Cantidad = i.Cantidad,
+                    ValorNeto = i.ValorNeto,      // 🔑 Trae el valor tal cual está en InventarioSede
+                    ValorVenta = i.PrecioUnitario    // 🔑 Igual aquí
+                };
             }
             else
             {
@@ -549,7 +551,9 @@ namespace Plataforma.Servicios.Implementacion
                         Nombre = p.NombreProducto!,
                         Cantidad = i.Cantidad,
                         SedeId = sedeId.Value,
-                        SedeNombre = sedeNombre
+                        SedeNombre = sedeNombre,
+                        ValorNeto = i.ValorNeto,
+                        ValorVenta = i.PrecioUnitario
                     };
             }
 
@@ -778,6 +782,10 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Productos.Any(codProducto => codProducto.Cod_Producto == producto);
         }
+        public bool ValidarProductoSede(string producto, int idSede)
+        {
+            return _dbContext.InventarioSedes.Any(cod => cod.ProductoId == producto && cod.SedeId == idSede);
+        }
         public bool ValidarCantidadProducto(string producto, decimal cantidad)
         {
             // Busca la cantidad disponible del producto
@@ -789,30 +797,21 @@ namespace Plataforma.Servicios.Implementacion
             // Si no existe el producto o la cantidad es insuficiente, retorna false
             return stock >= cantidad;
         }
-        public InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim)
+        public InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim, int valorNeto)
         {
                 var cedula = int.Parse(cedulaClaim);
-                var inventario = _dbContext.InventarioSedes
-                .FirstOrDefault(cod => cod.ProductoId == producto && cod.SedeId == sede);
-                if (inventario != null) 
-                { 
-                    inventario.Cantidad += cantidad;
-                    inventario.ActualizadoEn = DateTime.Now;
-                    inventario.Cedula = cedula;
-                }else
-                {
-                    inventario = new InventarioSede
+                var inventario = new InventarioSede
                     {
                         ProductoId = producto,
                         SedeId = sede,
                         Cantidad = cantidad,
                         PrecioUnitario = valorUnitario,
+                        ValorNeto = valorNeto,
                         ActualizadoEn = DateTime.Now,
                         Cedula = cedula
                     };
                     _dbContext.InventarioSedes.Add(inventario);
                     _dbContext.SaveChanges();
-                }
                 var prod = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == producto);
                 prod.CantidadProducto -= cantidad;
                 _dbContext.SaveChanges();
@@ -823,6 +822,14 @@ namespace Plataforma.Servicios.Implementacion
         public List<Producto> TraerProductosInactivos()
         {
             return _dbContext.Productos.Where(est => est.Estado == 0).ToList();
+        }
+        public async Task<List<Producto>> BuscarProductosPorCodigo(string codigo)
+        {
+            return await _dbContext.Set<Producto>()
+                                 .Where(p => p.Cod_Producto.Contains(codigo) || p.NombreProducto.Contains(codigo) && p.Estado == 1)
+                                 .OrderBy(p => p.NombreProducto)
+                                 .Take(20)
+                                 .ToListAsync();
         }
     }
 

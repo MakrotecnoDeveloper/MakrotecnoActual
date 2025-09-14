@@ -33,7 +33,7 @@ namespace Plataforma.Servicios.Implementacion
                 .OrderByDescending(v => v.FechaVenta)
                 .ToListAsync();
         }
-        public async Task<(float valorVenta, float valorNeto)?> BuscarProductoPorCodigoAsync(string codigo)
+        public async Task<(decimal? valorVenta, decimal? valorNeto)?> BuscarProductoPorCodigoAsync(string codigo)
         {
             var producto = await _dbContext.Productos
                 .Where(p => p.Cod_Producto == codigo)
@@ -311,7 +311,9 @@ namespace Plataforma.Servicios.Implementacion
         {
             return await _dbContext.Set<InventarioSede>()
                                  .Include(p => p.Producto)
-                                 .Where(p => p.ProductoId.Contains(codigo))
+                                 .Where(p => p.ProductoId.Contains(codigo) || p.Producto.NombreProducto.Contains(codigo))
+                                 .OrderBy(p => p.Producto.NombreProducto)
+                                 .Take(20)
                                  .ToListAsync();
         }
 

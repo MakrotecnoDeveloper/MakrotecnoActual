@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Empleados";
-    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "Rol")?.Value;
-    var mostrarOpciones = rolUsuario == "3";
+    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "NombreRol")?.Value;
+    var mostrarOpciones = rolUsuario == "Administrador";
 }
 <div class="content-wrapper">
     <div class="container mt-4">

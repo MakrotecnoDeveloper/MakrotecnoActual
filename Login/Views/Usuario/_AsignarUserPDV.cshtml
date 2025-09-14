@@ -1,0 +1,35 @@
+﻿@model Plataforma.Models.EmpleadoPdvViewModel
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">Asignar Empleado a PDV</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <form asp-action="AsignarEmpleadoAPDV" asp-controller="Usuario" method="post">
+        <div class="mb-3">
+            <label for="empleado" class="form-label">Empleado</label>
+            <select name="cedulaEmpleado" id="empleado" class="form-select" required>
+                <option value="">-- Selecciona un empleado --</option>
+                @foreach (var empleado in Model.Empleados)
+                {
+                    <option value="@empleado.Cedula">@empleado.Nombre @empleado.Apellido</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="pdv" class="form-label">Punto de Venta</label>
+            <select name="idPdv" id="pdv" class="form-select" required>
+                <option value="">-- Selecciona un PDV --</option>
+                @foreach (var pdv in Model.PuntosDeVenta)
+                {
+                    <option value="@pdv.InfopdvId">@pdv.NombreInfoPDV</option>
+                }
+            </select>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success">Asignar</button>
+        </div>
+    </form>
+</div>

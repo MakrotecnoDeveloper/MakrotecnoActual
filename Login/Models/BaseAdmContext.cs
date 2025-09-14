@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Contracts;
 
 namespace Plataforma.Models;
 
@@ -49,6 +50,11 @@ public partial class BaseAdmContext : DbContext
     public DbSet<MetodoPagos> MetodoPagos { get; set; }
     public DbSet<GastosMensuales> GastosMensuales { get; set; }
     public DbSet<InventarioSede> InventarioSedes => Set<InventarioSede>();
+    public DbSet<Contratos> Contratos { get; set; }
+    public DbSet<ConceptoNomina> ConceptosNomina { get; set; }
+    public DbSet<DetalleConceptosEmpleado> DetallesConceptosEmpleado { get; set; }
+    public DbSet<LiquidacionNomina> LiquidacionesNomina { get; set; }
+    public DbSet<DetalleLiquidacion> DetallesLiquidacion { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -136,9 +142,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<FlujoCaja>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<Ganancias>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<AdicionFactura>().HasOne(a => a.Factura).WithMany(f => f.Adiciones).HasForeignKey(a => a.IdFactura).HasConstraintName("FK_AdicionFactura_Factura");
-        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Producto).WithMany().HasForeignKey(i => i.ProductoId);
-        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Sede).WithMany().HasForeignKey(i => i.SedeId);
-        //modelBuilder.Entity<InventarioSede>().HasOne(i => i.Empleado).WithMany().HasForeignKey(i => i.Cedula);
 
 
         modelBuilder.Entity<GestionRealizada>()
@@ -170,5 +173,21 @@ public partial class BaseAdmContext : DbContext
             // Nombre tal cual en SQL Server
             eb.ToTable(tb => tb.HasTrigger("TR_GastosMensuales_SetUpdated"));
         });
+
+        // Ejemplo: relaciones
+        modelBuilder.Entity<Contratos>()
+            .HasOne(c => c.Empleado)
+            .WithMany(e => e.Contratos)
+            .HasForeignKey(c => c.Cedula);
+
+        modelBuilder.Entity<DetalleLiquidacion>()
+            .HasOne(dl => dl.Liquidacion)
+            .WithMany(l => l.Detalles)
+            .HasForeignKey(dl => dl.IdLiquidacion);
+
+        modelBuilder.Entity<LiquidacionNomina>()
+            .HasOne(c => c.Empleado)
+            .WithMany(e => e.Liquidaciones)
+            .HasForeignKey(c => c.Cedula);
     }
 }

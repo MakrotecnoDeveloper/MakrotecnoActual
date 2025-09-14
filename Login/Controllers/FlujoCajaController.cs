@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -14,11 +15,14 @@ namespace Plataforma.Controllers
             _flujocajaService = flujocajaService;
             _dbContext = dbContext;
         }
+        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var vm = await _flujocajaService.ObtenerResumenDeHoyAsync();
             return View(vm);
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> RegistrarCierre()
         {
@@ -36,6 +40,7 @@ namespace Plataforma.Controllers
 
             return View(model);
         }
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarCierre(CierreCajaViewModel model)

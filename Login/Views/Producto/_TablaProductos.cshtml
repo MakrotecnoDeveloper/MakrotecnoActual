@@ -1,8 +1,8 @@
 ﻿@model List<Producto>
 @{
     ViewData["Title"] = "Productos";
-    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "Rol")?.Value;
-    var esRol6 = rolUsuario == "1"; // true si tiene rol 6
+    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "NombreRol")?.Value;
+    var esRol6 = rolUsuario == "Administrador"; // true si tiene rol 6
 }
 <div class="table-responsive">
     <table id="productosTable" class="table table-striped table-bordered">

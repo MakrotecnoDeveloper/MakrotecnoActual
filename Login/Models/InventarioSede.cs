@@ -21,7 +21,8 @@ public class InventarioSede
     public Sede Sede { get; set; } = default!;
 
     public decimal Cantidad { get; set; }
-    public int? PrecioUnitario { get; set; }
+    public decimal? PrecioUnitario { get; set; }
+    public decimal? ValorNeto { get; set; }
     public DateTime ActualizadoEn { get; set; }
 
     // FK → Empleado

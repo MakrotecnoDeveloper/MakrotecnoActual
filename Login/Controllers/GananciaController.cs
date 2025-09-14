@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using System.Security.Claims;
@@ -12,11 +13,15 @@ namespace Plataforma.Controllers
         {
             _gananciaService = gananciaService;
         }
+        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var ganancias = await _gananciaService.ListarGananciasAsync();
             return View(ganancias);
         }
+        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> GananciaDelDia()
         {
             var cedulaClaim = User.FindFirst("Cedula")?.Value;
