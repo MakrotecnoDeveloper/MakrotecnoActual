@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "UsView";
+    Layout = "~/Views/Shared/_LayoutInfo.cshtml";
+}
+
+<section class="py-5" style="background: linear-gradient(135deg, #1d1f21, #343a40); color: white;">
+    <div class="container px-5 my-5">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6">
+                <img class="img-fluid rounded mb-5 mb-lg-0 shadow" src="https://dummyimage.com/600x900/bf93bf/fff.png" alt="About Us Image" />
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bolder">Sobre Nosotros</h2>
+                <p class="lead fw-normal text-white-50 mb-4">
+                    En MakroTecno, nos dedicamos a ofrecer accesorios tecnológicos de alta calidad a precios competitivos.
+                    Nuestra misión es proporcionar productos innovadores que mejoren la experiencia tecnológica de nuestros clientes.
+                </p>
+                <p class="lead fw-normal text-white-50 mb-4">
+                    Fundada en 2020, Makro Tecno ha crecido rápidamente gracias a nuestro compromiso con la satisfacción
+                    del cliente y la excelencia en el servicio. Nos enorgullece ser un referente en el mercado de accesorios tecnológicos.
+                </p>
+                <p class="lead fw-normal text-white-50 mb-4">
+                    Nuestro equipo está compuesto por profesionales apasionados por la tecnología, siempre dispuestos a ayudar y asesorar a
+                    nuestros clientes para que encuentren el producto perfecto para sus necesidades.
+                </p>
+                <a class="btn btn-primary btn-lg" href="@Url.Action("StoreView", "home")">Visita Nuestra Tienda</a>
+            </div>
+        </div>
+        @* </div> *@
+
+        <div class="row gx-5 align-items-center mt-3">
+
+            <div class="col">
+                <div class="col">
+                    <img class="img-fluid rounded mb-5 mb-lg-0 shadow" src="https://dummyimage.com/600x400/bf93bf/fff.png" alt="About Us Image" />
+                </div>
+                <div class="col">
+                    <h2 class="fw-bolder">Mision</h2>
+                    <p class="lead fw-normal text-white mb-4">
+                        Brindar soluciones tecnológicas integrales mediante el desarrollo de software a la medida, soporte técnico especializado y comercialización de accesorios, garantizando calidad y eficiencia.
+                    </p>
+                    
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="col">
+                    <img class="img-fluid rounded mb-5 mb-lg-0 shadow" src="https://dummyimage.com/600x400/bf93bf/fff.png" alt="About Us Image" />
+                </div>
+                <div class="col">
+                    <h2 class="fw-bolder">Vision</h2>
+                    <p class="lead fw-normal text-white mb-4">
+                        Ser una empresa líder en soluciones tecnológicas a nivel nacional e internacional, reconocida por la excelencia de sus productos, la innovación de sus desarrollos y
+                        la efectividad de sus servicios, expandiendo nuestra presencia a nuevas ciudades y países, con un enfoque en la personalización y el alto valor agregado.
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

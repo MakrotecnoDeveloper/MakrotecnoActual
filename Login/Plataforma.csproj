@@ -27,6 +27,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\AdminLTE\" />
     <Folder Include="wwwroot\logs\" />
+    <Folder Include="wwwroot\Scripts\MainPage\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 

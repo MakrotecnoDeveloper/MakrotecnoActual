@@ -1,0 +1,119 @@
+﻿@*
+  This Layout file is used by default for all the views in the application. just for Initial Views
+  Us,Index,Store,Contact
+*@
+@{
+
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Makrotecno - Soluciones tecnologicas a la medida</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Makrotecno es una empresa especializada en el desarrollo de plataformas web, software personalizado, soporte técnico a empresas y venta de accesorios para celular y computadores.">
+    <meta name="author" content="Equipo Makrotecno">
+    <meta name="keywords" content="Makrotecno, desarrollo web, software, tecnología, soporte técnico, soluciones tecnológicas, cargadores, audifonos, cables de datos, adaptadores, netflix, amazon" />
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet">
+    <!-- SplideJs Carrusel, -->
+    <link rel="stylesheet" href="~/lib/splidejs/css/splide.min.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="~/css/index-style.css" />
+    <link rel="stylesheet" href="~/css/styles.css" />
+</head>
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">Makrotecno</a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("UsView", "home")">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("StoreView", "home")">Tienda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="">Contactanos</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        @RenderBody()
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="text-white pt-5" style="background: linear-gradient(135deg, #1d1f21, #343a40)">
+        <div class="container">
+            <div class="row gy-4">
+
+                <!-- Logo y descripción -->
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="fw-bold text-white mb-3">Makro Tecno</h4>
+                    <p class="text-light small">
+                        Accesorios tecnológicos de alta calidad con precios competitivos. Comprometidos con la innovación y la satisfacción de nuestros clientes.
+                    </p>
+
+                    <!-- Redes sociales -->
+                    <div class="mt-4">
+                        <a href="https://www.facebook.com/makrotecno" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/makro_tecno/?hl=es" class="text-white me-3 social-icon" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/573185313379" class="text-white social-icon" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <!-- Enlaces -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-uppercase fw-bold mb-3">Enlaces</h6>
+                    <ul class="list-unstyled small text-light">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Inicio</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Sobre Nosotros</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-white-50">Servicios</a></li>
+                        <li><a href="#" class="text-decoration-none text-white-50">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contacto -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold mb-3">Contacto</h6>
+                    <ul class="list-unstyled small text-light">
+                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-primary"></i> Calle 33E # 25-11</li>
+                        <li class="mb-2"><i class="fa-solid fa-phone me-2 text-primary"></i> +57 318 531 3379</li>
+                        <li><i class="fa-solid fa-envelope me-2 text-primary"></i> makrotecnocomercio@gmail.com</li>
+                    </ul>
+                </div>
+
+                <!-- Mapa -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold mb-3">Ubicación</h6>
+                    <div class="ratio ratio-4x3 rounded overflow-hidden shadow">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3982.650970142374!2d-76.51065182527614!3d3.4348313513306303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e30a76597bc4a7d%3A0x4af277e7656f9c62!2sMakrotecno!5e0!3m2!1ses-419!2sco!4v1717456172294!5m2!1ses-419!2sco" style="border:0;" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 pt-4 border-top border-secondary">
+                <small class="text-white-50">&copy; 2024 Makro Tecno. Todos los derechos reservados.</small>
+            </div>
+        </div>
+    </footer>
+    <!-- FIN FOOTER -->
+    <!-- JavaScript dependencies -->
+    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="~/AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/lib/splidejs/js/splide.min.js"></script>
+
+    <!-- Custom scripts -->
+    <script src="~/js/resume.js"></script>
+    <script src="~/js/SiteWeb/scripts.js"></script>
+</body>
+</html>

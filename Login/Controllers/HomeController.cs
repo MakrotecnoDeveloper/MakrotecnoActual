@@ -24,6 +24,17 @@ namespace Plataforma.Controllers
             var TraerServicios = _usuarioService.ServTraerServicios();
             return View(TraerServicios);
         }
+
+        public IActionResult UsView()
+        {           
+            return View();
+        }
+
+        public IActionResult StoreView()
+        {           
+            return View();
+        }
+
         public IActionResult Login()
         {
             return View();
