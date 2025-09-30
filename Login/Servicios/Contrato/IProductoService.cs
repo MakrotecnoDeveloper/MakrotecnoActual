@@ -3,6 +3,10 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
+        //--------------------------------------------------------
+        // New Metodos Productos
+        Task<List<Producto>> GetTop10Products();
+        //--------------------------------------------------------
         Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, float valor_neto, float valor_unitario, decimal stock, int categorias, int id_proveedor);
         List<CategoriaProductos> ObtenerCategorias();
         List<Producto> ObtenerProductos();

@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Plataforma.Helpers;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using System.Net.Mail;
 
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Plataforma.Controllers
 {
@@ -14,15 +16,33 @@ namespace Plataforma.Controllers
     public class HomeController : Controller
     {
         private readonly IUsuarioService _usuarioService;
-        public HomeController(IUsuarioService usuarioService)
+        private readonly IProductoService _productoService;
+        private readonly IPromocionesService _promoService;
+
+        public HomeController(IUsuarioService usuarioService, IProductoService productoService, IPromocionesService promocionesService)
         {
             _usuarioService = usuarioService;
+            _productoService = productoService;
+            _promoService = promocionesService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var TraerServicios = _usuarioService.ServTraerServicios();
-            return View(TraerServicios);
+            try
+            {
+                var listPromo = await _promoService.GetListAsync();
+                var listProductos = await _productoService.GetTop10Products();
+                HomeListView homeListView = new()
+                {
+                    listPromociones = listPromo,
+                    listProductos = listProductos
+                };
+                return View(homeListView);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public IActionResult UsView()

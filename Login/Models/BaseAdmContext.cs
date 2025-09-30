@@ -49,6 +49,7 @@ public partial class BaseAdmContext : DbContext
     public DbSet<MetodoPagos> MetodoPagos { get; set; }
     public DbSet<GastosMensuales> GastosMensuales { get; set; }
     public DbSet<InventarioSede> InventarioSedes => Set<InventarioSede>();
+    public DbSet<MkPromociones> MKPromociones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,6 +92,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<MetodoPagos>().HasKey(id => id.IdMetodo);
         modelBuilder.Entity<GastosMensuales>().HasKey(id => id.IdGasto);
         modelBuilder.Entity<InventarioSede>().HasKey(id => id.IdInventario);
+        modelBuilder.Entity<MkPromociones>().HasKey(f => f.Id);
+
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);

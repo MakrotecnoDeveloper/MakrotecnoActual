@@ -1,8 +1,10 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Plataforma.Helpers;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using System.Threading.Tasks;
 
 namespace Plataforma.Servicios.Implementacion
 {
@@ -22,6 +24,48 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(p => p.Estado == 1)
                 .ToList();
         }
+        public async Task<List<Producto>> GetTop10Products()
+        {
+            try
+            {
+                //var listTop = await _dbContext.Pedidos.GroupBy(p => p.Codigo)
+                //    .Select(g => new
+                //    {
+                //        Codigo = g.Key,
+                //    })
+                //    .OrderByDescending(x => x.)
+                //    .Take(10)
+                //    .ToListAsync();
+
+                //List<Producto> listProducts = new List<Producto>();
+                //foreach (var item in listTop)
+                //{
+                //    var opp = await _dbContext.Productos.FirstOrDefaultAsync(x => x.Cod_Producto == item.Codigo);
+                //    listProducts.Add(opp);
+                //}
+
+                var listProducts = await _dbContext.Pedidos
+                .GroupBy(p => p.Codigo)
+                .OrderByDescending(g => g.Sum(x => x.SubTotal))
+                .Take(10)
+                .Select(g => g.Key) 
+                .Join(_dbContext.Productos,
+                      codigo => codigo,
+                      producto => producto.Cod_Producto,
+                      (codigo, producto) => producto)
+                .ToListAsync();
+
+
+                return listProducts;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(HttpErrorMessages.NO_RECORDS_FOUND);
+            }
+            
+        }
+
 
         public List<CategoriaProductos> ObtenerCategorias()
         {
