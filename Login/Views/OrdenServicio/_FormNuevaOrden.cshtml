@@ -1,15 +1,5 @@
 ﻿@model OrdenesServicioViewModel
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<style>
-    /* Asegurar que el menú de autocomplete se vea encima */
-    .ui-autocomplete {
-        z-index: 9999 !important;
-        background: white;
-        border: 1px solid #ccc;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-</style>
 <form id="formNuevaOrden">
     <input type="hidden" name="IdOrden" value="@Model.IdOrden" />
 
@@ -21,8 +11,31 @@
     @if (Model.MostrarAgregarProductos)
     {
         <div id="productosContainer">
-            <div class="producto-item mb-2">
-                <input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar repuesto..." />
+            <div class="producto-item mb-2 mb-3 border p-3 rounded bg-light">
+                <input name="Cod_Producto[]" class="form-control mb-2" placeholder="Repuesto" />
+
+                <input name="Stock[]" class="form-control mb-2" placeholder="Cantidad" />
+
+                <input name="ValorRepuesto[]" type="number" class="form-control mb-2" placeholder="Valor del repuesto" step="0.01" min="0" />
+
+                <select name="Condicion[]" class="form-select mb-2">
+                    <option value="">Seleccione condición</option>
+                    <option value="Nuevo">Nuevo</option>
+                    <option value="Segunda">Segunda</option>
+                </select>
+
+                <select name="Tipo[]" class="form-select">
+                    <option value="">Seleccione tipo</option>
+                    <option value="Original">Original</option>
+                    <option value="Replica">Réplica</option>
+                </select>
+
+                <select name="Proveedor[]" class="form-select">
+                    @foreach(var proveedores in Model.Proveedores)
+                    {
+                        <option value="@proveedores.IdProveedor">@proveedores.RazonSocial</option>
+                    }
+                </select>
             </div>
         </div>
         <button type="button" id="addProduct" class="btn btn-secondary mt-2">+ Agregar repuesto</button>
@@ -32,27 +45,32 @@
 </form>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script>
-    initAutocomplete(".cod-producto");
-    function initAutocomplete(input) {
-        $(input).autocomplete({
-            source: function (request, response) {
-                $.getJSON('/OrdenServicio/Buscar', { searchTerm: request.term }, function (data) {
-                   response($.map(data, function (item) {
-                        return {
-                            label: item.id
-                        };
-                    }));
-                });
-            },
-            minLength: 2
-        });
-    }
-    $("#addProduct").on("click", function () {
-        var newInput = $('<div class="producto-item mb-2">' +
-                            '<input name="Cod_Producto[]" class="form-control cod-producto" placeholder="Buscar repuesto..." />' +
+    // Generamos el listado de proveedores en una variable JS
+    var proveedoresOptions = `
+        @foreach (var proveedores in Model.Proveedores)
+        {
+                <text><option value="@proveedores.IdProveedor">@proveedores.RazonSocial</option></text>
+        }
+    `;
+
+     $("#addProduct").on("click", function () {
+        var newInput = $('<div class="producto-item mb-3 border p-3 rounded bg-light">' +
+                            '<input name="Cod_Producto[]" class="form-control cod-producto mb-2" placeholder="Buscar repuesto..." />' +
+                            '<input name="Stock[]" class="form-control stock mb-2" />' +
+                            '<input name="ValorRepuesto[]" type="number" class="form-control mb-2" placeholder="Valor del repuesto" step="0.01" min="0" />' +
+                            '<select name="Condicion[]" class="form-select mb-2">' +
+                                '<option value="">Seleccione condición</option>' +
+                                '<option value="Nuevo">Nuevo</option>' +
+                                '<option value="Segunda">Segunda</option>' +
+                            '</select>' +
+                            '<select name="Tipo[]" class="form-select">' +
+                                '<option value="">Seleccione tipo</option>' +
+                                '<option value="Original">Original</option>' +
+                                '<option value="Replica">Réplica</option>' +
+                            '</select>' +
+                         '<select name="Proveedor[]" class="form-select">' + proveedoresOptions + '</select>' +
                          '</div>');
         $("#productosContainer").append(newInput);
-        initAutocomplete(newInput.find(".cod-producto"));
     });
 
     $("#formNuevaOrden").on("submit", function (e) {

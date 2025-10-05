@@ -4,6 +4,7 @@
     {
         public List<Producto> Productos { get; set; }
         public List<CategoriaProductos> CategoriaProductos { get; set; }
+        public List<Servicio> Servicio { get; set; }
 
     }
 }

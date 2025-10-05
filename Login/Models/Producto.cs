@@ -26,5 +26,9 @@ public class Producto
         [Column("idCatePro")]
         public int IdCatepro {  get; set; }
         public int idProveedor { get; set; }
-        public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
+        [Column("imagenPath")]
+        public string? ImagenPath { get; set; }
+        public string? AutenticidadProducto { get; set; }
+        public string? CondicionProducto { get; set; }
+    public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
 }

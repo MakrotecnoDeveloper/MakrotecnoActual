@@ -13,6 +13,7 @@
         public OrdenServicios orden { get; set; }
         public List<MetodoPagos> MetodoPagos { get; set; }
         public List<Empleados>? Empleados { get; set; }
+        public List<Sedeempleado>? Sedeempleados { get;set; }
 
     }
 }

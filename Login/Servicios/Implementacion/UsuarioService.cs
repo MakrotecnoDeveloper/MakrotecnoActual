@@ -583,7 +583,10 @@ namespace Plataforma.Servicios.Implementacion
                 IdCatepro = categoria,
                 Estado = estado,
                 Ubicacion = ubicacion,
-                idProveedor = IdProveedor
+                idProveedor = IdProveedor,
+                ImagenPath = $"/img/Productos/nodisponible.png",
+                AutenticidadProducto = "Original",
+                CondicionProducto = "Nuevo"
             };
             _dbContext.Productos.Add(nuevoProductoInventario);
             await _dbContext.SaveChangesAsync();

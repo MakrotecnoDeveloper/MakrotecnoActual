@@ -216,7 +216,6 @@
                 success: function (data) {
                     if (Array.isArray(data) && data.length > 0) {
                         var producto = data[0];
-                        console.log(data);
                         // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
                         fila.find('#vneto' + fila.index()).val(producto.valorNeto);
                         fila.find('#vventa' + fila.index()).val(producto.valorVenta);

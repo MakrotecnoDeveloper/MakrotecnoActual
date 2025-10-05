@@ -3,18 +3,19 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor);
+        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto);
         List<CategoriaProductos> ObtenerCategorias();
         List<Producto> ObtenerProductos();
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
         List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio);
         Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio);
         List<Producto> BuscarProductos(string searchTerm, int categoriaTerm);
+        ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm);
         List<Producto> SinStock(string searchTerm, int categoriaTerm);
         List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
-        void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad);
+        void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, string? imagen);
         void EliminarProducto(string id);
         void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
         List<Plataformas> TraerPlataformasExistentes();
@@ -31,6 +32,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Servicio>> ObtenerServiciosAsync();
         Task<List<Servicio>> ObtenerServicios();
         Task<List<Proveedores>> ObtenerProveedores();
+        Task<List<Empresas>> TraerEmpresas();
         Task<int?> SeleccionarServicio(Producto p);
         Task<Servicio> CrearServicio(Servicio servicio);
         Task<decimal> ObtenerTotalStockAsync(int? sedeId);

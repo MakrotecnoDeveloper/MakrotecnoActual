@@ -1,4 +1,5 @@
 ﻿@model List<Producto>
+@using System.Globalization
 @{
     ViewData["Title"] = "Editar";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -15,7 +16,7 @@
 }
 else
 {
-    <form asp-controller="Producto" asp-action="EditarProducto" method="POST" id="formEditarProducto">
+    <form asp-controller="Producto" asp-action="EditarProducto" method="POST" id="formEditarProducto" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
 
         <div class="container">
@@ -23,7 +24,7 @@ else
             <div class="row mb-4">
                 <div class="col-md-8 mx-auto text-center">
                     <h1 class="fw-bold text-primary mb-2"><i class="bi bi-pencil-square"></i> Editar Producto</h1>
-                    <p class="text-muted">Actualiza únicamente Valor Neto, Valor de Venta y Cantidad</p>
+                    <p class="text-muted">Actualizacion del producto @p.Cod_Producto</p>
                     <hr class="w-50 mx-auto" />
                 </div>
             </div>
@@ -40,27 +41,16 @@ else
                                 <input type="hidden" name="codigo" value="@p.Cod_Producto" />
                             </div>
 
-                            <!-- Nombre (solo informativo) -->
+                            <!-- Nombre -->
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Nombre</label>
-                                <div class="form-control bg-light" readonly>@p.NombreProducto</div>
+                                <label for="nombreProducto" class="form-label fw-semibold">Nombre</label>
+                                <input type="text" class="form-control" name="nombreProducto" value="@p.NombreProducto"/>
                             </div>
 
                                 <!-- Servicio (UI, no se postea) -->
                                 <div class="mb-3">
                                     <label for="servicio" class="form-label fw-semibold">Servicio</label>
                                     <select id="servicio" class="form-select">
-                                        @* Placeholder: dos ramas para evitar C# en atributos *@
-                                        @if (selectedServicioId == null)
-                                        {
-                                            <option disabled selected="selected">Seleccione un servicio</option>
-                                        }
-                                        else
-                                        {
-                                            <option disabled>Seleccione un servicio</option>
-                                        }
-
-                                        @* Items: dos ramas por cada elemento *@
                                         @if (servicios != null)
                                         {
                                             foreach (var s in servicios)
@@ -76,61 +66,99 @@ else
                                             }
                                         }
                                     </select>
-                                    <small class="text-muted">Solo informativo. No se actualiza en este formulario.</small>
                                 </div>
 
                             <!-- Categorías (depende de Servicio, UI sin name) -->
                             <div class="mb-3">
                                 <label for="categorias" class="form-label fw-semibold">Categorías</label>
-                                <select id="categorias" class="form-select"></select>
-                                <small class="text-muted">Categoría actual: @p.IdCatepro</small>
+                                <select id="categorias" class="form-select" name="categorias">
+
+                                </select>
                             </div>
 
                             <!-- Proveedor (UI, no se postea) -->
                             <div class="mb-3">
                                 <label for="proveedor" class="form-label fw-semibold">Proveedor</label>
-                                <select id="proveedor" class="form-select">
-                                    <option disabled selected>Seleccione un proveedor</option>
-                                    @if (proveedores != null)
-                                    {
-                                        foreach (var pr in proveedores)
+                                    <select id="proveedor" class="form-select" name="id_proveedor">
+                                        @if (proveedores != null)
                                         {
-                                            <option value="@pr.IdProveedor">@pr.RazonSocial</option>
+                                            foreach (var pr in proveedores)
+                                            {
+                                                if (ViewBag.SelectedProveedorId != null && (int)ViewBag.SelectedProveedorId == pr.IdProveedor)
+                                                {
+                                                    <option value="@pr.IdProveedor" selected="selected">@pr.RazonSocial</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@pr.IdProveedor">@pr.RazonSocial</option>
+                                                }
+                                            }
                                         }
-                                    }
-                                </select>
-                                <small class="text-muted">Solo informativo. No se actualiza en este formulario.</small>
+                                    </select>
                             </div>
 
-                            <hr />
+                                <!-- Valor Neto -->
+                                <div class="mb-3">
+                                    <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
+                                    <input type="number" class="form-control" id="valorNeto" name="valorNeto"
+                                           value="@(p.ValorNetoProducto?.ToString("0.##", CultureInfo.InvariantCulture) ?? "0")"
+                                           step="0.01" placeholder="0.00" />
+                                </div>
 
-                            <!-- Valor Neto -->
-                            <div class="mb-3">
-                                <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
-                                <input type="number" class="form-control" id="valorNeto" name="valorNeto"
-                                       value="@p.ValorNetoProducto" step="0.01" placeholder="0.00" />
-                            </div>
+                                <!-- Valor Venta -->
+                                <div class="mb-3">
+                                    <label for="valorVenta" class="form-label fw-semibold">Valor de Venta</label>
+                                    <input type="number" class="form-control" id="valorVenta" name="valorVenta"
+                                           value="@(p.ValorVentaProducto?.ToString("0.##", CultureInfo.InvariantCulture) ?? "0")"
+                                           step="0.01" placeholder="0.00" />
+                                </div>
 
-                            <!-- Valor Venta -->
-                            <div class="mb-3">
-                                <label for="valorVenta" class="form-label fw-semibold">Valor de Venta</label>
-                                <input type="number" class="form-control" id="valorVenta" name="valorVenta"
-                                       value="@p.ValorVentaProducto" step="0.01" placeholder="0.00" />
-                            </div>
+                                <!-- Valor Unitario -->
+                                <div class="mb-3">
+                                    <label for="valorUnitario" class="form-label fw-semibold">Valor Unitario</label>
+                                    <input type="number" class="form-control" id="valorUnitario" name="valorUnitario"
+                                           value="@p.ValorUnidad" step="0.01" placeholder="0.00" />
+                                </div>
 
-                            <!-- Valor Unitario -->
-                            <div class="mb-3">
-                                <label for="valorUnitario" class="form-label fw-semibold">Valor Unitario</label>
-                                <input type="number" class="form-control" id="valorUnitario" name="valorUnitario"
-                                       value="@p.ValorUnidad" step="0.01" placeholder="0.00" />
-                            </div>
+                                <!-- Cantidad -->
+                                <div class="mb-4">
+                                    <label for="cantidad" class="form-label fw-semibold">Cantidad</label>
+                                    <input type="number" class="form-control" id="cantidad" name="cantidad"
+                                           value="@p.CantidadProducto.ToString("0.##", CultureInfo.InvariantCulture)" 
+                                           step="0.01" placeholder="0.00" />
+                                </div>
 
-                            <!-- Cantidad -->
-                            <div class="mb-4">
-                                <label for="cantidad" class="form-label fw-semibold">Cantidad</label>
-                                <input type="number" class="form-control" id="cantidad" name="cantidad"
-                                       value="@p.CantidadProducto" step="1" min="0" />
-                            </div>
+                                <!-- Imagen -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold d-block text-center">Imágenes</label>
+                                    <div class="row justify-content-center">
+                                        <!-- Imagen actual -->
+                                        <div class="col-md-6 text-center">
+                                            <p class="text-muted mb-2">Imagen actual</p>
+                                            <img src="@p.ImagenPath" alt="@p.NombreProducto"
+                                                 id="imgActual"
+                                                 class="img-thumbnail shadow-sm mb-3"
+                                                 style="max-height: 220px; max-width: 100%; object-fit: contain;"
+                                                 onerror="this.onerror=null;this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
+                                        </div>
+
+                                        <!-- Nueva imagen (preview) -->
+                                        <div class="col-md-6 text-center">
+                                            <p class="text-muted mb-2">Nueva imagen</p>
+                                            <img id="imgPreview"
+                                                 src="@Url.Content("~/img/Productos/nodisponible.png")"
+                                                 alt="Vista previa"
+                                                 class="img-thumbnail shadow-sm mb-3 d-none"
+                                                 style="max-height: 220px; max-width: 100%; object-fit: contain;" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Input archivo -->
+                                    <div class="text-center">
+                                        <input type="file" class="form-control mt-3" id="imagen" name="imagen" accept="image/*" />
+                                        <small class="text-muted">Si no seleccionas nada, se conservará la imagen actual.</small>
+                                    </div>
+                                </div>
 
                             <!-- Botones -->
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -159,36 +187,67 @@ else
 
 @section Scripts {
     <script>
+                // Vista previa de la nueva imagen
+        $("#imagen").on("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#imgPreview").attr("src", e.target.result).removeClass("d-none");
+                }
+                reader.readAsDataURL(file);
+            } else {
+                $("#imgPreview").attr("src", "").addClass("d-none");
+            }
+        });
+
         $(function () {
             const $servicio = $('#servicio');
             const $categorias = $('#categorias');
             const categoriaActual = '@p.IdCatepro';
 
-            function cargarCategorias(idServicio, preseleccion) {
-                if (!idServicio) { $categorias.empty(); return; }
-                $.ajax({
-                    url: '/Producto/ObtenerCategoriaProductos',
-                    type: 'GET',
-                    data: { idServicio: idServicio },
-                    success: function (categorias) {
-                        $categorias.empty();
-                        let found = false;
-                        $.each(categorias, function (i, c) {
-                            const sel = (preseleccion && String(preseleccion) === String(c.idCateProducto)) ? 'selected' : '';
-                            if (sel) found = true;
-                            $categorias.append($('<option>', {
-                                value: c.idCateProducto,
-                                text: c.descripcion,
-                                selected: sel
-                            }));
-                        });
-                        if (!found && $categorias.children().length > 0) {
-                            $categorias.prop('selectedIndex', 0);
-                        }
-                    },
-                    error: function () { alert('Error al cargar las categorías.'); }
-                });
+        function cargarCategorias(idServicio, preseleccion) {
+            if (!idServicio) {
+                $categorias.empty();
+                return;
             }
+
+            $.ajax({
+                url: '/Producto/ObtenerCategoriaProductos',
+                type: 'GET',
+                data: { idServicio: idServicio },
+                success: function (categorias) {
+                    $categorias.empty();
+
+                    // Agregar opción inicial mostrando categoría actual
+                    if (preseleccion) {
+                        $categorias.append($('<option>', {
+                            value: preseleccion,
+                            text: 'Categoría actual (ID: ' + preseleccion + ')',
+                            selected: true,
+                            disabled: true
+                        }));
+                    }
+
+                    let found = false;
+                    $.each(categorias, function (i, c) {
+                        const isSelected = preseleccion && String(preseleccion) === String(c.idCateProducto);
+                        if (isSelected) found = true;
+
+                        $categorias.append($('<option>', {
+                            value: c.idCateProducto,
+                            text: c.descripcion,
+                            selected: isSelected
+                        }));
+                    });
+
+                    if (!found && $categorias.children().length > 0) {
+                        $categorias.prop('selectedIndex', 0);
+                    }
+                },
+                error: function () { alert('Error al cargar las categorías.'); }
+            });
+        }
 
             // Pre-cargar categorías según el servicio actual
             const selectedServicio = '@(selectedServicioId?.ToString() ?? "")';

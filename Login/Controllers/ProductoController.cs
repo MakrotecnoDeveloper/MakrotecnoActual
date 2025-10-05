@@ -52,27 +52,72 @@ namespace Plataforma.Controllers
             {
                 Servicios = await _productoservice.ObtenerServicios(),
                 Categorias = new List<CategoriaProductos>(),
-                Proveedores = await _productoservice.ObtenerProveedores()
+                Proveedores = await _productoservice.ObtenerProveedores(),
+                Empresas = await _productoservice.TraerEmpresas()
             };
 
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor)
+        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor, IFormFile imagen, string? autenticidadProducto, string? condicionProducto)
         {
 
-            if (ModelState.IsValid)
-            {
-                // Lógica para agregar el producto usando _productoService
-                var resultado = await _productoservice.AgregarProductoAsync(id_empresa, codigo, descripcion, valor_neto, valor_unitario, stock, categorias, id_proveedor);
+                // 1️⃣ Buscar la categoría por id
+                var categoria = await _dbContext.CategoriaProductos.FindAsync(categorias);
+                if (categoria == null)
+                    return Json(new { success = false, message = "Categoría no encontrada." });
 
-                if (resultado)
+                // 2️⃣ Buscar el servicio usando el idServicio que está en la categoría
+                var servicio = await _dbContext.Servicio.FindAsync(categoria.IdServicio);
+                if (servicio == null)
+                    return Json(new { success = false, message = "Servicio no encontrado." });
+
+                string? rutaImagen = null;
+                if (imagen != null && imagen.Length > 0)
                 {
-                    return Json(new { success = true });
-                }
-            }
+                    var extension = Path.GetExtension(imagen.FileName).ToLower();
+                    if (extension != ".jpg" && extension != ".png")
+                        return Json(new { success = false, message = "Solo se permiten imágenes .jpg o .png" });
 
-            return Json(new { success = false });
+                    string servicioFolder = servicio.NombreServicio.Replace(" ", "_");
+                    string categoriaFolder = categoria.Descripcion.Replace(" ", "_");
+
+                    // Crear carpeta dinámica
+                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                                   "wwwroot", "img", "Productos",
+                                                   servicioFolder, categoriaFolder);
+
+                    if (!Directory.Exists(uploadsPath))
+                        Directory.CreateDirectory(uploadsPath);
+
+                    var fileName = $"{codigo}{extension}";
+                    var filePath = Path.Combine(uploadsPath, fileName);
+
+                    // 3.1️⃣ Si existe una imagen anterior, eliminarla
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+
+                    // 3.2️⃣ Guardar la nueva imagen
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imagen.CopyToAsync(stream);
+                    }
+
+                    rutaImagen = $"/img/Productos/{servicioFolder}/{categoriaFolder}/{fileName}";
+                }else
+                {
+                    rutaImagen = $"/img/Productos/nodisponible.png";
+                }
+
+                    // ✅ Llamar al servicio y guardar el producto
+                    var resultado = await _productoservice.AgregarProductoAsync(
+                        id_empresa, codigo, descripcion, valor_neto, valor_unitario,
+                        stock, categorias, id_proveedor, rutaImagen, autenticidadProducto, condicionProducto
+                    );
+
+                return Json(new { success = resultado });
         }
         [Authorize]
         [HttpGet]
@@ -116,35 +161,101 @@ namespace Plataforma.Controllers
             return PartialView("_TablaProductos", productosEncontrados);
         }
         [HttpGet]
-        public async Task<IActionResult> Editar(string id)
+        public async Task<IActionResult> Editar(string searchTerm)
         {
             int categoriaTerm = 0;
-            var editarProducto = _productoservice.BuscarProductos(id, categoriaTerm);
+            var editarProducto = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
             if (!editarProducto.Any())
             {
-                Console.WriteLine("No hay productos con ese codigo referenciado");
+                Console.WriteLine("No hay productos con ese código referenciado");
                 return View("Index");
             }
 
-            // Catálogos para la UI (no se postean)
-            ViewBag.Servicios = await _productoservice.ObtenerServiciosAsync();
-
-            ViewBag.Proveedores = await _productoservice.ObtenerProveedores();
-
-            // Servicio preseleccionado a partir de la categoría del producto
             var p = editarProducto.First();
-            ViewBag.SelectedServicioId = await _productoservice.SeleccionarServicio(p);
 
-            // (Opcional) Preselección de proveedor si tu entidad Producto tiene IdProveedor
+            // 1️⃣ Servicios: mover el servicio actual a la primera posición
+            var servicios = await _productoservice.ObtenerServiciosAsync();
+            var selectedServicioId = await _productoservice.SeleccionarServicio(p);
+            if (selectedServicioId.HasValue)
+            {
+                servicios = servicios
+                    .OrderByDescending(s => s.IdServicio == selectedServicioId.Value) // el actual va primero
+                    .ThenBy(s => s.NombreServicio)
+                    .ToList();
+            }
+
+            // 2️⃣ Proveedores: mover el proveedor actual a la primera posición
+            var proveedores = await _productoservice.ObtenerProveedores();
+            if (p.idProveedor != 0)
+            {
+                proveedores = proveedores
+                    .OrderByDescending(pr => pr.IdProveedor == p.idProveedor)
+                    .ThenBy(pr => pr.RazonSocial)
+                    .ToList();
+            }
+
+            // Cargar en ViewBag
+            ViewBag.Servicios = servicios;
+            ViewBag.Proveedores = proveedores;
+            ViewBag.SelectedServicioId = selectedServicioId;
             ViewBag.SelectedProveedorId = p.idProveedor;
 
             return View(editarProducto); // @model List<Producto>
         }
         [HttpPost]
-        public IActionResult EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad)
+        public async Task<IActionResult> EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, IFormFile imagen)
         {
+            // 1️⃣ Buscar la categoría por id
+            var categoria = await _dbContext.CategoriaProductos.FindAsync(categorias);
+            if (categoria == null)
+                return Json(new { success = false, message = "Categoría no encontrada." });
+
+            // 2️⃣ Buscar el servicio usando el idServicio que está en la categoría
+            var servicio = await _dbContext.Servicio.FindAsync(categoria.IdServicio);
+            if (servicio == null)
+                return Json(new { success = false, message = "Servicio no encontrado." });
+
+            string? rutaImagen = null;
+            if (imagen != null && imagen.Length > 0)
+            {
+                var extension = Path.GetExtension(imagen.FileName).ToLower();
+                if (extension != ".jpg" && extension != ".png")
+                    return Json(new { success = false, message = "Solo se permiten imágenes .jpg o .png" });
+
+                string servicioFolder = servicio.NombreServicio.Replace(" ", "_");
+                string categoriaFolder = categoria.Descripcion.Replace(" ", "_");
+
+                // Crear carpeta dinámica
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(),
+                                               "wwwroot", "img", "Productos",
+                                               servicioFolder, categoriaFolder);
+
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var fileName = $"{codigo}{extension}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                // 3.1️⃣ Si existe una imagen anterior, eliminarla
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                // 3.2️⃣ Guardar la nueva imagen
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imagen.CopyToAsync(stream);
+                }
+
+                rutaImagen = $"/img/Productos/{servicioFolder}/{categoriaFolder}/{fileName}";
+            }
+            else
+            {
+                rutaImagen = $"/img/Productos/nodisponible.png";
+            }
             // Llama al método EditarProducto del servicio de productos
-            _productoservice.EditarProducto(codigo, valorNeto, valorVenta, valorUnidad, cantidad);
+            _productoservice.EditarProducto(codigo, valorNeto, valorVenta, valorUnidad, cantidad, categorias, id_proveedor, rutaImagen);
 
             // Redirige a la acción que deseas después de editar el producto
             return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos
@@ -171,8 +282,11 @@ namespace Plataforma.Controllers
         {
             int categoriaTerm = 0;
             string searchTerm = id;
-            var traerProductos = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            return View(traerProductos);
+
+            // Llama al nuevo método que devuelve un solo producto con su categoría y servicio
+            var viewModel = _productoservice.BuscarProductoXImagen(searchTerm, categoriaTerm);
+
+            return View(viewModel);
         }
         /*Visualizacion de  Recargas de Plataformas */
         [Authorize]

@@ -47,7 +47,7 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(c => c.IdServicio == idServicio)
                 .ToListAsync();
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto)
         {
             try
             {
@@ -67,7 +67,10 @@ namespace Plataforma.Servicios.Implementacion
                     IdCatepro = categorias,
                     Estado = estado,
                     Ubicacion = Ubicacion,
-                    idProveedor = id_proveedor
+                    idProveedor = id_proveedor,
+                    ImagenPath = rutaImagen,
+                    AutenticidadProducto = autenticidadProducto,
+                    CondicionProducto = condicionProducto
                 };
 
                 // Agregar el nuevo producto al DbContext y guardar los cambios en la base de datos
@@ -107,6 +110,47 @@ namespace Plataforma.Servicios.Implementacion
                 // Ambos términos están vacíos, puedes manejarlo según tus necesidades
                 return new List<Producto>();
             }
+        }
+        public ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm)
+        {
+            // Buscar el producto (por código o categoría)
+            var producto = _dbContext.Productos
+                .Where(p => p.Estado == 1) // solo activos
+                .Where(p =>
+                    (!string.IsNullOrEmpty(searchTerm) && p.Cod_Producto.Contains(searchTerm)) ||
+                    (categoriaTerm > 0 && p.IdCatepro == categoriaTerm))
+                .FirstOrDefault();
+
+            if (producto == null)
+            {
+                // Si no encuentra, devuelve vacío
+                return new ProductosCategoriaViewModel
+                {
+                    Productos = new List<Producto>(),
+                    CategoriaProductos = new List<CategoriaProductos>(),
+                    Servicio = new List<Servicio>()
+                };
+            }
+
+            // Buscar la categoría de ese producto
+            var categoria = _dbContext.CategoriaProductos
+                .FirstOrDefault(c => c.IdCateProducto == producto.IdCatepro);
+
+            // Buscar el servicio de esa categoría
+            Servicio? servicio = null;
+            if (categoria != null)
+            {
+                servicio = _dbContext.Servicio
+                    .FirstOrDefault(s => s.IdServicio == categoria.IdServicio);
+            }
+
+            // Retornar el ViewModel con SOLO ese producto, su categoría y servicio
+            return new ProductosCategoriaViewModel
+            {
+                Productos = new List<Producto> { producto },
+                CategoriaProductos = categoria != null ? new List<CategoriaProductos> { categoria } : new List<CategoriaProductos>(),
+                Servicio = servicio != null ? new List<Servicio> { servicio } : new List<Servicio>()
+            };
         }
         public List<Producto> SinStock(string searchTerm, int categoriaTerm)
         {
@@ -228,7 +272,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad)
+        public void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, string? imagen)
         {
 
             if (codigo == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
@@ -238,7 +282,6 @@ namespace Plataforma.Servicios.Implementacion
             }
 
             var producto = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == codigo);
-            //Console.WriteLine("El ID de la empresa es: " + idEmpresa);
             if (producto != null)
             {
                 producto.Cod_Producto = codigo;
@@ -246,6 +289,9 @@ namespace Plataforma.Servicios.Implementacion
                 producto.ValorNetoProducto = valorNeto;
                 producto.ValorVentaProducto = valorVenta;
                 producto.ValorUnidad = valorUnidad;
+                producto.idProveedor = id_proveedor;
+                producto.IdCatepro = categorias;
+                producto.ImagenPath = imagen;
                 try
                 {
                     _dbContext.SaveChanges();
@@ -490,6 +536,10 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<Proveedores>> ObtenerProveedores()
         {
             return await _dbContext.Proveedores.ToListAsync();
+        }
+        public async Task<List<Empresas>> TraerEmpresas()
+        {
+            return await _dbContext.Empresas.ToListAsync();
         }
         public async Task<int?> SeleccionarServicio(Producto p)
         {

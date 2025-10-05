@@ -11,10 +11,12 @@ namespace Plataforma.Servicios.Contrato
         Task ActualizarAsync(OrdenServicios orden, int cedulaEmpleado);
         Task<List<HistOrdSer>> ObtenerOrdenPorIdAsync(int idOrden);
         Task<(OrdenServicios Orden, bool MostrarAgregarProductos)> ObtenerOrdenYPermisosAsync(int idOrden);
-        Task CrearHistOrdenAsync(HistOrdSer nuevaHistOrden, string[] Cod_Producto, int cedula);
+        Task CrearHistOrdenAsync(HistOrdSer nuevaHistOrden, string[]? Cod_Producto, int[] stock, decimal[]? ValorRepuesto, string[]? Condicion, string[]? Tipo, int[] Proveedor, int cedula);
+        Task<int> GenerarConsecutivoFactura();
         Task<bool> ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario);
         Task<List<Empleados>> ObtenerEmpleadosAsync();
         Task<OrdenServicios?> ActualizarOrdenTecnico(OrdenServicios model);
         Task<OrdenServicioRowDTO> GetOrdenRowAsync(int idOrden);
+        Task<List<Sedeempleado>> ObtenerEmpleadoSedeAsync();
     }
 }

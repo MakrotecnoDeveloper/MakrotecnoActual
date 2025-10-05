@@ -5,7 +5,7 @@
 }
 
 <div class="content-wrapper py-4" style="background-color: #f8f9fa;">
-    <form id="formularioProducto" method="POST">
+    <form id="formularioProducto" enctype="multipart/form-data" method="POST">
         <div class="container">
             <!-- Título -->
             <div class="row mb-4">
@@ -14,7 +14,7 @@
                         <i class="bi bi-box-seam"></i> Agregar Productos
                     </h1>
                     <p class="text-muted">
-                        Interfaz de Usuario para agregar productos nuevos al sistema
+                        Interfaz para registrar nuevos productos en el sistema
                     </p>
                     <hr class="w-50 mx-auto">
                 </div>
@@ -22,87 +22,121 @@
 
             <!-- Formulario -->
             <div class="row">
-                <div class="col-md-6 mx-auto">
+                <div class="col-md-8 mx-auto">
                     <div class="card shadow-lg border-0 rounded-3">
                         <div class="card-body p-4">
+                            <div class="row g-3">
 
-                            <!-- Empresa -->
-                            <div class="mb-3">
-                                <label for="id_empresa" class="form-label fw-semibold">Empresa</label>
-                                <select name="id_empresa" id="id_empresa" class="form-select">
-                                    <option value="1234193470-6">Makrotecno</option>
-                                </select>
-                            </div>
+                                <!-- Empresa -->
+                                <div class="col-md-6">
+                                    <label for="id_empresa" class="form-label fw-semibold">Empresa</label>
+                                    <select name="id_empresa" id="id_empresa" class="form-select">
+                                        <option disabled selected>Seleccione una empresa</option>
+                                        @foreach (var empresas in Model.Empresas)
+                                        {
+                                            <option value="@empresas.Id_empresa">@empresas.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
 
-                            <!-- Código -->
-                            <div class="mb-3">
-                                <label for="codigo" class="form-label fw-semibold">Código</label>
-                                <input type="text" name="codigo" class="form-control" id="codigo" placeholder="Ingrese el código">
-                            </div>
+                                <!-- Código -->
+                                <div class="col-md-6">
+                                    <label for="codigo" class="form-label fw-semibold">Código</label>
+                                    <input type="text" name="codigo" class="form-control" id="codigo" placeholder="Código del producto">
+                                </div>
 
-                            <!-- Descripción -->
-                            <div class="mb-3">
-                                <label for="descripcion" class="form-label fw-semibold">Descripción</label>
-                                <input type="text" name="descripcion" class="form-control" id="descripcion" placeholder="Ingrese la descripción">
-                            </div>
+                                <!-- Descripción -->
+                                <div class="col-md-12">
+                                    <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+                                    <input type="text" name="descripcion" class="form-control" id="descripcion" placeholder="Nombre o descripción del producto">
+                                </div>
 
-                            <!-- Valor Neto -->
-                            <div class="mb-3">
-                                <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
-                                <input type="number" name="valor_neto" class="form-control" id="valorNeto" placeholder="Ingrese el valor neto">
-                            </div>
+                                <!-- Valor Neto -->
+                                <div class="col-md-6">
+                                    <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
+                                    <input type="number" name="valor_neto" class="form-control" id="valorNeto" placeholder="0.00">
+                                </div>
 
-                            <!-- Valor Unitario -->
-                            <div class="mb-3">
-                                <label for="valorVenta" class="form-label fw-semibold">Valor Unitario</label>
-                                <input type="number" name="valor_unitario" id="valorVenta" class="form-control" placeholder="Ingrese el valor unitario">
-                            </div>
+                                <!-- Valor Unitario -->
+                                <div class="col-md-6">
+                                    <label for="valorVenta" class="form-label fw-semibold">Valor Unitario</label>
+                                    <input type="number" name="valor_unitario" id="valorVenta" class="form-control" placeholder="0.00">
+                                </div>
 
-                            <!-- Stock -->
-                            <div class="mb-3">
-                                <label for="stock" class="form-label fw-semibold">Stock</label>
-                                <input type="number" name="stock" id="stock" class="form-control" placeholder="Ingrese el stock disponible">
-                            </div>
+                                <!-- Stock -->
+                                <div class="col-md-6">
+                                    <label for="stock" class="form-label fw-semibold">Stock</label>
+                                    <input type="number" name="stock" id="stock" class="form-control" placeholder="Cantidad en inventario">
+                                </div>
 
-                            <!-- Servicio -->
-                            <div class="mb-3">
-                                <label for="servicio" class="form-label fw-semibold">Servicio</label>
-                                <select name="servicio" id="servicio" class="form-select">
-                                    <option disabled selected>Seleccione un servicio</option>
-                                    @foreach (var servicio in Model.Servicios)
-                                    {
-                                        <option value="@servicio.IdServicio">@servicio.NombreServicio</option>
-                                    }
-                                </select>
-                            </div>
+                                <!-- Servicio -->
+                                <div class="col-md-6">
+                                    <label for="servicio" class="form-label fw-semibold">Servicio</label>
+                                    <select name="servicio" id="servicio" class="form-select">
+                                        <option disabled selected>Seleccione un servicio</option>
+                                        @foreach (var servicio in Model.Servicios)
+                                        {
+                                            <option value="@servicio.IdServicio">@servicio.NombreServicio</option>
+                                        }
+                                    </select>
+                                </div>
 
-                            <!-- Proveedores -->
-                            <div class="mb-3">
-                                <label for="proveedor" class="form-label fw-semibold">Proveedores</label>
-                                <select name="proveedor" id="proveedor" class="form-select">
-                                    <option disabled selected>Seleccione un proveedor</option>
-                                    @foreach (var proveedor in Model.Proveedores)
-                                    {
-                                        <option value="@proveedor.IdProveedor">@proveedor.RazonSocial</option>
-                                    }
-                                </select>
-                            </div>
+                                <!-- Categoría -->
+                                <div class="col-md-6">
+                                    <label for="categorias" class="form-label fw-semibold">Categoría</label>
+                                    <select name="categorias" id="categorias" class="form-select">
+                                        <!-- JS llena dinámicamente -->
+                                    </select>
+                                </div>
 
-                            <!-- Categorías -->
-                            <div class="mb-4">
-                                <label for="categorias" class="form-label fw-semibold">Categorías</label>
-                                <select name="categorias" id="categorias" class="form-select">
-                                    <!-- Se llenará con JS -->
-                                </select>
+                                <!-- Proveedor -->
+                                <div class="col-md-6">
+                                    <label for="id_proveedor" class="form-label fw-semibold">Proveedor</label>
+                                    <select name="id_proveedor" id="proveedor" class="form-select">
+                                        <option disabled selected>Seleccione un proveedor</option>
+                                        @foreach (var proveedor in Model.Proveedores)
+                                        {
+                                            <option value="@proveedor.IdProveedor">@proveedor.RazonSocial</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <!-- Autenticidad Producto -->
+                                <div class="col-md-6">
+                                    <label for="autenticidadProducto" class="form-label fw-semibold">Autenticidad Producto</label>
+                                    <select name="autenticidadProducto" id="autenticidadProducto" class="form-select">
+                                        <option value="Original">Original</option>
+                                        <option value="Replica">Replica</option>
+                                    </select>
+                                </div>
+
+                                <!-- Condicion Producto -->
+                                <div class="col-md-6">
+                                    <label for="condicionProducto" class="form-label fw-semibold">Condicion Producto</label>
+                                    <select name="condicionProducto" id="condicionProducto" class="form-select">
+                                        <option value="Nuevo">Nuevo</option>
+                                        <option value="Segunda">Segunda</option>
+                                        <option value="Remanufacturado">Remanufacturado</option>
+                                    </select>
+                                </div>
+
+                                <!-- Imagen -->
+                                <div class="col-md-12">
+                                    <label class="form-label fw-semibold">Imagen del Producto</label>
+                                    <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                                    <div class="mt-2 text-center">
+                                        <img id="previewImg" src="" alt="Vista previa" class="img-thumbnail d-none" style="max-height: 200px;">
+                                    </div>
+                                </div>
+
                             </div>
 
                             <!-- Botón -->
-                            <div class="d-grid">
-                                <button type="button" id="btnAgregarProducto" class="btn btn-primary btn-lg shadow-sm">
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg shadow-sm">
                                     <i class="bi bi-plus-circle"></i> Agregar Producto
                                 </button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -114,9 +148,22 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+
+            // Preview de imagen
+            $("#imagen").on("change", function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#previewImg").attr("src", e.target.result).removeClass("d-none");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Carga de categorías dinámicas
             $('#servicio').on('change', function () {
                 var idServicio = $(this).val();
-
                 if (idServicio) {
                     $.ajax({
                         url: '/Producto/ObtenerCategoriaProductos',
@@ -125,7 +172,6 @@
                         success: function (categorias) {
                             var $categoriaSelect = $('#categorias');
                             $categoriaSelect.empty();
-
                             $.each(categorias, function (i, categoria) {
                                 $categoriaSelect.append(
                                     $('<option>', {
@@ -139,36 +185,31 @@
                             alert('Error al cargar las categorías.');
                         }
                     });
-                } else {
-                    $('#categorias').empty();
                 }
             });
-        });
 
-        $('#btnAgregarProducto').on('click', function () {
-            var producto = {
-                id_empresa: $('#id_empresa').val(),
-                codigo: $('#codigo').val(),
-                descripcion: $('#descripcion').val(),
-                valor_neto: parseFloat($('#valorNeto').val()),
-                valor_unitario: parseFloat($('#valorVenta').val()),
-                stock: parseInt($('#stock').val()),
-                categorias: $('#categorias').val(),
-                id_servicio: $('#servicio').val(),
-                id_proveedor: $('#proveedor').val()
-            };
-            $.ajax({
-                type: 'POST',
-                url: '/Producto/Insertar',
-                data: producto,
-                success: function (response) {
-                    alert('Producto agregado correctamente.');
-                    $('#formularioProducto')[0].reset();
-                    $('#categorias').empty();
-                },
-                error: function () {
-                    alert('Error al agregar el producto.');
-                }
+            // Envío del formulario
+            $('#formularioProducto').submit(function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Producto/Insertar',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        alert('Producto agregado correctamente.');
+                        $('#formularioProducto')[0].reset();
+                        $('#previewImg').addClass("d-none");
+                        $('#categorias').empty();
+                    },
+                    error: function () {
+                        alert('Error al agregar el producto.');
+                    }
+                });
             });
         });
     </script>

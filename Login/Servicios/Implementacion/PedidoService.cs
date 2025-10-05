@@ -105,6 +105,7 @@ namespace Plataforma.Servicios.Implementacion
                 pedido.FechaRegistro = DateTime.Now;
                 var subtotal = pedido.Stock * pedido.VVenta;
                 pedido.SubTotal = pedido.Stock * pedido.VVenta;
+                pedido.VNeto = pedido.VNeto * pedido.Stock;
                 _dbContext.Pedidos.Add(pedido);
             }
             

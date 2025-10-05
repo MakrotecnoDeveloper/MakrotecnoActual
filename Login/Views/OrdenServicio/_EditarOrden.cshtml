@@ -15,6 +15,7 @@
         </select>
     </div>
     <div class="mb-3">
+        <input type="hidden" name="ValorPago" id="ValorCobrar" />
         <label asp-for="Observaciones" class="form-label">Observaciones</label>
         <input asp-for="Observaciones" class="form-control" />
     </div>
@@ -31,17 +32,28 @@
 </form>
 
 <script>
-    $("#formEditarOrden").on("submit", function (e) {
+        $("#formEditarOrden").on("submit", function (e) {
         e.preventDefault();
+
+        var estado = $("select[name='Estado']").val();
+
+        if (estado === "Finalizada") {
+            var valor = prompt("Ingrese el valor a cobrar:");
+
+            if (valor === null || valor.trim() === "" || isNaN(valor)) {
+                alert("Debe ingresar un valor válido.");
+                return; // detenemos el submit
+            }
+
+            $("#ValorCobrar").val(valor);
+        }
 
         $.ajax({
             url: '/OrdenServicio/EditarOrden',
             type: 'POST',
             data: $(this).serialize(),
             success: function (resp) {
-                // resp.mensaje viene del controlador
                 alert(resp.mensaje);
-
                 $("#modalEditarOrden").modal('hide');
                 location.reload();
             },

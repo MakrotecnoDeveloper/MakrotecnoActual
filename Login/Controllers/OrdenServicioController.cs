@@ -26,7 +26,8 @@ namespace Plataforma.Controllers
                 Dispositivos = await _dispositivoService.ObtenerDispositivosConClientesAsync(),
                 Clientes = await _tercerosService.ObtenerClientes(),
                 OrdenServicios = await _ordenServicioService.ObtenerTodasAsync(),
-                Proveedores = await _tercerosService.ObtenerProveedoresAsync()
+                Proveedores = await _tercerosService.ObtenerProveedoresAsync(),
+                Sedeempleados = await _ordenServicioService.ObtenerEmpleadoSedeAsync(),
             };
             return View(model);
         }
@@ -114,14 +115,15 @@ namespace Plataforma.Controllers
         {
             try
             {
-                var (orden, mostrarAgregarProductos) =
-                    await _ordenServicioService.ObtenerOrdenYPermisosAsync(id);
+                var (orden, mostrarAgregarProductos) = await _ordenServicioService.ObtenerOrdenYPermisosAsync(id);
+                var traerProveedores = await _tercerosService.ObtenerProveedoresAsync();
 
                 var model = new OrdenesServicioViewModel
                 {
                     IdOrden = orden.IdOrden,
                     Estado = orden.Estado,
-                    MostrarAgregarProductos = mostrarAgregarProductos
+                    MostrarAgregarProductos = mostrarAgregarProductos,
+                    Proveedores = traerProveedores
                 };
 
                 return PartialView("_FormNuevaOrden", model);
@@ -132,13 +134,21 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> CrearHistOrden(HistOrdSer model, string[]? Cod_Producto)
+        public async Task<IActionResult> CrearHistOrden(
+        HistOrdSer model,
+        string[]? Cod_Producto,
+        int[] Stock,
+        decimal[]? ValorRepuesto,
+        string[]? Condicion,
+        string[]? Tipo,
+        int[] Proveedor
+            )
         {
             var orden = await _ordenServicioService.ObtenerPorIdAsync(model.IdOrden);
             if (orden == null)
                 return NotFound("La orden no existe");
 
-            await _ordenServicioService.CrearHistOrdenAsync(model, Cod_Producto, orden.Cedula);
+            await _ordenServicioService.CrearHistOrdenAsync(model, Cod_Producto, Stock, ValorRepuesto, Condicion, Tipo, Proveedor, orden.Cedula);
             return Ok();
         }
         [HttpPost]

@@ -14,6 +14,7 @@ public class OrdenServicios
     public Dispositivos? Dispositivo { get; set; }
     public string? Observaciones { get; set; }
     public int Cedula {  get; set; }
+    public decimal? ValorPago { get; set; }
 }
 
 public class OrdenServicioRowDTO

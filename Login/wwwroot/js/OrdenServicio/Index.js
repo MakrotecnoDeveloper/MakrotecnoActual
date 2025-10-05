@@ -101,7 +101,6 @@ document.getElementById("rowForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
     const orden = {
-        FechaIngreso: document.getElementById("m_fecha").value,
         IdDispositivo: document.getElementById("m_dispositivo").value,
         ProblemaReportado: document.getElementById("m_descripcion").value,
         Estado: document.getElementById("m_estado").value,

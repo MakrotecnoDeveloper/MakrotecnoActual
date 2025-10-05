@@ -16,5 +16,6 @@ public class Ventas
     public virtual ICollection<Pedidos> Pedidos { get; set; }
     public int CedulaCliente { get; set; }
     public string Conceptos { get; set; }
-    public virtual MetodoPagos MetodoPagos { get; set; }
+    [ForeignKey(nameof(MetodoPago))]
+    public MetodoPagos MetodoPagos { get; set; } = default!;
 }

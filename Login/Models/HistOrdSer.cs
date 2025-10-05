@@ -12,4 +12,10 @@ public class HistOrdSer
     public DateTime? FechaRegistro { get; set; }
     public string? Cod_Producto { get; set; }
     public int Cedula {  get; set; }
+    public decimal? ValorNetoProducto {  get; set; }
+    public decimal? ValorVentaProducto { get; set; }
+    public string? AutenticidadProducto { get; set; }
+    public string? CondicionProducto { get; set; }
+    public int IdProveedor { get; set; }
+    public int Stock {  get; set; }
 }
