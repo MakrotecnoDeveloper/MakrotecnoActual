@@ -9,10 +9,8 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
         List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio);
         Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio);
-        List<Producto> BuscarProductos(string searchTerm, int categoriaTerm);
         ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm);
-        List<Producto> SinStock(string searchTerm, int categoriaTerm);
-        List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm);
+        List<Producto> BuscarProductos(string searchTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);
         void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, string? imagen);

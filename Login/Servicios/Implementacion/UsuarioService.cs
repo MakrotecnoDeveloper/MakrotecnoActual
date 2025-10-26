@@ -469,80 +469,79 @@ namespace Plataforma.Servicios.Implementacion
             var producto = await _dbContext.Productos.FirstOrDefaultAsync(p => p.Cod_Producto == id);
 
             if (producto == null)
-            {
                 return false;
-            }
 
             try
             {
-                // Obtener información de la propiedad usando reflexión
+                if (campo == "Cod_Producto")
+                {
+                    // Verificar que no exista otro producto con el nuevo código
+                    var existe = await _dbContext.Productos.AnyAsync(p => p.Cod_Producto == newVal);
+                    if (existe)
+                        throw new InvalidOperationException($"Ya existe un producto con el código '{newVal}'.");
+
+                    // Crear una copia del producto con el nuevo código
+                    var nuevoProducto = new Producto
+                    {
+                        Cod_Producto = newVal,
+                        NombreProducto = producto.NombreProducto,
+                        CantidadProducto = producto.CantidadProducto,
+                        ValorNetoProducto = producto.ValorNetoProducto,
+                        ValorVentaProducto = producto.ValorVentaProducto,
+                        ValorUnidad = producto.ValorUnidad,
+                        ID_Empresa = producto.ID_Empresa,
+                        Estado = producto.Estado,
+                        Ubicacion = producto.Ubicacion,
+                        IdCatepro = producto.IdCatepro,
+                        idProveedor = producto.idProveedor,
+                        ImagenPath = producto.ImagenPath,
+                        AutenticidadProducto = producto.AutenticidadProducto,
+                        CondicionProducto = producto.CondicionProducto
+                    };
+
+                    _dbContext.Productos.Add(nuevoProducto);
+                    _dbContext.Productos.Remove(producto);
+                    await _dbContext.SaveChangesAsync();
+
+                    return true;
+                }
+
+                // Si el campo NO es la clave primaria, actualizar normalmente
                 var property = producto.GetType().GetProperty(campo);
 
                 if (property == null)
-                {
                     throw new ArgumentException($"El campo '{campo}' no existe en la clase Producto.");
-                }
 
                 object? convertedValue;
 
-                // Conversión segura dependiendo del tipo
                 if (property.PropertyType == typeof(decimal) || property.PropertyType == typeof(decimal?))
                 {
                     if (string.IsNullOrWhiteSpace(newVal))
-                    {
                         convertedValue = null;
-                    }
                     else if (decimal.TryParse(newVal, System.Globalization.NumberStyles.Any,
-                                              System.Globalization.CultureInfo.InvariantCulture, out var parsedDecimal))
-                    {
+                            System.Globalization.CultureInfo.InvariantCulture, out var parsedDecimal))
                         convertedValue = parsedDecimal;
-                    }
                     else
-                    {
                         throw new FormatException($"El valor '{newVal}' no es un número decimal válido.");
-                    }
                 }
                 else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
                 {
                     if (string.IsNullOrWhiteSpace(newVal))
-                    {
                         convertedValue = null;
-                    }
                     else if (int.TryParse(newVal, out var parsedInt))
-                    {
                         convertedValue = parsedInt;
-                    }
                     else
-                    {
                         throw new FormatException($"El valor '{newVal}' no es un número entero válido.");
-                    }
                 }
                 else
                 {
                     convertedValue = Convert.ChangeType(newVal, property.PropertyType);
                 }
 
-                // Asignar el valor convertido
                 property.SetValue(producto, convertedValue);
-
-                // Guardar cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
+
                 return true;
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine($"Error de formato: {ex.Message}");
-                return false;
-            }
-            catch (InvalidCastException ex)
-            {
-                Console.WriteLine($"Error de conversión: {ex.Message}");
-                return false;
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine($"Argumento inválido: {ex.Message}");
-                return false;
             }
             catch (Exception ex)
             {
@@ -551,7 +550,8 @@ namespace Plataforma.Servicios.Implementacion
             }
         }
 
-        public async Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
+
+        public async Task<bool> InsertProInventario(string codigoProducto, string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
             var productosObtenidos = _dbContext.Productos.Where(c => c.IdCatepro == 42).OrderBy(c => c.NombreProducto).ToList();
             var codigosNumericos = productosObtenidos
@@ -569,11 +569,9 @@ namespace Plataforma.Servicios.Implementacion
                 //_logger.LogInformation("Código numérico encontrado: " + codigo);
 
             }
-            int nuevoCodigo = codigosNumericos.Count > 0 ? codigosNumericos.Max() + 1 : 1;
-            string nuevoCodigoStr = nuevoCodigo.ToString();
             var nuevoProductoInventario = new Producto
             {
-                Cod_Producto = nuevoCodigoStr,
+                Cod_Producto = codigoProducto,
                 NombreProducto = nombreProducto,
                 CantidadProducto = cantidadProducto,
                 ValorNetoProducto = valorNetoProductoFloat,

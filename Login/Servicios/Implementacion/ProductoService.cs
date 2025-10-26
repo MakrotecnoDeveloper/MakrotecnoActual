@@ -87,30 +87,6 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
-        public List<Producto> BuscarProductos(string searchTerm, int categoriaTerm)
-        {
-            
-            // Lógica para buscar productos por el nombre o la categoría
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm)
-                    .Where(p => p.Estado == 1)
-                    .ToList();
-                return consulta;
-            }
-            else if (categoriaTerm > 0)
-            {
-                var consulta = _dbContext.Productos.Where(p => p.IdCatepro == categoriaTerm).ToList()
-                    .Where(p => p.Estado == 1)
-                    .ToList();
-                return consulta;
-            }
-            else
-            {
-                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
-                return new List<Producto>();
-            }
-        }
         public ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm)
         {
             // Buscar el producto (por código o categoría)
@@ -152,51 +128,12 @@ namespace Plataforma.Servicios.Implementacion
                 Servicio = servicio != null ? new List<Servicio> { servicio } : new List<Servicio>()
             };
         }
-        public List<Producto> SinStock(string searchTerm, int categoriaTerm)
+        public List<Producto> BuscarProductos(string searchTerm)
         {
-
-            // Lógica para buscar productos por el nombre o la categoría
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                var productosSinStock = _dbContext.Productos
-                    .Where(p => p.Cod_Producto == searchTerm && p.CantidadProducto == 0 && p.Estado == 1)
+                var consulta = _dbContext.Productos.Where(p => p.Cod_Producto == searchTerm)
+                    .Where(p => p.Estado == 1)
                     .ToList();
-                return productosSinStock;
-            }
-            else if (categoriaTerm > 0)
-            {
-                var productosSinStock = _dbContext.Productos
-                    .Where(p => p.IdCatepro == categoriaTerm && p.CantidadProducto == 0 && p.Estado == 1)
-                    .ToList();
-                return productosSinStock;
-            }
-            else
-            {
-                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
-                return new List<Producto>();
-            }
-        }
-        public List<Producto> BuscarProSinStock(string searchTerm, int categoriaTerm)
-        {
-
-            // Lógica para buscar productos por el nombre o la categoría
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                Console.WriteLine("searchTerm");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto <= 3 && p.Cod_Producto == searchTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
-                return productosProximosSinStock;
-            }
-            else if (categoriaTerm > 0)
-            {
-                Console.WriteLine("Categoria");
-                var productosProximosSinStock = _dbContext.Productos.Where(p => p.CantidadProducto <= 3 && p.IdCatepro == categoriaTerm && p.Estado == 1).ToList(); // Suponiendo que "próximos sin stock" se refiere a productos con cantidad menor a 5
-                return productosProximosSinStock;
-            }
-            else
-            {
-                // Ambos términos están vacíos, puedes manejarlo según tus necesidades
-                return new List<Producto>();
-            }
+                return consulta;
         }
         public async Task<bool> AgregarStockAsync(string idProducto, int cantidad)
         {

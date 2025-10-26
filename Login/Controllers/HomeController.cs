@@ -185,12 +185,12 @@ namespace Plataforma.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> InsertarProInventario(string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
+        public async Task<IActionResult> InsertarProInventario(string codigoProducto, string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
             try
             {
 
-                bool resultado = await _usuarioService.InsertProInventario(nombreProducto, cantidadProducto, valorNetoProductoFloat, valorVentaProductoFloat, valorUnidadInt, id_empresa, categoria, estado, ubicacion, IdProveedor);
+                bool resultado = await _usuarioService.InsertProInventario(codigoProducto, nombreProducto, cantidadProducto, valorNetoProductoFloat, valorVentaProductoFloat, valorUnidadInt, id_empresa, categoria, estado, ubicacion, IdProveedor);
 
                 if (resultado)
                 {

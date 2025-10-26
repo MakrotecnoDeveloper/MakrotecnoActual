@@ -1,0 +1,132 @@
+﻿.navbar-dark .navbar-brand {
+    font-size: 18px;
+}
+
+.navbar .btn {
+    border: 1px solid #00c2ff;
+    color: #00c2ff;
+    transition: all 0.2s;
+}
+
+    .navbar .btn:hover {
+        background-color: #00c2ff;
+        color: #000;
+    }
+
+/* --- Main --- */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .topbar input {
+        width: 350px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+/* --- Products grid --- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    align-items: start; /* hace que todas las tarjetas en una fila tengan la misma altura */
+}
+
+.card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column; /* permite alinear internamente */
+    height:100%;
+}
+
+    .card:hover {
+        transform: translateY(-3px);
+    }
+
+    .card img {
+        width: 100%;
+        height: 130px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display:block;
+    }
+
+    .card h3 {
+        font-size: 16px;
+        margin: 0 0 8px 0;
+        min-height: 48px; /* fuerza altura uniforme aunque sea una o dos líneas */
+        line-height: 1.25; /* 🔹 mejora espaciado vertical */
+    }
+
+    .card p, .card .meta-line {
+        margin: 6px 0;
+    }
+
+    .card p {
+        font-size: 14px;
+        color: #555;
+        margin: 0 0 5px 0;
+    }
+
+.stock {
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+    .stock.ok {
+        color: green;
+    }
+
+    .stock.low {
+        color: orange;
+    }
+
+    .stock.none {
+        color: red;
+    }
+
+/* --- Paginación --- */
+.pagination {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+    .pagination button {
+        background: #1a1d23;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .pagination button:hover {
+            background: #00c2ff;
+            color: black;
+        }
+
+    .pagination span {
+        display: flex;
+        align-items: center;
+        color: #333;
+    }

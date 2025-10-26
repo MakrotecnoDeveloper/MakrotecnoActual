@@ -101,7 +101,10 @@
                                                 @producto.Cod_Producto
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="Cod_Producto"
+                                                   data-id="@producto.Cod_Producto">
+                                                    <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
                                         </td>
@@ -110,7 +113,9 @@
                                                 @producto.NombreProducto
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('NombreProducto_@producto.Cod_Producto')">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="NombreProducto"
+                                                   data-id="@producto.Cod_Producto">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -120,7 +125,9 @@
                                                 @producto.ValorVentaProducto
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('ValorVentaProducto_@producto.Cod_Producto')">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="ValorVentaProducto"
+                                                   data-id="@producto.Cod_Producto">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -130,7 +137,9 @@
                                                 @producto.ValorNetoProducto
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('ValorNetoProducto_@producto.Cod_Producto')">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="ValorNetoProducto"
+                                                   data-id="@producto.Cod_Producto">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -140,7 +149,9 @@
                                                 @producto.ValorUnidad
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('ValorUnidad_@producto.Cod_Producto')">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="ValorUnidad"
+                                                   data-id="@producto.Cod_Producto">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -150,7 +161,9 @@
                                                 @producto.Ubicacion
                                             </span>
                                             <span class="float-end">
-                                                <a href="#" class="text-decoration-none text-muted" onclick="editarCampo('Ubicacion_@producto.Cod_Producto')">
+                                                <a href="#" class="editar text-decoration-none text-muted"
+                                                   data-campo="Ubicacion"
+                                                   data-id="@producto.Cod_Producto">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </span>
@@ -162,60 +175,61 @@
                     </div>
                 </div>
             </div>
+            <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
             <script>
-                function editarCampo(id) {
+                $(document).on('click', '.editar', function (event) {
                     event.preventDefault();
-                    var elemento = document.getElementById(id);
+
+                    var campo = $(this).data('campo');
+                    var codProducto = $(this).data('id');
+                    var elemento = document.getElementById(`${campo}_${codProducto}`);
                     var currentVal = elemento.textContent.trim();
-                    var campo = id.split('_')[0];
                     var dato;
 
-                    if (campo == "NombreProducto") {
-                        dato = "Nombre del producto";
-                    } else if (campo == "ValorVentaProducto") {
-                        dato = "Valor Venta";
-                    } else if (campo == "ValorNetoProducto") {
-                        dato = "Valor Paca";
-                    } else if (campo == "ValorUnidad") {
-                        dato = "Valor Unidad";
-                    } else if (campo == "Ubicacion") {
-                        dato = "Ubicacion";
+                    switch (campo) {
+                        case "NombreProducto": dato = "Nombre del producto"; break;
+                        case "ValorVentaProducto": dato = "Valor Venta"; break;
+                        case "ValorNetoProducto": dato = "Valor Paca"; break;
+                        case "ValorUnidad": dato = "Valor Unidad"; break;
+                        case "Ubicacion": dato = "Ubicación"; break;
+                        case "Cod_Producto": dato = "Código del Producto"; break;
+                        default: dato = campo;
                     }
-                    var newVal = prompt(dato + "\n\nIntroduce el nuevo valor:", currentVal);
 
-                    if (newVal !== null && newVal.trim() !== "") {
-                        campo = id.split('_')[0]; // Campo a actualizar (p.ej., 'nombreProducto')
-                        var codProducto = id.split('_')[1]; // Código del producto
-                        //console.log("Valor Nuevo: " + newVal + " Campo a Actualizar: " + campo + " ID Producto: " + codProducto);
+                    var newVal = prompt(`${dato}\n\nIntroduce el nuevo valor:`, currentVal);
+                    if (newVal === null || newVal.trim() === "") return;
+
+                    // Validar si el campo es numérico
                     if (["ValorVentaProducto", "ValorNetoProducto", "ValorUnidad"].includes(campo)) {
-                        var parsed = Number(newVal.replace(/,/g, '.')); // Convierte cualquier , a . para parseFloat
+                        var parsed = Number(newVal.replace(/,/g, '.'));
                         if (isNaN(parsed)) {
                             toastr.error("Debes ingresar un número válido para " + dato);
                             return;
                         }
-                        // Enviar en formato invariante para que el servidor lo reciba simple
-                        newVal = parsed.toString(); // Esto manda "123.45"
+                        newVal = parsed.toString();
                     }
 
-                        $.ajax({
-                            url: '@Url.Action("modificarProInventario", "Home")',
-                            type: 'POST',
-                            data: { id: codProducto, campo: campo, newVal: newVal },
-                            success: function (data) {
-                                toastr.success('Producto editado exitosamente.');
-                                elemento.textContent = newVal;
-                            },
-                            error: function () {
-                                toastr.error('Error al cargar los productos.');
-                            }
-                        });
-                    }
-                }
+                    // Llamada AJAX al servidor
+                    $.ajax({
+                        url: '@Url.Action("modificarProInventario", "Home")',
+                        type: 'POST',
+                        data: { id: codProducto, campo: campo, newVal: newVal },
+                        success: function () {
+                            toastr.success('Producto editado exitosamente.');
+                            elemento.textContent = newVal;
+                        },
+                        error: function () {
+                            toastr.error('Error al actualizar el producto.');
+                        }
+                    });
+                });
+
 
                 function insertarProducto()
                 {
                     event.preventDefault();
+                    var codigoProducto = prompt("Introduce el codigo del producto");
                     var nombreProducto = prompt("Introduce el nombre del producto");
                     var cantidadProducto = 0;
                     var valorNetoProducto = prompt("Introduce valor neto");
@@ -238,7 +252,7 @@
                             $.ajax({
                                 url: '@Url.Action("insertarProInventario", "Home")',
                                 type: 'POST',
-                                data: { nombreProducto: nombreProducto.toUpperCase(), cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion, IdProveedor: IdProveedor },
+                                data: { codigoProducto: codigoProducto, nombreProducto: nombreProducto.toUpperCase(), cantidadProducto: cantidadProducto, valorNetoProductoFloat: valorNetoProductoFloat, valorVentaProductoFloat: valorVentaProductoFloat, valorUnidadInt: valorUnidadInt, id_empresa: id_empresa, categoria: categoria, estado: estado, ubicacion: ubicacion, IdProveedor: IdProveedor },
                                 success: function (data) {
                                     alert('Producto insertado.');
                                 },

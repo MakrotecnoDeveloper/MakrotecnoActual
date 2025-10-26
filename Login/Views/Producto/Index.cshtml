@@ -1,204 +1,59 @@
 ﻿@model Plataforma.Models.ProductosCategoriaViewModel
-
+<link rel="stylesheet" href="~/css/Producto/Index.css">
 @{
     ViewData["Title"] = "Visualizar";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var rolUsuario = User.Claims.FirstOrDefault(c => c.Type == "NombreRol")?.Value;
+    var esRol6 = rolUsuario == "Administrador"; // true si tiene rol 6
+    var jsData = new { rolUsuario, esRol6 };
 }
-<style>
-    .vertical-nav {
-        position: relative;
-        background-color: #343a40;
-        color: white;
-        padding-top: 20px;
-        height: auto;
-    }
-
-        .vertical-nav .nav-link {
-            color: white;
-            padding: 15px;
-            font-size: 1.1em;
-        }
-
-            .vertical-nav .nav-link:hover {
-                background-color: #495057;
-            }
-
-            .vertical-nav .nav-link.active {
-                background-color: #007bff;
-            }
-
-    .search-box,
-    .results-box {
-        display: none;
-        margin-top: 20px;
-        background-color: #f1f1f1;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-        .search-box.active,
-        .results-box.active {
-            display: block;
-        }
-
-    .initial-view {
-        margin-top: 20px;
-        padding: 20px;
-        background-color: #ffffff;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-    }
-
-    .btn-volver {
-        margin-bottom: 15px;
-    }
-</style>
-
 <div class="content-wrapper">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Menú lateral -->
-            <div class="col-12 col-md-1">
-                <nav class="vertical-nav">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" id="search-product-btn" title="Buscar Producto">
-                                <i class="fas fa-search"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" id="sinstock-product-btn" title="Productos sin stock">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" id="proxsinstock-product-btn" title="Productos próximos sin stock">
-                                <i class="fas fa-bell"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+ 
+    <!-- ====== MENÚ FILTRO RESPONSIVE ====== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3 shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand font-weight-bold text-info">Filtrar por:</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#filterMenu" aria-controls="filterMenu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="filterMenu">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('stock')">Con stock</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('low')">Casi sin stock (&lt;3)</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('none')">Sin stock</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('categoria')">Categoría</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('servicio')">Servicio</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('codigo')">Por código</button></li>
+                    <li class="nav-item"><button class="btn btn-dark mx-1 my-1" onclick="filterBy('nombre')">Por nombre</button></li>
+                </ul>
             </div>
 
-            <!-- Contenido principal -->
-            <div class="col-12 col-md-11">
-                <!-- Vista inicial -->
-                <div id="initial-view" class="initial-view">
-                    <h2>Bienvenido</h2>
-                    <p>Selecciona una opción del menú lateral para visualizar productos.</p>
-                    <p>Puedes buscar productos, ver los que no tienen stock o los que están por agotarse.</p>
-                    <!-- Puedes poner una imagen o ícono aquí también -->
-                </div>
-
-                <!-- Botón para volver a vista inicial -->
-                <div id="volver-inicio" style="display: none;">
-                    <button type="button" class="btn btn-secondary btn-volver" id="btn-volver-inicio">Volver a inicio</button>
-                </div>
-
-                <!-- Caja de búsqueda -->
-                <div class="search-box" id="search-box">
-                    <h2>Buscar Producto</h2>
-
-                    <div class="form-group">
-                        <label for="product-code">Código del Producto:</label>
-                        <input type="text" id="product-code" class="form-control" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="category">Categoría:</label>
-                        <select id="category" class="form-control">
-                            <option value="">Seleccione una categoría</option>
-                            @foreach (var categoria in Model.CategoriaProductos)
-                            {
-                                <option value="@categoria.IdCateProducto">@categoria.Descripcion</option>
-                            }
-                        </select>
-                    </div>
-
-                    <button type="button" id="search-btn" class="btn btn-primary">Buscar</button>
-                    <button type="button" id="close-search-box" class="btn btn-secondary">Cerrar</button>
-                </div>
-
-                <!-- Resultados AJAX -->
-                <div class="results-box" id="results-box">
-                    <h2>Resultados de la búsqueda</h2>
-                    <div id="results"></div>
-                </div>
-            </div>
         </div>
-    </div>
+    </nav>
+
+    <main class="main">
+        <div class="topbar">
+            <h1>Inventario de Productos</h1>
+            <input type="text" id="searchInput" placeholder="Buscar por nombre o código..." oninput="searchProducts()">
+        </div>
+
+        <div id="grid" class="grid"></div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="prevPage()">Anterior</button>
+            <span id="pageInfo">Página 1</span>
+            <button id="nextBtn" onclick="nextPage()">Siguiente</button>
+        </div>
+    </main>
+
 </div>
-
-@section Scripts {
-    <script>
-        $(function () {
-            let currentAction = '';
-
-            const resetView = () => {
-                $('#search-box').removeClass('active');
-                $('#results-box').removeClass('active').find('#results').empty();
-                $('#volver-inicio').hide();
-                $('#initial-view').show();
-            };
-
-            const mostrarBusqueda = () => {
-                $('#initial-view').hide();
-                $('#results-box').removeClass('active').find('#results').empty();
-                $('#search-box').addClass('active');
-                $('#volver-inicio').show();
-            };
-
-            const mostrarResultados = (html) => {
-                $('#search-box').removeClass('active');
-                $('#initial-view').hide();
-                $('#results-box').addClass('active').find('#results').html(html);
-                $('#volver-inicio').show();
-            };
-
-            // Eventos del menú lateral
-            $('#search-product-btn').click(function () {
-                currentAction = '@Url.Action("Buscar", "Producto")';
-                mostrarBusqueda();
-            });
-
-            $('#sinstock-product-btn').click(function () {
-                currentAction = '@Url.Action("BuscarSinStock", "Producto")';
-                mostrarBusqueda();
-            });
-
-            $('#proxsinstock-product-btn').click(function () {
-                currentAction = '@Url.Action("BuscarProximosSinStock", "Producto")';
-                mostrarBusqueda();
-            });
-
-            // Botón para cerrar caja de búsqueda
-            $('#close-search-box').click(function () {
-                resetView();
-            });
-
-            // Botón para volver a la vista inicial
-            $('#btn-volver-inicio').click(function () {
-                resetView();
-            });
-
-            // Buscar producto
-            $('#search-btn').click(function () {
-                const searchTerm = $('#product-code').val();
-                const categoriaTerm = $('#category').val();
-
-                if (!currentAction) {
-                    alert("Selecciona una opción del menú primero.");
-                    return;
-                }
-
-                $.get(currentAction, { searchTerm, categoriaTerm })
-                    .done(function (data) {
-                        mostrarResultados(data);
-                    })
-                    .fail(function () {
-                        mostrarResultados('<div class="alert alert-danger">Error al buscar productos.</div>');
-                    });
-            });
-        });
-    </script>
-}
+<script>
+    window.modelo = @Html.Raw(Json.Serialize(Model));
+    const editarProductoUrl = '@Url.Action("Editar", "Producto")';
+    const eliminarProductoUrl = '@Url.Action("Eliminar", "Producto")';
+    window.userData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(jsData));
+</script>
+<script src="~/js/Producto/Index.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

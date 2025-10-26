@@ -40,7 +40,7 @@ namespace Plataforma.Servicios.Contrato
         Task<IEnumerable<ClientesPlataforma>> ObtenerCuentasProximas(int idPlataforma);
         List<Producto> ProductosAbarrotes();
         Task<bool> ActualizarProductoAsync(string id, string campo, string newVal);
-        Task<bool> InsertProInventario(string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor);
+        Task<bool> InsertProInventario(string codigoProducto, string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor);
         Task<bool> EliminarProductoXIdAsync(string id);
         Infopdv? SeleccionarNombrePDV(int selectedPDV);
         int? ValidarExistenteIdPDV(int idPDV, int cedula);

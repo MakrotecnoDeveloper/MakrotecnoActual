@@ -119,56 +119,15 @@ namespace Plataforma.Controllers
 
                 return Json(new { success = resultado });
         }
-        [Authorize]
-        [HttpGet]
-        public IActionResult Buscar(string searchTerm, int categoriaTerm)
-        {
-            if (string.IsNullOrEmpty(searchTerm)) {
-                searchTerm = "";
-            } else
-            {
-                categoriaTerm = 0;
-            }
-            var productosEncontrados = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            return PartialView("_TablaProductos", productosEncontrados);
-        }
-        [HttpGet]
-        public IActionResult BuscarSinStock(string searchTerm, int categoriaTerm)
-        {
-            if (string.IsNullOrEmpty(searchTerm))
-            {
-                searchTerm = "";
-            }
-            else
-            {
-                categoriaTerm = 0;
-            }
-            var productosSinStock = _productoservice.SinStock(searchTerm, categoriaTerm);
-            return PartialView("_TablaProductos", productosSinStock);
-        }
-        [HttpGet]
-        public IActionResult BuscarProximosSinStock(string searchTerm, int categoriaTerm)
-        {
-            if (string.IsNullOrEmpty(searchTerm))
-            {
-                searchTerm = "";
-            }
-            else
-            {
-                categoriaTerm = 0;
-            }
-            var productosEncontrados = _productoservice.BuscarProSinStock(searchTerm, categoriaTerm);
-            return PartialView("_TablaProductos", productosEncontrados);
-        }
         [HttpGet]
         public async Task<IActionResult> Editar(string searchTerm)
         {
-            int categoriaTerm = 0;
-            var editarProducto = _productoservice.BuscarProductos(searchTerm, categoriaTerm);
-            if (!editarProducto.Any())
+            var editarProducto = _productoservice.BuscarProductos(searchTerm);
+            if (editarProducto.Count == 0)
             {
-                Console.WriteLine("No hay productos con ese código referenciado");
-                return View("Index");
+                var mensaje = "Error: No existen productos con ese codigo.";
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToAction("Error", "Errores");
             }
 
             var p = editarProducto.First();

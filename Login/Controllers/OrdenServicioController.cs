@@ -164,19 +164,6 @@ namespace Plataforma.Controllers
                 });
         }
         [HttpGet]
-        public IActionResult Buscar(string searchTerm)
-        {
-            int categoriaTerm = 0;
-            var productos = _productoService.BuscarProductos(searchTerm, categoriaTerm);
-
-            var resultado = productos.Select(p => new {
-                id = p.Cod_Producto,
-                text = $"{p.Cod_Producto}"
-            });
-
-            return Json(resultado);
-        }
-        [HttpGet]
         public async Task<IActionResult> ModOrden(int id)
         {
             var orden = await _ordenServicioService.ObtenerPorIdAsync(id);
