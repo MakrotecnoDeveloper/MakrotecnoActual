@@ -8,6 +8,7 @@ namespace Plataforma.Servicios.Contrato
         List<Producto> ObtenerProductos();
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
         List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio);
+        List<Producto> ObtenerProductosPorServicio(int idServicio);
         Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio);
         ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm);
         List<Producto> BuscarProductos(string searchTerm);
@@ -52,5 +53,7 @@ namespace Plataforma.Servicios.Contrato
         bool ValidarProductoSede(string producto, int idSede);
         List<Producto> TraerProductosInactivos();
         Task<List<Producto>> BuscarProductosPorCodigo(string codigo);
+        List<CategoriaWebEstadoViewModel> ObtenerCategoriasWeb();
+        void ActualizarEstadoWebCategorias(List<CategoriaWebEstadoViewModel> categorias);
     }
 }

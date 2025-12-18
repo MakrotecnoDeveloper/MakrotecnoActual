@@ -10,4 +10,9 @@ public class Empresas
     public string? Pais { get; set; }
     public string? Direccion { get; set; }
     public string? Telefono { get; set; }
+    public int? ActividadEconomicaId { get; set; }
+    public string Estado { get; set; }
+
+    public ActividadesEconomicas ActividadEconomica { get; set; }
+    public ICollection<LicenciasEmpresa> Licencias { get; set; }
 }

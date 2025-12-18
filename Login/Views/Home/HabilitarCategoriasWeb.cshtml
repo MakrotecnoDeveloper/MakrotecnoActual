@@ -1,0 +1,66 @@
+﻿@model List<CategoriaWebEstadoViewModel>
+
+@{
+    ViewData["Title"] = "Habilitar categorías en la Web";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <h1>Habilitar categorías en la web</h1>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Mensaje"]
+                </div>
+            }
+
+            <form asp-action="HabilitarCategoriasWeb" method="post">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Seleccione qué categorías se muestran en la web</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Visible en Web</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Model[i].Descripcion
+                                            @* oculto para enviar también el Id *@
+                                            <input type="hidden" asp-for="@Model[i].IdCateProducto" />
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" 
+                                                asp-for="@Model[i].Habilitada" 
+                                                disabled="@(Model[i].TieneProductos ? null : "disabled")" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            Guardar cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

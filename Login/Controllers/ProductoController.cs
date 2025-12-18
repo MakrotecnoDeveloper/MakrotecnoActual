@@ -333,13 +333,6 @@ namespace Plataforma.Controllers
             return Json(new { success = true });
         }
         //fin plataformas de streaming
-        //Visualizar productos existentes para vender en la pagina inicial
-        [HttpGet]
-        public IActionResult ProductosExistentesVenta(int IdServicio)
-        {
-            var traerCategoriasExistentes = _productoservice.ObtenerCategoriaProductos(IdServicio);
-            return View("../Home/productosExistentesVenta", traerCategoriasExistentes);
-        }
         public IActionResult TraerProductoXCategoria(int categoria)
         {
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);

@@ -10,7 +10,7 @@ namespace Plataforma.Servicios.Contrato
         Task InsertarEmpleado(Empleados empleado);
         Task ActualizarEmpleado(Empleados empleado);
         int ObtenerRolPermisos(int cedula);
-        string? ObtenerNombreRolPermisos(int rolEmpleado);
+        RolPermisoDTO? ObtenerNombreRolPermisos(int rolEmpleado);
         int TraerUltimoIDPdv(int cedulaEmpleado);
         bool ServValidarDisponSede(int cedula);
         LogsLogin? InsertarLogLogin(int cedulaEmpleado, string correoEmpleado, int estado, int idPDV);
@@ -50,7 +50,6 @@ namespace Plataforma.Servicios.Contrato
         bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo);
         List<Proveedores> ServVisuaProveedor();
         List<Servicio> ServTraerServicios();
-        Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa);
         Task<string> ObtenerIdEmpresaAsync(int cargoId);
         Task<bool> CrearPuntoVentaAsync(Infopdv infopdv);
         Task<Clientes?> ObtenerPorIdAsync(int id);
@@ -58,5 +57,14 @@ namespace Plataforma.Servicios.Contrato
         Task ActualizarProveedorAsync(Proveedores proveedores);
         Task ActualizarClienteAsync(Clientes clientes);
         Task<EmpleadoPdvViewModel> ObtenerDatosAsignacion(string cedulaUsuario);
+        List<Agendamientos> AgendamientosServicios();
+        bool GuardarEdicionServicio(Agendamientos model);
+        Agendamientos ObtenerAgendamientoPorId(int id);
+        bool AprobarAgendamiento(int id);
+        bool EliminarAgendamiento(int id);
+        Task<List<Producto>> ConsultarCatProductos(int id);
+        Task<bool> RegistrarAgendamientoAsync(string codProducto, DateTime fecha, string NombreCliente, string CelularCliente);
+        Task<bool> ExisteFechaAsync(string codProducto, DateTime fecha);
+
     }
 }

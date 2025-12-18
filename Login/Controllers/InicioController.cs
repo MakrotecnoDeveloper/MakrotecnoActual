@@ -145,5 +145,57 @@ namespace Plataforma.Controllers
             var data = await _inicioService.ComprasRecientesAsync(take, ct);
             return Json(data);
         }
+        public IActionResult ClientesAgendados()
+        {
+            var varClientesAgendados = _usuarioService.AgendamientosServicios();
+            return View("Belleza/ClientesAgendados",varClientesAgendados);
+        }
+        [HttpPost]
+        public IActionResult GuardarEdicion(Agendamientos model)
+        {
+            bool resultado = _usuarioService.GuardarEdicionServicio(model);
+
+            if (resultado)
+            {
+                return Json(new { success = true, mensaje = "Servicio editado correctamente." });
+            }
+            else
+            {
+                return Json(new { success = false, mensaje = "No se pudo editar el servicio." });
+            }
+        }
+        public IActionResult EditarServicio(int id)
+        {
+            var servicio = _usuarioService.ObtenerAgendamientoPorId(id);
+            if (servicio != null)
+            {
+                return PartialView("Belleza/_EditarServicioPartial", servicio);
+            }
+
+            return NotFound();
+        }
+        [HttpPost]
+        public IActionResult AprobarServicio(int id)
+        {
+            bool resultado = _usuarioService.AprobarAgendamiento(id);
+
+            return Json(new
+            {
+                success = resultado,
+                mensaje = resultado ? "Servicio aprobado correctamente." : "No se pudo aprobar el servicio."
+            });
+        }
+        [HttpPost]
+        public IActionResult EliminarServicio(int id)
+        {
+            bool resultado = _usuarioService.EliminarAgendamiento(id);
+
+            return Json(new
+            {
+                success = resultado,
+                mensaje = resultado ? "Servicio eliminado correctamente." : "No se pudo eliminar el servicio."
+            });
+        }
+
     }
 }

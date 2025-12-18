@@ -38,9 +38,26 @@ namespace Plataforma.Servicios.Implementacion
         public List<CategoriaProductos> ObtenerCategoriaProductos(int idServicio)
         {
             return _dbContext.CategoriaProductos
-                           .Where(c => c.IdServicio == idServicio)
-                           .ToList();
+                .Where(c => c.IdServicio == idServicio
+                    && _dbContext.Productos
+                        .Any(p => p.IdCatepro == c.IdCateProducto && p.EstadoWeb == 1))
+                .ToList();
         }
+        // En la implementación del servicio (ProductoService.cs)
+        public List<Producto> ObtenerProductosPorServicio(int idServicio)
+        {
+         var categorias = _dbContext.CategoriaProductos
+        .Where(c => c.IdServicio == idServicio)
+        .Select(c => c.IdCateProducto)
+        .ToList();
+
+            return _dbContext.Productos
+            .Where(p => categorias.Contains(p.IdCatepro)
+                     && p.EstadoWeb == 1)   // <-- FILTRO SOLICITADO
+            .AsNoTracking()
+            .ToList();
+            }
+
         public async Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio)
         {
             return await _dbContext.CategoriaProductos
@@ -104,7 +121,7 @@ namespace Plataforma.Servicios.Implementacion
                 {
                     Productos = new List<Producto>(),
                     CategoriaProductos = new List<CategoriaProductos>(),
-                    Servicio = new List<Servicio>()
+                    Servicios = new List<Servicio>()
                 };
             }
 
@@ -125,7 +142,7 @@ namespace Plataforma.Servicios.Implementacion
             {
                 Productos = new List<Producto> { producto },
                 CategoriaProductos = categoria != null ? new List<CategoriaProductos> { categoria } : new List<CategoriaProductos>(),
-                Servicio = servicio != null ? new List<Servicio> { servicio } : new List<Servicio>()
+                Servicios = servicio != null ? new List<Servicio> { servicio } : new List<Servicio>()
             };
         }
         public List<Producto> BuscarProductos(string searchTerm)
@@ -817,6 +834,42 @@ namespace Plataforma.Servicios.Implementacion
                                  .OrderBy(p => p.NombreProducto)
                                  .Take(20)
                                  .ToListAsync();
+        }
+        public List<CategoriaWebEstadoViewModel> ObtenerCategoriasWeb()
+        {
+            // Cada categoría + si está habilitada en web
+            var categorias = _dbContext.CategoriaProductos
+                .Select(c => new CategoriaWebEstadoViewModel
+                {
+                    IdCateProducto = c.IdCateProducto,
+                    Descripcion = c.Descripcion,
+                    // Ejemplo: habilitada si existe al menos 1 producto de esa categoría con EstadoWeb = 1
+                    Habilitada = _dbContext.Productos
+                        .Any(p => p.IdCatepro == c.IdCateProducto && p.EstadoWeb == 1),
+                    TieneProductos = _dbContext.Productos
+                        .Any(p => p.IdCatepro == c.IdCateProducto)
+                })
+                .ToList();
+
+            return categorias;
+        }
+
+        public void ActualizarEstadoWebCategorias(List<CategoriaWebEstadoViewModel> categorias)
+        {
+            foreach (var cat in categorias)
+            {
+                // Traemos todos los productos de esa categoría
+                var productos = _dbContext.Productos
+                    .Where(p => p.IdCatepro == cat.IdCateProducto)
+                    .ToList();
+
+                foreach (var p in productos)
+                {
+                    p.EstadoWeb = cat.Habilitada ? 1 : 0;
+                }
+            }
+
+            _dbContext.SaveChanges();
         }
     }
 

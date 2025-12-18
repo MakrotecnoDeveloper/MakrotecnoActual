@@ -1,0 +1,372 @@
+@{
+    Layout = null;
+}
+<!doctype html>
+<html class="no-js" lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Inicio</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- favicon
+    ============================================ -->
+    <link rel="shortcut icon" type="image/x-icon" href="~/img/favicon.ico">
+
+    <!-- Google Fonts
+    ============================================ -->
+    <link href='https://fonts.googleapis.com/css?family=Josefin+Sans:400,600,700,300,500' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,300,700' rel='stylesheet' type='text/css'>
+
+    <!-- Bootstrap CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/bootstrap.min.css">
+
+    <!-- Material icon CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/material-design-iconic-font.css">
+    <link rel="stylesheet" href="~/css/Belleza/css/material-design-iconic-font.min.css">
+
+    <!-- Nivo slider CSS
+    ============================================ -->
+    <link rel="stylesheet" type="text/css" href="~/lib/Belleza/lib/custom-slider/css/nivo-slider.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="~/lib/Belleza/lib/custom-slider/css/preview.css" media="screen" />
+
+    <!-- Fontawsome CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/font-awesome.min.css">
+
+    <!-- owl.carousel CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/owl.carousel.css">
+
+    <!-- jquery-ui CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/jquery-ui.css">
+
+    <!-- meanmenu CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/meanmenu.min.css">
+
+    <!-- animate CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/animate.css">
+
+    <!-- style CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/style.css">
+
+    <!-- responsive CSS
+    ============================================ -->
+    <link rel="stylesheet" href="~/css/Belleza/css/responsive.css">
+
+    <!-- modernizr JS
+    ============================================ -->
+    <script src="~/js/js/vendor/modernizr-2.8.3.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fffaf7;
+        }
+
+        .trabaja-section {
+            padding: 3rem 1rem;
+        }
+
+        .card {
+            border: none;
+            background-color: #fcebea;
+        }
+
+        .card-title {
+            color: #c71585;
+        }
+    </style>
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- header start -->
+        <header class="header-area">
+            <div class="main-header-area">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-6">
+                            <div class="logo">
+                                <a asp-action="Index" asp-controller="Home"><img src="~/img/logo/logo.png" alt="plash"></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-10 col-md-8 col-sm-6 col-xs-6">
+                            <div class="mainmenu-area">
+                                <div class="mainmenu">
+                                    <nav>
+                                        <ul id="nav">
+                                            <li><a asp-action="Index" asp-controller="Home">Inicio</a></li>
+                                            <li><a asp-action="Nosotros" asp-controller="Home">Nosotros</a></li>
+                                            <li><a asp-action="Agendar" asp-controller="Home">Agendar</a></li>
+                                            <li><a asp-action="Contacto" asp-controller="Home">Contacto</a></li>
+                                            <li><a asp-action="Login" asp-controller="Home">Portal</a></li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+            <!-- Mobile Menu Area start -->
+            <div class="mobile-menu-area">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            <div class="mobile-menu">
+                                <nav id="dropdown">
+                                    <ul>
+                                            <li><a asp-action="Index" asp-controller="Home">Inicio</a></li>
+                                            <li><a asp-action="Nosotros" asp-controller="Home">Nosotros</a></li>
+                                            <li><a asp-action="Agendar" asp-controller="Home">Agendar</a></li>
+                                            <li><a asp-action="Contacto" asp-controller="Home">Contacto</a></li>
+                                            <li><a asp-action="Login" asp-controller="Home">Portal</a></li>
+                                    </ul>
+                                </nav>
+                            </div>					
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu Area end -->		   
+        </header>
+        <!-- header end -->     
+        <!-- banner start -->
+        <div class="banner-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="banner-text-wrapper text-center"> 
+                            <div class="banner-title">
+                                <h2>Empleabilidad</h2>
+                            </div>
+                            <div class="breadcrumbs">
+                                <ul>
+                                    <li><a asp-action="Index" asp-controller="Home">Inicio</a>-</li>
+                                    <li>Empleo</li>
+                                </ul>
+                            </div>
+                        </div>    
+                    </div>
+                </div>
+            </div>
+        </div> 
+        <!-- banner end -->
+        <!-- shortcodes start -->
+        <div class="shortcodes-area">
+            <div class="container">          
+                <div class="row">
+                    <div class="col-md-12 col-sm-12">
+                        <div class="shortcodes-title">
+                            <h4>Jornadas de Empleo</h4>
+                        </div>
+                        <div class="padding">
+                            <div class="container trabaja-section text-center">
+                                <h1 class="mb-4">🌟 Trabaja con Nosotros – Nely Nails 🌟</h1>
+                                <p class="lead mb-5">
+                                    ¡En <strong>Nely Nails</strong> siempre estamos en búsqueda de talento apasionado por la belleza!
+                                </p>
+
+                                <div class="card p-4 mx-auto" style="max-width: 800px;">
+                                    <h4 class="card-title mb-3">📢 Ofertas de trabajo</h4>
+                                    <p class="card-text">
+                                        Cuando estemos contratando, compartiremos la vacante y el enlace oficial a través de nuestros canales autorizados.
+                                        Mantente pendiente en nuestra página web o redes sociales.
+                                    </p>
+                                    <p class="card-text">
+                                        Todas nuestras oportunidades laborales se comunican con claridad y transparencia. <br>
+                                        <strong>No solicitamos pagos ni adelantados para procesos de selección.</strong>
+                                    </p>
+                                    <hr>
+                                    <h5 class="mt-4">👩‍🎨 ¿Qué perfil buscamos?</h5>
+                                    <ul class="text-start mt-3">
+                                        <li>Experiencia en <strong>manicure y pedicure</strong>.</li>
+                                        <li>Conocimientos en <strong>planchado de cejas y cabello</strong>, <strong>depilación</strong>, y demás técnicas de belleza.</li>
+                                        <li>Buena presentación personal y actitud de servicio al cliente.</li>
+                                        <li>Responsabilidad, puntualidad y trabajo en equipo.</li>
+                                    </ul>
+                                    <p class="mt-3">
+                                        Si cumples con este perfil, ¡nos encantará conocerte!
+                                    </p>
+                                    <p>
+                                        Para más información, puedes escribirnos al correo: <br>
+                                        <a href="mailto:servcliente@nelynails.com.co">servcliente@nelynails.com.co</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                </div>
+            </div>
+        </div>
+        <!-- shortcodes end --> 
+        <!-- newsletter area start -->
+        <!--<div class="newsletter-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-5 hidden-sm">
+                        <div class="newsletter-social-icon">
+                            <ul>
+                                <li><a href="www.facebook.com"><i class="zmdi zmdi-facebook"></i></a></li>
+                                <li class="twitter"><a href="www.twitter.com"><i class="zmdi zmdi-twitter"></i></a></li>
+                                <li class="pinterest"><a href="www.pinterest.com"><i class="zmdi zmdi-pinterest"></i></a></li>
+                                <li class="google-plus"><a href="www.google-plus.com"><i class="zmdi zmdi-google-plus"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-7 col-sm-12">
+                        <div class="newsletter-info">
+                            <h2>ALERTAS</h2>
+                            <form action="#">
+                                <input type="text" placeholder="Correo Electronico">
+                                <button type="submit"><i class="zmdi zmdi-mail-send"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!-- newsletter area end -->
+    <!-- footer start -->
+    <footer class="footer-area">
+        <div class="main-footer-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="footer-widget address">
+                            <div class="footer-logo">
+                                <a asp-action="Index" asp-controller="Home"><img src="~/img/logo/logo.png" alt=""></a>
+                            </div>
+                            <div class="footer-address">
+                                <div class="footer-icon">
+                                    <i class="fa fa-map-marker"></i>
+                                </div>
+                                <div class="footer-info">
+                                    <p>Calle 33E # 25-11, Cali - Colombia</p>
+                                </div>
+                            </div>
+                            <div class="footer-address">
+                                <div class="footer-icon">
+                                    <i class="fa fa-phone"></i>
+                                </div>
+                                <div class="footer-info">
+                                    <p>+57 319 5378423</p>
+                                </div>
+                            </div>
+                            <div class="footer-address">
+                                <div class="footer-icon">
+                                    <i class="fa fa-envelope"></i>
+                                </div>
+                                <div class="footer-info">
+                                    <p>servcliente@nelynails.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-3 col-xs-12">
+                        <div class="footer-widget">
+                            <h5>Paginas</h5>
+                            <ul>
+                                <li><a asp-action="Index" asp-controller="Home">Inicio</a></li>
+                                <li><a asp-action="Nosotros" asp-controller="Home">Nosotros</a></li>
+                                <li><a asp-action="Agendar" asp-controller="Home">Agendar</a></li>
+                                <li><a asp-action="Contacto" asp-controller="Home">Contacto</a></li>
+                                <li><a asp-action="Portal" asp-controller="Home">Portal</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-3 col-xs-12">
+                        <div class="footer-widget">
+                            <h5>Cotizar</h5>
+                            <ul>
+                                <li><a asp-action="PreAgendamiento" asp-controller="Home" asp-route-id="19">Manicure</a></li>
+                                <li><a asp-action="PreAgendamiento" asp-controller="Home" asp-route-id="23">Depilacion</a></li>
+                                <li><a asp-action="PreAgendamiento" asp-controller="Home" asp-route-id="22">Arreglo Cejas</a></li>
+                                <li><a asp-action="Agendar" asp-controller="Home">Asesorias</a></li>
+                                <li><a asp-action="PreAgendamiento" asp-controller="Home" asp-route-id="24">Productos</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-sm col-xs-12">
+                        <div class="footer-widget">
+                            <h5>Enlaces Legales</h5>
+                            <ul>
+                                <li><a asp-action="PoliticasPrivacidad" asp-controller="Home">Politicas de Privacidad</a></li>
+                                <li><a asp-action="ServicioDomicilio" asp-controller="Home">Servicio a Domicilio</a></li>
+                                <li><a asp-action="FAQS" asp-controller="Home">Preguntas Frecuentes</a></li>
+                                <li><a asp-action="Empleos" asp-controller="Home">Trabaja con Nosotros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 hidden-sm col-xs-12">
+                        <div class="footer-widget payment">
+                            <h5>Metodos de Pago</h5>
+                            <p>
+                                Manejamos diferentes medios<br>
+                                de pago
+                            </p>
+                            <img src="~/img/payment/1.png" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="copyright">
+                            <p>2025-2026 ® Derechos Reservados - <a href="https://devitems.com/">Makrotecno</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- footer end -->
+    <!-- jquery
+        ============================================ -->
+    <script src="~/js/js/vendor/jquery-1.12.4.min.js"></script>
+    <!-- bootstrap JS
+    ============================================ -->
+    <script src="~/js/js/bootstrap.min.js"></script>
+    <!-- meanmenu JS
+    ============================================ -->
+    <script src="~/js/js/jquery.meanmenu.js"></script>
+    <!-- wow JS
+    ============================================ -->
+    <script src="~/js/js/wow.min.js"></script>
+    <!-- owl.carousel JS
+    ============================================ -->
+    <script src="~/js/js/owl.carousel.min.js"></script>
+    <!-- price-slider JS
+    ============================================ -->
+    <script src="~/js/js/jquery-price-slider.js"></script>
+    <!-- scrollUp JS
+    ============================================ -->
+    <script src="~/js/js/jquery.scrollUp.min.js"></script>
+    <!-- plugins JS
+    ============================================ -->
+    <script src="~/js/js/plugins.js"></script>
+    <!-- Nevo Slider js
+    ============================================ -->
+    <script type="text/javascript" src="~/lib/Belleza/lib/custom-slider/js/jquery.nivo.slider.js"></script>
+    <script type="text/javascript" src="~/lib/Belleza/lib/custom-slider/home.js"></script>
+    <!-- Elevate Zoom js
+    ============================================ -->
+    <script src="~/js/js/jquery.elevateZoom-3.0.8.min.js"></script>
+    <!-- main JS
+    ============================================ -->
+    <script src="~/js/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -30,5 +30,6 @@ public class Producto
         public string? ImagenPath { get; set; }
         public string? AutenticidadProducto { get; set; }
         public string? CondicionProducto { get; set; }
+        public int EstadoWeb { get; set; }
     public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
+using Plataforma.Servicios.Implementacion;
 using System.Net.Mail;
 
 using System.Security.Claims;
@@ -14,15 +15,69 @@ namespace Plataforma.Controllers
     public class HomeController : Controller
     {
         private readonly IUsuarioService _usuarioService;
-        public HomeController(IUsuarioService usuarioService)
+        private readonly IProductoService _productoservice;
+        public HomeController(IUsuarioService usuarioService, IProductoService productoservice)
         {
             _usuarioService = usuarioService;
+            _productoservice = productoservice;
         }
 
         public IActionResult Index()
         {
             var TraerServicios = _usuarioService.ServTraerServicios();
             return View(TraerServicios);
+            //return View("Belleza/Index");
+        }
+        public IActionResult Nosotros()
+        {
+            //return View();
+            return View("Belleza/Nosotros");
+        }
+        public async Task<IActionResult> Agendar()
+        {
+            //return View();
+            return View("Belleza/Agendar");
+        }
+        public IActionResult Servicios()
+        {
+            //return View();
+            return View("Belleza/Servicios");
+        }
+        public IActionResult Contacto()
+        {
+            //return View();
+            return View("Belleza/Contacto");
+        }
+        public IActionResult Portal()
+        {
+            return View();
+        }
+        public async Task<IActionResult> PreAgendamiento(int id)
+        {
+            var productosTraidosXBD = await _usuarioService.ConsultarCatProductos(id);
+            //1. Mandar el ID al modelo, y que procese: 
+            return View("Belleza/PreAgendamiento", productosTraidosXBD);
+        }
+
+        public IActionResult PoliticasPrivacidad()
+        {
+            //return View();
+            return View("Belleza/PoliticasPrivacidad");
+        }
+        public IActionResult ServicioDomicilio()
+        {
+            //return View();
+            return View("Belleza/ServicioDomicilio");
+        }
+        public IActionResult FAQS()
+        {
+            //return View();
+            return View("Belleza/FAQS");
+        }
+        public IActionResult Empleos()
+        {
+            //return View();
+            return View("Belleza/Empleos");
         }
         public IActionResult Login()
         {
@@ -91,11 +146,14 @@ namespace Plataforma.Controllers
 				if (rolEmpleado > 0)
 				{
 					claims.Add(new Claim("Rol", rolEmpleado.ToString()));
-					string nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
+					var nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
 					if (nombreCargo != null)
 					{
-						claims.Add(new Claim("NombreRol", nombreCargo));
-					}
+                        claims.Add(new Claim("NombreRol", nombreCargo.NombreCargo));
+                        claims.Add(new Claim("CargoId",   nombreCargo.TipoCargo.ToString()));
+                        claims.Add(new Claim("EmpresaId", nombreCargo.IdEmpresa.ToString()));
+                        claims.Add(new Claim("NombreEmpresa", nombreCargo.NombreEmpresa));
+                }
 					else
 					{
 						var mensaje = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
@@ -228,7 +286,24 @@ namespace Plataforma.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
+        //Visualizar productos existentes para vender en la pagina inicial
+        [HttpGet]
+        public IActionResult Tienda(int idServicio)
+        {
+            var categorias = _productoservice.ObtenerCategoriaProductos(idServicio);
 
+            // Si también necesitas productos para la vista:
+            var productos = _productoservice.ObtenerProductosPorServicio(idServicio);
+
+            var vm = new ProductosCategoriaViewModel
+            {
+                CategoriaProductos = categorias, // <-- propiedad en tu VM
+                Productos = productos,           // <-- propiedad en tu VM
+                Servicio = idServicio            // o un objeto Servicio si lo tienes
+            };
+
+            return View(vm);
+        }
         [HttpPost]
         public async Task<IActionResult> SendContactMessage(ContactFormModel model)
         {
@@ -300,6 +375,109 @@ namespace Plataforma.Controllers
 
                 TempData["SuccessMessage"] = "¡Mensaje enviado correctamente!";
                 return RedirectToAction("Index");
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult HabilitarCategoriasWeb()
+        {
+            var modelo = _productoservice.ObtenerCategoriasWeb();
+            return View(modelo);
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult HabilitarCategoriasWeb(List<CategoriaWebEstadoViewModel> modelo)
+        {
+                _productoservice.ActualizarEstadoWebCategorias(modelo);
+                TempData["Mensaje"] = "Configuración actualizada correctamente.";
+                return RedirectToAction(nameof(HabilitarCategoriasWeb));
+        }
+        //Funcionalidades de belleza
+        [Authorize]
+        [HttpGet]
+        public IActionResult ClientesAgendados()
+        {
+            var varClientesAgendados = _usuarioService.AgendamientosServicios();
+            return View(varClientesAgendados);
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult GuardarEdicion(Agendamientos model)
+        {
+            bool resultado = _usuarioService.GuardarEdicionServicio(model);
+
+            if (resultado)
+            {
+                return Json(new { success = true, mensaje = "Servicio editado correctamente." });
+            }
+            else
+            {
+                return Json(new { success = false, mensaje = "No se pudo editar el servicio." });
+            }
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult EditarServicio(int id)
+        {
+            var servicio = _usuarioService.ObtenerAgendamientoPorId(id);
+            if (servicio != null)
+            {
+                return PartialView("_EditarServicioPartial", servicio);
+            }
+
+            return NotFound();
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult AprobarServicio(int id)
+        {
+            bool resultado = _usuarioService.AprobarAgendamiento(id);
+
+            return Json(new
+            {
+                success = resultado,
+                mensaje = resultado ? "Servicio aprobado correctamente." : "No se pudo aprobar el servicio."
+            });
+        }
+        [Authorize]
+        [HttpPost]
+        public IActionResult EliminarServicio(int id)
+        {
+            bool resultado = _usuarioService.EliminarAgendamiento(id);
+
+            return Json(new
+            {
+                success = resultado,
+                mensaje = resultado ? "Servicio eliminado correctamente." : "No se pudo eliminar el servicio."
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ValidarFecha(string fecha, string codProducto, string nombreCliente, string celularCliente)
+        {
+            if (!DateTime.TryParse(fecha, out DateTime fechaSeleccionada))
+            {
+                return Json(new { success = false, mensaje = "Fecha inválida." });
+            }
+
+            if (string.IsNullOrEmpty(nombreCliente) || string.IsNullOrEmpty(celularCliente))
+            {
+                return Json(new { success = false, mensaje = "Debe ingresar Nombre y Celular del Cliente." });
+            }
+
+            bool existe = await _usuarioService.ExisteFechaAsync(codProducto, fechaSeleccionada);
+            if (existe)
+            {
+                return Json(new { success = false, mensaje = "La fecha ya está ocupada, selecciona otra." });
+            }
+
+            bool registrado = await _usuarioService.RegistrarAgendamientoAsync(codProducto, fechaSeleccionada, nombreCliente, celularCliente);
+            if (registrado)
+            {
+                return Json(new { success = true, mensaje = "Fecha agendada correctamente." });
+            }
+            else
+            {
+                return Json(new { success = false, mensaje = "Error al registrar la fecha." });
+            }
         }
 
 

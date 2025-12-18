@@ -1,12 +1,23 @@
 ﻿@inject Plataforma.Servicios.Contrato.IMenuService MenuService
 
 @{
-    var rol = Context.User.FindFirst("Rol")?.Value;
-    List<int> menusActivos = new();
+    // El User ya está disponible en la vista, no hace falta IHttpContextAccessor
+    var empresaId = User.FindFirst("EmpresaId")?.Value;
+    var cargoIdStr = User.FindFirst("CargoId")?.Value;
+    var nombreEmpresa = User.FindFirst("NombreEmpresa")?.Value;
 
-    if (!string.IsNullOrEmpty(rol) && int.TryParse(rol, out int idCargo))
+    int cargoId = 0;
+    if (!string.IsNullOrEmpty(cargoIdStr))
     {
-        menusActivos = await MenuService.ObtenerIdsMenusActivosPorCargoAsync(idCargo);
+        int.TryParse(cargoIdStr, out cargoId);
+    }
+
+    var menu = new List<ModuloMenuDto>();
+
+    if (!string.IsNullOrEmpty(empresaId) && cargoId > 0)
+    {
+        // Llamas a tu método modificado que usa Empresa + Cargo
+        menu = await MenuService.ObtenerMenuEstructuradoPorEmpresaAsync(empresaId, cargoId);
     }
 }
 
@@ -67,7 +78,7 @@
             <!-- Brand Logo -->
             <a asp-controller="Inicio" asp-action="Index" class="brand-link">
                 <img src="~/img/logo-inverse.png" class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">Makrotecno</span>
+                <span class="brand-text font-weight-light">@nombreEmpresa</span>
             </a>
 
         <!-- Sidebar -->
@@ -84,466 +95,42 @@
             </div>
 
             <!-- Sidebar Menu -->
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <!-- Add icons to the links using the .nav-icon class
-                         with font-awesome or any other icon font library -->
-                        @if (menusActivos.Contains(1)) {
-                            <li class="nav-header">MODULO ADMINISTRATIVO</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-building"></i>
-                            <p>
-                                 Parametrizacion Empresa
-                                 <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a asp-controller="Usuario" asp-action="Cargos" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Cargos</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a asp-controller="Usuario" asp-action="Empresas" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Empresas</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="Sedes" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Sedes</p>
-                                        </a>
-                            </li>
-                            <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="EmpleadoEmpresa" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Vinculacion EE</p>
-                                        </a>
-                            </li>
-                            <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="EmpleadoSedes" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Vinculacion ES</p>
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                        @foreach (var modulo in menu)
+                        {
+                            <!-- Header del módulo -->
+                            <li class="nav-header">@modulo.Header</li>
+
+                            @foreach (var grupo in modulo.Grupos.OrderBy(g => g.OrdenGrupo))
+                            {
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link">
+                                        <i class="nav-icon @(grupo.IconoGrupo ?? modulo.IconoHeader)"></i>
+                                        <p>
+                                            @grupo.NombreGrupo
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
                                     </a>
-                            </li>
-                            <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="CrearPDV" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Crear PDV</p>
-                                    </a>
-                            </li>
-                                 <li class="nav-item">
-                                        <a asp-controller="Menu" asp-action="ConfiguracionMenu" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Asignacion Menu</p>
-                                    </a>
-                                 </li>
-                                     <li class="nav-item">
-                                        <a href="#" class="nav-link">
-                                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                                            <p>
-                                                Configuracion Categoria
-                                                <i class="right fas fa-angle-left"></i>
-                                            </p>
-                                        </a>
-                                        <ul class="nav nav-treeview">
+
+                                    <ul class="nav nav-treeview">
+                                        @foreach (var op in grupo.Opciones.OrderBy(o => o.OrdenOpcion))
+                                        {
                                             <li class="nav-item">
-                                                <a asp-controller="Producto" asp-action="CategoriaProductos" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Categorias</p>
+                                                <a asp-controller="@op.Controller" asp-action="@op.Action" class="nav-link">
+                                                    <i class="@op.Icono nav-icon"></i>
+                                                    <p>@op.Titulo</p>
                                                 </a>
                                             </li>
-                                        </ul>
-                                        <ul class="nav nav-treeview">
-                                            <li class="nav-item">
-                                                    <a asp-controller="Producto" asp-action="CreateService" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Servicios</p>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                            </ul>
-                      <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-building"></i>
-                            <p>
-                                Configuraciones
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                    <a asp-controller="Producto" asp-action="HabilitarProducto" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Habilitar Producto</p>
-                                    </a>
-                            </li>
-                        </ul>
-                      </li>
-                    </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
                         }
-                        @if (menusActivos.Contains(2)) {
-                            <li class="nav-header">MODULO USUARIOS</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-users-cog"></i>
-                                    <p>
-                                        Gestion Usuarios
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                            <a asp-controller="Usuario" asp-action="Index" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Panel de Usuario</p>
-                                            </a>
-                                        </li>
-                                </ul>
-                           </li>
-                        }
-                        @if (menusActivos.Contains(3))
-                        {
-                            <li class="nav-header">MODULO FINANCIERO</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-wallet"></i>
-                                    <p>
-                                        Configuracion Gastos
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Gastos" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Gastos Mensuales</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(4))
-                        {
-                            <li class="nav-header">MODULO PRODUCTOS</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-tags"></i>
-                                    <p>
-                                        Catalogo
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Producto" asp-action="Insertar" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Agregar Producto</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Producto" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Listado de productos</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Producto" asp-action="ProductosLista" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Listado por Sede</p>
-                                        </a>
-                                    </li>
-                                    @if (menusActivos.Contains(9))
-                                    {
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link">
-                                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                                <p>
-                                                    Modulo Plataformas
-                                                    <i class="right fas fa-angle-left"></i>
-                                                </p>
-                                            </a>
-                                            <ul class="nav nav-treeview">
-                                                <li class="nav-item">
-                                                    <a asp-controller="Producto" asp-action="FormPlataforma" class="nav-link">
-                                                        <i class="far fa-circle nav-icon"></i>
-                                                        <p>Crear Plataforma</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                            <ul class="nav nav-treeview">
-                                                <li class="nav-item">
-                                                    <a asp-controller="Producto" asp-action="FormInserClienPlatf" class="nav-link">
-                                                        <i class="far fa-circle nav-icon"></i>
-                                                        <p>Insertar Venta</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                            <ul class="nav nav-treeview">
-                                                <li class="nav-item">
-                                                    <a asp-controller="Producto" asp-action="FormVisuPlatf" class="nav-link">
-                                                        <i class="far fa-circle nav-icon"></i>
-                                                        <p>Visualizar Plataforma</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                            <ul class="nav nav-treeview">
-                                                <li class="nav-item">
-                                                    <a asp-controller="Producto" asp-action="FormVisuCta" class="nav-link">
-                                                        <i class="far fa-circle nav-icon"></i>
-                                                        <p>Visualizar Cuentas</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    }
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-dolly-flatbed"></i>
-                                    <p>
-                                        Compras
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Compras" asp-action="InsertarCompra" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Registrar Compra</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Compras" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Listado Compras</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-handshake"></i>
-                                    <p>
-                                        Cliente/Proveedores
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="FormCrearCliente" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Crear Clientes</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="TblVisuCliente" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Visualizar Clientes</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="FormCrearProveedor" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Crear Proveedor</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Usuario" asp-action="TblVisuProveedor" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Visualizar Proveedor</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(5))
-                        {
-                            <li class="nav-header">MODULO TECNICO</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-cogs"></i>
-                                    <p>
-                                        Procedimientos
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="OrdenServicio" asp-action="Dispositivos" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ver Dispositivos</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="OrdenServicio" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ordenes de Servicio</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(6))
-                        {
-                            <li class="nav-header">MODULO VENTAS</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-shopping-cart"></i>
-                                    <p>
-                                        Ventas
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="CrearVenta" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Crear Venta</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="ListaVentas" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ver Ventas</p>
-                                        </a>
-                                    </li>
-                                    <!-- (Opcional futuro)
-                                    <li class="nav-item">
-                                      <a asp-controller="Pedido" asp-action="Devoluciones" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Devoluciones</p>
-                                      </a>
-                                    </li>
-                                    -->
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-file-invoice"></i>
-                                    <p>
-                                        Facturas
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="CrearFactura" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Crear Factura</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="ListaFacturas" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ver Facturas</p>
-                                        </a>
-                                    </li>
-                                    <!-- (Opcional futuro)
-                                    <li class="nav-item">
-                                        <a asp-controller="Factura" asp-action="NotasCredito" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Notas de Crédito</p>
-                                        </a>
-                                    </li>
-                                    -->
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(7))
-                        {
-                            <li class="nav-header">MODULO TESORERIA</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-cash-register"></i>
-                                    <p>
-                                        Caja y Ganancias
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="FlujoCaja" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Flujo de Caja</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Ganancia" asp-action="GananciaDelDia" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Utilidades Diarias</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="FlujoCaja" asp-action="RegistrarCierre" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Registrar Cierre</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(8))
-                        {
-                            <li class="nav-header">MODULO REPORTES</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-chart-line"></i>
-                                    <p>
-                                        Reportes y KPIs
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Reporte" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ver Reportes</p> <!-- o "Reporte General" si aplica -->
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Reporte" asp-action="Diario" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Reporte Diario</p> <!-- o "Reporte General" si aplica -->
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="Pedido" asp-action="VerConceptos" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Conceptos y Adiciones</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        @if (menusActivos.Contains(1008))
-                        {
-                            <li class="nav-header">MODULO NOMINA</li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="nav-icon fas fa-chart-line"></i>
-                                    <p>
-                                        Gestion Personal
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a asp-controller="Nomina" asp-action="Index" class="nav-link">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Gestionar Nomina</p> <!-- o "Reporte General" si aplica -->
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
+
                     </ul>
-            </nav>
+                </nav>
             <!-- /.sidebar-menu -->
         </div>
         <!-- /.sidebar -->

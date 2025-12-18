@@ -10,3 +10,12 @@ public class TipoCargo
     public string? DescripcionCargo { get; set; }
     public string? Id_empresa { get; set; }
 }
+
+public class RolPermisoDTO
+{
+    public string? NombreCargo { get; set; }
+    public string? IdEmpresa { get; set; }
+    public int TipoCargo { get;set; }
+    public string NombreEmpresa { get; set; }
+}
+

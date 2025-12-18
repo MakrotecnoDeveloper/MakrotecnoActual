@@ -1,0 +1,420 @@
+﻿@model Plataforma.Models.ProductosCategoriaViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda MakroTecno</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background: #1a1d23;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .sidebar h2 {
+                font-size: 18px;
+                margin-bottom: 10px;
+                color: #00c2ff;
+            }
+
+            .sidebar label {
+                font-size: 13px;
+                margin-top: 10px;
+                margin-bottom: 4px;
+                display: block;
+            }
+
+            .sidebar select,
+            .sidebar input[type="number"] {
+                width: 100%;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #444;
+                background: #252a33;
+                color: #fff;
+                font-size: 14px;
+            }
+
+                .sidebar input[type="number"]::placeholder {
+                    color: #aaa;
+                }
+
+        /* --- Main --- */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+            .topbar h1 {
+                flex: 1;
+                text-align: center;
+            }
+
+            .topbar input {
+                width: 350px;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-size: 15px;
+            }
+
+        /* --- Products grid --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+            .card:hover {
+                transform: translateY(-3px);
+            }
+
+            .card img {
+                width: 100%;
+                height: 130px;
+                object-fit: cover;
+                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+
+            .card h3 {
+                font-size: 16px;
+                margin-bottom: 5px;
+                color: #222;
+            }
+
+            .card p {
+                font-size: 14px;
+                color: #555;
+                margin-bottom: 3px;
+            }
+
+            .card .price {
+                font-weight: 700;
+                margin-top: 4px;
+            }
+
+        .stock {
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+            .stock.ok {
+                color: green;
+            }
+
+            .stock.low {
+                color: orange;
+            }
+
+            .stock.none {
+                color: red;
+            }
+
+        .card button {
+            margin-top: 8px;
+            background: #1a1d23;
+            color: #fff;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+            .card button:hover {
+                background: #00c2ff;
+                color: #000;
+            }
+
+        /* --- Paginación --- */
+        .pagination {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+            .pagination button {
+                background: #1a1d23;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+                .pagination button:hover {
+                    background: #00c2ff;
+                    color: black;
+                }
+
+            .pagination span {
+                display: flex;
+                align-items: center;
+                color: #333;
+            }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>Filtros</h2>
+
+        <label for="categorySelect">Categoría</label>
+        <select id="categorySelect" onchange="applyFilters()">
+            <!-- Se llena por JS -->
+        </select>
+
+        <label>Precio mínimo</label>
+        <input type="number" id="minPrice" placeholder="Mínimo" oninput="applyFilters()" />
+
+        <label>Precio máximo</label>
+        <input type="number" id="maxPrice" placeholder="Máximo" oninput="applyFilters()" />
+
+        <label for="estadoSelect">Estado</label>
+        <select id="estadoSelect" onchange="applyFilters()">
+            <option value="">Todos</option>
+            <option value="Nuevo">Nuevo</option>
+            <option value="Segunda">Segunda</option>
+        </select>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <button onclick="location.href='@Url.Action("Index", "Home")'"
+                    style="background:#1a1d23; color:white; border:none; padding:10px 16px;
+                           border-radius:8px; cursor:pointer; font-size:14px;">
+                ⬅ Devolver
+            </button>
+
+            <h1>Tienda</h1>
+
+            <input type="text" id="searchInput" placeholder="Buscar por nombre o código..." oninput="searchProducts()">
+        </div>
+
+        <div id="grid" class="grid"></div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="prevPage()">Anterior</button>
+            <span id="pageInfo">Página 1</span>
+            <button id="nextBtn" onclick="nextPage()">Siguiente</button>
+        </div>
+    </main>
+
+    <script>
+        const modelo = @Html.Raw(Json.Serialize(Model));
+        console.log(modelo);
+        const productos = modelo.productos || [];
+        const categorias = modelo.categoriaProductos || [];
+
+        // --- Variables de paginación ---
+        let currentPage = 1;
+        const perPage = 20;
+        let filteredData = [...productos];
+
+        function renderCategorySelect() {
+            const select = document.getElementById("categorySelect");
+            if (!select) return;
+
+            select.innerHTML = "";
+
+            const optTodas = document.createElement("option");
+            optTodas.value = "";
+            optTodas.textContent = "Todas";
+            select.appendChild(optTodas);
+
+            categorias.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.idCateProducto;   // IdCateProducto desde el modelo
+                opt.textContent = c.descripcion; // Descripción de la categoría
+                select.appendChild(opt);
+            });
+        }
+
+        function formatCurrency(value) {
+            if (value == null || isNaN(value)) return "";
+            return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
+        }
+
+        async function cargarProductos(page = 1, data = productos) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const start = (page - 1) * perPage;
+                    const end = start + perPage;
+                    const slice = data.slice(start, end);
+                    resolve(slice);
+                }, 200);
+            });
+        }
+
+        async function mostrarProductos(lista) {
+            const grid = document.getElementById("grid");
+            grid.innerHTML = "";
+
+            lista.forEach(p => {
+                const estadoStock = p.cantidadProducto === 0
+                    ? "none"
+                    : p.cantidadProducto < 3
+                        ? "low"
+                        : "ok";
+
+                const card = document.createElement("div");
+                card.className = "card";
+
+                const imagen = p.imagenPath && p.imagenPath.trim() !== ""
+                    ? p.imagenPath
+                    : "/img/Productos/nodisponible.png";
+
+                const textoStock =
+                    p.cantidadProducto === 0
+                        ? "Agotado"
+                        : `Disponible (${p.cantidadProducto})`;
+
+                const mostrarWhatsapp = p.cantidadProducto > 0;
+
+                const mensaje = `Hola, Estoy cotizando el producto ${p.nombreProducto} con el código ${p.cod_Producto}, requiero más información.`;
+                const whatsappUrl = `https://wa.me/573185313379?text=${encodeURIComponent(mensaje)}`;
+
+                // ⚠️ Ajusta 'precioProducto' al nombre REAL de tu campo de precio
+                const precioTexto = formatCurrency(p.precioProducto);
+
+                card.innerHTML = `
+                    <img src="${imagen}" alt="${p.nombreProducto}"
+                         onerror="this.onerror=null; this.src='/img/Productos/nodisponible.png';">
+                    <h3>${p.nombreProducto}</h3>
+                    <p>Código: ${p.cod_Producto}</p>
+                    ${precioTexto ? `<p class="price">${precioTexto}</p>` : ""}
+                    <p>Estado: ${p.condicionProducto || 'Nuevo'}</p>
+                    <p>Valor: ${p.valorVentaProducto}</p>
+                    <p class="stock ${estadoStock}">
+                        ${textoStock}
+                    </p>
+                    ${
+                        mostrarWhatsapp
+                            ? `<button onclick="window.open('${whatsappUrl}', '_blank')">
+                                   Cotizar por WhatsApp
+                               </button>`
+                            : ""
+                    }
+                `;
+
+                grid.appendChild(card);
+            });
+
+            const pageInfo = document.getElementById("pageInfo");
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+        }
+
+        async function updatePage() {
+            const data = await cargarProductos(currentPage, filteredData);
+            mostrarProductos(data);
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePage();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePage();
+            }
+        }
+
+        // --- Filtros combinados ---
+        function applyFilters() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const catSelect = document.getElementById("categorySelect");
+            const selectedCat = catSelect ? catSelect.value : "";
+
+            const minPriceVal = parseFloat(document.getElementById("minPrice").value);
+            const maxPriceVal = parseFloat(document.getElementById("maxPrice").value);
+            const minPrice = isNaN(minPriceVal) ? null : minPriceVal;
+            const maxPrice = isNaN(maxPriceVal) ? null : maxPriceVal;
+
+            const estado = document.getElementById("estadoSelect").value; // "" = todos
+
+            filteredData = productos.filter(p => {
+                const name = (p.nombreProducto || "").toLowerCase();
+                const code = (p.cod_Producto || "").toLowerCase();
+
+                const matchesSearch = !term || name.includes(term) || code.includes(term);
+
+                const matchesCategory = !selectedCat || p.idCatepro === parseInt(selectedCat);
+
+                // ⚠️ Ajusta 'precioProducto' al nombre REAL de tu campo de precio
+                const precio = p.valorVentaProducto ?? 0;
+                const matchesMin = (minPrice === null) || precio >= minPrice;
+                const matchesMax = (maxPrice === null) || precio <= maxPrice;
+
+                const condicion = p.condicionProducto || "";
+                const matchesEstado = !estado || condicion === estado;
+
+                return matchesSearch && matchesCategory && matchesMin && matchesMax && matchesEstado;
+            });
+
+            currentPage = 1;
+            updatePage();
+        }
+
+        function searchProducts() {
+            applyFilters();
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            renderCategorySelect();
+            applyFilters(); // esto llama internamente a updatePage
+        });
+    </script>
+</body>
+</html>

@@ -48,12 +48,20 @@ namespace Plataforma.Servicios.Implementacion
                      .Select(se => se.Id_cargo)
                      .FirstOrDefault();
         }
-        public string? ObtenerNombreRolPermisos(int rolEmpleado)
+        public RolPermisoDTO? ObtenerNombreRolPermisos(int rolEmpleado)
         {
-            return _dbContext.TipoCargo
-                         .Where(tc => tc.Id_tipo == rolEmpleado)
-                         .Select(tc => tc.NombreCargo)
-                         .FirstOrDefault();
+            return (from tc in _dbContext.TipoCargo
+                    join e in _dbContext.Empresas
+                        on tc.Id_empresa equals e.Id_empresa
+                    where tc.Id_tipo == rolEmpleado
+                    select new RolPermisoDTO
+                    {
+                        NombreCargo = tc.NombreCargo,
+                        IdEmpresa = tc.Id_empresa,
+                        TipoCargo = tc.Id_tipo,
+                        NombreEmpresa = e.Nombre  // ⬅️ agregado
+                    })
+            .FirstOrDefault();
         }
         public int TraerUltimoIDPdv(int cedulaEmpleado)
         {
@@ -697,12 +705,6 @@ namespace Plataforma.Servicios.Implementacion
             var servicios = _dbContext.Servicio.ToList();
             return servicios;
         }
-        public async Task<List<MenuOption>> GetMenuOptionsAsync(int cargoId, string idEmpresa)
-        {
-            return await _dbContext.MenuOption
-                .Where(m => m.Id_Tipo == cargoId && m.Id_Empresa == idEmpresa)
-                .ToListAsync();
-        }
         public async Task<string> ObtenerIdEmpresaAsync(int cargoId)
         {
             // Suponiendo que tienes una tabla o entidad que relaciona los cargos con las empresas
@@ -818,6 +820,103 @@ namespace Plataforma.Servicios.Implementacion
                 Empleados = empleados,
                 PuntosDeVenta = pdvs
             };
+        }
+        //Funcionalidades de belleza
+        public List<Agendamientos> AgendamientosServicios()
+        {
+            var modAgendamientoCliente = _dbContext.Agendamientos.ToList();
+            return modAgendamientoCliente;
+        }
+        public bool GuardarEdicionServicio(Agendamientos model)
+        {
+            try
+            {
+                var servicio = _dbContext.Agendamientos.FirstOrDefault(x => x.Id == model.Id);
+                if (servicio != null)
+                {
+                    servicio.NombreCliente = model.NombreCliente;
+                    servicio.CelularCliente = model.CelularCliente;
+                    servicio.Fecha = model.Fecha;
+                    _dbContext.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public Agendamientos ObtenerAgendamientoPorId(int id)
+        {
+            return _dbContext.Agendamientos.FirstOrDefault(x => x.Id == id);
+        }
+        public bool AprobarAgendamiento(int id)
+        {
+            try
+            {
+                var servicio = _dbContext.Agendamientos.FirstOrDefault(x => x.Id == id);
+                if (servicio != null)
+                {
+                    servicio.Estado = "Realizado";
+                    _dbContext.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool EliminarAgendamiento(int id)
+        {
+            try
+            {
+                var servicio = _dbContext.Agendamientos.FirstOrDefault(x => x.Id == id);
+                if (servicio != null)
+                {
+                    _dbContext.Agendamientos.Remove(servicio);
+                    _dbContext.SaveChanges();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<List<Producto>> ConsultarCatProductos(int id)
+        {
+            return await _dbContext.Productos
+                .Where(p => p.IdCatepro == id)
+                .ToListAsync();
+        }
+        public async Task<bool> ExisteFechaAsync(string codProducto, DateTime fecha)
+        {
+            return await _dbContext.Agendamientos
+                .AnyAsync(a => a.Cod_Producto == codProducto && a.Fecha == fecha);
+        }
+
+        // Registrar un nuevo agendamiento si no existe
+        public async Task<bool> RegistrarAgendamientoAsync(string codProducto, DateTime fecha, string NombreCliente, string CelularCliente)
+        {
+            if (await ExisteFechaAsync(codProducto, fecha))
+                return false;
+
+            var nuevoAgendamiento = new Agendamientos
+            {
+                Cod_Producto = codProducto,
+                Fecha = fecha,
+                NombreCliente = NombreCliente,
+                CelularCliente = CelularCliente,
+                Estado = "Pendiente"
+            };
+
+            _dbContext.Agendamientos.Add(nuevoAgendamiento);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

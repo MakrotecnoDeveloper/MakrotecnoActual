@@ -1,0 +1,87 @@
+﻿@model PermisosMenuViewModel
+@{
+    ViewData["Title"] = "Permisos del menú";
+}
+<div class="content-wrapper">
+    <h2 class="mb-4">Permisos del menú por cargo</h2>
+    <p>Genericos: @Model.ModulosGenericos?.Count() | Actividad: @Model.ModulosActividad?.Count()</p>
+    <p>Cargos: @Model.Cargos?.Count()</p>
+    <p>Cargo seleccionado: @Model.CargoIdSeleccionado</p>
+    <!-- Selección de cargo -->
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Cargo</label>
+                <select class="form-select" name="cargoId" onchange="this.form.submit()">
+                    <option value="">-- Seleccione un cargo --</option>
+                    @foreach (var c in Model.Cargos)
+                    {
+                        <option value="@c.Value" selected="@(Model.CargoIdSeleccionado?.ToString() == c.Value)">
+                            @c.Text
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.CargoIdSeleccionado != null)
+    {
+        <form asp-action="Guardar" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="CargoIdSeleccionado" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>📦 Módulos genéricos (por plan)</h4>
+                    <hr />
+                    @for (int i = 0; i < Model.ModulosGenericos.Count; i++)
+                    {
+                        <div class="form-check mb-2">
+                            <input type="hidden" asp-for="ModulosGenericos[i].ModuloId" />
+                            <input type="hidden" asp-for="ModulosGenericos[i].NombreModulo" />
+                            <input type="hidden" asp-for="ModulosGenericos[i].EsGenerico" />
+
+                            <input class="form-check-input"
+                                   asp-for="ModulosGenericos[i].Activo"
+                                   type="checkbox" />
+                            <label class="form-check-label">
+                                @Model.ModulosGenericos[i].NombreModulo
+                            </label>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-6">
+                    <h4>🏭 Módulos por actividad económica</h4>
+                    <hr />
+                    @for (int i = 0; i < Model.ModulosActividad.Count; i++)
+                    {
+                        <div class="form-check mb-2">
+                            <input type="hidden" asp-for="ModulosActividad[i].ModuloId" />
+                            <input type="hidden" asp-for="ModulosActividad[i].NombreModulo" />
+                            <input type="hidden" asp-for="ModulosActividad[i].EsGenerico" />
+
+                            <input class="form-check-input"
+                                   asp-for="ModulosActividad[i].Activo"
+                                   type="checkbox" />
+                            <label class="form-check-label">
+                                @Model.ModulosActividad[i].NombreModulo
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    Guardar permisos
+                </button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <p>Selecciona un cargo para gestionar sus permisos.</p>
+    }
+</div>
