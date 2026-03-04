@@ -15,7 +15,7 @@ public partial class BaseAdmContext : DbContext
     public DbSet<Producto> Productos { get; set; }
     public DbSet<Factura> Factura { get; set; }
     public DbSet<Pedidos> Pedidos { get; set; }
-    public DbSet<Clientes> Cliente { get; set; }
+    public DbSet<Clientes> Clientes { get; set; }
     public DbSet<Ventas> Ventas { get; set; }
     public DbSet<Ganancias> Ganancias { get; set; }
     public DbSet<TipoCargo> TipoCargo { get; set; }
@@ -41,7 +41,6 @@ public partial class BaseAdmContext : DbContext
     public DbSet<HistOrdSer> HistOrdServ { get; set; }
     public DbSet<GestionRealizada> GestionRealizadas { get; set; }
     public DbSet<CierreCaja> CierreCajas { get; set; }
-    public DbSet<FlujoCaja> FlujoCajas { get; set; }
     public DbSet<VistaGananciaDiaria> VistaGananciaDiarias { get; set; }
     public DbSet<AdicionFactura> AdicionFacturas { get; set; }
     public DbSet<MetodoPagos> MetodoPagos { get; set; }
@@ -52,8 +51,8 @@ public partial class BaseAdmContext : DbContext
     public DbSet<DetalleConceptosEmpleado> DetallesConceptosEmpleado { get; set; }
     public DbSet<LiquidacionNomina> LiquidacionesNomina { get; set; }
     public DbSet<DetalleLiquidacion> DetallesLiquidacion { get; set; }
-    public DbSet<CxcVenta> CxcVentas { get; set; }
-    public DbSet<CxcPago> CxcPagos { get; set; }
+    public DbSet<CxcVentas> CxcVentas { get; set; }
+    public DbSet<CxcPagos> CxcPagos { get; set; }
     public DbSet<Agendamientos> Agendamientos { get; set; }
     public DbSet<Planes> Planes { get; set; }
     public DbSet<ActividadesEconomicas> ActividadesEconomicas { get; set; }
@@ -95,8 +94,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<TipoDispositivos>().HasKey(iss => iss.TipoDispositivo);
         modelBuilder.Entity<HistOrdSer>().HasKey(idp => idp.IdDiagProb);
         modelBuilder.Entity<GestionRealizada>().HasKey(igr => igr.IdGR);
-        modelBuilder.Entity<CierreCaja>().HasKey(id => id.IdCierreCaja);
-        modelBuilder.Entity<FlujoCaja>().HasKey(id => id.IdFlujoCaja);
+        modelBuilder.Entity<CierreCaja>().HasKey(id => id.IdFlujoCaja);
         modelBuilder.Entity<AdicionFactura>().HasKey(id => id.IdAdicion);
         modelBuilder.Entity<MetodoPagos>().HasKey(id => id.IdMetodo);
         modelBuilder.Entity<GastosMensuales>().HasKey(id => id.IdGasto);
@@ -144,7 +142,6 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<HistOrdSer>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<GestionRealizada>().HasOne<OrdenServicios>().WithMany().HasForeignKey(f => f.IdOrden);
         modelBuilder.Entity<CierreCaja>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
-        modelBuilder.Entity<FlujoCaja>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<Ganancias>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
         modelBuilder.Entity<AdicionFactura>().HasOne(a => a.Factura).WithMany(f => f.Adiciones).HasForeignKey(a => a.IdFactura).HasConstraintName("FK_AdicionFactura_Factura");
         modelBuilder.Entity<Agendamientos>().HasOne<Producto>().WithMany().HasForeignKey(f => f.Cod_Producto);
@@ -156,6 +153,13 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<GestionRealizada>()
             .Property(g => g.CostoTotal)
             .HasPrecision(10, 2);
+
+        modelBuilder.Entity<OrdenServicios>()
+            .HasOne<Empleados>()
+            .WithMany()
+            .HasForeignKey(o => o.Cedula)
+            .IsRequired(false); // ✅ permite NULL
+
 
         modelBuilder.Entity<Pedidos>()
             .Property(p => p.Stock)
@@ -250,5 +254,14 @@ public partial class BaseAdmContext : DbContext
            .HasMany(m => m.MenuOpciones)
            .WithOne(o => o.Modulo)
            .HasForeignKey(o => o.IdModulo);
+
+        foreach (var property in modelBuilder.Model
+        .GetEntityTypes()
+        .SelectMany(t => t.GetProperties())
+        .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+        {
+            property.SetPrecision(10);
+            property.SetScale(2);
+        }
     }
 }

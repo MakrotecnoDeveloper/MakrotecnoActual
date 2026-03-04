@@ -20,17 +20,77 @@ namespace Plataforma.Controllers
         }
         public async Task<IActionResult> Index()
         {
+            var cedulaClaimStr = User.FindFirst("Cedula")?.Value;
+            var rolClaim = User.FindFirst("NombreRol")?.Value;
+
+            int? cedula = null;
+            if (int.TryParse(cedulaClaimStr, out var c))
+                cedula = c;
+
+            // Trae SOLO las 10 últimas según rol
+            var ordenes = await _ordenServicioService.ObtenerUltimas10Async(
+                rolClaim ?? "",
+                cedula
+            );
+
             var model = new OrdenesServicioViewModel
             {
                 TipoDispositivos = await _dispositivoService.ObtenerTipoDispositivos(),
                 Dispositivos = await _dispositivoService.ObtenerDispositivosConClientesAsync(),
                 Clientes = await _tercerosService.ObtenerClientes(),
-                OrdenServicios = await _ordenServicioService.ObtenerTodasAsync(),
+                OrdenServicios = ordenes,
                 Proveedores = await _tercerosService.ObtenerProveedoresAsync(),
                 Sedeempleados = await _ordenServicioService.ObtenerEmpleadoSedeAsync(),
             };
+
             return View(model);
         }
+        [HttpGet]
+        public async Task<IActionResult> BuscarOrdenPorId(int idOrden)
+        {
+            var rol = User.FindFirst("NombreRol")?.Value ?? "";
+            var cedulaStr = User.FindFirst("Cedula")?.Value;
+
+            int? cedula = null;
+            if (int.TryParse(cedulaStr, out var c)) cedula = c;
+
+            var orden = await _ordenServicioService.ObtenerPorIdAsync(idOrden);
+            if (orden == null)
+                return Json(new { success = false, message = "No existe una orden con ese ID." });
+
+            var esAdmin = string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase);
+
+            if (!esAdmin)
+            {
+                if (cedula == null)
+                    return Json(new { success = false, message = "No se pudo validar tu cédula." });
+
+                // OJO: si la orden está sin técnico (Cedula NULL), un técnico NO debería verla
+                if (orden.Cedula == null || orden.Cedula != cedula.Value)
+                    return Json(new { success = false, message = "No tienes permiso para ver esa orden." });
+            }
+
+            return Json(new
+            {
+                success = true,
+                orden = new OrdenServicioRowDTO
+                {
+                    IdOrden = orden.IdOrden,
+                    FechaIngreso = orden.FechaIngreso,
+                    Cliente = orden.Dispositivo?.Cliente?.NombreCliente ?? "",
+                    Telefono = orden.Dispositivo?.Cliente?.TelefonoCliente ?? "",
+                    Password = orden.Dispositivo?.Clave ?? "",
+                    Marca = orden.Dispositivo?.Marca ?? "",
+                    Modelo = orden.Dispositivo?.Modelo ?? "",
+                    Descripcion = orden.ProblemaReportado ?? "",
+                    Observacion = orden.Observaciones ?? "",
+                    Estado = orden.Estado ?? "",
+                    Cedula = orden.Cedula
+                }
+            });
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> Dispositivos()
         {
@@ -148,7 +208,7 @@ namespace Plataforma.Controllers
             if (orden == null)
                 return NotFound("La orden no existe");
 
-            await _ordenServicioService.CrearHistOrdenAsync(model, Cod_Producto, Stock, ValorRepuesto, Condicion, Tipo, Proveedor, orden.Cedula);
+            await _ordenServicioService.CrearHistOrdenAsync(model, Cod_Producto, Stock, ValorRepuesto, Condicion, Tipo, Proveedor, (int)orden.Cedula);
             return Ok();
         }
         [HttpPost]
@@ -215,6 +275,70 @@ namespace Plataforma.Controllers
                 return NotFound("Orden no encontrada");
 
             return Ok(new { success = true, message = $"Empleado asignado a la orden #{updated.IdOrden}" });
+        }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerFiltros()
+        {
+            // Rol y cédula del usuario logueado
+            var rol = User.FindFirst("NombreRol")?.Value ?? "";
+            var cedulaStr = User.FindFirst("Cedula")?.Value ?? "0";
+            int cedula = int.TryParse(cedulaStr, out var c) ? c : 0;
+
+            // Estados existentes en BD (distinct)
+            var estados = await _ordenServicioService.ObtenerEstadosExistentesAsync();
+
+            // Técnicos (admin: todos, técnico: solo él)
+            var tecnicos = await _ordenServicioService.ObtenerTecnicosParaFiltroAsync(rol, cedula);
+
+            return Ok(new
+            {
+                success = true,
+                estados,
+                tecnicos,
+                rol,
+                cedula
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FiltrarOrdenes(string estado = "__ALL__", int tecnico = 0)
+        {
+            var rol = User.FindFirst("NombreRol")?.Value ?? "";
+            var cedulaStr = User.FindFirst("Cedula")?.Value ?? "0";
+            int cedulaUsuario = int.TryParse(cedulaStr, out var c) ? c : 0;
+
+            // Regla: si es técnico, SIEMPRE se filtra por él (ignore tecnico que venga)
+            if (rol != "Administrador")
+                tecnico = cedulaUsuario;
+
+            // Si tecnico viene 0 o __ALL__ -> admin no filtra por tecnico
+            int? tecnicoFiltro = (rol == "Administrador" && tecnico > 0) ? tecnico : (int?)null;
+
+            // Si estado viene __ALL__ -> no filtra por estado
+            string? estadoFiltro = (estado != "__ALL__") ? estado : null;
+
+            // Trae las últimas 10 ya filtradas
+            var ordenes = await _ordenServicioService.ObtenerUltimas10FiltradasAsync(estadoFiltro, tecnicoFiltro);
+
+            // Mapea a DTO para pintar la tabla
+            var dto = ordenes.Select(o => new OrdenServicioRowDTO
+            {
+                IdOrden = o.IdOrden,
+                FechaIngreso = o.FechaIngreso,
+                Cliente = o.Dispositivo?.Cliente?.NombreCliente ?? "",
+                Telefono = o.Dispositivo?.Cliente?.TelefonoCliente ?? "",
+                Password = o.Dispositivo?.Clave ?? "",
+                Marca = o.Dispositivo?.Marca ?? "",
+                Modelo = o.Dispositivo?.Modelo ?? "",
+                Descripcion = o.ProblemaReportado ?? "",
+                Observacion = o.Observaciones ?? "",
+                Estado = o.Estado ?? "",
+                Cedula = o.Cedula,
+                // si quieres mostrar total:
+                // Total = o.ValorPago ?? 0
+            }).ToList();
+
+            return Ok(new { success = true, ordenes = dto });
         }
     }
 }

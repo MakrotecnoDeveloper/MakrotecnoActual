@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Vml;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
@@ -69,7 +70,7 @@ namespace Plataforma.Servicios.Implementacion
                         FechaVenta = DateTime.Now,
                         IdCliente = ordenExistente.Dispositivo.IdCliente,
                         Total = 0, // lo puedes ajustar según reglas
-                        MetodoPago = 1,
+                        MetodoPago = "Normal",
                         Cedula = cedulaEmpleado
                     };
 
@@ -186,7 +187,7 @@ namespace Plataforma.Servicios.Implementacion
             }
         }
 
-        public async Task<int> GenerarConsecutivoFactura()
+        /*public async Task<int> GenerarConsecutivoFactura()
         {
             var random = new Random();
             int numeroFactura;
@@ -197,7 +198,7 @@ namespace Plataforma.Servicios.Implementacion
             } while (await _dbContext.Factura.AnyAsync(f => f.NumeroFactura == numeroFactura));
 
             return numeroFactura;
-        }
+        }*/
         public async Task<bool> ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario)
         {
             //1. Se consulta si la orden que viene del formulario existe o no
@@ -234,8 +235,6 @@ namespace Plataforma.Servicios.Implementacion
                 var itemsHist = await _dbContext.HistOrdServ
                     .Where(h => h.IdOrden == orden.IdOrden && h.Cod_Producto != null)
                     .ToListAsync();
-                decimal? SubTotalPedidos = 0;
-               
                 // Consultar IdSede e InfoPdvId una sola vez aquí, porque los necesitas si hay pedidos
                 var idSede = await _dbContext.Sedeempleado
                     .Where(se => se.Cedula == cedula)
@@ -249,45 +248,36 @@ namespace Plataforma.Servicios.Implementacion
                     .Where(p => p.Id_Sede == idSede)
                     .Select(p => p.InfopdvId)
                     .FirstOrDefaultAsync();
-
+                int cedulaCliente = 0;
+                if(ordenExistente.Dispositivo.CedulaCliente == 0)
+                {
+                    cedulaCliente = 0;
+                }
                 if (infoPdvId == 0)
                     throw new Exception("No se encontró un PDV válido para la sede.");
                     // Crear venta (aunque no haya productos, subtotal es 0)
                     var venta = new Ventas
                     {
-                        EstadoVenta = "Aprobada",
+                        EstadoVenta = "Pendiente",
                         FechaVenta = DateTime.Now,
                         IdCliente = ordenExistente.Dispositivo.IdCliente,
                         Total = (decimal)orden.ValorPago,
-                        MetodoPago = 1,
+                        MetodoPago = "Pendiente",
                         Cedula = cedula,
-                        CedulaCliente = (int)ordenExistente.Dispositivo.CedulaCliente,
+                        CedulaCliente = cedulaCliente,
                         Conceptos = $"Venta generada desde la orden #{orden.IdOrden}"
                     };
 
                 _dbContext.Ventas.Add(venta);
                 await _dbContext.SaveChangesAsync(); // Genera IdVenta
-
-                decimal? totalCosto = 0;
-                int totalStock = 0;
-                decimal? valorPagos = 0;
+                decimal valorPagos = 0;
                 var pedidosNuevos = new List<Pedidos>();
                 foreach (var item in itemsHist)
-                {
-                    /*var prod = await _dbContext.Productos
-                        .Where(p => p.Cod_Producto == "1")
-                        .Select(p => new
-                        {
-                            p.Cod_Producto,
-                            p.ValorVentaProducto,
-                            p.ValorNetoProducto
-                        })
-                        .FirstOrDefaultAsync();*/
-                        
+                {      
                         pedidosNuevos.Add(new Pedidos
                         {
                             IdVenta = venta.IdVenta,
-                            Codigo = "1",
+                            Codigo = "SERVICIO_TECNICO",
                             Stock = item.Stock,
                             VNeto = item.ValorNetoProducto * item.Stock,
                             VVenta = 0,
@@ -296,7 +286,7 @@ namespace Plataforma.Servicios.Implementacion
                             SubTotal = 0
                         });
                     // Acumular para el registro final del servicio
-                    valorPagos = orden.ValorPago;
+                    valorPagos = orden.ValorPago ?? 0m;
                 }
                 // Registro extra: el servicio vendido (con el valor final al cliente)
                 pedidosNuevos.Add(new Pedidos
@@ -311,21 +301,6 @@ namespace Plataforma.Servicios.Implementacion
                     SubTotal = valorPagos      // valor de venta final
                 });
                 _dbContext.Pedidos.AddRange(pedidosNuevos);
-                await _dbContext.SaveChangesAsync();
-                decimal iva = 0;
-                decimal totalIva = venta.Total * iva;
-                decimal total = venta.Total + iva;
-                Factura factura = new Factura
-                {
-                    NumeroFactura = await GenerarConsecutivoFactura(),
-                    FechaEmision = DateTime.Now,
-                    IdVenta = venta.IdVenta,
-                    SubTotal = venta.Total,
-                    IVA = totalIva,
-                    Total = total,
-                    EstadoFactura = "Emitida"
-                };
-                _dbContext.Factura.Add(factura);
                 await _dbContext.SaveChangesAsync();
             }
             if(orden.Estado == "Rechazada")
@@ -380,5 +355,78 @@ namespace Plataforma.Servicios.Implementacion
         {
             return await _dbContext.Sedeempleado.ToListAsync();
         }
+        public async Task<List<OrdenServicios>> ObtenerUltimas10Async(string rol, int? cedulaTecnico)
+        {
+            // base query con includes necesarios para que tu vista no reviente:
+            var query = _dbContext.OrdenServicios
+                .Include(o => o.Dispositivo)
+                    .ThenInclude(d => d.Cliente)
+                .AsQueryable();
+
+            // Si NO es admin, filtra por cédula del técnico
+            if (!string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase))
+            {
+                if (cedulaTecnico == null)
+                    return new List<OrdenServicios>(); // no hay cédula -> no muestres nada
+
+                query = query.Where(o => o.Cedula == cedulaTecnico.Value);
+            }
+
+            // Las 10 últimas: usa un campo de fecha/ID para ordenar descendente
+            return await query
+                .OrderByDescending(o => o.FechaIngreso)  // o IdOrden si prefieres
+                .Take(10)
+                .ToListAsync();
+        }
+        public async Task<List<string>> ObtenerEstadosExistentesAsync()
+        {
+            return await _dbContext.OrdenServicios
+                .Where(o => o.Estado != null && o.Estado != "")
+                .Select(o => o.Estado!)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync();
+        }
+
+        public async Task<List<object>> ObtenerTecnicosParaFiltroAsync(string rol, int cedulaUsuario)
+        {
+            if (rol != "Administrador")
+            {
+                return new List<object>
+        {
+            new { cedula = cedulaUsuario, nombre = $"Técnico {cedulaUsuario}" }
+        };
+            }
+
+            // Admin: lista técnicos distintos desde OrdenServicios
+            // (si quieres el nombre real, cruza con Empleados)
+            var tecnicos = await _dbContext.OrdenServicios
+                .Select(o => o.Cedula)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync();
+
+            return tecnicos.Select(t => (object)new { cedula = t, nombre = $"Técnico {t}" }).ToList();
+        }
+
+        public async Task<List<OrdenServicios>> ObtenerUltimas10FiltradasAsync(string? estado, int? cedulaTecnico)
+        {
+            var q = _dbContext.OrdenServicios
+                .Include(o => o.Dispositivo)
+                    .ThenInclude(d => d.Cliente)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estado))
+                q = q.Where(o => o.Estado == estado);
+
+            if (cedulaTecnico.HasValue)
+                q = q.Where(o => o.Cedula == cedulaTecnico.Value);
+
+            return await q.OrderByDescending(o => o.FechaIngreso)
+                         .Take(10)
+                         .ToListAsync();
+        }
+
+
     }
 }

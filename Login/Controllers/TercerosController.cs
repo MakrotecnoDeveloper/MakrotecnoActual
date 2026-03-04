@@ -15,23 +15,16 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearCliente([FromBody] Clientes cliente)
         {
-            try
-            {
                 var clienteCreado = await _terceroService.CrearClienteAsync(cliente);
                 return Ok(new { 
                     success = true,
-                    Cliente = new {
+                    cliente = new {
                         idCliente = clienteCreado.IdCliente,
                         nombreCliente = clienteCreado.NombreCliente,
                         telefonoCliente = clienteCreado.TelefonoCliente
                     }
                 
                 });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
         }
     }
 }

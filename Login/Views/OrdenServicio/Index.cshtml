@@ -2,16 +2,9 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var cedulaClaim = int.Parse(User.FindFirst("Cedula")?.Value);
-    var rolClaim = User.FindFirst("NombreRol")?.Value;
-    var ordenesFiltradas = Model.OrdenServicios;
-    if (rolClaim != "Administrador") // si NO es admin, filtra por cédula
-    {
-        ordenesFiltradas = ordenesFiltradas
-            .Where(o => o.Cedula == cedulaClaim)
-            .ToList();
-    }
     string version = DateTime.Now.ToString();
+    var rolClaim = User.FindFirst("NombreRol")?.Value ?? "";
+    var cedulaClaim = User.FindFirst("Cedula")?.Value ?? "";
 }
 <link rel="stylesheet" href="~/css/OrdenServicio/Index.css">
 
@@ -20,70 +13,174 @@
         <h1 class="mb-3">Tabla de Ordenes de Servicio</h1>
 
         <!-- CONTROLES -->
-        <div class="row mb-3 g-2">
-            <div class="col-md-8">
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="openUnifiedModal()">➕ Gestionar</button>
+        <div class="row mb-3 g-2 align-items-center">
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+
+                <button class="btn btn-primary" onclick="openUnifiedModal()">➕ Gestionar</button>
+
+                <div class="input-group" style="max-width: 320px;">
+                    <input type="number" min="1" class="form-control" id="buscarIdOrden" placeholder="Buscar orden por ID">
+                    <button class="btn btn-dark" id="btnBuscarOrden"><i class="bi bi-search"></i></button>
                 </div>
+
+                <!-- Filtros -->
+                <div class="d-flex gap-2 ms-auto flex-wrap">
+                    <select id="filtroEstado" class="form-select" style="min-width: 180px;">
+                        <option value="__ALL__">Todos los estados</option>
+                    </select>
+
+                    <select id="filtroTecnico" class="form-select" style="min-width: 200px;">
+                        <option value="__ALL__">Todos los técnicos</option>
+                    </select>
+                </div>
+
             </div>
         </div>
+
         <div class="row mb-3">
             <div class="col-md-12">
-                <div class="table-responsive border">
-                    <table class="table table-sm table-striped mb-0" id="mainTable">
+                <!-- ===== RESUMEN (Totales arriba) ===== -->
+                <div class="row g-2 mb-2" id="resumenOrdenes">
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-white shadow-sm">
+                            <div class="text-muted small">Órdenes</div>
+                            <div class="fs-4 fw-semibold" id="kpiTotalOrdenes">0</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-white shadow-sm">
+                            <div class="text-muted small">En proceso</div>
+                            <div class="fs-4 fw-semibold" id="kpiEnProceso">0</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-white shadow-sm">
+                            <div class="text-muted small">Finalizadas</div>
+                            <div class="fs-4 fw-semibold" id="kpiFinalizadas">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== TABLA ===== -->
+                <div class="table-responsive border rounded-3 bg-white shadow-sm">
+                    <table class="table table-hover align-middle mb-0" id="mainTable">
                         <thead class="table-dark">
                             <tr>
-                                <th>ID</th>
-                                <th>FECHA</th>
-                                <th>CLIENTE</th>
-                                <th>TELEFONO</th>
-                                <th>PASSWORD</th>
-                                <th>MARCA</th>
-                                <th>MODELO</th>
-                                <th>DESCRIPCION</th>
-                                <th>OBSERVACION</th>
-                                <th>ESTADO</th>
-                                <th>Tecnico</th>
-                                <th>Acciones</th>
+                                <th style="width:110px;">Código</th>
+                                <th style="width:140px;">Fecha</th>
+                                <th>Cliente / Equipo</th>
+                                <th style="width:160px;">Técnico</th>
+                                <th style="width:180px;">Estado</th>
+                                <th style="width:140px;" class="text-end">Total</th>
+                                <th style="width:190px;" class="text-end">Acciones</th>
                             </tr>
                         </thead>
+
                         <tbody id="tbody">
-                                @foreach (var ordenServicio in ordenesFiltradas)
-                                {
+                            @foreach (var ordenServicio in Model.OrdenServicios)
+                            {
+                                var total = ordenServicio.ValorPago ?? 0; // <-- tu "Total" base (si luego lo calculas mejor, aquí lo actualizas)
+
                                 <tr>
-                                    <td>@ordenServicio.IdOrden</td>
-                                    <td>@ordenServicio.FechaIngreso</td>
-                                    <td>@ordenServicio.Dispositivo.Cliente.NombreCliente</td>
-                                    <td>@ordenServicio.Dispositivo.Cliente.TelefonoCliente</td>
-                                    <td>@ordenServicio.Dispositivo.Clave</td>
-                                    <td>@ordenServicio.Dispositivo.Marca</td>
-                                    <td>@ordenServicio.Dispositivo.Modelo</td>
-                                    <td>@ordenServicio.ProblemaReportado</td>
-                                    <td>@ordenServicio.Observaciones</td>
-                                    <td>@ordenServicio.Estado</td>
-                                    <td>@ordenServicio.Cedula</td>
+                                    <!-- Código -->
+                                    <td class="fw-semibold">
+                                        ST-@ordenServicio.IdOrden
+                                    </td>
+
+                                    <!-- Fecha -->
                                     <td>
+                                        <div class="small fw-semibold">@ordenServicio.FechaIngreso.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-muted small">@ordenServicio.FechaIngreso.ToString("hh:mm tt")</div>
+                                    </td>
+
+                                    <!-- Cliente / Equipo -->
+                                    <td>
+                                        <div class="fw-semibold">@ordenServicio.Dispositivo?.Cliente?.NombreCliente</div>
+                                        <div class="text-muted small">
+                                            @ordenServicio.Dispositivo?.TipoDispositivo · @ordenServicio.Dispositivo?.Marca @ordenServicio.Dispositivo?.Modelo
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(ordenServicio.ProblemaReportado))
+                                        {
+                                            <div class="small mt-1">
+                                                <span class="text-muted">Problema:</span>
+                                                @ordenServicio.ProblemaReportado
+                                            </div>
+                                        }
+                                    </td>
+
+                                    <!-- Técnico -->
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @ordenServicio.Cedula
+                                        </span>
+                                    </td>
+
+                                    <!-- Estado -->
+                                    <td>
+                                        @{
+                                            var estado = ordenServicio.Estado ?? "";
+                                            var badgeClass = "bg-secondary";
+
+                                            if (estado == "Ingresada") badgeClass = "bg-secondary";
+                                            else if (estado == "Ejecucion") badgeClass = "bg-primary";
+                                            else if (estado == "Pendiente") badgeClass = "bg-warning text-dark";
+                                            else if (estado == "Finalizada") badgeClass = "bg-dark";
+                                            else if (estado == "Rechazada") badgeClass = "bg-danger";
+                                        }
+
+                                        <span class="badge @badgeClass px-3 py-2">
+                                            @estado
+                                        </span>
+                                    </td>
+
+                                    <!-- Total -->
+                                    <td class="text-end">
+                                        <div class="fw-semibold">
+                                            @total.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
+                                        </div>
+                                        <div class="text-muted small">estimado</div>
+                                    </td>
+
+                                    <!-- Acciones (iconos estilo imagen1) -->
+                                    <td class="text-end text-nowrap">
+                                        <button class="btn btn-sm btn-outline-secondary verOrdenBtn"
+                                                title="Ver"
+                                                data-id="@ordenServicio.IdOrden">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
                                         @if (ordenServicio.Estado != "Rechazada" && ordenServicio.Estado != "Finalizada")
                                         {
-                                            <button class="btn btn-sm btn-info modOrdenBtn" data-id="@ordenServicio.IdOrden">
-                                                Modificar Orden
+                                            <button class="btn btn-sm btn-outline-primary modOrdenBtn"
+                                                    title="Editar"
+                                                    data-id="@ordenServicio.IdOrden">
+                                                <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="@ordenServicio.IdOrden">
-                                                Nuevo Registro
+
+                                            <button class="btn btn-sm btn-outline-success nuevaOrdenBtn"
+                                                    title="Nuevo registro"
+                                                    data-id="@ordenServicio.IdOrden">
+                                                <i class="bi bi-plus-circle"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-success asignarTecnico" data-id="@ordenServicio.IdOrden">
-                                                Asignar Tecnico
+
+                                            <button class="btn btn-sm btn-outline-dark asignarTecnico"
+                                                    title="Asignar técnico"
+                                                    data-id="@ordenServicio.IdOrden">
+                                                <i class="bi bi-person"></i>
                                             </button>
                                         }
-                                        <button class="btn btn-sm btn-info verOrdenBtn" data-id="@ordenServicio.IdOrden">
-                                            Ver Registros
-                                        </button>
                                     </td>
                                 </tr>
-                                }
+                            }
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Tip -->
+                <div class="small text-muted mt-2">
+                    Tip: abre una orden para ver historial, repuestos, mano de obra, proforma y factura final.
+                </div>
+
             </div>
         </div>
     </div>
@@ -92,21 +189,31 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content rounded-4 shadow">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Gestión General</h5>
+                    <div>
+                        <h5 class="modal-title mb-0">Gestión General</h5>
+                        <div class="small opacity-75">Orden es obligatoria. Cliente y Dispositivo son opcionales si no existen.</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
 
-                    <!-- NAV TABS -->
+                    <!-- NAV TABS (Orden primero) -->
                     <ul class="nav nav-tabs mb-3" id="modalTabs" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#clienteTab" type="button">Agregar Cliente</button>
+                            <button class="nav-link active" id="orden-tab" data-bs-toggle="tab" data-bs-target="#ordenTab" type="button">
+                                ✅ Orden (obligatorio)
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link" id="dispositivo-tab" data-bs-toggle="tab" data-bs-target="#dispositivoTab" type="button">Agregar Dispositivo</button>
+                            <button class="nav-link" id="dispositivo-tab" data-bs-toggle="tab" data-bs-target="#dispositivoTab" type="button">
+                                ➕ Dispositivo (opcional)
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link" id="orden-tab" data-bs-toggle="tab" data-bs-target="#ordenTab" type="button">Crear Orden</button>
+                            <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#clienteTab" type="button">
+                                ➕ Cliente (opcional)
+                            </button>
                         </li>
                     </ul>
 
@@ -114,144 +221,238 @@
                     <div class="tab-content">
 
                         <!-- ================= TAB ORDEN ================= -->
-                        <div class="tab-pane fade" id="ordenTab">
+                        <div class="tab-pane fade show active" id="ordenTab">
+                            <div class="alert alert-info py-2 mb-3">
+                                Esta orden se creará como <b>Ingresada</b>. El técnico se asigna después según disponibilidad.
+                            </div>
+
+                            <!-- ACCESOS RÁPIDOS -->
+                            <div class="d-flex flex-wrap gap-3 align-items-center mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chkNoExisteDispositivo">
+                                    <label class="form-check-label" for="chkNoExisteDispositivo">
+                                        El dispositivo no existe → ir a crearlo
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chkNoExisteCliente">
+                                    <label class="form-check-label" for="chkNoExisteCliente">
+                                        El cliente no existe → ir a crearlo
+                                    </label>
+                                </div>
+
+                                <div class="ms-auto d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnIrADispositivo">
+                                        ➕ Crear dispositivo
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnIrACliente">
+                                        ➕ Crear cliente
+                                    </button>
+                                </div>
+                            </div>
+
                             <form id="rowForm">
                                 <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label asp-for="orden.IdDispositivo">Dispositivo</label>
-                                        <select asp-for="orden.IdDispositivo" name="cliente" id="m_dispositivo" class="form-control">
-                                            <option disabled selected>Seleccione un dispositivo</option> 
-                                            @foreach (var dispositivo in Model.Dispositivos) 
+
+                                    <div class="col-md-5">
+                                        <label class="form-label">Dispositivo <span class="text-danger">*</span></label>
+                                        <select asp-for="orden.IdDispositivo" id="m_dispositivo" class="form-select" required>
+                                            <option value="" selected disabled>Seleccione un dispositivo</option>
+                                            @foreach (var dispositivo in Model.Dispositivos)
                                             {
-                                            <option value="@dispositivo.IdDispositivo" data-descripcion="@dispositivo.Detalle">@dispositivo.IdDispositivo - @dispositivo.Cliente.NombreCliente - @dispositivo.FechaIngreso</option>
+                                                <option value="@dispositivo.IdDispositivo" data-detalle="@dispositivo.Detalle">
+                                                    @dispositivo.IdDispositivo - @dispositivo.Cliente.NombreCliente - @dispositivo.FechaIngreso
+                                                </option>
                                             }
                                         </select>
+                                        <div class="form-text">Si no aparece, créalo en la pestaña <b>Dispositivo</b>.</div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <label asp-for="orden.ProblemaReportado">Problema Reportado</label>
-                                        <input asp-for="orden.ProblemaReportado" id="m_descripcion" class="form-control">
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Problema reportado <span class="text-danger">*</span></label>
+                                        <textarea id="m_descripcion" class="form-control" rows="2" required
+                                                  placeholder="Ej: No enciende, pantalla rota, se reinicia..."></textarea>
                                     </div>
+
                                     <div class="col-md-3">
-                                        <label asp-for="orden.Estado">Estado</label>
-                                        <select asp-for="orden.Estado" id="m_estado" class="form-select"> 
-                                            <option value="Ingresada">Ingresada</option> 
+                                        <label class="form-label">Estado</label>
+                                        <select id="m_estado" class="form-select" disabled>
+                                            <option value="Ingresada" selected>Ingresada</option>
                                         </select>
+                                        <div class="form-text">Se asigna técnico después.</div>
                                     </div>
-                                    <div class="col-md-12 mt-2">
-                                        <label asp-for="orden.Observaciones">Observación</label>
-                                        <textarea asp-for="orden.Observaciones" id="m_observacion" class="form-control" rows="5"></textarea>
+
+                                    <div class="col-md-12">
+                                        <label class="form-label">Observación (opcional)</label>
+                                        <textarea id="m_observacion" class="form-control" rows="3"
+                                                  placeholder="Ej: No formatear, se entrega con cargador, urgencia..."></textarea>
                                     </div>
+
+                                    <!-- DETALLE VISUAL -->
+                                    <div class="col-md-12">
+                                        <div class="border rounded p-2 bg-light">
+                                            <div class="small text-muted">Detalle del dispositivo (referencia)</div>
+                                            <div id="detalleDispositivoSel" class="small">Selecciona un dispositivo para ver el detalle.</div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <div class="text-end mt-3">
-                                    <button class="btn btn-primary" type="submit">Guardar Orden</button>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button class="btn btn-primary" type="submit">Crear Orden</button>
                                 </div>
                             </form>
                         </div>
 
                         <!-- ================= TAB DISPOSITIVO ================= -->
                         <div class="tab-pane fade" id="dispositivoTab">
+                            <div class="alert alert-secondary py-2 mb-3">
+                                Crea un dispositivo solo si no existe. Si ya existe, vuelve a <b>Orden</b> y selecciónalo.
+                            </div>
+
                             <form id="deviceForm">
                                 <div class="row g-2">
+
                                     <div class="col-md-6">
-                                        <label>Fecha Ingreso</label>
-                                        <input type="date" id="d_fecha" class="form-control" required>
+                                        <label class="form-label">Cliente <span class="text-danger">*</span></label>
+                                        <select id="d_cliente" class="form-select" required>
+                                            <option value="" selected disabled>Seleccione un cliente</option>
+                                            @foreach (var cliente in Model.Clientes)
+                                            {
+                                                <option value="@cliente.IdCliente">@cliente.NombreCliente</option>
+                                            }
+                                        </select>
                                     </div>
+
                                     <div class="col-md-6">
-                                        <label>Marca</label>
-                                        <input id="d_marca" class="form-control" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Modelo</label>
-                                        <input id="d_modelo" class="form-control" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Detalle</label>
-                                        <input id="d_detalle" class="form-control">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>IMEI</label>
-                                        <input id="d_imei" class="form-control" value="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Clave o PIN</label>
-                                        <input id="d_clave" class="form-control" value="No tiene">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Patrón</label>
-                                        <input id="d_patron" class="form-control" value="No tiene">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Tipo Dispositivo</label>
-                                        <select name="servicio" id="d_tipodispositivo" class="form-control"> 
-                                            <option disabled selected>Seleccione un servicio</option> 
-                                            @foreach (var servicio in Model.TipoDispositivos) 
+                                        <label class="form-label">Tipo Dispositivo <span class="text-danger">*</span></label>
+                                        <select id="d_tipodispositivo" class="form-select" required>
+                                            <option value="" selected disabled>Seleccione un tipo</option>
+                                            @foreach (var servicio in Model.TipoDispositivos)
                                             {
                                                 <option value="@servicio.TipoDispositivo">@servicio.Descripcion</option>
                                             }
                                         </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Cliente</label>
-                                        <select name="cliente" id="d_cliente" class="form-control"> 
-                                            <option disabled selected>Seleccione un cliente</option> 
-                                            @foreach (var cliente in Model.Clientes) 
-                                            {
-                                                <option value="@cliente.IdCliente">@cliente.NombreCliente</option>
-                                            }
-                                            </select>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Fecha Ingreso <span class="text-danger">*</span></label>
+                                        <input type="date" id="d_fecha" class="form-control" required>
                                     </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Marca <span class="text-danger">*</span></label>
+                                        <input id="d_marca" class="form-control" required placeholder="Ej: Samsung, HP">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Modelo <span class="text-danger">*</span></label>
+                                        <input id="d_modelo" class="form-control" required placeholder="Ej: A52, Pavilion 15">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Accesorios / Estado físico (opcional)</label>
+                                        <input id="d_detalle" class="form-control" placeholder="Ej: Se entrega con cargador, rayones...">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">IMEI (opcional)</label>
+                                        <input id="d_imei" class="form-control" placeholder="Solo si aplica">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Clave o PIN (opcional)</label>
+                                        <input id="d_clave" class="form-control" placeholder="Opcional">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Patrón (opcional)</label>
+                                        <input id="d_patron" class="form-control" placeholder="Opcional">
+                                    </div>
+
                                 </div>
-                                <div class="text-end mt-3">
-                                    <button class="btn btn-success" type="submit">Agregar Dispositivo</button>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <button class="btn btn-success" type="submit">Guardar Dispositivo</button>
                                 </div>
                             </form>
                         </div>
 
                         <!-- ================= TAB CLIENTE ================= -->
-                        <div class="tab-pane fade active show" id="clienteTab">
+                        <div class="tab-pane fade" id="clienteTab">
+                            <div class="alert alert-secondary py-2 mb-3">
+                                Crea un cliente solo si no existe. Luego vuelve a <b>Dispositivo</b> u <b>Orden</b>.
+                            </div>
+
                             <form id="clienteForm">
                                 <div class="row g-2">
+
                                     <div class="col-md-6">
-                                        <label>Cédula</label>
-                                        <input id="c_cedula" class="form-control" value="0">
+                                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                        <input id="c_nombre" class="form-control" required placeholder="Ej: Juan Pérez">
                                     </div>
+
                                     <div class="col-md-6">
-                                        <label>Nombre</label>
-                                        <input id="c_nombre" class="form-control">
+                                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                                        <input id="c_telefono" class="form-control" required placeholder="Ej: 3001234567">
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Empresa</label>
-                                        <input id="c_empresa" class="form-control" value="No Maneja">
+
+                                    <div class="col-md-12 mt-2">
+                                        <a class="text-decoration-none" data-bs-toggle="collapse" href="#clienteOpcionales" role="button">
+                                            + Datos opcionales
+                                        </a>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Ciudad</label>
-                                        <input id="c_ciudad" class="form-control">
+
+                                    <div class="collapse" id="clienteOpcionales">
+                                        <div class="row g-2 mt-1">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Cédula</label>
+                                                <input id="c_cedula" class="form-control" placeholder="Opcional">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Correo</label>
+                                                <input type="email" id="c_correo" class="form-control" placeholder="Opcional">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ciudad</label>
+                                                <input id="c_ciudad" class="form-control" placeholder="Opcional">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Empresa</label>
+                                                <input id="c_empresa" class="form-control" placeholder="Opcional">
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <label class="form-label">Dirección</label>
+                                                <input id="c_direccion" class="form-control" placeholder="Opcional">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Teléfono</label>
-                                        <input id="c_telefono" class="form-control" value="0">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Correo</label>
-                                        <input type="email" id="c_correo" class="form-control" value="notiene@gmail.com">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label>Dirección</label>
-                                        <input id="c_direccion" class="form-control" value="no tiene">
-                                    </div>
+
                                 </div>
-                                <div class="text-end mt-3">
-                                    <button class="btn btn-info" type="submit">Agregar Cliente</button>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <button class="btn btn-info" type="submit">Guardar Cliente</button>
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    * Campos obligatorios mínimos para registrar el cliente.
                                 </div>
                             </form>
                         </div>
 
-                    </div> <!-- TAB CONTENT -->
+                    </div><!-- /tab-content -->
 
-                </div>
+                </div><!-- /modal-body -->
             </div>
         </div>
     </div>
+
     <!-- Panel flotante -->
     <div id="sidePanel" class="position-fixed top-0 end-0 bg-light border-start shadow"
          style="width: 400px; height: 100%; display: none; z-index: 1050; overflow-y: auto;">
@@ -266,3 +467,8 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/OrdenServicio/Index.js?v=@version"></script>
+<script>
+    // Para que JS sepa el rol/cedula sin volver a pedirlos
+    window.__ROL__ = "@rolClaim";
+    window.__CEDULA__ = "@cedulaClaim";
+</script>

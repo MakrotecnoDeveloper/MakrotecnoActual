@@ -7,7 +7,14 @@ namespace Plataforma.Controllers
         public IActionResult Error()
         {
             var mensaje = TempData["ErrorMessage"] as string;
-            return View("Error", mensaje);
+
+            if (mensaje.Contains("Stock insuficiente"))
+            {
+                return View("ErrorStock", mensaje);  // Vista especial para error de stock
+            }
+
+            return View("Error", mensaje);  // Vista genérica
         }
+
     }
 }

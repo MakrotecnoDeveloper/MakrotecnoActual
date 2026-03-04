@@ -4,8 +4,8 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IMetodoPagoService
     {
-        Task<CxcVenta> CrearCuentaPorCobrarAsync(int idVenta, int idCliente, decimal total);
+        Task<CxcVentas> CrearCuentaPorCobrarAsync(int idVenta, int idCliente, decimal total);
         Task<bool> RegistrarPagoCxcAsync(int idCxc, decimal monto, string observacion = null);
-        Task<CxcVenta> ObtenerCxcPorVentaAsync(int idVenta);
+        Task<CxcVentas> ObtenerCxcPorVentaAsync(int idVenta);
     }
 }

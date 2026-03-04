@@ -110,7 +110,7 @@ namespace Plataforma.Servicios.Implementacion
                 {
                     Id = o.IdOrden,
                     Cliente = (o.Dispositivo.Cliente.NombreCliente) ?? "Sin cliente",
-                    Tecnico = o.Cedula,
+                    Tecnico = (int)o.Cedula,
                     Estado = o.Estado,
                     Fecha = o.FechaIngreso
                 })

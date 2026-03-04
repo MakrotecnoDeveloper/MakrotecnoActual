@@ -13,7 +13,7 @@ public class OrdenServicios
     public string? Estado { get; set; } = "Ingresada";
     public Dispositivos? Dispositivo { get; set; }
     public string? Observaciones { get; set; }
-    public int Cedula {  get; set; }
+    public int? Cedula {  get; set; }
     public decimal? ValorPago { get; set; }
 }
 
@@ -29,5 +29,5 @@ public class OrdenServicioRowDTO
     public string Descripcion { get; set; } = "";
     public string Observacion { get; set; } = "";
     public string Estado { get; set; } = "";
-    public int Cedula { get; set; }
+    public int? Cedula { get; set; }
 }

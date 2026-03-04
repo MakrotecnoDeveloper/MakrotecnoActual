@@ -33,3 +33,28 @@ public class Producto
         public int EstadoWeb { get; set; }
     public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
 }
+
+public class StickerPrintVm
+{
+    public string CodProducto { get; set; } = "";
+    public string NombreProducto { get; set; } = "";
+    public decimal? Precio { get; set; }              // 👈 Precio en sticker
+    public int Copias { get; set; } = 1;
+
+    // QR (PNG en base64)
+    public string QrBase64 { get; set; } = "";
+
+    // Branding
+    public string LogoUrl { get; set; } = "/img/Logo.png";  // 👈 tu logo real
+    public string BrandHex { get; set; } = "#111827";                  // 👈 color institucional
+    public int AnchoMm { get; set; } = 50;
+    public int AltoMm { get; set; } = 25;                               // 👈 alto etiqueta (mm)
+}
+
+public class StickerItemVm
+{
+    public string Codigo { get; set; }
+    public string Nombre { get; set; }
+    public string Proveedor { get; set; }
+    public decimal? Precio { get; set; }
+}

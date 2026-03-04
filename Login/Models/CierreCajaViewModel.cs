@@ -45,7 +45,7 @@ public class CierreConConceptosVM
 public class IndexFlujoCajaVM
 {
     public DateTime Fecha { get; set; }
-    public List<Plataforma.Models.FlujoCaja> Movimientos { get; set; } = new();
+    public List<Plataforma.Models.CierreCaja> Movimientos { get; set; } = new();
 
     public decimal TotalIngresos { get; set; }
     public decimal TotalEgresos { get; set; }

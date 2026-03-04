@@ -30,3 +30,127 @@ td, th {
 .modal-lg {
     max-width: 900px
 }
+.table td {
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 6px 10px;
+}
+
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-dark {
+    border-radius: 6px;
+}
+
+h1 {
+    font-weight: 600;
+}
+/* --- Cards KPI --- */
+#resumenOrdenes .shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.06) !important;
+}
+
+/* --- Tabla look más pro --- */
+#mainTable tbody tr:hover {
+    background: #f4f6f8;
+}
+
+/* badges estado */
+#mainTable .badge {
+    font-weight: 600;
+    border-radius: 999px;
+}
+
+/* botones acciones compactos */
+#mainTable .btn {
+    border-radius: 8px;
+}
+
+/* Botones icono */
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+    .icon-btn i {
+        font-size: 18px;
+        color: #111;
+    }
+
+    .icon-btn:hover {
+        background: #f4f6f8;
+    }
+
+.icon-btn-blue {
+    border-color: #2b6cff;
+}
+
+    .icon-btn-blue i {
+        color: #2b6cff;
+    }
+
+.icon-btn-green {
+    border-color: #1a8f3a;
+}
+
+    .icon-btn-green i {
+        color: #1a8f3a;
+    }
+
+/* Pills */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.pill-outline {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    color: #111;
+}
+
+.pill-gray {
+    background: #6c757d;
+    color: #fff;
+}
+
+.pill-dark {
+    background: #1f2328;
+    color: #fff;
+}
+
+.pill-blue {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.pill-yellow {
+    background: #ffc107;
+    color: #111;
+}
+
+.pill-red {
+    background: #dc3545;
+    color: #fff;
+}
+

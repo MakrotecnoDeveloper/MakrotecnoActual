@@ -220,6 +220,17 @@
             <option value="Nuevo">Nuevo</option>
             <option value="Segunda">Segunda</option>
         </select>
+
+        <label for="sedeSelect">Sede</label>
+        <select id="sedeSelect" onchange="cambiarSede()">
+            @foreach (var s in Model.Sedes)
+            {
+                <option value="@s.Id_sede"
+                        selected="@(s.Id_sede == Model.SedeSeleccionada)">
+                    @s.NombreSede
+                </option>
+            }
+        </select>
     </aside>
 
     <main class="main">
@@ -319,7 +330,7 @@
                 const whatsappUrl = `https://wa.me/573185313379?text=${encodeURIComponent(mensaje)}`;
 
                 // ⚠️ Ajusta 'precioProducto' al nombre REAL de tu campo de precio
-                const precioTexto = formatCurrency(p.precioProducto);
+                const precioTexto = formatCurrency(p.precioVenta);
 
                 card.innerHTML = `
                     <img src="${imagen}" alt="${p.nombreProducto}"
@@ -372,35 +383,55 @@
         }
 
         // --- Filtros combinados ---
-        function applyFilters() {
-            const term = document.getElementById("searchInput").value.toLowerCase();
-            const catSelect = document.getElementById("categorySelect");
-            const selectedCat = catSelect ? catSelect.value : "";
+                function applyFilters() {
+
+            const term = document.getElementById("searchInput").value.trim().toLowerCase();
+            const selectedCat = document.getElementById("categorySelect").value;
+            const estado = document.getElementById("estadoSelect").value;
 
             const minPriceVal = parseFloat(document.getElementById("minPrice").value);
             const maxPriceVal = parseFloat(document.getElementById("maxPrice").value);
+
             const minPrice = isNaN(minPriceVal) ? null : minPriceVal;
             const maxPrice = isNaN(maxPriceVal) ? null : maxPriceVal;
 
-            const estado = document.getElementById("estadoSelect").value; // "" = todos
-
             filteredData = productos.filter(p => {
-                const name = (p.nombreProducto || "").toLowerCase();
-                const code = (p.cod_Producto || "").toLowerCase();
 
-                const matchesSearch = !term || name.includes(term) || code.includes(term);
-
-                const matchesCategory = !selectedCat || p.idCatepro === parseInt(selectedCat);
-
-                // ⚠️ Ajusta 'precioProducto' al nombre REAL de tu campo de precio
-                const precio = p.valorVentaProducto ?? 0;
-                const matchesMin = (minPrice === null) || precio >= minPrice;
-                const matchesMax = (maxPrice === null) || precio <= maxPrice;
-
+                const nombre = (p.nombreProducto || "").toLowerCase();
+                const codigo = (p.cod_Producto || "").toLowerCase();
+                const precio = p.precioVenta ?? 0;
+                const categoria = p.idCatepro;
                 const condicion = p.condicionProducto || "";
-                const matchesEstado = !estado || condicion === estado;
 
-                return matchesSearch && matchesCategory && matchesMin && matchesMax && matchesEstado;
+                // 🔎 BUSCADOR (si no hay texto, no filtra)
+                const matchesSearch =
+                    !term ||
+                    nombre.includes(term) ||
+                    codigo.includes(term);
+
+                // 🏷 CATEGORÍA (si no selecciona, no filtra)
+                const matchesCategory =
+                    !selectedCat ||
+                    categoria == selectedCat;
+
+                // 💰 PRECIO
+                const matchesMin =
+                    minPrice === null || precio >= minPrice;
+
+                const matchesMax =
+                    maxPrice === null || precio <= maxPrice;
+
+                // 📦 ESTADO
+                const matchesEstado =
+                    !estado || condicion === estado;
+
+                return (
+                    matchesSearch &&
+                    matchesCategory &&
+                    matchesMin &&
+                    matchesMax &&
+                    matchesEstado
+                );
             });
 
             currentPage = 1;
@@ -415,6 +446,14 @@
             renderCategorySelect();
             applyFilters(); // esto llama internamente a updatePage
         });
+
+        function cambiarSede() {
+            const sedeId = document.getElementById("sedeSelect").value;
+            const servicio = @Model.Servicio;
+
+            window.location.href =
+                `/Home/Tienda?idServicio=${servicio}&sedeId=${sedeId}`;
+        }
     </script>
 </body>
 </html>

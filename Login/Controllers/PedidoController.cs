@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.IdentityModel.Tokens;
+using Plataforma.Domain.Exceptions;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
@@ -30,8 +32,7 @@ namespace Plataforma.Controllers
         {
             var model = new OrdenesServicioViewModel
             {
-                Clientes = await _tercerosService.ObtenerClientes(),
-                MetodoPagos = await _tercerosService.ObtenerMetodosPago()
+                Clientes = await _tercerosService.ObtenerClientes()
             };
             return View(model);
         }
@@ -39,8 +40,9 @@ namespace Plataforma.Controllers
         public async Task<IActionResult> CrearVenta(Ventas venta)
         {
             venta.FechaVenta = DateTime.Now;
-            venta.EstadoVenta = "Pendiente"; // por defecto
+            venta.EstadoVenta = "Pendiente";
             venta.Total = 0;
+            venta.MetodoPago = "Pendiente"; // informativo
 
             var creada = await _pedidoServicio.CrearVentaAsync(venta);
 
@@ -50,9 +52,9 @@ namespace Plataforma.Controllers
                 return RedirectToAction("CrearVenta");
             }
 
-            // Redirigir al detalle para agregar productos
             return RedirectToAction("AgregarProductoAVenta", new { idVenta = venta.IdVenta });
         }
+
         public async Task<IActionResult> ListaVentas()
         {
             var ventas = await _pedidoServicio.ObtenerTodasLasVentasAsync(); // este método trae las ventas
@@ -61,22 +63,69 @@ namespace Plataforma.Controllers
         [HttpGet]
         public async Task<IActionResult> DetalleVenta(int idVenta)
         {
-            var venta = await _pedidoServicio.ObtenerVentaConPedidos(idVenta);
+            var model = await _pedidoServicio.ObtenerVentaConPedidos(idVenta);
 
-            // Si no existe la venta en la base de datos, ahí sí mostramos error
+            if (model == null)
+            {
+                TempData["ErrorMessage"] = "La venta no existe.";
+                return RedirectToAction("ListaVentas");
+            }
+
+            return View(model);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> RegistrarPagos(int idVenta)
+        {
+            var venta = await _pedidoServicio.ObtenerVentaConDetalleAsync(idVenta);
+
             if (venta == null)
             {
                 TempData["ErrorMessage"] = "La venta no existe.";
                 return RedirectToAction("ListaVentas");
             }
 
-            // Si la venta existe pero no tiene pedidos, redirige a agregar productos
-            if (venta.Pedidos == null || !venta.Pedidos.Any())
+            if (venta.EstadoVenta != "Confirmada")
             {
-                TempData["InfoMessage"] = "Agrega productos a esta venta.";
-                return RedirectToAction("AgregarProductoAVenta", new { idVenta = idVenta });
+                TempData["ErrorMessage"] = "La venta debe estar confirmada para registrar pagos.";
+                return RedirectToAction("DetalleVenta", new { idVenta });
             }
-            return View(venta);
+
+            var viewModel = new RegistrarPagosViewModel
+            {
+                IdVenta = venta.IdVenta,
+                IdCliente = venta.IdCliente,
+                TotalVenta = venta.Total
+            };
+
+            return PartialView("_RegistrarPagos", viewModel);
+        }
+        [HttpPost]
+        public async Task<IActionResult> RegistrarPagos(RegistrarPagosViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // ✅ Construir método final
+            var metodos = new List<string>();
+            if (model.MontoEfectivo > 0) metodos.Add("Efectivo");
+            if (model.MontoTransferencia > 0) metodos.Add("Transferencia");
+            if (model.MontoCredito > 0) metodos.Add("Crédito");
+            var metodoPagoFinal = string.Join(" + ", metodos);
+
+            await _pedidoServicio.FacturarConPagosAsync(
+                model.IdVenta,
+                model.IdCliente,
+                metodoPagoFinal,                 // ✅ 3er parámetro: string
+                model.MontoEfectivo,             // ✅ 4to: decimal
+                model.MontoTransferencia,        // ✅ 5to: decimal
+                model.MontoCredito,              // ✅ 6to: decimal
+                model.FechaVencimientoCredito    // ✅ 7mo: DateTime?
+            );
+
+            TempData["SuccessMessage"] = "Factura emitida correctamente.";
+            return RedirectToAction("DetalleVenta", new { idVenta = model.IdVenta });
         }
         [HttpGet]
         public async Task<IActionResult> BuscarProductoPorCodigo(string codigo)
@@ -92,6 +141,15 @@ namespace Plataforma.Controllers
                 valorNeto = resultado.Value.valorNeto
             });
         }
+        [HttpGet]
+        public async Task<IActionResult> BuscarProductoPorNombreVenta(string texto)
+        {
+            
+                var result = await _pedidoServicio.BuscarProductosPorNombreVentaAsync(texto, User);
+                return Json(result);
+            
+        }
+
 
         [HttpGet]
         public IActionResult AgregarProductoAVenta(int idVenta)
@@ -111,30 +169,23 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> AgregarMultiplesProductosAVenta(PedidosViewModel model)
         {
-            //Validar cantidad antes de hacer la venta.. (ya se hizo y valida si es menor o igual a 0)
             try
             {
-                foreach (var producto in model.Productos)
-                {
-                    var codigo = producto.Codigo.ToString();
-                    var cantidadActual = await _pedidoServicio.ObtenerCantidadProductoActual(codigo);
-                    //Validar cantidad es mayor al stock.. (pendiente mañana)
-                    if (cantidadActual < producto.Stock)
-                    {
-                        TempData["ErrorMessage"] = $"Error: El producto '{producto.Codigo}' no tiene el stock para la venta.";
-                        return RedirectToAction("Error", "Errores");
-                    } 
-                }
                 await _pedidoServicio.GuardarPedidosAsync(model.Productos, model.IdVenta, User);
                 return RedirectToAction("DetalleVenta", new { idVenta = model.IdVenta });
-
+            }
+            catch (PedidoException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message; // Pone el mensaje de error en TempData
+                return RedirectToAction("Error", "Errores"); // Redirige a ErroresController
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error al guardar los productos: {ex.Message}";
-                return View(model);
+                TempData["ErrorMessage"] = $"Error inesperado: {ex.Message}";
+                return RedirectToAction("Error", "Errores"); // Redirige a ErroresController
             }
         }
+
         public IActionResult CrearFactura()
         {
             return View();
@@ -143,23 +194,23 @@ namespace Plataforma.Controllers
         public async Task<IActionResult> CrearFactura(int idVenta, int Iva)
         {
             var venta = await _pedidoServicio.ObtenerVentaConPedidos(idVenta);
-            if (venta == null || venta.Pedidos.Count == 0)
+            if (venta.Venta == null || venta.Venta.Pedidos.Count == 0)
             {
                 TempData["ErrorMessage"] = "No se encontró la venta o no tiene productos.";
                 return RedirectToAction("AgregarFactura");
             }
             //decimal iva = subtotal * 0.19M;
-            decimal total = (decimal)venta.Pedidos.Sum(p => p.SubTotal);
+            decimal total = (decimal)venta.Venta.Pedidos.Sum(p => p.SubTotal);
             decimal totalIva = ((total * Iva) / 100);
             if (totalIva > 0)
             {
                 total = totalIva + total;
             }
-            await _pedidoServicio.GuardarVentaActualizada(venta, total);
+            await _pedidoServicio.GuardarVentaActualizada(venta.Venta, total);
 
             Factura factura = new Factura
             {
-                NumeroFactura = await _pedidoServicio.GenerarConsecutivoFactura(),
+                NumeroFactura = "1",
                 FechaEmision = DateTime.Now,
                 IdVenta = idVenta,
                 SubTotal = total,
@@ -208,19 +259,18 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> CambiarEstadoVenta(int idVenta, string nuevoEstado)
         {
-            var venta = await _pedidoServicio.ObtenerVentaPorIdAsync(idVenta);
-            if (venta == null)
+            try
             {
-                TempData["ErrorMessage"] = "La venta no existe.";
-                return RedirectToAction("ListaVentas");
+                await _pedidoServicio.CambiarEstadoVentaAsync(idVenta, nuevoEstado);
+                return RedirectToAction("DetalleVenta", new { idVenta });
             }
-
-            venta.EstadoVenta = nuevoEstado;
-            await _pedidoServicio.ActualizarVentaAsync(venta);
-
-            TempData["SuccessMessage"] = $"La venta ha sido {nuevoEstado.ToLower()} exitosamente.";
-            return RedirectToAction("DetalleVenta", new { idVenta = idVenta });
+            catch (PedidoException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Error", "Errores");
+            }
         }
+
         [HttpGet]
         public async Task<IActionResult> BuscarFacturaPorId(int IdFactura)
         {
@@ -269,6 +319,14 @@ namespace Plataforma.Controllers
             });
 
             return Json(resultados);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ImprimirFactura(int idFactura)
+        {
+            var factura = await _pedidoServicio.ObtenerFacturaConDetalle(idFactura);
+            if (factura == null) return NotFound();
+
+            return View(factura); // Vista: ImprimirFactura.cshtml
         }
     }
 }

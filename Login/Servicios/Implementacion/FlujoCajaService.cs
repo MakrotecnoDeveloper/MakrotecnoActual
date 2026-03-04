@@ -17,7 +17,7 @@ namespace Plataforma.Servicios.Implementacion
         {
             var fecha = DateTime.Today;
 
-            var movimientos = await _dbContext.FlujoCajas
+            var movimientos = await _dbContext.CierreCajas
                 .Where(f => f.Fecha.Date == fecha.Date)
                 .OrderBy(f => f.IdFlujoCaja)
                 .ToListAsync();
@@ -99,7 +99,7 @@ namespace Plataforma.Servicios.Implementacion
                 conceptosJson = JsonSerializer.Serialize(model.Conceptos);
             }
 
-            var cierre = new FlujoCaja
+            var cierre = new CierreCaja
             {
                 Fecha = hoy,
                 TipoMovimiento = "Cierre Diario",
@@ -116,7 +116,7 @@ namespace Plataforma.Servicios.Implementacion
                 ConceptosJson = conceptosJson
             };
 
-            _dbContext.FlujoCajas.Add(cierre);
+            _dbContext.CierreCajas.Add(cierre);
             await _dbContext.SaveChangesAsync();
 
             return (true, null);

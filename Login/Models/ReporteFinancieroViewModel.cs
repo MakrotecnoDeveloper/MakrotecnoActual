@@ -6,5 +6,5 @@ public class ReporteFinancieroViewModel
     public decimal Costos { get; set; }
     public decimal Utilidad { get; set; }
     public decimal BalanceCaja { get; set; }
-    public List<FlujoCaja> Movimientos { get; set; }
+    public List<CierreCaja> Movimientos { get; set; }
 }

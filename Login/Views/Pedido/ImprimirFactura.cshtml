@@ -1,0 +1,491 @@
+﻿@model DetalleFacturaViewModel
+@using System.Globalization
+@using DocumentFormat.OpenXml.Office2010.PowerPoint
+@{
+    Layout = null;
+    var cultura = new CultureInfo("es-CO");
+
+    // =========================
+    // DATOS FISCALES (EDITA AQUÍ)
+    // =========================
+    var empresaNombre = "MakroTecno S.A.S.";
+    var empresaNit = "NIT 1234193470-6";
+    var empresaRegimen = "Régimen: Responsable de IVA";
+    var empresaDir = "Cali - Valle del Cauca";
+    var empresaDireccion = "Calle 33E #25-11, Alfonso Barberena, Cali";
+    var empresaTel = "318 531 3379 / 316 566 6293";
+    var empresaEmail = "administracion@makrotecno.com.co";
+
+    // Resolución DIAN (si aún no tienes, déjalo como "N/A")
+    var resolucion = "Resolución DIAN: N/A";
+    var prefijo = "Prefijo: MT";
+    var rango = "Rango autorizado: N/A";
+    var actividad = "Actividad económica: Servicios / Comercio";
+
+    // Cliente (no tienes FK, mostramos IdCliente/CedulaCliente)
+    var clienteRef = Model?.Factura.Venta?.IdCliente.ToString() ?? "-";
+    var cedulaCliente = Model?.Factura.Venta?.CedulaCliente.ToString() ?? "-";
+
+    // URL/Texto para QR (puedes meter un link a tu factura si luego lo tienes)
+    // Por ahora: datos clave para verificación rápida
+    var qrText = $"Factura:{Model?.Factura.NumeroFactura}|Venta:{Model?.Factura.IdVenta}|Fecha:{Model?.Factura.FechaEmision:yyyy-MM-dd}|Total:{Model?.Factura.Total}";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Factura @Model.Factura.NumeroFactura</title>
+
+    <!-- Bootstrap opcional (para utilidades) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
+    <style>
+        :root{
+            --ink:#111827;
+            --muted:#6b7280;
+            --line:#e5e7eb;
+            --soft:#f9fafb;
+        }
+
+        html,body { background:#fff; color:var(--ink); }
+        body { font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+
+        /* =========================
+           CONTROLES DE TAMAÑO
+           ========================= */
+        .actions{
+            display:flex;
+            gap: 8px;
+            justify-content:flex-end;
+            align-items:center;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--line);
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .sheet{
+            margin: 0 auto;
+            background:#fff;
+        }
+
+        /* Por defecto: Carta */
+        .size-letter .sheet{
+            width: 216mm;     /* 8.5 in */
+            min-height: 279mm;/* 11 in */
+            padding: 12mm;
+        }
+
+        /* Media Carta (mitad vertical) */
+        .size-half-letter .sheet{
+            width: 216mm;
+            min-height: 140mm;
+            padding: 10mm;
+        }
+
+        /* (Opcional) tirilla 80mm */
+        .size-receipt .sheet{
+            width: 80mm;
+            min-height: auto;
+            padding: 8mm;
+        }
+
+        /* =========================
+           HEADER
+           ========================= */
+        .brand-row{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap: 16px;
+            border-bottom: 2px solid var(--line);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .brand{
+            display:flex;
+            gap: 12px;
+            align-items:center;
+        }
+
+        .brand img{
+            height: 54px;
+            width:auto;
+            object-fit: contain;
+        }
+
+        .brand h1{
+            font-size: 18px;
+            margin:0;
+            font-weight: 900;
+            letter-spacing:.2px;
+        }
+
+        .brand .meta{
+            margin-top:2px;
+            color:var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .doc-title{
+            text-align:right;
+        }
+
+        .doc-title .label{
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+        .doc-title .value{
+            font-size: 18px;
+            font-weight: 900;
+        }
+        .doc-title .chip{
+            display:inline-block;
+            margin-top: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* =========================
+           BLOQUES INFO
+           ========================= */
+        .grid-3{
+            display:grid;
+            grid-template-columns: 1.2fr 1fr .9fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .box{
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: #fff;
+        }
+
+        .box .box-title{
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        .kv{
+            display:grid;
+            grid-template-columns: 120px 1fr;
+            row-gap: 6px;
+            column-gap: 10px;
+            font-size: 12.5px;
+        }
+        .kv .k{ color: var(--muted); }
+        .kv .v{ font-weight: 700; }
+
+        /* QR + Barcode */
+        .qr-wrap{
+            display:flex;
+            gap: 10px;
+            align-items:flex-start;
+            justify-content:space-between;
+        }
+        #qrcode{
+            width: 92px;
+            height: 92px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 6px;
+        }
+        #barcode{
+            width: 100%;
+            height: 44px;
+        }
+
+        /* =========================
+           TABLA ITEMS
+           ========================= */
+        table.items{
+            width:100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 12.5px;
+        }
+        table.items thead th{
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-size: 10.5px;
+            color: var(--muted);
+            text-align:left;
+            border-bottom: 1px solid var(--line);
+            padding: 9px 8px;
+        }
+        table.items tbody td{
+            border-bottom: 1px solid var(--line);
+            padding: 9px 8px;
+            vertical-align: top;
+        }
+        .text-end{ text-align:right; }
+        .muted{ color: var(--muted); }
+
+        /* =========================
+           TOTALES
+           ========================= */
+        .totals-wrap{
+            display:flex;
+            justify-content:flex-end;
+            margin-top: 12px;
+        }
+        .totals{
+            width: 320px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: var(--soft);
+        }
+        .totals .row{
+            display:flex;
+            justify-content:space-between;
+            margin: 6px 0;
+            font-size: 12.5px;
+        }
+        .totals .grand{
+            border-top: 1px dashed #cbd5e1;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 13.5px;
+            font-weight: 900;
+        }
+
+        .legal{
+            margin-top: 14px;
+            border-top: 1px solid var(--line);
+            padding-top: 10px;
+            font-size: 10.5px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        /* =========================
+           PRINT
+           ========================= */
+        @@media print {
+            .actions {
+                display: none !important;
+            }
+
+            .sheet {
+                width: auto !important;
+                min-height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* Por defecto imprime en Carta */
+        @@page {
+            size: letter;
+            margin: 12mm;
+        }
+
+        /* Media carta */
+        body.size-half-letter @@page {
+            size: 216mm 140mm;
+            margin: 10mm;
+        }
+
+        /* Tirilla (opcional) */
+        body.size-receipt @@page {
+            size: 80mm auto;
+            margin: 6mm;
+        }
+
+        /* Responsive: si media carta o tirilla, apila */
+        body.size-half-letter .grid-3,
+        body.size-receipt .grid-3{
+            grid-template-columns: 1fr;
+        }
+        body.size-receipt #qrcode{
+            width: 82px;
+            height: 82px;
+        }
+    </style>
+</head>
+
+<body class="size-letter">
+
+    <!-- Acciones (no se imprimen) -->
+    <div class="actions">
+        <select id="paperSize" class="form-select form-select-sm" style="max-width: 220px;">
+            <option value="size-letter" selected>🧾 Carta</option>
+            <option value="size-half-letter">📄 Media Carta</option>
+            <option value="size-receipt">🧻 Tirilla 80mm (opcional)</option>
+        </select>
+
+        <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.close()">Cerrar</button>
+    </div>
+
+    <div class="sheet">
+
+        <!-- Encabezado -->
+        <div class="brand-row">
+            <div class="brand">
+                <img src="~/img/logo.png" alt="Logo" />
+                <div>
+                    <h1>@empresaNombre</h1>
+                    <div class="meta">
+                        <div><b>@empresaNit</b> · @empresaRegimen</div>
+                        <div>@empresaDireccion</div>
+                        <div>@empresaDir · @empresaTel</div>
+                        <div>@empresaEmail</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-title">
+                <div class="label">Factura de Venta</div>
+                <div class="value">@Model.Factura.NumeroFactura</div>
+                <div class="chip">Estado: @Model.Factura.EstadoFactura</div>
+                <div class="mt-2" style="font-size:12px;">
+                    <div class="muted">Fecha emisión</div>
+                    <div style="font-weight:800;">@Model.Factura.FechaEmision.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloques -->
+        <div class="grid-3">
+            <div class="box">
+                <div class="box-title">Datos fiscales</div>
+                <div class="kv">
+                    <div class="k">Resolución</div><div class="v">@resolucion</div>
+                    <div class="k">Prefijo</div><div class="v">@prefijo</div>
+                    <div class="k">Rango</div><div class="v">@rango</div>
+                    <div class="k">Actividad</div><div class="v">@actividad</div>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title">Cliente</div>
+                <div class="kv">
+                    <div class="k">Cliente (ID)</div><div class="v">@clienteRef</div>
+                    <div class="k">Cédula</div><div class="v">@cedulaCliente</div>
+                    <div class="k">Venta</div><div class="v">#@Model.Factura.IdVenta</div>
+                    <div class="k">Método</div><div class="v">@(Model?.Factura.Venta?.MetodoPago ?? "N/A")</div>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title">Validación</div>
+                <div class="qr-wrap">
+                    <div>
+                        <div id="qrcode"></div>
+                        <div class="muted" style="font-size:10.5px; margin-top:6px;">
+                            QR de verificación
+                        </div>
+                    </div>
+                    <div style="flex:1;">
+                        <svg id="barcode"></svg>
+                        <div class="muted" style="font-size:10.5px; margin-top:6px;">
+                            Código: @Model.Factura.NumeroFactura
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <table class="items">
+            <thead>
+                <tr>
+                    <th style="width: 26%">Código</th>
+                    <th>Detalle</th>
+                    <th class="text-end" style="width: 10%">Cant</th>
+                    <th class="text-end" style="width: 18%">V/Unit</th>
+                    <th class="text-end" style="width: 18%">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var pedido in Model.Factura.Venta.Pedidos)
+            {
+                <tr>
+                    <td style="font-weight:800;">@pedido.Codigo</td>
+                    <td class="muted">Producto / Servicio</td>
+                    <td class="text-end">@pedido.Stock</td>
+                    <td class="text-end">@pedido.VVenta.ToString("C0", cultura)</td>
+                    <td class="text-end" style="font-weight:900;">@pedido.SubTotal.ToString("C0", cultura)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div class="totals-wrap">
+            <div class="totals">
+                <div class="row">
+                    <span class="muted">Subtotal</span>
+                    <span style="font-weight:800;">@Model.Factura.SubTotal.ToString("C0", cultura)</span>
+                </div>
+                <div class="row">
+                    <span class="muted">IVA</span>
+                    <span style="font-weight:800;">@Model.Factura.IVA.ToString("C0", cultura)</span>
+                </div>
+                <div class="row grand">
+                    <span>Total</span>
+                    <span>@Model.Factura.Total.ToString("C0", cultura)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nota -->
+        <div class="legal">
+            <b>Nota:</b> Documento de soporte generado por el sistema.
+            Para facturación electrónica DIAN real se requiere numeración autorizada e integración de validación.
+        </div>
+
+    </div>
+
+    <!-- QR + Barcode -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+    <script>
+        // Selector tamaño (Carta / MediaCarta / Tirilla)
+        const sel = document.getElementById("paperSize");
+        sel.addEventListener("change", () => {
+            document.body.className = sel.value; // cambia clase del body
+        });
+
+        // QR
+        new QRCode(document.getElementById("qrcode"), {
+            text: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(qrText)),
+            width: 90,
+            height: 90,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        // Barcode
+        JsBarcode("#barcode", "@Model.Factura.NumeroFactura", {
+            format: "CODE128",
+            displayValue: false,
+            margin: 0,
+            height: 42
+        });
+
+        // Si quieres que al abrir imprima de una:
+        // window.onload = () => window.print();
+    </script>
+</body>
+</html>

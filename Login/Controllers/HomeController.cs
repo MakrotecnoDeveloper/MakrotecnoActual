@@ -288,18 +288,22 @@ namespace Plataforma.Controllers
         }
         //Visualizar productos existentes para vender en la pagina inicial
         [HttpGet]
-        public IActionResult Tienda(int idServicio)
+        public IActionResult Tienda(int idServicio, int sedeId = 1)
         {
             var categorias = _productoservice.ObtenerCategoriaProductos(idServicio);
 
-            // Si también necesitas productos para la vista:
-            var productos = _productoservice.ObtenerProductosPorServicio(idServicio);
+            var productos = _productoservice
+                .ObtenerProductosPorServicioYSede(idServicio, sedeId);
+
+            var sedes = _productoservice.ObtenerSedes(); // 👈 ya no usa _context
 
             var vm = new ProductosCategoriaViewModel
             {
-                CategoriaProductos = categorias, // <-- propiedad en tu VM
-                Productos = productos,           // <-- propiedad en tu VM
-                Servicio = idServicio            // o un objeto Servicio si lo tienes
+                CategoriaProductos = categorias,
+                Productos = productos,
+                Servicio = idServicio,
+                Sedes = sedes,
+                SedeSeleccionada = sedeId
             };
 
             return View(vm);

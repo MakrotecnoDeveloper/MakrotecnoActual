@@ -19,7 +19,7 @@ namespace Plataforma.Servicios.Implementacion
 
             public async Task<Dispositivos> CrearDispositivoAsync(Dispositivos dispositivo, string cedulaClaim)
             {
-                var cliente = await _dbContext.Cliente
+                var cliente = await _dbContext.Clientes
                 .Where(c => c.IdCliente == dispositivo.IdCliente)
                 .Select(c => new { c.IdCliente, c.CedulaCliente, c.NombreCliente })
                 .FirstOrDefaultAsync();

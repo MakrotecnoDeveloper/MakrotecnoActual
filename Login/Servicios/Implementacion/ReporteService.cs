@@ -14,7 +14,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<ReporteFinancieroViewModel> GenerarReporteDelDiaAsync(DateTime fecha)
         {
-            var movimientos = await _dbContext.FlujoCajas.Where(m => m.Fecha.Date == fecha.Date).ToListAsync();
+            var movimientos = await _dbContext.CierreCajas.Where(m => m.Fecha.Date == fecha.Date).ToListAsync();
 
             var ingresos = movimientos.Where(m => m.TipoMovimiento == "Ingreso").Sum(m => m.Monto);
             var costos = movimientos.Where(m => m.TipoMovimiento == "Egreso").Sum(m => m.Monto);
@@ -32,7 +32,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<ConceptoServicioVM> TraerServiciosUnicos(DateTime fechaInicio, DateTime fechaFin)
         {
-            var cierres = _dbContext.FlujoCajas
+            var cierres = _dbContext.CierreCajas
                 .Where(f => f.TipoMovimiento == "Cierre Diario"
                          && f.Fecha.Date >= fechaInicio.Date
                          && f.Fecha.Date <= fechaFin.Date)
@@ -58,7 +58,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public (decimal totalSubTotal, decimal totalVNeto) TraerTotalesPorRangoYServicio(DateTime fechaInicio, DateTime fechaFin, int idServicio)
         {
-            var cierres = _dbContext.FlujoCajas
+            var cierres = _dbContext.CierreCajas
                 .Where(f => f.TipoMovimiento == "Cierre Diario"
                          && f.Fecha.Date >= fechaInicio.Date
                          && f.Fecha.Date <= fechaFin.Date)
@@ -80,7 +80,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<ConceptoServicioVM> TraerUtilidadPorServicios(DateTime fechaInicio, DateTime fechaFin)
         {
-            var cierres = _dbContext.FlujoCajas
+            var cierres = _dbContext.CierreCajas
                 .Where(f => f.TipoMovimiento == "Cierre Diario"
                          && f.Fecha >= fechaInicio
                          && f.Fecha <= fechaFin)

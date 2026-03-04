@@ -1,46 +1,239 @@
-﻿@model Factura
+﻿@model DetalleFacturaViewModel
 @{
-    ViewData["Title"] = "Detalle de Factura";
+    ViewData["Title"] = "Factura de Venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
-}
-<div class="content-wrapper">
-    <div class="container mt-5">
-        <h2 class="mb-4 text-center">Detalle de Factura</h2>
 
-        <div class="mb-3">
-            <strong>Número Factura:</strong> @Model.NumeroFactura <br />
-            <strong>Fecha Emisión:</strong> @Model.FechaEmision.ToString("dd/MM/yyyy") <br />
-            <strong>Cédula Cliente:</strong> @Model.Venta.IdCliente <br />
-            <strong>Estado:</strong> @Model.EstadoFactura
+    var cultura = new System.Globalization.CultureInfo("es-CO");
+}
+
+<style>
+    /* ===== PRINT: imprimir solo la factura ===== */
+    @@media print {
+        body { background: #fff !important; }
+        .no-print { display: none !important; }
+        .content-wrapper, .container { padding: 0 !important; margin: 0 !important; }
+        .factura-wrap { box-shadow: none !important; border: none !important; }
+    }
+
+    .factura-wrap {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 .25rem .75rem rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+
+    .factura-head {
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        border-bottom: 1px solid #eef2f7;
+        padding: 20px 22px;
+    }
+
+    .factura-title {
+        font-weight: 800;
+        letter-spacing: .2px;
+        margin: 0;
+        line-height: 1.15;
+    }
+
+    .factura-subtitle {
+        margin: 0;
+        color: #6b7280;
+        font-size: .9rem;
+    }
+
+    .factura-body { padding: 18px 22px; }
+    .factura-block { border: 1px solid #eef2f7; border-radius: 12px; padding: 14px; background: #fff; }
+    .factura-label { color:#6b7280; font-size:.85rem; margin-bottom: 2px; }
+    .factura-value { font-weight: 600; }
+
+    .totales {
+        border-top: 1px dashed #e5e7eb;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .totales .row > div { margin-bottom: 6px; }
+
+    .total-final {
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <!-- Botones superiores -->
+        <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+            <a asp-action="ListaVentas" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+
+            <a class="btn btn-dark"
+               asp-action="ImprimirFactura"
+               asp-route-idFactura="@Model.Factura.IdFactura"
+               target="_blank">
+                <i class="bi bi-printer"></i> Imprimir (Diseño)
+            </a>
         </div>
 
-        <h4>Productos</h4>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Código Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var pedido in Model.Venta.Pedidos)
-                {
-                    <tr>
-                        <td>@pedido.Codigo</td>
-                        <td>@pedido.Stock</td>
-                        <td>$@pedido.VVenta</td>
-                        <td>$@pedido.SubTotal</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <!-- FACTURA -->
+        <div class="factura-wrap" id="facturaPrint">
 
-        <div class="text-end">
-            <strong>Subtotal:</strong> $@Model.SubTotal <br />
-            <strong>IVA:</strong> $@Model.IVA <br />
-            <strong>Total:</strong> $@Model.Total
+            <!-- Header -->
+            <div class="factura-head">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6 d-flex align-items-center gap-3">
+                        <!-- LOGO -->
+                        <img src="~/img/logo.png" alt="Logo" style="height:56px; width:auto;" />
+
+                        <div>
+                            <h3 class="factura-title">Factura de Venta</h3>
+                            <p class="factura-subtitle">Documento soporte / tipo factura</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 text-md-end">
+                        <div class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                            @Model.Factura.EstadoFactura
+                        </div>
+
+                        <div class="mt-2">
+                            <div class="factura-label">Número</div>
+                            <div class="factura-value"># @Model.Factura.NumeroFactura</div>
+                        </div>
+
+                        <div class="mt-1">
+                            <div class="factura-label">Fecha de emisión</div>
+                            <div class="factura-value">@Model.Factura.FechaEmision.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="factura-body">
+                <!-- Datos empresa + Cliente -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="factura-block">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-building"></i>
+                                <span class="fw-bold">Datos del negocio</span>
+                            </div>
+
+                            <div class="factura-label">Razón social</div>
+                            <div class="factura-value">TU NEGOCIO S.A.S</div>
+
+                            <div class="mt-2 factora-label"></div>
+                            <div class="factura-label">NIT</div>
+                            <div class="factura-value">000.000.000-0</div>
+
+                            <div class="mt-2 factura-label">Dirección</div>
+                            <div class="factura-value">Cali, Valle del Cauca</div>
+
+                            <div class="mt-2 factura-label">Teléfono</div>
+                            <div class="factura-value">300 000 0000</div>
+
+                            <div class="mt-2 factura-label">Correo</div>
+                            <div class="factura-value">ventas@tudominio.com</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="factura-block">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-person-badge"></i>
+                                <span class="fw-bold">Cliente</span>
+                            </div>
+
+                            <div class="factura-label">Cliente</div>
+                            <div class="factura-value">
+                                @(Model?.Cliente?.NombreCliente ?? ("Cliente ID: " + (Model?.Factura.Venta?.IdCliente.ToString() ?? "")))
+                            </div>
+
+                            <div class="mt-2 factura-label">Identificación</div>
+                            <div class="factura-value">
+                                @(Model?.Cliente?.CedulaCliente?.ToString() ?? "N/A")
+                            </div>
+
+                            <div class="mt-2 factura-label">Teléfono</div>
+                            <div class="factura-value">
+                                @(Model?.Cliente?.TelefonoCliente ?? "N/A")
+                            </div>
+
+                            <div class="mt-2 factura-label">Correo</div>
+                            <div class="factura-value">
+                                @(Model?.Cliente?.CorreoCliente ?? "N/A")
+                            </div>
+
+                            <div class="mt-2 factura-label">Venta asociada</div>
+                            <div class="factura-value"># @Model.Factura.IdVenta</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla productos -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:140px;">Código</th>
+                                <th>Detalle</th>
+                                <th class="text-end" style="width:110px;">Cant.</th>
+                                <th class="text-end" style="width:160px;">V. Unitario</th>
+                                <th class="text-end" style="width:160px;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in Model.Factura.Venta.Pedidos)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@pedido.Codigo</td>
+
+                                    <td class="text-muted">
+                                        Producto / Servicio
+                                    </td>
+
+                                    <td class="text-end">@pedido.Stock</td>
+
+                                    <td class="text-end">
+                                        @pedido.VVenta.ToString("C0", cultura)
+                                    </td>
+
+                                    <td class="text-end fw-semibold">
+                                        @pedido.SubTotal.ToString("C0", cultura)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totales -->
+                <div class="totales">
+                    <div class="row justify-content-end">
+                        <div class="col-12 col-md-5">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="fw-semibold">@Model.Factura.SubTotal.ToString("C0", cultura)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">IVA</span>
+                                <span class="fw-semibold">@Model.Factura.IVA.ToString("C0", cultura)</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span class="text-muted">Total</span>
+                                <span class="total-final">@Model.Factura.Total.ToString("C0", cultura)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 small text-muted">
+                        * Este documento es un soporte de venta. Para factura electrónica real DIAN se requiere integración y numeración autorizada.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

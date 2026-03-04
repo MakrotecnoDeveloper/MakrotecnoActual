@@ -12,11 +12,17 @@ namespace Plataforma.Servicios.Contrato
         Task<List<HistOrdSer>> ObtenerOrdenPorIdAsync(int idOrden);
         Task<(OrdenServicios Orden, bool MostrarAgregarProductos)> ObtenerOrdenYPermisosAsync(int idOrden);
         Task CrearHistOrdenAsync(HistOrdSer nuevaHistOrden, string[]? Cod_Producto, int[] stock, decimal[]? ValorRepuesto, string[]? Condicion, string[]? Tipo, int[] Proveedor, int cedula);
-        Task<int> GenerarConsecutivoFactura();
+        //Task<int> GenerarConsecutivoFactura();
         Task<bool> ActualizarOrdenAsync(OrdenServicios orden, ClaimsPrincipal usuario);
         Task<List<Empleados>> ObtenerEmpleadosAsync();
         Task<OrdenServicios?> ActualizarOrdenTecnico(OrdenServicios model);
         Task<OrdenServicioRowDTO> GetOrdenRowAsync(int idOrden);
         Task<List<Sedeempleado>> ObtenerEmpleadoSedeAsync();
+        Task<List<OrdenServicios>> ObtenerUltimas10Async(string rol, int? cedulaTecnico);
+        Task<List<string>> ObtenerEstadosExistentesAsync();
+        Task<List<object>> ObtenerTecnicosParaFiltroAsync(string rol, int cedulaUsuario);
+        Task<List<OrdenServicios>> ObtenerUltimas10FiltradasAsync(string? estado, int? cedulaTecnico);
+
+
     }
 }

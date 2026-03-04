@@ -40,7 +40,7 @@ namespace Plataforma.Servicios.Implementacion
                 .ToList();
 
             // 2. Servicios dinámicos de ConceptosJson
-            var serviciosCaja = _dbContext.FlujoCajas
+            var serviciosCaja = _dbContext.CierreCajas
             .Where(f => f.TipoMovimiento == "Cierre Diario")
             .AsEnumerable() // ⬅️ aquí forzamos a traer los datos a memoria
             .SelectMany(f => GetConceptos(f.ConceptosJson))
@@ -108,7 +108,7 @@ namespace Plataforma.Servicios.Implementacion
                     if (!string.IsNullOrEmpty(detalle.Concepto.ServicioAsociado))
                     {
                         // Paso 1: traer los flujoCajas que cumplen el filtro desde SQL
-                        var flujoCajas = await _dbContext.FlujoCajas
+                        var flujoCajas = await _dbContext.CierreCajas
                             .Where(f => f.Fecha >= fechaInicio && f.Fecha <= fechaFin
                                         && f.TipoMovimiento == "Cierre Diario")
                             .ToListAsync(); // <-- ejecuta la consulta en la BD aquí

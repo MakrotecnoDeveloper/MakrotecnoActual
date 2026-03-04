@@ -44,19 +44,44 @@ namespace Plataforma.Servicios.Implementacion
                 .ToList();
         }
         // En la implementación del servicio (ProductoService.cs)
-        public List<Producto> ObtenerProductosPorServicio(int idServicio)
+        public List<ProductoTiendaDTO> ObtenerProductosPorServicioYSede(int idServicio, int sedeId)
         {
-         var categorias = _dbContext.CategoriaProductos
-        .Where(c => c.IdServicio == idServicio)
-        .Select(c => c.IdCateProducto)
-        .ToList();
+            var categorias = _dbContext.CategoriaProductos
+                .Where(c => c.IdServicio == idServicio)
+                .Select(c => c.IdCateProducto)
+                .ToList();
 
-            return _dbContext.Productos
-            .Where(p => categorias.Contains(p.IdCatepro)
-                     && p.EstadoWeb == 1)   // <-- FILTRO SOLICITADO
-            .AsNoTracking()
-            .ToList();
-            }
+            var productos = (
+                from p in _dbContext.Productos
+                join inv in _dbContext.InventarioSedes
+                    on p.Cod_Producto equals inv.ProductoId
+                where categorias.Contains(p.IdCatepro)
+                      && p.EstadoWeb == 1
+                      && inv.SedeId == sedeId
+                select new ProductoTiendaDTO
+                {
+                    Cod_Producto = p.Cod_Producto,
+                    NombreProducto = p.NombreProducto,
+                    ImagenPath = p.ImagenPath,
+                    CondicionProducto = p.CondicionProducto,
+
+                    // 👇 Ahora vienen desde InventarioSede
+                    CantidadProducto = inv.Cantidad,
+                    PrecioVenta = inv.PrecioUnitario,
+                    IdCatepro = p.IdCatepro
+                }
+            ).AsNoTracking().ToList();
+
+            return productos;
+        }
+
+        public List<Sede> ObtenerSedes()
+        {
+            return _dbContext.Sede
+                .AsNoTracking()
+                .OrderBy(s => s.NombreSede)
+                .ToList();
+        }
 
         public async Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio)
         {
@@ -104,11 +129,10 @@ namespace Plataforma.Servicios.Implementacion
                 return Task.FromResult(false);
             }
         }
-        public ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm)
+        public ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm, int sedeId)
         {
-            // Buscar el producto (por código o categoría)
             var producto = _dbContext.Productos
-                .Where(p => p.Estado == 1) // solo activos
+                .Where(p => p.Estado == 1)
                 .Where(p =>
                     (!string.IsNullOrEmpty(searchTerm) && p.Cod_Producto.Contains(searchTerm)) ||
                     (categoriaTerm > 0 && p.IdCatepro == categoriaTerm))
@@ -116,20 +140,32 @@ namespace Plataforma.Servicios.Implementacion
 
             if (producto == null)
             {
-                // Si no encuentra, devuelve vacío
                 return new ProductosCategoriaViewModel
                 {
-                    Productos = new List<Producto>(),
+                    Productos = new List<ProductoTiendaDTO>(),
                     CategoriaProductos = new List<CategoriaProductos>(),
                     Servicios = new List<Servicio>()
                 };
             }
 
-            // Buscar la categoría de ese producto
+            // 🔥 Traer inventario por sede
+            var inventario = _dbContext.InventarioSedes
+                .FirstOrDefault(i => i.ProductoId == producto.Cod_Producto && i.SedeId == sedeId);
+
+            var productoDTO = new ProductoTiendaDTO
+            {
+                Cod_Producto = producto.Cod_Producto,
+                NombreProducto = producto.NombreProducto,
+                ImagenPath = producto.ImagenPath,
+                CondicionProducto = producto.CondicionProducto,
+
+                CantidadProducto = inventario?.Cantidad ?? 0,
+                PrecioVenta = inventario?.PrecioUnitario ?? 0
+            };
+
             var categoria = _dbContext.CategoriaProductos
                 .FirstOrDefault(c => c.IdCateProducto == producto.IdCatepro);
 
-            // Buscar el servicio de esa categoría
             Servicio? servicio = null;
             if (categoria != null)
             {
@@ -137,13 +173,22 @@ namespace Plataforma.Servicios.Implementacion
                     .FirstOrDefault(s => s.IdServicio == categoria.IdServicio);
             }
 
-            // Retornar el ViewModel con SOLO ese producto, su categoría y servicio
             return new ProductosCategoriaViewModel
             {
-                Productos = new List<Producto> { producto },
-                CategoriaProductos = categoria != null ? new List<CategoriaProductos> { categoria } : new List<CategoriaProductos>(),
-                Servicios = servicio != null ? new List<Servicio> { servicio } : new List<Servicio>()
+                Productos = new List<ProductoTiendaDTO> { productoDTO },
+                CategoriaProductos = categoria != null
+                    ? new List<CategoriaProductos> { categoria }
+                    : new List<CategoriaProductos>(),
+                Servicios = servicio != null
+                    ? new List<Servicio> { servicio }
+                    : new List<Servicio>()
             };
+        }
+        public Producto? ObtenerProductoGeneral(string codigo)
+        {
+            return _dbContext.Productos
+                .AsNoTracking()
+                .FirstOrDefault(p => p.Cod_Producto == codigo && p.Estado == 1);
         }
         public List<Producto> BuscarProductos(string searchTerm)
         {

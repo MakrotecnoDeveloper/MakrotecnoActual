@@ -1,0 +1,261 @@
+﻿@model RegistrarPagosViewModel
+@{
+    ViewData["Title"] = "RegistrarPago";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content-wrapper">
+    <div class="container py-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="mb-1 fw-semibold">Registrar pagos</h3>
+                <div class="text-muted">
+                    Venta <span class="fw-semibold">#@Model.IdVenta</span>
+                </div>
+            </div>
+
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <div class="row g-3">
+            <!-- Resumen -->
+            <div class="col-12 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="rounded-3 bg-light px-2 py-1">
+                                <i class="bi bi-receipt fs-5"></i>
+                            </div>
+                            <div class="fw-semibold">Resumen</div>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="mt-3">
+                            <div class="text-muted small">Total venta</div>
+                            <div class="fs-3 fw-bold" id="uiTotalVentaText">
+                                @Model.TotalVenta.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
+                            </div>
+                            <input type="hidden" id="uiTotalVenta" value="@Model.TotalVenta" />
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <!-- Resumen de pagos en vivo -->
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-muted small">Pagado</div>
+                                <div class="fw-semibold" id="uiPagado">$ 0</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div class="text-muted small">Faltante</div>
+                                <div class="fw-semibold" id="uiFaltante">$ 0</div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="text-muted small">Cambio</div>
+                                <div class="fw-semibold" id="uiCambio">$ 0</div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-light border mt-3 mb-0 small" id="uiEstadoPago">
+                            Ingresa los valores para ver el resumen en tiempo real.
+                        </div>
+
+                        <!-- hidden fields -->
+                        <input type="hidden" asp-for="IdVenta" />
+                        <input type="hidden" asp-for="IdCliente" />
+                        <input type="hidden" asp-for="TotalVenta" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div>
+                                <h5 class="mb-0 fw-semibold">Métodos de pago</h5>
+                                <div class="text-muted small">Completa los valores que apliquen</div>
+                            </div>
+                            <span class="badge text-bg-light border rounded-pill px-3 py-2">
+                                Cliente ID: @Model.IdCliente
+                            </span>
+                        </div>
+
+                        <form asp-action="RegistrarPagos" method="post" novalidate>
+                            <input type="hidden" asp-for="IdVenta" />
+                            <input type="hidden" asp-for="IdCliente" />
+                            <input type="hidden" asp-for="TotalVenta" />
+
+                            <div class="row g-3">
+                                <!-- Efectivo -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-cash-coin me-1"></i> Pago en efectivo
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="MontoEfectivo" id="MontoEfectivo" class="form-control" placeholder="0" />
+                                    </div>
+                                    <span asp-validation-for="MontoEfectivo" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Transferencia -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-bank me-1"></i> Pago por transferencia
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="MontoTransferencia" id="MontoTransferencia" class="form-control" placeholder="0" />
+                                    </div>
+                                    <span asp-validation-for="MontoTransferencia" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Crédito -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-credit-card-2-front me-1"></i> Monto a crédito
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input asp-for="MontoCredito" id="MontoCredito" class="form-control" placeholder="0" />
+                                    </div>
+                                    <span asp-validation-for="MontoCredito" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Vencimiento -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-calendar-event me-1"></i> Fecha vencimiento crédito
+                                    </label>
+                                    <input asp-for="FechaVencimientoCredito" id="FechaVencimientoCredito" type="date" class="form-control" />
+                                    <span asp-validation-for="FechaVencimientoCredito" class="text-danger small"></span>
+
+                                    <div class="form-text" id="uiCreditoTip">
+                                        Se habilita solo si hay monto a crédito.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check2-circle me-1"></i> Registrar pagos y emitir factura
+                                </button>
+                            </div>
+
+                            <div class="text-muted small mt-2">
+                                Al registrar los pagos se emitirá la factura correspondiente.
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            // Helpers
+            const $ = (id) => document.getElementById(id);
+
+            function toNumber(v) {
+                // acepta "1.000.000" o "1000000"
+                if (v == null) return 0;
+                const s = String(v).trim();
+                if (!s) return 0;
+                const cleaned = s.replace(/[^\d]/g, "");
+                return cleaned ? Number(cleaned) : 0;
+            }
+
+            function moneyCO(n) {
+                try { return n.toLocaleString("es-CO"); } catch { return String(n); }
+            }
+
+            const totalVenta = Number($("uiTotalVenta")?.value || 0);
+
+            const inpEfe = $("MontoEfectivo");
+            const inpTra = $("MontoTransferencia");
+            const inpCre = $("MontoCredito");
+            const inpFecha = $("FechaVencimientoCredito");
+
+            const uiPagado = $("uiPagado");
+            const uiFaltante = $("uiFaltante");
+            const uiCambio = $("uiCambio");
+            const uiEstado = $("uiEstadoPago");
+            const uiCreditoTip = $("uiCreditoTip");
+
+            function toggleCredito() {
+                const credito = toNumber(inpCre?.value);
+
+                const habilitar = credito > 0;
+
+                inpFecha.disabled = !habilitar;
+
+                // Si no hay crédito, limpiamos fecha y quitamos required
+                if (!habilitar) {
+                    inpFecha.value = "";
+                    inpFecha.removeAttribute("required");
+                    uiCreditoTip.classList.remove("text-danger");
+                    uiCreditoTip.classList.add("text-muted");
+                } else {
+                    // Si hay crédito, pedimos fecha
+                    inpFecha.setAttribute("required", "required");
+                    uiCreditoTip.classList.remove("text-muted");
+                    uiCreditoTip.classList.add("text-danger");
+                }
+            }
+
+            function recalcular() {
+                const efectivo = toNumber(inpEfe?.value);
+                const transf = toNumber(inpTra?.value);
+                const credito = toNumber(inpCre?.value);
+
+                const pagado = efectivo + transf + credito;
+                const diff = pagado - totalVenta;
+
+                uiPagado.textContent = `$ ${moneyCO(pagado)}`;
+
+                if (diff >= 0) {
+                    uiFaltante.textContent = `$ 0`;
+                    uiCambio.textContent = `$ ${moneyCO(diff)}`;
+
+                    uiEstado.className = "alert alert-success border mt-3 mb-0 small";
+                    uiEstado.textContent = diff > 0
+                        ? "Pago completo. Hay cambio por devolver."
+                        : "Pago completo. Perfecto ✅";
+                } else {
+                    const faltante = Math.abs(diff);
+                    uiFaltante.textContent = `$ ${moneyCO(faltante)}`;
+                    uiCambio.textContent = `$ 0`;
+
+                    uiEstado.className = "alert alert-warning border mt-3 mb-0 small";
+                    uiEstado.textContent = "Falta dinero para completar el pago.";
+                }
+            }
+
+            // listeners
+            ["input", "change"].forEach(evt => {
+                inpEfe?.addEventListener(evt, () => recalcular());
+                inpTra?.addEventListener(evt, () => recalcular());
+                inpCre?.addEventListener(evt, () => { toggleCredito(); recalcular(); });
+            });
+
+            // init
+            toggleCredito();
+            recalcular();
+        })();
+    </script>
+}

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
-using Plataforma.Servicios.Implementacion;
+using Plataforma.Utils;
 
 namespace Plataforma.Controllers
 {
@@ -13,14 +13,16 @@ namespace Plataforma.Controllers
     {
         private readonly IProductoService _productoservice;
         private readonly BaseAdmContext _dbContext;
-        public ProductoController(IProductoService productoservice, BaseAdmContext dbContext)
+        private readonly IQrService _qrService;
+        public ProductoController(IProductoService productoservice, BaseAdmContext dbContext, IQrService qrService)
         {
             _productoservice = productoservice;
             _dbContext = dbContext;
+            _qrService = qrService;
         }
         public IActionResult Index()
         {
-            var model = new ProductosCategoriaViewModel
+            var model = new ProductosIndexViewModel
             {
                 Productos = _productoservice.ObtenerProductos(),
                 CategoriaProductos = _productoservice.ObtenerCategorias()
@@ -239,13 +241,12 @@ namespace Plataforma.Controllers
         }
         public IActionResult VisualizarProducto(string id)
         {
-            int categoriaTerm = 0;
-            string searchTerm = id;
+            var producto = _productoservice.ObtenerProductoGeneral(id);
 
-            // Llama al nuevo método que devuelve un solo producto con su categoría y servicio
-            var viewModel = _productoservice.BuscarProductoXImagen(searchTerm, categoriaTerm);
+            if (producto == null)
+                return NotFound();
 
-            return View(viewModel);
+            return View(producto);
         }
         /*Visualizacion de  Recargas de Plataformas */
         [Authorize]
@@ -642,6 +643,47 @@ namespace Plataforma.Controllers
                 TempData["ErrorMessage"] = mensaje;
                 return RedirectToAction("Error", "Errores");
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> ImprimirSticker(
+    string codProducto,
+    int copias = 1,
+    int anchoMm = 50,
+    int altoMm = 25)
+        {
+            var p = await _dbContext.Productos
+                .FirstOrDefaultAsync(x => x.Cod_Producto == codProducto);
+
+            if (p == null)
+                return NotFound();
+
+            var inventario = await _dbContext.InventarioSedes
+                .FirstOrDefaultAsync(x => x.ProductoId == codProducto);
+
+            // 🔥 Construimos URL absoluta correcta
+            var urlProducto = Url.Action(
+                "VisualizarProducto",
+                "Producto",
+                new { codProducto = p.Cod_Producto },
+                Request.Scheme
+            );
+
+            var qrBase64 = _qrService.GenerarQrBase64PNG(urlProducto);
+
+            var vm = new StickerPrintVm
+            {
+                CodProducto = p.Cod_Producto,
+                NombreProducto = p.NombreProducto,
+                Precio = inventario?.PrecioUnitario ?? 0m,
+                Copias = copias,
+                AltoMm = altoMm,
+                AnchoMm = anchoMm,
+                QrBase64 = qrBase64,
+                LogoUrl = "/img/Logo.png",
+                BrandHex = "#0D6EFD"
+            };
+
+            return View("ImprimirSticker", vm);
         }
     }
 }

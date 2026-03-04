@@ -4,7 +4,9 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
     {
+        Task<List<MetodoPagos>> TraerMetodosPagoDisponibles(int metodoPago);
         Task<bool> CrearVentaAsync(Ventas venta);
+        Task<Ventas?> ObtenerVentaConDetalleAsync(int idVenta);
         Task<List<Ventas>> ObtenerTodasLasVentasAsync();
         Task<(decimal? valorVenta, decimal? valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
         Task<decimal> ObtenerCantidadProductoActual(string codigo);
@@ -13,12 +15,11 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> AgregarPedidoAVentaAsync(Pedidos pedido);
         void ActualizarEstadoFacturas();
         List<Factura> ObtenerFacturasFechaDescendente();
-        Task<Ventas> ObtenerVentaConPedidos(int idVenta);
-        Task<int> GenerarConsecutivoFactura();
+        Task<DetalleVentaViewModel> ObtenerVentaConPedidos(int idVenta);
         Task GuardarVentaActualizada(Ventas venta, decimal total);
         Task GuardarFacturaAsync(Factura factura);
         Task<List<Factura>> ObtenerFacturasConVentaCliente();
-        Task<Factura> ObtenerFacturaConDetalle(int idFactura);
+        Task<DetalleFacturaViewModel> ObtenerFacturaConDetalle(int idFactura);
         Task<bool> AnularFacturaAsync(int idFactura);
         Task<bool> EliminarFacturaAsync(int idFactura);
         Task<Ventas> ObtenerVentaPorIdAsync(int id);
@@ -29,5 +30,17 @@ namespace Plataforma.Servicios.Contrato
         List<AdicionFactura> ObtenerConceptosCompletos();
         List<InventarioSede> ValidarProductoPorCodigo(string Codigo);
         Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo);
+        Task<bool> FacturarConPagosAsync(
+            int idVenta,
+            int idCliente,
+            string metodoPagoFinal,
+            decimal montoEfectivo,
+            decimal montoTransferencia,
+            decimal montoCredito,
+            DateTime? fechaVencimientoCredito
+        );
+        Task<bool> EmitirFacturaAsync(int idVenta, string metodoPago);
+        Task CambiarEstadoVentaAsync(int idVenta, string nuevoEstado);
+        Task<List<ProductoVentaDto>> BuscarProductosPorNombreVentaAsync(string texto, ClaimsPrincipal usuario);
     }
 }

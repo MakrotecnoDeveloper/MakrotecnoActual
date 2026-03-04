@@ -256,12 +256,17 @@
                        <td>${Number(row.cantidad).toLocaleString()}</td>
                        <td>${row.valorVenta != null ? Number(row.valorVenta).toLocaleString() : '-'}</td>
                        <td>${row.valorNeto != null ? Number(row.valorNeto).toLocaleString() : '-'}</td>
-                        <td>
-                           <button class="btn btn-sm btn-primary btn-editar"
-                                   data-id="${row.productoId}">
-                             Editar
-                           </button>
-                        </td>
+                       <td>
+                        <a class="btn btn-sm btn-outline-dark"
+                           href="/Producto/ImprimirSticker?codProducto=${encodeURIComponent(row.productoId)}&copias=1&anchoMm=50&altoMm=25"
+                           target="_blank" title="Imprimir sticker 50x25">
+                          🖨 Sticker 50x25
+                        </a>
+
+                          <button class="btn btn-sm btn-primary btn-editar" data-id="${row.productoId}">
+                            Editar
+                          </button>
+                       </td>
                      </tr>`
                   );
                 });

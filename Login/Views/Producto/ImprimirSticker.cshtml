@@ -1,0 +1,263 @@
+﻿@model StickerPrintVm
+@using System.Globalization
+@{
+    Layout = null;
+
+    // Rollo 58mm (ancho físico). En muchos equipos el ancho imprimible real es ~48mm,
+    // pero dejamos 58mm como pediste. Si tu impresora recorta, bajamos a 48mm.
+    var anchoMm = Model.AnchoMm <= 0 ? 50 : Model.AnchoMm;
+    var altoMm = Model.AltoMm <= 0 ? 25 : Model.AltoMm;
+
+    // 👇 factor de escala basado en 50mm como referencia
+    var scale = anchoMm / 50.0;
+
+    var wmm = $"{anchoMm}mm";
+    var hmm = $"{altoMm}mm";
+
+    var cultura = new CultureInfo("es-CO");
+    var precioTxt = (Model.Precio ?? 0m).ToString("C0", cultura);
+    var nombre = (Model.NombreProducto ?? "").Trim();
+}
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Sticker 58mm @Model.CodProducto</title>
+
+    <style>
+        :root {
+            --brand: @Model.BrandHex;
+            --ink: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --bg: #ffffff;
+            --scale: @scale;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Solo pantalla (no se imprime) */
+        .actions {
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* Hoja = etiqueta (58mm) */
+        .label {
+            width: 50mm;
+            height: 25mm;
+            padding: 2mm;
+            background: #fff;
+            box-sizing:border-box;
+            padding-bottom:3mm;
+            overflow:hidden;
+        }
+
+        /* el contenido real se “sube” un poco para que no lo recorte abajo */
+        .content {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 18mm 1fr;
+            grid-template-rows: 1fr auto; /* 👈 el precio tiene altura real */
+            gap: 1mm;
+        }
+
+        /* QR */
+        .qr {
+            width: calc(18mm * var(--scale));
+            height: calc(18mm * var(--scale));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            grid-row: 1;
+        }
+
+            .qr img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+        /* Info */
+        .info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            grid-row: 1;
+        }
+
+        .priceFull {
+            grid-column: 1 / -1;
+            border-top: 1px dashed #ddd;
+            padding-top: 0.5mm;
+            font-weight: 900;
+            font-size: 10.5pt; /* 👈 antes 12pt */
+            line-height: 1;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* Header industrial: logo + chip */
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2mm;
+            margin-bottom: 1mm;
+        }
+
+        .logo {
+            height: 10mm; /* fijo y controlado */
+            max-width: 15mm; /* evita que se desborde */
+            object-fit: contain;
+        }
+
+        .chip {
+            font-size: calc(7pt * var(--scale));
+            padding: 1mm 2mm;
+            border-radius: 999px;
+            border: 1px solid var(--brand);
+            color: var(--brand);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Código producto */
+        .code {
+            grid-column: 2;
+            grid-row: 1;
+            align-self: center;
+            font-weight: 900;
+            font-size: calc(12pt * var(--scale));
+            white-space: nowrap;
+        }
+
+        /* Nombre */
+        .name {
+            margin-top: 0.8mm;
+            font-size: calc(7.5pt * var(--scale));
+            color: var(--muted);
+            line-height: 1.1;
+            white-space: normal;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* máximo 2 líneas */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Precio industrial */
+        .price {
+            margin-top: auto;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            border-top: 1px dashed var(--line);
+            padding-top: 1mm;
+        }
+
+            .price .labelp {
+                font-size: 7pt;
+                color: var(--muted);
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .3px;
+            }
+
+            .price .valuep {
+                font-size: calc(10.5pt * var(--scale));
+                font-weight: 900;
+                color: var(--ink);
+                white-space: nowrap;
+            }
+
+        /* Línea de control (inventario) */
+        .foot {
+            margin-top: 0.8mm;
+            font-size: 6.8pt;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            gap: 2mm;
+            white-space: nowrap;
+        }
+
+        /* PRINT: sin márgenes, tamaño exacto */
+       @@media print{
+          @@page{
+            size: 50mm 25mm;
+            margin: 0;
+          }
+
+          html, body{
+            width: 50mm;
+            height: 25mm;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+          }
+
+          .actions{ display:none !important; }
+
+          .label{
+            break-after: page;      /* mejor que page-break-after */
+            page-break-after: always;
+          }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="actions">
+        <button onclick="window.print()">🖨 Imprimir</button>
+        <button onclick="window.close()">Cerrar</button>
+    </div>
+
+    @for (int i = 0; i < Model.Copias; i++)
+    {
+        <div class="label">
+            <div class="content">
+
+                <div class="qr">
+                    <img alt="QR" src="data:image/png;base64,@Model.QrBase64" />
+                </div>
+
+                <div style="display:flex; flex-direction:column; justify-content:space-between;">
+
+                    <!-- LOGO ARRIBA DERECHA -->
+                    <div style="display:flex; justify-content:flex-end;">
+                        <img src="@Url.Content(Model.LogoUrl)" class="logo" />
+                    </div>
+
+                    <!-- CÓDIGO GRANDE -->
+                    <div class="code">@Model.CodProducto</div>
+
+                </div>
+
+                <!-- PRECIO ABAJO -->
+                <div class="priceFull">@precioTxt</div>
+
+            </div>
+        </div>
+
+        @if (i < Model.Copias - 1)
+        {
+            <div style="page-break-after: always;"></div>
+        }
+    }
+
+</body>
+</html>

@@ -6,16 +6,16 @@
 $("#clienteForm").submit(function (e) {
     e.preventDefault();
 
+    const cedula = $("#c_cedula").val();
     const cliente = {
-        CedulaCliente: $("#c_cedula").val(),
-        NombreCliente: $("#c_nombre").val(),
-        EmpresaCliente: $("#c_empresa").val(),
-        CiudadCliente: $("#c_ciudad").val(),
-        TelefonoCliente: $("#c_telefono").val(),
-        CorreoCliente: $("#c_correo").val(),
-        DireccionCliente: $("#c_direccion").val()
+        CedulaCliente: cedula ? parseInt(cedula, 10) : null,
+        NombreCliente: $("#c_nombre").val()?.trim() || null,
+        EmpresaCliente: $("#c_empresa").val()?.trim() || null,
+        CiudadCliente: $("#c_ciudad").val()?.trim() || null,
+        TelefonoCliente: $("#c_telefono").val()?.trim() || null,
+        CorreoCliente: $("#c_correo").val()?.trim() || null,
+        DireccionCliente: $("#c_direccion").val()?.trim() || null
     };
-
     $.ajax({
         url: '/Terceros/CrearCliente',
         type: 'POST',
@@ -137,26 +137,173 @@ document.getElementById('m_dispositivo').addEventListener('change', function () 
 // ================= Agregar Fila a la tabla Principal =============
 function appendOrdenRow(o) {
     function fmtDateCO(iso) { try { return new Date(iso).toLocaleDateString('es-CO'); } catch { return iso; } }
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td>${fmtDateCO(o.fechaIngreso)}</td>
-        <td>${o.cliente ?? ''}</td>
-        <td>${o.telefono ?? ''}</td>
-        <td>${o.password ?? ''}</td>
-        <td>${o.marca ?? ''}</td>
-        <td>${o.modelo ?? ''}</td>
-        <td>${o.descripcion ?? ''}</td>
-        <td>${o.observacion ?? ''}</td>
-        <td>${o.estado ?? ''}</td>
-        <td>${o.cedula ?? ''}</td>
-        <td>
-          <button class="btn btn-sm btn-info modOrdenBtn" data-id="${o.idOrden}">Modificar Orden</button>
-          <button class="btn btn-sm btn-info verOrdenBtn" data-id="${o.idOrden}">Ver Registros</button>
-          <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="${o.idOrden}">Nuevo Registro</button>
-          <button class="btn btn-sm btn-success asignarTecnico" data-id="${o.idOrden}">Asignar Tecnico</button>
-        </td>`;
+    <td>${o.idOrden ?? ''}</td>
+    <td>${fmtDateCO(o.fechaIngreso)}</td>
+    <td>${o.cliente ?? ''}</td>
+    <td>${o.telefono ?? ''}</td>
+    <td>${o.password ?? ''}</td>
+    <td>${o.marca ?? ''}</td>
+    <td>${o.modelo ?? ''}</td>
+    <td>${o.descripcion ?? ''}</td>
+    <td>${o.observacion ?? ''}</td>
+    <td>${o.estado ?? ''}</td>
+    <td>${o.cedula ?? ''}</td>
+    <td>
+      <button class="btn btn-sm btn-info modOrdenBtn" data-id="${o.idOrden}">Modificar Orden</button>
+      <button class="btn btn-sm btn-success nuevaOrdenBtn" data-id="${o.idOrden}">Nuevo Registro</button>
+      <button class="btn btn-sm btn-success asignarTecnico" data-id="${o.idOrden}">Asignar Tecnico</button>
+      <button class="btn btn-sm btn-info verOrdenBtn" data-id="${o.idOrden}">Ver Registros</button>
+    </td>`;
     document.querySelector('#mainTable #tbody').prepend(tr);
 }
+        //Agregar fila si encuentra la orden
+    function fmtDateCO(iso) {
+        try { return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+        catch { return iso ?? ""; }
+    }
+    function fmtTimeCO(iso) {
+        try { return new Date(iso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }); }
+        catch { return ""; }
+    }
+
+    function estadoPill(texto) {
+        const e = (texto || "").toLowerCase();
+        let cls = "pill pill-gray";
+        if (e.includes("final")) cls = "pill pill-dark";
+        else if (e.includes("ejec") || e.includes("proceso")) cls = "pill pill-blue";
+        else if (e.includes("pend")) cls = "pill pill-yellow";
+        else if (e.includes("rech")) cls = "pill pill-red";
+        return `<span class="${cls}">${texto || ""}</span>`;
+    }
+
+    function tecnicoPill(cedula) {
+        return `<span class="pill pill-outline">${cedula ?? ""}</span>`;
+    }
+
+    // Render EXACTO de la tabla nueva: 7 columnas
+    function renderOrdenRowV2(o) {
+        const id = o.idOrden ?? o.IdOrden ?? "";
+        const codigo = `ST-${id}`;
+        const fecha = o.fechaIngreso ?? o.FechaIngreso;
+
+        const cliente = (o.cliente ?? o.Cliente ?? "").trim();
+        const marca = (o.marca ?? o.Marca ?? "").trim();
+        const modelo = (o.modelo ?? o.Modelo ?? "").trim();
+        const problema = (o.descripcion ?? o.Descripcion ?? "").trim();
+        const estado = (o.estado ?? o.Estado ?? "").trim();
+        const cedula = o.cedula ?? o.Cedula ?? "";
+        const total = o.total ?? o.Total ?? o.valorPago ?? o.ValorPago ?? 0;
+
+        const puedeEditar = estado !== "Rechazada" && estado !== "Finalizada";
+
+        return `
+      <tr>
+        <td class="fw-semibold">${codigo}</td>
+
+        <td>
+          <div>${fmtDateCO(fecha)}</div>
+          <div class="text-muted small">${fmtTimeCO(fecha)}</div>
+        </td>
+
+        <td>
+          <div class="fw-semibold">${cliente || "-"}</div>
+          <div class="text-muted small">${marca}${marca && modelo ? " · " : ""}${modelo}</div>
+          ${problema ? `<div class="text-muted small mt-1">Problema: <span class="text-dark">${escapeHtml(problema)}</span></div>` : ""}
+        </td>
+
+        <td>${tecnicoPill(cedula)}</td>
+
+        <td>${estadoPill(estado)}</td>
+
+        <td class="text-end">
+          <div class="fw-semibold">$ ${Number(total || 0).toLocaleString("es-CO")}</div>
+          <div class="text-muted small">estimado</div>
+        </td>
+
+        <td class="text-end">
+          <div class="d-inline-flex gap-2 justify-content-end">
+            <button class="icon-btn verOrdenBtn" data-id="${id}" title="Ver">
+              <i class="bi bi-eye"></i>
+            </button>
+
+            ${puedeEditar ? `
+              <button class="icon-btn icon-btn-blue modOrdenBtn" data-id="${id}" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+
+              <button class="icon-btn icon-btn-green nuevaOrdenBtn" data-id="${id}" title="Nuevo registro">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+
+              <button class="icon-btn asignarTecnico" data-id="${id}" title="Asignar técnico">
+                <i class="bi bi-person"></i>
+              </button>
+            ` : ``}
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    function escapeHtml(str) {
+        return (str || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+
+    function mostrarSoloOrdenBuscada(o) {
+        $("#tbody").html(renderOrdenRow(o));
+    }
+
+    function restaurarUltimas10() {
+        // Simple: recargar la página para volver a las 10 últimas (rápido y sin complicarte)
+        location.reload();
+    }
+
+    $(document).on("click", "#btnBuscarOrden", function () {
+        const idOrden = $("#buscarIdOrden").val();
+        if (!idOrden) return alert("Ingresa un ID de orden válido.");
+
+        $("#btnBuscarOrden").prop("disabled", true).text("Buscando...");
+
+        $.get("/OrdenServicio/BuscarOrdenPorId", { idOrden })
+            .done(function (res) {
+                if (!res.success) {
+                    alert(res.message || "No se pudo traer la orden.");
+                    return;
+                }
+                mostrarSoloOrdenBuscada(res.orden);
+            })
+            .fail(function () {
+                alert("Error consultando la orden ❌");
+            })
+            .always(function () {
+                $("#btnBuscarOrden").prop("disabled", false).text("🔎 Buscar");
+            });
+    });
+
+    // Enter para buscar
+    $(document).on("keydown", "#buscarIdOrden", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            $("#btnBuscarOrden").click();
+        }
+    });
+
+    // Si borras el input, vuelve a las 10 últimas
+    $(document).on("input", "#buscarIdOrden", function () {
+        if ($(this).val() === "") {
+            restaurarUltimas10();
+        }
+    });
+
+    //Fin Agregar fila si encuentra la orden
 
 
 // == Ventana flotante para ver el historico de las ordenes y crear un historico ===== //
@@ -212,3 +359,165 @@ $(document).ready(function () {
     });
 
 });
+
+// ===================== Cambiar de tab por JS =====================
+function irATab(tabSelector) {
+    const btn = document.querySelector(tabSelector);
+    if (!btn) return;
+    bootstrap.Tab.getOrCreateInstance(btn).show();
+}
+
+// ===================== Detalle visual del dispositivo seleccionado =====================
+$(document).on("change", "#m_dispositivo", function () {
+    const opt = this.options[this.selectedIndex];
+    const detalle = opt?.getAttribute("data-detalle") || "Sin detalle";
+    $("#detalleDispositivoSel").text(detalle);
+});
+
+// ===================== Checkbox: "No existe dispositivo" => Ir a Dispositivo =====================
+$(document).on("change", "#chkNoExisteDispositivo", function () {
+    if (this.checked) {
+        $("#chkNoExisteCliente").prop("checked", false);
+        irATab("#dispositivo-tab");
+        setTimeout(() => $("#d_cliente").focus(), 150);
+    }
+});
+
+// ===================== Checkbox: "No existe cliente" => Ir a Cliente =====================
+$(document).on("change", "#chkNoExisteCliente", function () {
+    if (this.checked) {
+        $("#chkNoExisteDispositivo").prop("checked", false);
+        irATab("#cliente-tab");
+        setTimeout(() => $("#c_nombre").focus(), 150);
+    }
+});
+
+// ===================== Botones rápidos =====================
+$(document).on("click", "#btnIrADispositivo", function () {
+    $("#chkNoExisteDispositivo").prop("checked", false);
+    $("#chkNoExisteCliente").prop("checked", false);
+    irATab("#dispositivo-tab");
+    setTimeout(() => $("#d_cliente").focus(), 150);
+});
+
+$(document).on("click", "#btnIrACliente", function () {
+    $("#chkNoExisteDispositivo").prop("checked", false);
+    $("#chkNoExisteCliente").prop("checked", false);
+    irATab("#cliente-tab");
+    setTimeout(() => $("#c_nombre").focus(), 150);
+});
+
+// ===================== UX: al abrir modal, siempre arranca en Orden =====================
+function openUnifiedModal() {
+    const modalEl = document.getElementById("unifiedModal");
+    new bootstrap.Modal(modalEl).show();
+
+    // forzar el tab Orden al abrir
+    setTimeout(() => {
+        irATab("#orden-tab");
+        $("#chkNoExisteDispositivo").prop("checked", false);
+        $("#chkNoExisteCliente").prop("checked", false);
+        $("#detalleDispositivoSel").text("Selecciona un dispositivo para ver el detalle.");
+        $("#m_dispositivo").focus();
+    }, 150);
+}
+
+// ===================== Limpieza de checks al guardar (recomendado) =====================
+// Cuando guardas cliente, en tu success actual (CrearCliente) agrega:
+// $("#chkNoExisteCliente").prop("checked", false);
+
+// Cuando guardas dispositivo, en tu success actual (CrearDispositivo) agrega:
+// $("#chkNoExisteDispositivo").prop("checked", false);
+
+function calcularKPIsTabla() {
+    const rows = $("#tbody tr");
+    $("#kpiTotalOrdenes").text(rows.length);
+
+    let enProceso = 0;
+    let finalizadas = 0;
+
+    rows.each(function () {
+        const estado = $(this).find("td:eq(4) .badge").text().trim(); // columna Estado
+        if (estado === "Finalizada") finalizadas++;
+        else if (estado && estado !== "Rechazada") enProceso++;
+    });
+
+    $("#kpiEnProceso").text(enProceso);
+    $("#kpiFinalizadas").text(finalizadas);
+}
+
+$(document).ready(function () {
+    calcularKPIsTabla();
+});
+
+function cargarFiltros() {
+    $.get("/OrdenServicio/ObtenerFiltros")
+        .done(function (res) {
+            if (!res.success) return;
+
+            // Estados
+            const selEstado = $("#filtroEstado");
+            selEstado.empty();
+            selEstado.append(new Option("Todos los estados", "__ALL__"));
+            (res.estados || []).forEach(e => selEstado.append(new Option(e, e)));
+
+            // Técnicos
+            const selTec = $("#filtroTecnico");
+            selTec.empty();
+
+            if (window.__ROL__ === "Administrador") {
+                selTec.append(new Option("Todos los técnicos", "__ALL__"));
+            }
+
+            (res.tecnicos || []).forEach(t => {
+                selTec.append(new Option(t.nombre, t.cedula));
+            });
+
+            // Si es técnico: selecciona su cédula y bloquea el combo
+            if (window.__ROL__ !== "Administrador") {
+                selTec.val(String(window.__CEDULA__));
+                selTec.prop("disabled", true);
+            }
+        })
+        .fail(function () {
+            console.log("No se pudieron cargar filtros");
+        });
+}
+
+function pintarTablaV2(lista) {
+    const html = (lista || []).map(o => renderOrdenRowV2(o)).join("");
+    $("#tbody").html(html);
+}
+
+function aplicarFiltros() {
+    const estado = $("#filtroEstado").val() || "__ALL__";
+
+    let tecnico = $("#filtroTecnico").val() || "__ALL__";
+    if (tecnico === "__ALL__") tecnico = 0;
+
+    $.get("/OrdenServicio/FiltrarOrdenes", { estado, tecnico })
+        .done(function (res) {
+            if (!res.success) return alert("No se pudo filtrar");
+            pintarTablaV2(res.ordenes || []);
+            calcularKPIsTabla(); // si la tienes
+        })
+        .fail(function () {
+            alert("Error filtrando ❌");
+        });
+}
+
+
+// Eventos
+$(document).on("change", "#filtroEstado", aplicarFiltros);
+$(document).on("change", "#filtroTecnico", aplicarFiltros);
+
+// Inicial
+$(document).ready(function () {
+    cargarFiltros();
+});
+
+function mostrarSoloOrdenBuscada(o) {
+    $("#tbody").html(renderOrdenRowV2(o));
+    calcularKPIsTabla();
+}
+

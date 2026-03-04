@@ -4,6 +4,7 @@
     ViewData["Title"] = "Agregar Productos a Venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <div class="content-wrapper mt-4">
     <form role="form" id="productForm" asp-action="AgregarMultiplesProductosAVenta">
         <section class="content">
@@ -12,36 +13,65 @@
                     <div class="col-lg-10">
                         <div class="card border-0 shadow-lg rounded-4">
                             <div class="card-body">
-                                <!-- Proveedor y Factura -->
+
                                 <div class="row g-4">
                                     <div class="col-sm-6">
                                         <h2 class="text-primary">Factura de Venta</h2>
                                         <p class="text-muted">Ingrese los detalles de la factura y los productos correspondientes.</p>
                                     </div>
                                 </div>
-                                <!-- Información del cliente y factura -->
+
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <h5 class="text-secondary">Información de la Factura</h5>
+
                                         <div class="form-group">
-                                            <label for="numeroFactura" class="fw-bold">Número de Factura</label>
+                                            <label class="fw-bold">Número de Factura</label>
                                             <input type="text" class="form-control bg-light border-0" id="IdVenta" name="IdVenta" value="@Model.IdVenta" readonly>
                                         </div>
+
                                         <div class="form-group">
-                                            <label for="fechaFactura" class="fw-bold">Fecha</label>
+                                            <label class="fw-bold">Fecha</label>
                                             <input type="date" class="form-control" id="fechaFactura" name="FechaRegistro" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                                         </div>
+
+                                        <!-- ✅ (9) Persistencia temporal: botones -->
+                                        <div class="mt-3 d-flex gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRecuperarBorrador">
+                                                Recuperar borrador
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnBorrarBorrador">
+                                                Borrar borrador
+                                            </button>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Se guarda automáticamente un borrador mientras diligencias.
+                                        </small>
+                                    </div>
+
+                                    <!-- ✅ (6) Observaciones -->
+                                    <div class="col-md-6">
+                                        <h5 class="text-secondary">Observaciones</h5>
+                                        <label class="fw-bold">Observación de la venta</label>
+                                        <textarea class="form-control" id="Conceptos" name="Conceptos" rows="4" placeholder="Ej: Cliente solicita entrega mañana, garantía, nota interna..."></textarea>
                                     </div>
                                 </div>
 
                                 <!-- Detalles productos -->
                                 <div class="mt-5">
                                     <h5 class="text-primary fw-bold">Detalles de los Productos</h5>
-                                    <div class="d-flex justify-content-end mb-2">
+
+                                    <div class="d-flex justify-content-end mb-2 gap-2">
+                                        <!-- ✅ (3) Buscar por nombre (modal) -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalBuscarProducto">
+                                            <i class="fas fa-search"></i> Buscar producto
+                                        </button>
+
                                         <button type="button" class="btn btn-success btn-sm" onclick="insertarFilasCrearPedido()">
                                             <i class="fas fa-plus"></i> Agregar Producto
                                         </button>
                                     </div>
+
                                     <div class="table-responsive">
                                         <table class="table table-hover table-bordered align-middle" data-tipo="venta">
                                             <thead class="table-primary">
@@ -54,24 +84,33 @@
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
+
                                             <tbody id="tablaProductos">
                                                 <tr>
                                                     <td>
                                                         <input type="text" class="form-control codigoProducto" name="Productos[0].Codigo" placeholder="Código" id="codfact0">
                                                         <div class="opcionesCodigosProducto small text-muted"></div>
+
+                                                        <!-- ✅ (1) stock info visual -->
+                                                        <small class="text-muted d-block mt-1 stockInfo"></small>
                                                     </td>
+
                                                     <td>
-                                                        <input type="number" class="form-control" name="Productos[0].Stock" placeholder="Cantidad" id="stock0">
+                                                        <input type="number" class="form-control" name="Productos[0].Stock" placeholder="Cantidad" id="stock0" min="1">
                                                     </td>
+
                                                     <td>
-                                                        <input type="number" class="form-control" name="Productos[0].VNeto" readonly placeholder="Venta Neto" id="vneto0">
+                                                        <input type="number" class="form-control" name="Productos[0].VNeto" placeholder="Venta Neto" id="vneto0">
                                                     </td>
+
                                                     <td>
                                                         <input type="text" class="form-control" name="Productos[0].VVenta" placeholder="Valor Venta" id="vventa0">
                                                     </td>
+
                                                     <td>
-                                                        <input type="text" class="form-control" name="Productos[0].VTotal" readonly placeholder="Valor Total" id="vtotal0">
+                                                        <input type="text" class="form-control" name="Productos[0].VTotal" placeholder="Valor Total" id="vtotal0">
                                                     </td>
+
                                                     <td>
                                                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)">
                                                             <i class="fas fa-trash-alt"></i>
@@ -80,6 +119,7 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+
                                         <div class="text-end">
                                             <button type="button" class="btn btn-outline-success btn-sm" onclick="AcumularProductosDePedido()">
                                                 <i class="fas fa-plus"></i> Acumulado Pedido
@@ -88,42 +128,161 @@
                                     </div>
                                 </div>
 
+                                <!-- ✅ (5) Resumen adicional -->
+                                <div class="mt-3 d-flex justify-content-end gap-4">
+                                    <div><strong>Ítems:</strong> <span id="lblTotalItems">0</span></div>
+                                    <div><strong>Productos:</strong> <span id="lblTotalProductos">0</span></div>
+                                </div>
+
                                 <!-- Resumen factura -->
                                 <div class="mt-5">
                                     <h5 class="text-primary fw-bold">Resumen de la Factura</h5>
+
                                     <div class="row g-4">
                                         <div class="col-md-4">
-                                            <label for="subtotalFactura" class="form-label fw-semibold">Subtotal</label>
+                                            <label class="form-label fw-semibold">Subtotal</label>
                                             <input type="text" class="form-control bg-light" id="subtotalFactura" name="subtotalFactura" readonly value="0.00">
                                         </div>
+
+                                        <!-- ✅ (7) Descuento mejorado -->
                                         <div class="col-md-4">
-                                            <label for="descuentoFactura" class="form-label fw-semibold">Descuento</label>
-                                            <input type="number" class="form-control" id="descuentoFactura" name="DescuentoFactura" value="0">
+                                            <label class="form-label fw-semibold">Descuento</label>
+
+                                            <div class="input-group">
+                                                <select class="form-select" id="tipoDescuento">
+                                                    <option value="valor" selected>$ Valor</option>
+                                                    <option value="porcentaje">% Porcentaje</option>
+                                                </select>
+                                                <input type="number" class="form-control" id="descuentoFactura" name="DescuentoFactura" value="0" min="0">
+                                            </div>
+
+                                            <small class="text-muted">El descuento se aplica sobre el subtotal.</small>
                                         </div>
+
                                         <div class="col-md-4">
-                                             <label for="ivaFactura" class="form-label fw-semibold">IVA (19%)</label>
-                                             <input type="number" class="form-control bg-light" id="ivaFactura" name="Iva" value="0">
+                                            <label class="form-label fw-semibold">IVA (19%)</label>
+                                            <input type="number" class="form-control bg-light" id="ivaFactura" name="Iva" readonly value="0">
                                         </div>
+
                                         <div class="col-md-6 mt-3">
-                                            <label for="totalFactura" class="form-label fw-bold">Total</label>
+                                            <label class="form-label fw-bold">Total</label>
                                             <input type="text" class="form-control bg-light text-success fw-bold" id="totalFactura" name="totalFactura" readonly value="0.00">
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
                             <!-- Botón enviar -->
                             <div class="card-footer text-center bg-white border-top-0">
-                                <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <!-- ✅ (8) Confirmación antes de guardar: ahora es botón modal -->
+                                <button type="button" id="btnAbrirConfirmacion" class="btn btn-primary btn-lg px-4">
                                     <i class="fas fa-save me-2"></i>Guardar Pedido
                                 </button>
+
+                                <div id="msgValidacionPedido" class="small text-danger mt-2" style="display:none;"></div>
+
+                                <!-- ✅ Atajos -->
+                                <div class="small text-muted mt-2">
+                                    Atajos: <strong>Ctrl+Enter</strong> agregar fila · <strong>Ctrl+Supr</strong> eliminar fila · <strong>Enter</strong> siguiente campo · <strong>Esc</strong> cerrar sugerencias
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- ✅ submit real oculto (se dispara al confirmar en modal) -->
+        <button type="submit" id="btnSubmitReal" style="display:none;"></button>
     </form>
+</div>
+
+<!-- ✅ (3) Modal buscar producto por nombre -->
+<div class="modal fade" id="modalBuscarProducto" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Buscar producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="txtBuscarNombre" class="form-control" placeholder="Buscar por nombre o código...">
+                    <button type="button" class="btn btn-outline-primary" id="btnBuscarNombre">Buscar</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Cantidad</th>
+                                <th>Valor Neto</th>
+                                <th>Valor Venta</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblResultadosBusqueda">
+                        </tbody>
+                    </table>
+                </div>
+                <small class="text-muted">Selecciona un producto para insertarlo en la última fila activa.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ (8) Modal confirmación antes de guardar -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Subtotal:</strong> <span id="cSubtotal">0.00</span></p>
+                        <p><strong>IVA:</strong> <span id="cIva">0.00</span></p>
+                        <p><strong>Total:</strong> <span id="cTotal">0.00</span></p>
+                        <p><strong>Ítems:</strong> <span id="cItems">0</span></p>
+                        <p><strong>Productos:</strong> <span id="cProductos">0</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Observación:</strong></p>
+                        <div class="border rounded p-2 bg-light" id="cObs"></div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Cant</th>
+                                <th>V. Unit</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cDetalle"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                <button type="button" class="btn btn-success" id="btnConfirmarGuardar">Confirmar y guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -131,145 +290,609 @@
 {
     <script>
         let index = 1;
-        function insertarFilasCrearPedido() {
-            //Filas dinamicas
-            const nuevaFila = `
-                        <tr>
-                            <td>
-                                <input type="text" class="form-control codigoProducto" name="Productos[${index}].Codigo" placeholder="Código" id="codfact${index}">
-                                <div class="opcionesCodigosProducto"></div>
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="Productos[${index}].Stock" placeholder="Cantidad" id="stock${index}">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="Productos[${index}].VNeto" placeholder="Venta Neto" id="vneto${index}">
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" name="Productos[${index}].VVenta" placeholder="Valor Venta" id="vventa${index}">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="Productos[${index}].VTotal" readonly placeholder="Valor Total" id="vtotal${index}">
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-            $('#tablaProductos').append(nuevaFila);
-            index = index + 1;
+        let ultimaFilaActiva = null;
+
+        // =========================
+        // ✅ (1) STOCK - helper
+        // =========================
+        // Opción A (preferida): tu endpoint /Pedido/BuscarProductoPorCodigoVenta debe devolver:
+        // { value,label, valorNeto, valorVenta, stockDisponible }
+        //
+        // Opción B: crear endpoint /Pedido/ObtenerStockDisponible?codigo=XXX
+        // y aquí llamas ese endpoint.
+        async function obtenerStockDisponible(codigo) {
+            // 👉 Si ya viene en BuscarProductoPorCodigoVenta, no necesitas esto.
+            // Descomenta y crea el endpoint si lo deseas:
+            /*
+            const r = await $.get('/Pedido/ObtenerStockDisponible', { codigo });
+            return r?.stockDisponible ?? null;
+            */
+            return null;
         }
 
-        // Función para mostrar las opciones de autocompletado
+        // =========================
+        // ✅ (9) BORRADOR (localStorage)
+        // =========================
+        const DRAFT_KEY = () => `pedido_venta_draft_${$('#IdVenta').val() || '0'}`;
+
+        function guardarBorrador() {
+            const payload = {
+                IdVenta: $('#IdVenta').val(),
+                FechaRegistro: $('#fechaFactura').val(),
+                Conceptos: $('#Conceptos').val(),
+                tipoDescuento: $('#tipoDescuento').val(),
+                descuentoFactura: $('#descuentoFactura').val(),
+                productos: []
+            };
+
+            $('#tablaProductos tr').each(function () {
+                const fila = $(this);
+                payload.productos.push({
+                    Codigo: (fila.find('input[name$=".Codigo"]').val() || '').trim(),
+                    Stock: fila.find('input[name$=".Stock"]').val(),
+                    VNeto: fila.find('input[name$=".VNeto"]').val(),
+                    VVenta: fila.find('input[name$=".VVenta"]').val(),
+                    VTotal: fila.find('input[name$=".VTotal"]').val(),
+                    stockDisponible: fila.data('stockDisponible') ?? null
+                });
+            });
+
+            localStorage.setItem(DRAFT_KEY(), JSON.stringify(payload));
+        }
+
+        function recuperarBorrador() {
+            const raw = localStorage.getItem(DRAFT_KEY());
+            if (!raw) return false;
+
+            const payload = JSON.parse(raw);
+
+            $('#fechaFactura').val(payload.FechaRegistro || $('#fechaFactura').val());
+            $('#Conceptos').val(payload.Conceptos || '');
+            $('#tipoDescuento').val(payload.tipoDescuento || 'valor');
+            $('#descuentoFactura').val(payload.descuentoFactura || 0);
+
+            // reconstruir tabla
+            $('#tablaProductos').empty();
+            index = 0;
+
+            (payload.productos || []).forEach(p => {
+                const i = index;
+                const nuevaFila = crearFila(i);
+                $('#tablaProductos').append(nuevaFila);
+
+                const fila = $('#tablaProductos tr').last();
+                fila.find('input[name$=".Codigo"]').val(p.Codigo);
+                fila.find('input[name$=".Stock"]').val(p.Stock);
+                fila.find('input[name$=".VNeto"]').val(p.VNeto);
+                fila.find('input[name$=".VVenta"]').val(p.VVenta);
+                fila.find('input[name$=".VTotal"]').val(p.VTotal);
+
+                if (p.stockDisponible != null) {
+                    fila.data('stockDisponible', p.stockDisponible);
+                    fila.find('.stockInfo').text(`Disponible: ${p.stockDisponible}`);
+                }
+
+                index++;
+            });
+
+            if ($('#tablaProductos tr').length === 0) {
+                $('#tablaProductos').append(crearFila(0));
+                index = 1;
+            }
+
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            return true;
+        }
+
+        function borrarBorrador() {
+            localStorage.removeItem(DRAFT_KEY());
+        }
+
+        // =========================
+        // Filas
+        // =========================
+        function crearFila(i) {
+            return `
+                <tr>
+                    <td>
+                        <input type="text" class="form-control codigoProducto" name="Productos[${i}].Codigo" placeholder="Código" id="codfact${i}">
+                        <div class="opcionesCodigosProducto small text-muted"></div>
+                        <small class="text-muted d-block mt-1 stockInfo"></small>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="Productos[${i}].Stock" placeholder="Cantidad" id="stock${i}" min="1">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="Productos[${i}].VNeto" placeholder="Venta Neto" id="vneto${i}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="Productos[${i}].VVenta" placeholder="Valor Venta" id="vventa${i}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="Productos[${i}].VTotal" placeholder="Valor Total" id="vtotal${i}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function insertarFilasCrearPedido() {
+            $('#tablaProductos').append(crearFila(index));
+            index++;
+            validarFormularioParaGuardar();
+            guardarBorrador();
+        }
+
+        function eliminarFila(btn) {
+            const fila = $(btn).closest('tr');
+            fila.remove();
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            guardarBorrador();
+        }
+
+        // =========================
+        // ✅ (2) Evitar duplicados: merge
+        // =========================
+        function mergeDuplicados() {
+            const map = new Map(); // codigo -> {fila, qty}
+            let huboMerge = false;
+
+            $('#tablaProductos tr').each(function () {
+                const fila = $(this);
+                const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
+                if (!codigo) return;
+
+                const stock = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+
+                if (!map.has(codigo)) {
+                    map.set(codigo, fila);
+                } else {
+                    const filaBase = map.get(codigo);
+                    const stockBase = parseFloat(filaBase.find('input[name$=".Stock"]').val()) || 0;
+                    filaBase.find('input[name$=".Stock"]').val(stockBase + stock);
+                    fila.remove();
+                    huboMerge = true;
+                }
+            });
+
+            if (huboMerge) {
+                $('#tablaProductos tr').each(function () {
+                    recalcularFila($(this));
+                });
+                AcumularProductosDePedido();
+            }
+        }
+
+        // =========================
+        // Autocompletado
+        // =========================
         function mostrarOpcionesAutocompletado(opciones, container) {
-            var opcionesHtml = '';
-            opciones.forEach(function (opcion) {
+            let opcionesHtml = '';
+            (opciones || []).forEach(function (opcion) {
                 opcionesHtml += '<div class="opcion" data-value="' + opcion.value + '">' + opcion.label + '</div>';
             });
             container.html(opcionesHtml);
         }
 
-        // Manejar el evento de entrada en el campo de código de producto dinámico
+        $(document).on('focus', '.codigoProducto', function () {
+            ultimaFilaActiva = $(this).closest('tr');
+        });
+
+        // ✅ (4) Enter para siguiente campo
+                $(document).on('keydown', function (e) {
+
+            // 🚀 Ctrl + Enter → agregar nueva fila SIEMPRE
+            if (e.ctrlKey && (e.key === 'Enter' || e.code === 'Enter')) {
+                e.preventDefault();
+
+                insertarFilasCrearPedido();
+
+                // Enfocar el código del último producto agregado
+                $('#tablaProductos tr')
+                    .last()
+                    .find('input[name$=".Codigo"]')
+                    .focus();
+
+                return;
+            }
+
+            // ❌ Ctrl + Delete → eliminar ÚLTIMA fila (sin depender del foco)
+            if (e.ctrlKey && (e.key === 'Delete' || e.code === 'Delete' || e.key === 'Del')) {
+                e.preventDefault();
+
+                const filas = $('#tablaProductos tr');
+
+                if (filas.length > 1) {
+                    filas.last().remove();
+                } else {
+                    // limpiar la única fila
+                    filas.last().find('input').val('');
+                    filas.last().find('.opcionesCodigosProducto').empty();
+                }
+
+                AcumularProductosDePedido();
+                validarFormularioParaGuardar();
+                guardarBorrador();
+
+                return;
+            }
+
+            // ❎ Escape → cerrar TODAS las sugerencias
+            if (e.key === 'Escape' || e.code === 'Escape') {
+
+                // Si hay un modal abierto, no hagas nada aquí (Bootstrap lo cierra)
+                if (document.querySelector('.modal.show')) return;
+
+                // Si NO hay modal abierto, solo limpias sugerencias
+                $('.opcionesCodigosProducto').empty();
+                return;
+            }
+
+        });
+
         $(document).on('input', '.codigoProducto', function () {
-            var inputActual = $(this); // Input que se está editando
-            var codigo = inputActual.val(); // Valor del input actual
-            var contenedorOpciones = inputActual.siblings('.opcionesCodigosProducto'); // Contenedor asociado a este input
+            const inputActual = $(this);
+            const codigo = inputActual.val();
+            const contenedorOpciones = inputActual.siblings('.opcionesCodigosProducto');
 
             if (codigo.length >= 3) {
-                // Llamada AJAX para obtener las opciones de autocompletado
                 $.ajax({
                     url: '/Pedido/BuscarProductoPorCodigoVenta',
                     type: 'GET',
                     data: { codigo: codigo },
                     success: function (response) {
-                        // Mostrar las opciones en el contenedor asociado
                         mostrarOpcionesAutocompletado(response, contenedorOpciones);
                     },
                     error: function () {
-                        console.error('Error al obtener los códigos.');
-                        contenedorOpciones.empty(); // Limpiar opciones en caso de error
+                        contenedorOpciones.empty();
                     }
                 });
             } else {
-                contenedorOpciones.empty(); // Limpiar opciones si el texto es muy corto
+                contenedorOpciones.empty();
             }
         });
 
-        // Manejar la selección de una opción de autocompletado
-        $(document).on('click', '.opcion', function () {
-            var codigo = $(this).data('value'); // Obtener el texto de la opción seleccionada
-            var contenedorOpciones = $(this).closest('.opcionesCodigosProducto'); // Contenedor asociado
-            var inputCodigo = contenedorOpciones.siblings('.codigoProducto'); // Input asociado
-            var fila = contenedorOpciones.closest('tr'); // Fila de la tabla donde se encuentra el input
+        $(document).on('click', '.opcion', async function () {
+            const codigo = $(this).data('value');
+            const contenedorOpciones = $(this).closest('.opcionesCodigosProducto');
+            const inputCodigo = contenedorOpciones.siblings('.codigoProducto');
+            const fila = contenedorOpciones.closest('tr');
 
-            // Asignar el código seleccionado al input
             inputCodigo.val(codigo);
-            contenedorOpciones.empty(); // Limpiar las opciones de autocompletado
+            contenedorOpciones.empty();
 
-            // Llamada AJAX para obtener los detalles del producto y autocompletar los campos
+            // Traer detalle del producto
             $.ajax({
                 url: '/Pedido/BuscarProductoPorCodigoVenta',
                 type: 'GET',
                 data: { codigo: codigo },
-                success: function (data) {
+                success: async function (data) {
                     if (Array.isArray(data) && data.length > 0) {
-                        var producto = data[0];
-                        // Completar los campos 'vneto' y 'vventa' en la fila correspondiente
-                        fila.find('#vneto' + fila.index()).val(producto.valorNeto);
-                        fila.find('#vventa' + fila.index()).val(producto.valorVenta);
+                        const producto = data[0];
+
+                        fila.find('input[name$=".VNeto"]').val(producto.valorNeto);
+                        fila.find('input[name$=".VVenta"]').val(producto.valorVenta);
+
+                        // ✅ (1) Stock disponible: si viene en la respuesta, úsalo
+                        if (producto.stockDisponible != null) {
+                            fila.data('stockDisponible', producto.stockDisponible);
+                            fila.find('.stockInfo').text(`Disponible: ${producto.stockDisponible}`);
+                        } else {
+                            // ✅ opción B: consultar stock a otro endpoint si lo implementas
+                            const s = await obtenerStockDisponible(codigo);
+                            if (s != null) {
+                                fila.data('stockDisponible', s);
+                                fila.find('.stockInfo').text(`Disponible: ${s}`);
+                            }
+                        }
+
+                        // ✅ (2) merge duplicados
+                        mergeDuplicados();
+
+                        // Recalcular
+                        recalcularFila(fila);
+                        AcumularProductosDePedido();
+                        validarFormularioParaGuardar();
+                        guardarBorrador();
                     }
-                },
-                error: function () {
-                    console.error('Error al obtener los datos del producto.');
                 }
             });
         });
-        // Cálculo dinámico del valor total al editar 'Stock' o 'VVenta'
-        $(document).on('input', '[id^="stock"], [id^="vneto"], [id^="vventa"]', function () {
-            var fila = $(this).closest('tr'); // Fila actual
-            var tabla = fila.closest('table'); // Tabla actual
 
-            var stock = parseFloat(fila.find('[id^="stock"]').val()) || 0; // Valor de stock
-            var vventa;
+        // =========================
+        // Recalculo por fila + totales
+        // =========================
+        function recalcularFila(fila) {
+            const tabla = fila.closest('table');
+            const stock = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
 
+            let precio = 0;
             if (tabla.data('tipo') === 'compra') {
-                vventa = parseFloat(fila.find('[id^="vneto"]').val()) || 0;
-            } else if (tabla.data('tipo') === 'venta') {
-                vventa = parseFloat(fila.find('[id^="vventa"]').val()) || 0;
+                precio = parseFloat(fila.find('input[name$=".VNeto"]').val()) || 0;
+            } else {
+                precio = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
             }
 
-            // Calcular y asignar el valor total
-            var vtotal = stock * vventa;
-            fila.find('[id^="vtotal"]').val(vtotal); // Mostrar con 2 decimales
+            const total = stock * precio;
+            fila.find('input[name$=".VTotal"]').val(total.toFixed(2));
+        }
+
+        // ✅ (1) Validación stock en vivo: marca fila en rojo si excede disponible
+        function validarStockFila(fila) {
+            const disponible = fila.data('stockDisponible');
+            if (disponible == null) {
+                fila.removeClass('table-danger');
+                return true;
+            }
+
+            const qty = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+
+            if (qty > disponible) {
+                fila.addClass('table-danger');
+                fila.find('.stockInfo').html(`<span class="text-danger">Disponible: ${disponible}. Estás pidiendo ${qty}.</span>`);
+                return false;
+            } else {
+                fila.removeClass('table-danger');
+                fila.find('.stockInfo').text(`Disponible: ${disponible}`);
+                return true;
+            }
+        }
+
+        $(document).on('input', 'input[name$=".Stock"], input[name$=".VVenta"]', function () {
+            const fila = $(this).closest('tr');
+            recalcularFila(fila);
+            validarStockFila(fila);
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            guardarBorrador();
+        });
+
+        // ✅ (7) Descuento valor / porcentaje
+        $(document).on('input change', '#descuentoFactura, #tipoDescuento', function () {
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            guardarBorrador();
         });
 
         function AcumularProductosDePedido() {
             let subtotal = 0;
+            let items = 0;
+            let productos = 0;
 
-            // Recorrer cada fila de la tabla para sumar los valores totales
             $('#tablaProductos tr').each(function () {
-                let vtotal = parseFloat($(this).find('input[name$=".VTotal"]').val()) || 0; // Leer el valor total
-                subtotal += vtotal; // Acumular el valor total en el subtotal
+                const fila = $(this);
+                const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
+                const qty = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+                const vtotal = parseFloat(fila.find('input[name$=".VTotal"]').val()) || 0;
+
+                subtotal += vtotal;
+                items += qty;
+                if (codigo) productos += 1;
             });
 
-            // Actualizar el campo subtotal
-            $('#subtotalFactura').val(subtotal);
+            $('#lblTotalItems').text(items);
+            $('#lblTotalProductos').text(productos);
 
-            // Leer valores de IVA y descuento
-            let ivaPorcentaje = parseFloat($('#ivaFactura').val()) || 0; // Leer el porcentaje de IVA, si está vacío, será 0
-            let descuento = parseFloat($('#descuentoFactura').val()) || 0; // Leer el descuento, si está vacío, será 0
+            $('#subtotalFactura').val(subtotal.toFixed(2));
 
-            // Calcular el IVA
-            let iva = (subtotal * ivaPorcentaje) / 100;
+            const tipo = $('#tipoDescuento').val();
+            const descuentoInput = parseFloat($('#descuentoFactura').val()) || 0;
 
-            // Calcular el total con descuento e IVA
-            let total = subtotal + iva - descuento;
+            let descuento = 0;
+            if (tipo === 'porcentaje') {
+                descuento = subtotal * (descuentoInput / 100);
+            } else {
+                descuento = descuentoInput;
+            }
 
-            // Actualizar los campos de IVA y total
-            //$('#ivaFactura').val(Math.floor(iva));
-            $('#totalFactura').val(total);
+            const iva = subtotal * 0.19;
+
+            $('#ivaFactura').val(iva.toFixed(2));
+            const total = subtotal + iva - descuento;
+            $('#totalFactura').val(total.toFixed(2));
         }
+
+        // =========================
+        // ✅ (8) Modal confirmación antes de guardar
+        // =========================
+        function construirConfirmacion() {
+            $('#cSubtotal').text($('#subtotalFactura').val());
+            $('#cIva').text($('#ivaFactura').val());
+            $('#cTotal').text($('#totalFactura').val());
+            $('#cItems').text($('#lblTotalItems').text());
+            $('#cProductos').text($('#lblTotalProductos').text());
+            $('#cObs').text($('#Conceptos').val() || '(Sin observación)');
+
+            let html = '';
+            $('#tablaProductos tr').each(function () {
+                const fila = $(this);
+                const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
+                const qty = fila.find('input[name$=".Stock"]').val() || '';
+                const vventa = fila.find('input[name$=".VVenta"]').val() || '';
+                const vtotal = fila.find('input[name$=".VTotal"]').val() || '';
+
+                if (!codigo) return;
+                html += `<tr>
+                            <td>${codigo}</td>
+                            <td>${qty}</td>
+                            <td>${vventa}</td>
+                            <td>${vtotal}</td>
+                         </tr>`;
+            });
+            $('#cDetalle').html(html);
+        }
+
+        // =========================
+        // Validación antes de guardar
+        // =========================
+        function validarFormularioParaGuardar() {
+            const filas = $('#tablaProductos tr');
+            let errores = [];
+
+            if (filas.length === 0) errores.push("Debe agregar al menos un producto.");
+
+            filas.each(function () {
+                const fila = $(this);
+                const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
+                const stock = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+                const vventa = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
+                const vtotal = parseFloat(fila.find('input[name$=".VTotal"]').val()) || 0;
+
+                if (!codigo) errores.push("Hay un producto sin código.");
+                if (stock <= 0) errores.push("Hay un producto con cantidad inválida (debe ser > 0).");
+                if (vventa <= 0) errores.push("Hay un producto con valor unitario inválido (debe ser > 0).");
+                if (vtotal <= 0) errores.push("Hay un producto con total en 0. Verifica cantidad y valor unitario.");
+
+                // ✅ stock disponible
+                if (!validarStockFila(fila)) errores.push("Hay productos solicitados por encima del stock disponible.");
+            });
+
+            const totalFactura = parseFloat($('#totalFactura').val()) || 0;
+            if (totalFactura <= 0) errores.push("El total de la factura debe ser mayor a 0.");
+
+            const msg = $('#msgValidacionPedido');
+
+            if (errores.length > 0) {
+                msg.html(errores[0]).show();
+                return false;
+            } else {
+                msg.hide().text('');
+                return true;
+            }
+        }
+
+        // ✅ Botón guardar abre modal si todo OK
+        $('#btnAbrirConfirmacion').on('click', function () {
+            AcumularProductosDePedido();
+            const ok = validarFormularioParaGuardar();
+            if (!ok) return;
+
+            construirConfirmacion();
+            const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+            modal.show();
+        });
+
+        // ✅ Confirmar y guardar
+        $('#btnConfirmarGuardar').on('click', function () {
+            // submit real del form
+            $('#btnSubmitReal').click();
+        });
+
+        // Bloquear submit directo si alguien lo dispara
+        $('#productForm').on('submit', function (e) {
+            AcumularProductosDePedido();
+            const ok = validarFormularioParaGuardar();
+            if (!ok) e.preventDefault();
+        });
+
+        // ✅ (3) Buscar por nombre: requiere endpoint
+        // Recomendado: /Pedido/BuscarProductoPorNombreVenta?texto=xxx
+        $('#btnBuscarNombre').on('click', function () {
+            const texto = ($('#txtBuscarNombre').val() || '').trim();
+            if (texto.length < 2) return;
+
+        $.ajax({
+            url: '/Pedido/BuscarProductoPorNombreVenta',
+            type: 'GET',
+            data: { texto },
+            success: function (list) {
+
+                let html = '';
+
+                (list || [])
+                    .filter(p =>
+                        p.stockDisponible !== null &&
+                        p.stockDisponible > 0 &&
+                        p.valorNeto !== null &&
+                        p.valorVenta !== null
+                    )
+                    .forEach(p => {
+
+                        html += `<tr>
+                                    <td>${p.codigo}</td>
+                                    <td>${p.nombre}</td>
+                                    <td>${p.stockDisponible}</td>
+                                    <td>${p.valorNeto}</td>
+                                    <td>${p.valorVenta}</td>
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-sm btn-success btnInsertarProducto"
+                                                data-codigo="${p.codigo}"
+                                                data-vneto="${p.valorNeto}"
+                                                data-vventa="${p.valorVenta}"
+                                                data-stock="${p.stockDisponible}">
+                                            Seleccionar
+                                        </button>
+                                    </td>
+                                </tr>`;
+                    });
+
+                $('#tblResultadosBusqueda').html(html);
+            }
+        });
+
+        });
+
+        // Insertar producto desde modal en última fila activa (o última fila)
+        $(document).on('click', '.btnInsertarProducto', function () {
+            const codigo = $(this).data('codigo');
+            const vneto = $(this).data('vneto');
+            const vventa = $(this).data('vventa');
+            const stockDisp = $(this).data('stock');
+
+            let fila = ultimaFilaActiva;
+            if (!fila || fila.length === 0) fila = $('#tablaProductos tr').last();
+
+            fila.find('input[name$=".Codigo"]').val(codigo);
+            fila.find('input[name$=".VNeto"]').val(vneto);
+            fila.find('input[name$=".VVenta"]').val(vventa);
+
+            if (stockDisp !== '' && stockDisp != null) {
+                fila.data('stockDisponible', stockDisp);
+                fila.find('.stockInfo').text(`Disponible: ${stockDisp}`);
+            }
+
+            mergeDuplicados();
+            recalcularFila(fila);
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            guardarBorrador();
+
+            // cerrar modal
+            const modalEl = document.getElementById('modalBuscarProducto');
+            bootstrap.Modal.getInstance(modalEl)?.hide();
+        });
+
+        // ✅ Borrador botones
+        $('#btnRecuperarBorrador').on('click', function () {
+            const ok = recuperarBorrador();
+            if (!ok) alert('No hay borrador guardado para esta venta.');
+        });
+
+        $('#btnBorrarBorrador').on('click', function () {
+            borrarBorrador();
+            alert('Borrador eliminado.');
+        });
+
+        // Guardar borrador cada vez que cambie observación
+        $('#Conceptos').on('input', function () {
+            guardarBorrador();
+        });
+
+        // Guardado periódico (cada 10 segundos) por seguridad
+        setInterval(function () { guardarBorrador(); }, 10000);
+
+        // Inicial
+        $(document).ready(function () {
+            AcumularProductosDePedido();
+            validarFormularioParaGuardar();
+            guardarBorrador();
+        });
     </script>
 }

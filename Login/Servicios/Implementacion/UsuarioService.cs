@@ -655,7 +655,7 @@ namespace Plataforma.Servicios.Implementacion
                 DireccionCliente = direccionCliente
             };
 
-            _dbContext.Cliente.Add(cliente);
+            _dbContext.Clientes.Add(cliente);
             var result = _dbContext.SaveChanges();
 
             if (result > 0)
@@ -669,7 +669,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public List<Clientes> ServVisuaCliente()
         {
-            var clientes = _dbContext.Cliente.ToList();
+            var clientes = _dbContext.Clientes.ToList();
             return clientes;
         }
         public bool InsertAddProveedor(string nit, string razonSocial, string direccion, string celular, string correo)
@@ -731,7 +731,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<Clientes?> ObtenerPorIdAsync(int id)
         {
-            return await _dbContext.Cliente
+            return await _dbContext.Clientes
                 .FirstOrDefaultAsync(o => o.IdCliente == id);
         }
 
@@ -764,7 +764,7 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task ActualizarClienteAsync(Clientes clientes)
         {
-            var clienteExistente = await _dbContext.Cliente
+            var clienteExistente = await _dbContext.Clientes
                 .FirstOrDefaultAsync(o => o.IdCliente == clientes.IdCliente);
 
             if(clienteExistente == null)
@@ -780,7 +780,7 @@ namespace Plataforma.Servicios.Implementacion
                 clienteExistente.DireccionCliente = clientes.DireccionCliente;
                 clienteExistente.CedulaCliente = clientes.CedulaCliente;
 
-                _dbContext.Cliente.Update(clienteExistente);
+                _dbContext.Clientes.Update(clienteExistente);
                 await _dbContext.SaveChangesAsync();
             }
         }

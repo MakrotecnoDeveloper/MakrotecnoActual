@@ -14,13 +14,13 @@ namespace Plataforma.Servicios.Implementacion
         }
         public async Task<Clientes> CrearClienteAsync(Clientes cliente)
         {
-            _dbContext.Cliente.Add(cliente);
+            _dbContext.Clientes.Add(cliente);
             await _dbContext.SaveChangesAsync();
             return cliente;
         }
         public async Task<List<Clientes>> ObtenerClientes()
         {
-            return await _dbContext.Cliente.ToListAsync();
+            return await _dbContext.Clientes.ToListAsync();
         }
         public async Task<List<MetodoPagos>> ObtenerMetodosPago()
         {

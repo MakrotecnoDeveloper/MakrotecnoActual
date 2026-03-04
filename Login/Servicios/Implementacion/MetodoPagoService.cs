@@ -13,9 +13,9 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext = dbContext;
         }
         // --- Creación de CXC ---
-        public async Task<CxcVenta> CrearCuentaPorCobrarAsync(int idVenta, int idCliente, decimal total)
+        public async Task<CxcVentas> CrearCuentaPorCobrarAsync(int idVenta, int idCliente, decimal total)
         {
-            var cxc = new CxcVenta
+            var cxc = new CxcVentas
             {
                 IdVenta = idVenta,
                 IdCliente = idCliente,
@@ -35,7 +35,7 @@ namespace Plataforma.Servicios.Implementacion
             var cxc = await _dbContext.CxcVentas.FirstOrDefaultAsync(c => c.IdCxc == idCxc);
             if (cxc == null) return false;
 
-            var pago = new CxcPago
+            var pago = new CxcPagos
             {
                 IdCxc = idCxc,
                 MontoPago = monto,
@@ -61,7 +61,7 @@ namespace Plataforma.Servicios.Implementacion
         }
 
         // --- Consulta del estado de la CXC ---
-        public async Task<CxcVenta> ObtenerCxcPorVentaAsync(int idVenta)
+        public async Task<CxcVentas> ObtenerCxcPorVentaAsync(int idVenta)
         {
             return await _dbContext.CxcVentas
                 .Include(c => c.Pagos)
