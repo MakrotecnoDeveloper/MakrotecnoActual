@@ -15,6 +15,7 @@ namespace Plataforma.Controllers
         {
             _gastosService = gastosService;
         }
+        [Authorize]
         [HttpGet]
         public IActionResult Index() => View();
 

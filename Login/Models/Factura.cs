@@ -22,4 +22,5 @@ public class DetalleFacturaViewModel
 {
     public Factura Factura { get; set; }
     public Clientes Cliente { get; set; } // puede ser null si no se encontró
+    public Empresas Empresa { get; set; }
 }

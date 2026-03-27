@@ -118,10 +118,26 @@
             margin-bottom: 1mm;
         }
 
-        .logo {
-            height: 10mm; /* fijo y controlado */
-            max-width: 15mm; /* evita que se desborde */
-            object-fit: contain;
+        .brandBlock {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1;
+        }
+
+        .brandTitle {
+            font-size: calc(6.5pt * var(--scale));
+            font-weight: 900;
+            letter-spacing: 1px; /* 👈 más industrial */
+        }
+
+        .brandSubtitle {
+            margin-top: 0.5mm;
+            font-size: calc(5pt * var(--scale));
+            font-weight: 600;
+            color: #000;
+            letter-spacing: 0.3px;
         }
 
         .chip {
@@ -238,8 +254,9 @@
                 <div style="display:flex; flex-direction:column; justify-content:space-between;">
 
                     <!-- LOGO ARRIBA DERECHA -->
-                    <div style="display:flex; justify-content:flex-end;">
-                        <img src="@Url.Content(Model.LogoUrl)" class="logo" />
+                    <div class="brandBlock">
+                        <div class="brandTitle">MAKROTECNO</div>
+                        <div class="brandSubtitle">Tecnología a tu alcance</div>
                     </div>
 
                     <!-- CÓDIGO GRANDE -->

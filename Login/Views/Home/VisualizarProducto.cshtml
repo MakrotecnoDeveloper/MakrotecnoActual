@@ -1,0 +1,407 @@
+﻿@model Plataforma.Models.VisualizarProductoPublicoViewModel
+@{
+    ViewData["Title"] = "Visualizar Producto";
+    Layout = null;
+
+    var producto = Model.Producto;
+    var categoria = Model.Categoria;
+    var servicio = Model.Servicio;
+    var inventario = Model.Inventario;
+    var sede = Model.Sede;
+
+    var precio = inventario?.PrecioUnitario ?? producto?.ValorVentaProducto ?? 0;
+    var stock = inventario?.Cantidad ?? 0;
+    var imagen = producto?.ImagenPath ?? "~/img/Productos/nodisponible.png";
+    var nombre = producto?.NombreProducto ?? "Producto";
+    var codigo = producto?.Cod_Producto ?? "";
+    var categoriaNombre = categoria?.Descripcion ?? "Sin categoría";
+    var servicioNombre = servicio?.NombreServicio ?? "Sin servicio";
+    var sedeNombre = sede?.NombreSede ?? "No disponible";
+    var condicion = producto?.CondicionProducto ?? "No especificada";
+
+    var mensajeWhatsapp = $"Hola, Estoy cotizando el producto {nombre} con el código {codigo}, requiero más información.";
+    var whatsappUrl = $"https://wa.me/573185313379?text={Uri.EscapeDataString(mensajeWhatsapp)}";
+}
+
+<style>
+    .producto-publico-wrap {
+        padding: 30px 0;
+    }
+
+    .producto-card {
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+        border: 1px solid #eef1f4;
+    }
+
+    .producto-header {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: #fff;
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+        .producto-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+    .btn-volver-custom {
+        background: #fff;
+        color: #0d6efd;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+        .btn-volver-custom:hover {
+            color: #084298;
+            text-decoration: none;
+        }
+
+    .producto-body {
+        padding: 28px;
+    }
+
+    .producto-imagen-box {
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+        border-radius: 20px;
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+        .producto-imagen-box img {
+            max-width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+        }
+
+    .producto-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eef4ff;
+        color: #0d6efd;
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: .9rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .producto-titulo {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 10px;
+        line-height: 1.2;
+    }
+
+    .producto-codigo {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .producto-precio {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #198754;
+        margin-bottom: 22px;
+    }
+
+    .producto-grid-info {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .producto-info-box {
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+        border-radius: 16px;
+        padding: 14px 16px;
+    }
+
+    .producto-info-label {
+        font-size: .82rem;
+        color: #6b7280;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .producto-info-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .stock-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-weight: 700;
+        font-size: .95rem;
+        margin-bottom: 22px;
+    }
+
+    .stock-ok {
+        background: #e8f8ee;
+        color: #198754;
+    }
+
+    .stock-low {
+        background: #fff4e5;
+        color: #fd7e14;
+    }
+
+    .stock-none {
+        background: #fdecec;
+        color: #dc3545;
+    }
+
+    .producto-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-whatsapp-custom,
+    .btn-compartir-custom {
+        border: none;
+        border-radius: 999px;
+        padding: 12px 22px;
+        font-weight: 700;
+        font-size: .95rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .btn-whatsapp-custom {
+        background: #25D366;
+        color: #fff;
+    }
+
+        .btn-whatsapp-custom:hover {
+            color: #fff;
+            filter: brightness(.96);
+            text-decoration: none;
+        }
+
+    .btn-compartir-custom {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+        .btn-compartir-custom:hover {
+            background: #e2e8f0;
+        }
+
+    .producto-extra {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #eef1f4;
+    }
+
+        .producto-extra h5 {
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .producto-extra p {
+            color: #5b6472;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+    @@media (max-width: 991px) {
+        .producto-imagen-box {
+            min-height: 320px;
+            margin-bottom: 22px;
+        }
+
+        .producto-titulo {
+            font-size: 1.6rem;
+        }
+
+        .producto-precio {
+            font-size: 1.6rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .producto-grid-info {
+            grid-template-columns: 1fr;
+        }
+
+        .producto-body {
+            padding: 18px;
+        }
+
+        .producto-header {
+            padding: 16px 18px;
+        }
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="container producto-publico-wrap">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="producto-card">
+
+                    <div class="producto-header">
+                        <h2>
+                            <i class="bi bi-box-seam me-2"></i>
+                            Detalles del Producto
+                        </h2>
+
+                        <a href="javascript:history.back()" class="btn-volver-custom">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                    </div>
+
+                    <div class="producto-body">
+                        @if (producto != null)
+                        {
+                            <div class="row g-4 align-items-center">
+                                <div class="col-lg-5">
+                                    <div class="producto-imagen-box">
+                                        <img src="@Url.Content(imagen)"
+                                             alt="@nombre"
+                                             onerror="this.onerror=null; this.src='@Url.Content("~/img/Productos/nodisponible.png")';" />
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-7">
+                                    <div class="producto-badge">
+                                        <i class="bi bi-tag-fill"></i>
+                                        @categoriaNombre
+                                    </div>
+
+                                    <div class="producto-titulo">
+                                        @nombre
+                                    </div>
+
+                                    <div class="producto-codigo">
+                                        <strong>Código:</strong> @codigo
+                                    </div>
+
+                                    <div class="producto-precio">
+                                        @precio.ToString("C0")
+                                    </div>
+
+                                    @{
+                                        var stockClass = stock <= 0 ? "stock-none" : stock < 3 ? "stock-low" : "stock-ok";
+                                        var stockTexto = stock <= 0 ? "Agotado" : stock < 3 ? $"Pocas unidades ({stock:N0})" : $"Disponible ({stock:N0})";
+                                    }
+
+                                    <div class="stock-chip @stockClass">
+                                        <i class="bi bi-box2-heart"></i>
+                                        @stockTexto
+                                    </div>
+
+                                    <div class="producto-grid-info">
+                                        <div class="producto-info-box">
+                                            <span class="producto-info-label">Servicio</span>
+                                            <span class="producto-info-value">@servicioNombre</span>
+                                        </div>
+
+                                        <div class="producto-info-box">
+                                            <span class="producto-info-label">Condición</span>
+                                            <span class="producto-info-value">@condicion</span>
+                                        </div>
+
+                                        <div class="producto-info-box">
+                                            <span class="producto-info-label">Sede</span>
+                                            <span class="producto-info-value">@sedeNombre</span>
+                                        </div>
+
+                                        <div class="producto-info-box">
+                                            <span class="producto-info-label">Disponibilidad</span>
+                                            <span class="producto-info-value">@stock.ToString("N0")</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="producto-actions">
+                                        <a href="@whatsappUrl"
+                                           target="_blank"
+                                           class="btn-whatsapp-custom">
+                                            <i class="bi bi-whatsapp"></i>
+                                            Cotizar por WhatsApp
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn-compartir-custom"
+                                                onclick="compartirProducto()">
+                                            <i class="bi bi-share"></i>
+                                            Compartir
+                                        </button>
+                                    </div>
+
+                                    <div class="producto-extra">
+                                        <h5>Información del producto</h5>
+                                        <p>
+                                            Producto disponible para consulta pública en MakroTecno.
+                                            Puedes solicitar información adicional, confirmar disponibilidad
+                                            y cotizar directamente por WhatsApp.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning text-center mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                No se encontró el producto solicitado.
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function compartirProducto() {
+        const url = window.location.href;
+        const texto = "Mira este producto de MakroTecno";
+
+        if (navigator.share) {
+            navigator.share({
+                title: document.title,
+                text: texto,
+                url: url
+            }).catch(() => { });
+            return;
+        }
+
+        navigator.clipboard.writeText(url)
+            .then(() => alert("Enlace copiado al portapapeles."))
+            .catch(() => alert("No se pudo copiar el enlace."));
+    }
+</script>

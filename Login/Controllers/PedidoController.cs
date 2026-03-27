@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
 using Plataforma.Domain.Exceptions;
@@ -27,6 +28,7 @@ namespace Plataforma.Controllers
             var facturas = _pedidoServicio.ObtenerFacturasFechaDescendente();
             return View(facturas);
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> CrearVenta() 
         {
@@ -54,7 +56,7 @@ namespace Plataforma.Controllers
 
             return RedirectToAction("AgregarProductoAVenta", new { idVenta = venta.IdVenta });
         }
-
+        [Authorize]
         public async Task<IActionResult> ListaVentas()
         {
             var ventas = await _pedidoServicio.ObtenerTodasLasVentasAsync(); // este método trae las ventas
@@ -185,7 +187,7 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores"); // Redirige a ErroresController
             }
         }
-
+        [Authorize]
         public IActionResult CrearFactura()
         {
             return View();
@@ -225,6 +227,7 @@ namespace Plataforma.Controllers
 
             return RedirectToAction("ListaFacturas");
         }
+        [Authorize]
         public async Task<IActionResult> ListaFacturas()
         {
             var facturas = await _pedidoServicio.ObtenerFacturasConVentaCliente();
@@ -232,7 +235,13 @@ namespace Plataforma.Controllers
         }
         public async Task<IActionResult> DetalleFactura(int idFactura)
         {
-            var factura = await _pedidoServicio.ObtenerFacturaConDetalle(idFactura);
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+
+            if (string.IsNullOrEmpty(empresaId))
+                return Unauthorized();
+
+            var factura = await _pedidoServicio.ObtenerFacturaConDetalle(idFactura, empresaId);
+
             if (factura == null)
                 return NotFound();
 
@@ -323,7 +332,12 @@ namespace Plataforma.Controllers
         [HttpGet]
         public async Task<IActionResult> ImprimirFactura(int idFactura)
         {
-            var factura = await _pedidoServicio.ObtenerFacturaConDetalle(idFactura);
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+
+            if (string.IsNullOrEmpty(empresaId))
+                return Unauthorized();
+
+            var factura = await _pedidoServicio.ObtenerFacturaConDetalle(idFactura, empresaId);
             if (factura == null) return NotFound();
 
             return View(factura); // Vista: ImprimirFactura.cshtml

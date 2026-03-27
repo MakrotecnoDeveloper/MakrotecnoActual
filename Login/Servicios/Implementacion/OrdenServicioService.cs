@@ -270,7 +270,6 @@ namespace Plataforma.Servicios.Implementacion
 
                 _dbContext.Ventas.Add(venta);
                 await _dbContext.SaveChangesAsync(); // Genera IdVenta
-                decimal valorPagos = 0;
                 var pedidosNuevos = new List<Pedidos>();
                 foreach (var item in itemsHist)
                 {      
@@ -286,7 +285,6 @@ namespace Plataforma.Servicios.Implementacion
                             SubTotal = 0
                         });
                     // Acumular para el registro final del servicio
-                    valorPagos = orden.ValorPago ?? 0m;
                 }
                 // Registro extra: el servicio vendido (con el valor final al cliente)
                 pedidosNuevos.Add(new Pedidos
@@ -298,7 +296,7 @@ namespace Plataforma.Servicios.Implementacion
                     VVenta = 0,       // aquí va el valor final que cobras
                     InfopdvId = infoPdvId,
                     FechaRegistro = DateTime.Now,
-                    SubTotal = valorPagos      // valor de venta final
+                    SubTotal = (decimal)orden.ValorPago      // valor de venta final
                 });
                 _dbContext.Pedidos.AddRange(pedidosNuevos);
                 await _dbContext.SaveChangesAsync();

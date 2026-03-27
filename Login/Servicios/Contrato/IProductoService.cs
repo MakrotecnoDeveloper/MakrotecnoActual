@@ -12,7 +12,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<CategoriaProductos>> ObtenerCategoriasPorServicio(int idServicio);
         List<Sede> ObtenerSedes();
         ProductosCategoriaViewModel BuscarProductoXImagen(string searchTerm, int categoriaTerm, int sedeId);
-        Producto? ObtenerProductoGeneral(string codigo);
+        VisualizarProductoPublicoViewModel? ObtenerProductoPublico(string codigo);
         List<Producto> BuscarProductos(string searchTerm);
         Task<bool> AgregarStockAsync(string idProducto, int cantidad);
         IEnumerable<Producto> EditarStock(string id, int cantidad, int opcion);

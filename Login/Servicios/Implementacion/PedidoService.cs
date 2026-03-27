@@ -132,8 +132,7 @@ namespace Plataforma.Servicios.Implementacion
                         $"Cantidad inválida para el producto {pedido.Codigo}.");
 
                 if (stockActual < pedido.Stock)
-                    throw new PedidoException(PedidoErrorCode.StockInsuficiente,
-                        $"Stock insuficiente para el producto {pedido.Codigo}. Disponible: {stockActual}, solicitado: {pedido.Stock}.");
+                    throw new PedidoException(PedidoErrorCode.StockInsuficiente,$"Sin stock en productos.");
             }
 
             using var tx = await _dbContext.Database.BeginTransactionAsync();
@@ -152,11 +151,24 @@ namespace Plataforma.Servicios.Implementacion
 
                     inv.Cantidad -= pedido.Stock;
 
+                    var valorUnitarioVenta = pedido.VVenta;
+                    var valorUnitarioNeto = pedido.VNeto ?? 0m;
+                    var ivaPorcentaje = pedido.IvaPorcentaje ?? 0m;
+
+                    var totalVentaLinea = pedido.Stock * valorUnitarioVenta;
+                    var totalNetoLinea = pedido.Stock * valorUnitarioNeto;
+                    var ivaLinea = totalVentaLinea * (ivaPorcentaje / 100m);
+                    var subTotalConIva = totalVentaLinea + ivaLinea;
+
                     pedido.IdVenta = idVenta;
                     pedido.InfopdvId = infoPdvId;
                     pedido.FechaRegistro = DateTime.Now;
 
-                    pedido.SubTotal = pedido.Stock * pedido.VVenta;
+                    pedido.VVenta = totalVentaLinea;
+                    pedido.VNeto = totalNetoLinea;
+                    pedido.IvaValor = ivaLinea;
+                    pedido.SubTotal = subTotalConIva;
+
                     totalVenta += pedido.SubTotal;
 
                     _dbContext.Pedidos.Add(pedido);
@@ -320,7 +332,7 @@ namespace Plataforma.Servicios.Implementacion
                 .OrderByDescending(f => f.FechaEmision)
                 .ToListAsync();
         }
-        public async Task<DetalleFacturaViewModel> ObtenerFacturaConDetalle(int idFactura)
+        public async Task<DetalleFacturaViewModel> ObtenerFacturaConDetalle(int idFactura, string empresaId)
         {
             var factura = await _dbContext.Factura
                 .Include(f => f.Venta)
@@ -329,8 +341,6 @@ namespace Plataforma.Servicios.Implementacion
 
             if (factura == null) return null;
 
-            // ✅ Cliente por consulta aparte (porque NO hay FK / navegación)
-            // Usa IdCliente como principal (es FK en BD), y si falla usa CedulaCliente como fallback
             var cliente = await _dbContext.Clientes
                 .FirstOrDefaultAsync(c => c.IdCliente == factura.Venta.IdCliente);
 
@@ -340,10 +350,14 @@ namespace Plataforma.Servicios.Implementacion
                     .FirstOrDefaultAsync(c => c.CedulaCliente == factura.Venta.CedulaCliente);
             }
 
+            var empresa = await _dbContext.Empresas
+                .FirstOrDefaultAsync(e => e.Id_empresa == empresaId);
+
             return new DetalleFacturaViewModel
             {
                 Factura = factura,
-                Cliente = cliente
+                Cliente = cliente,
+                Empresa = empresa
             };
         }
         public async Task<bool> AnularFacturaAsync(int idFactura)

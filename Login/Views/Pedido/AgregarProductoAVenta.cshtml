@@ -80,7 +80,9 @@
                                                     <th>Cantidad</th>
                                                     <th>Valor Neto</th>
                                                     <th>Valor Unitario</th>
-                                                    <th>Acumulado</th>
+                                                    <th>IVA %</th>
+                                                    <th>IVA Valor</th>
+                                                    <th>Total</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -90,8 +92,6 @@
                                                     <td>
                                                         <input type="text" class="form-control codigoProducto" name="Productos[0].Codigo" placeholder="Código" id="codfact0">
                                                         <div class="opcionesCodigosProducto small text-muted"></div>
-
-                                                        <!-- ✅ (1) stock info visual -->
                                                         <small class="text-muted d-block mt-1 stockInfo"></small>
                                                     </td>
 
@@ -100,15 +100,23 @@
                                                     </td>
 
                                                     <td>
-                                                        <input type="number" class="form-control" name="Productos[0].VNeto" placeholder="Venta Neto" id="vneto0">
+                                                        <input type="number" class="form-control" name="Productos[0].VNeto" placeholder="Valor Neto" id="vneto0">
                                                     </td>
 
                                                     <td>
-                                                        <input type="text" class="form-control" name="Productos[0].VVenta" placeholder="Valor Venta" id="vventa0">
+                                                        <input type="number" class="form-control" name="Productos[0].VVenta" placeholder="Valor Venta" id="vventa0" min="0" step="0.01">
                                                     </td>
 
                                                     <td>
-                                                        <input type="text" class="form-control" name="Productos[0].VTotal" placeholder="Valor Total" id="vtotal0">
+                                                        <input type="number" class="form-control ivaPorcentaje" name="Productos[0].IvaPorcentaje" placeholder="IVA %" id="ivaPorcentaje0" min="0" step="0.01" value="19">
+                                                    </td>
+
+                                                    <td>
+                                                        <input type="text" class="form-control bg-light" name="Productos[0].IvaValor" placeholder="IVA Valor" id="ivaValor0" readonly>
+                                                    </td>
+
+                                                    <td>
+                                                        <input type="text" class="form-control bg-light" name="Productos[0].SubTotal" placeholder="Subtotal" id="subtotal0" readonly>
                                                     </td>
 
                                                     <td>
@@ -160,8 +168,8 @@
                                         </div>
 
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">IVA (19%)</label>
-                                            <input type="number" class="form-control bg-light" id="ivaFactura" name="Iva" readonly value="0">
+                                            <label class="form-label fw-semibold">IVA Total</label>
+                                            <input type="text" class="form-control bg-light" id="ivaFactura" name="Iva" readonly value="0.00">
                                         </div>
 
                                         <div class="col-md-6 mt-3">
@@ -269,6 +277,7 @@
                                 <th>Código</th>
                                 <th>Cant</th>
                                 <th>V. Unit</th>
+                                <th>IVA</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -332,7 +341,9 @@
                     Stock: fila.find('input[name$=".Stock"]').val(),
                     VNeto: fila.find('input[name$=".VNeto"]').val(),
                     VVenta: fila.find('input[name$=".VVenta"]').val(),
-                    VTotal: fila.find('input[name$=".VTotal"]').val(),
+                    IvaPorcentaje: fila.find('input[name$=".IvaPorcentaje"]').val(),
+                    IvaValor: fila.find('input[name$=".IvaValor"]').val(),
+                    SubTotal: fila.find('input[name$=".SubTotal"]').val(),
                     stockDisponible: fila.data('stockDisponible') ?? null
                 });
             });
@@ -365,7 +376,9 @@
                 fila.find('input[name$=".Stock"]').val(p.Stock);
                 fila.find('input[name$=".VNeto"]').val(p.VNeto);
                 fila.find('input[name$=".VVenta"]').val(p.VVenta);
-                fila.find('input[name$=".VTotal"]').val(p.VTotal);
+                fila.find('input[name$=".IvaPorcentaje"]').val(p.IvaPorcentaje ?? 19);
+                fila.find('input[name$=".IvaValor"]').val(p.IvaValor ?? 0);
+                fila.find('input[name$=".SubTotal"]').val(p.SubTotal);
 
                 if (p.stockDisponible != null) {
                     fila.data('stockDisponible', p.stockDisponible);
@@ -392,7 +405,7 @@
         // =========================
         // Filas
         // =========================
-        function crearFila(i) {
+            function crearFila(i) {
             return `
                 <tr>
                     <td>
@@ -404,13 +417,19 @@
                         <input type="number" class="form-control" name="Productos[${i}].Stock" placeholder="Cantidad" id="stock${i}" min="1">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="Productos[${i}].VNeto" placeholder="Venta Neto" id="vneto${i}">
+                        <input type="number" class="form-control" name="Productos[${i}].VNeto" placeholder="Valor Neto" id="vneto${i}">
                     </td>
                     <td>
-                        <input type="text" class="form-control" name="Productos[${i}].VVenta" placeholder="Valor Venta" id="vventa${i}">
+                        <input type="number" class="form-control" name="Productos[${i}].VVenta" placeholder="Valor Venta" id="vventa${i}" min="0" step="0.01">
                     </td>
                     <td>
-                        <input type="text" class="form-control" name="Productos[${i}].VTotal" placeholder="Valor Total" id="vtotal${i}">
+                        <input type="number" class="form-control ivaPorcentaje" name="Productos[${i}].IvaPorcentaje" placeholder="IVA %" id="ivaPorcentaje${i}" min="0" step="0.01" value="19">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control bg-light" name="Productos[${i}].IvaValor" placeholder="IVA Valor" id="ivaValor${i}" readonly>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control bg-light" name="Productos[${i}].SubTotal" placeholder="Subtotal" id="subtotal${i}" readonly>
                     </td>
                     <td>
                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarFila(this)">
@@ -609,18 +628,16 @@
         // Recalculo por fila + totales
         // =========================
         function recalcularFila(fila) {
-            const tabla = fila.closest('table');
-            const stock = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+            const cantidad = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
+            const valorVenta = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
+            const ivaPorcentaje = parseFloat(fila.find('input[name$=".IvaPorcentaje"]').val()) || 0;
 
-            let precio = 0;
-            if (tabla.data('tipo') === 'compra') {
-                precio = parseFloat(fila.find('input[name$=".VNeto"]').val()) || 0;
-            } else {
-                precio = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
-            }
+            const totalVentaLinea = cantidad * valorVenta;
+            const ivaValor = totalVentaLinea * (ivaPorcentaje / 100);
+            const subtotalConIva = totalVentaLinea + ivaValor;
 
-            const total = stock * precio;
-            fila.find('input[name$=".VTotal"]').val(total.toFixed(2));
+            fila.find('input[name$=".IvaValor"]').val(ivaValor.toFixed(2));
+            fila.find('input[name$=".SubTotal"]').val(subtotalConIva.toFixed(2));
         }
 
         // ✅ (1) Validación stock en vivo: marca fila en rojo si excede disponible
@@ -644,7 +661,7 @@
             }
         }
 
-        $(document).on('input', 'input[name$=".Stock"], input[name$=".VVenta"]', function () {
+        $(document).on('input', 'input[name$=".Stock"], input[name$=".VVenta"], input[name$=".IvaPorcentaje"]', function () {
             const fila = $(this).closest('tr');
             recalcularFila(fila);
             validarStockFila(fila);
@@ -661,7 +678,9 @@
         });
 
         function AcumularProductosDePedido() {
-            let subtotal = 0;
+            let subtotalBase = 0;
+            let ivaTotal = 0;
+            let totalGeneral = 0;
             let items = 0;
             let productos = 0;
 
@@ -669,33 +688,36 @@
                 const fila = $(this);
                 const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
                 const qty = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
-                const vtotal = parseFloat(fila.find('input[name$=".VTotal"]').val()) || 0;
+                const vventa = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
+                const ivaValor = parseFloat(fila.find('input[name$=".IvaValor"]').val()) || 0;
+                const subtotalFila = parseFloat(fila.find('input[name$=".SubTotal"]').val()) || 0;
 
-                subtotal += vtotal;
+                subtotalBase += (qty * vventa);
+                ivaTotal += ivaValor;
+                totalGeneral += subtotalFila;
                 items += qty;
+
                 if (codigo) productos += 1;
             });
 
             $('#lblTotalItems').text(items);
             $('#lblTotalProductos').text(productos);
 
-            $('#subtotalFactura').val(subtotal.toFixed(2));
-
             const tipo = $('#tipoDescuento').val();
             const descuentoInput = parseFloat($('#descuentoFactura').val()) || 0;
 
             let descuento = 0;
             if (tipo === 'porcentaje') {
-                descuento = subtotal * (descuentoInput / 100);
+                descuento = totalGeneral * (descuentoInput / 100);
             } else {
                 descuento = descuentoInput;
             }
 
-            const iva = subtotal * 0.19;
+            const totalFinal = totalGeneral - descuento;
 
-            $('#ivaFactura').val(iva.toFixed(2));
-            const total = subtotal + iva - descuento;
-            $('#totalFactura').val(total.toFixed(2));
+            $('#subtotalFactura').val(subtotalBase.toFixed(2));
+            $('#ivaFactura').val(ivaTotal.toFixed(2));
+            $('#totalFactura').val(totalFinal.toFixed(2));
         }
 
         // =========================
@@ -714,17 +736,21 @@
                 const fila = $(this);
                 const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
                 const qty = fila.find('input[name$=".Stock"]').val() || '';
-                const vventa = fila.find('input[name$=".VVenta"]').val() || '';
-                const vtotal = fila.find('input[name$=".VTotal"]').val() || '';
+                const vventa = fila.find('input[name$=".VVenta"]').val() || '0';
+                const ivaValor = fila.find('input[name$=".IvaValor"]').val() || '0';
+                const subtotal = fila.find('input[name$=".SubTotal"]').val() || '0';
 
                 if (!codigo) return;
+
                 html += `<tr>
                             <td>${codigo}</td>
                             <td>${qty}</td>
                             <td>${vventa}</td>
-                            <td>${vtotal}</td>
+                            <td>${ivaValor}</td>
+                            <td>${subtotal}</td>
                          </tr>`;
             });
+
             $('#cDetalle').html(html);
         }
 
@@ -737,24 +763,38 @@
 
             if (filas.length === 0) errores.push("Debe agregar al menos un producto.");
 
+            let hayProductoValido = false;
+
             filas.each(function () {
                 const fila = $(this);
                 const codigo = (fila.find('input[name$=".Codigo"]').val() || '').trim();
                 const stock = parseFloat(fila.find('input[name$=".Stock"]').val()) || 0;
                 const vventa = parseFloat(fila.find('input[name$=".VVenta"]').val()) || 0;
-                const vtotal = parseFloat(fila.find('input[name$=".VTotal"]').val()) || 0;
+                const subtotal = parseFloat(fila.find('input[name$=".SubTotal"]').val()) || 0;
 
-                if (!codigo) errores.push("Hay un producto sin código.");
-                if (stock <= 0) errores.push("Hay un producto con cantidad inválida (debe ser > 0).");
-                if (vventa <= 0) errores.push("Hay un producto con valor unitario inválido (debe ser > 0).");
-                if (vtotal <= 0) errores.push("Hay un producto con total en 0. Verifica cantidad y valor unitario.");
+                const filaTieneDatos = codigo || stock > 0 || vventa > 0;
 
-                // ✅ stock disponible
-                if (!validarStockFila(fila)) errores.push("Hay productos solicitados por encima del stock disponible.");
+                if (filaTieneDatos) {
+                    if (!codigo) errores.push("Hay un producto sin código.");
+                    if (stock <= 0) errores.push("Hay un producto con cantidad inválida (debe ser > 0).");
+
+                    if (!validarStockFila(fila)) {
+                        errores.push("Hay productos solicitados por encima del stock disponible.");
+                    }
+
+                    hayProductoValido = hayProductoValido || (!!codigo && stock > 0);
+                }
+
+                // Si la fila tiene valor unitario, recalcula normalmente; si no, puede quedar en 0
+                // sin obligarte a ponerle 1 ni otro valor ficticio.
             });
 
+            if (!hayProductoValido) {
+                errores.push("Debe ingresar al menos un producto válido.");
+            }
+
             const totalFactura = parseFloat($('#totalFactura').val()) || 0;
-            if (totalFactura <= 0) errores.push("El total de la factura debe ser mayor a 0.");
+            if (totalFactura < 0) errores.push("El total de la factura no puede ser negativo.");
 
             const msg = $('#msgValidacionPedido');
 

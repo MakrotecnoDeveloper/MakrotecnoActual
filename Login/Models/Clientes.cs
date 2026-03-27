@@ -9,9 +9,9 @@ public class Clientes
     public int IdCliente { get; set; }
     public int? CedulaCliente { get; set; } = 0;
     public string? NombreCliente { get; set; }
-    public string? EmpresaCliente { get; set; }
-    public string? CiudadCliente { get; set; }
-    public string? TelefonoCliente { get; set; }
-    public string? CorreoCliente { get; set; }
-    public string? DireccionCliente { get; set; }
+    public string? EmpresaCliente { get; set; } = "NA";
+    public string? CiudadCliente { get; set; } = "NA";
+    public string? TelefonoCliente { get; set; } = "NA";
+    public string? CorreoCliente { get; set; } = "NA";
+    public string? DireccionCliente { get; set; } = "NA";
 }

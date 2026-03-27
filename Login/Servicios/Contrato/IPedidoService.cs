@@ -19,7 +19,7 @@ namespace Plataforma.Servicios.Contrato
         Task GuardarVentaActualizada(Ventas venta, decimal total);
         Task GuardarFacturaAsync(Factura factura);
         Task<List<Factura>> ObtenerFacturasConVentaCliente();
-        Task<DetalleFacturaViewModel> ObtenerFacturaConDetalle(int idFactura);
+        Task<DetalleFacturaViewModel> ObtenerFacturaConDetalle(int idFactura, string empresaId);
         Task<bool> AnularFacturaAsync(int idFactura);
         Task<bool> EliminarFacturaAsync(int idFactura);
         Task<Ventas> ObtenerVentaPorIdAsync(int id);

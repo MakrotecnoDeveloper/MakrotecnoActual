@@ -16,6 +16,7 @@ namespace Plataforma.Controllers
             _dbContext = dbContext;
         }
         // GET: /PermisosMenu/Index?cargoId=1
+        [Authorize]
         [HttpGet]
         public IActionResult Index(int? cargoId)
         {

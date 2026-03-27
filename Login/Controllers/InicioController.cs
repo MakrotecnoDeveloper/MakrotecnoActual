@@ -145,6 +145,7 @@ namespace Plataforma.Controllers
             var data = await _inicioService.ComprasRecientesAsync(take, ct);
             return Json(data);
         }
+        [Authorize]
         public IActionResult ClientesAgendados()
         {
             var varClientesAgendados = _usuarioService.AgendamientosServicios();

@@ -12,34 +12,44 @@ namespace Plataforma.Models
         public int SedeSeleccionada { get; set; }
 
     }
-}
 
-public class CategoriaWebEstadoViewModel
-{
-    public int IdCateProducto { get; set; }
-    public string Descripcion { get; set; }
 
-    // true = EstadoWeb 1 (activo en web)
-    // false = EstadoWeb 0 (inactivo en web)
-    public bool Habilitada { get; set; }
-    public bool TieneProductos { get; set; }
-}
+    public class CategoriaWebEstadoViewModel
+    {
+        public int IdCateProducto { get; set; }
+        public string Descripcion { get; set; }
 
-public class ProductoTiendaDTO
-{
-    public string Cod_Producto { get; set; }
-    public string NombreProducto { get; set; }
-    public string ImagenPath { get; set; }
-    public string CondicionProducto { get; set; }
+        // true = EstadoWeb 1 (activo en web)
+        // false = EstadoWeb 0 (inactivo en web)
+        public bool Habilitada { get; set; }
+        public bool TieneProductos { get; set; }
+    }
 
-    public decimal CantidadProducto { get; set; }
-    public decimal? PrecioVenta { get; set; }
-    public int IdCatepro { get; set; }
-}
+    public class ProductoTiendaDTO
+    {
+        public string Cod_Producto { get; set; }
+        public string NombreProducto { get; set; }
+        public string ImagenPath { get; set; }
+        public string CondicionProducto { get; set; }
 
-public class ProductosIndexViewModel
-{
-    public List<Producto> Productos { get; set; }
-    public List<CategoriaProductos> CategoriaProductos { get; set; }
+        public decimal CantidadProducto { get; set; }
+        public decimal? PrecioVenta { get; set; }
+        public int IdCatepro { get; set; }
+    }
+
+    public class ProductosIndexViewModel
+    {
+        public List<Producto> Productos { get; set; }
+        public List<CategoriaProductos> CategoriaProductos { get; set; }
+    }
+
+    public class VisualizarProductoPublicoViewModel
+    {
+        public Producto? Producto { get; set; }
+        public CategoriaProductos? Categoria { get; set; }
+        public Servicio? Servicio { get; set; }
+        public InventarioSede? Inventario { get; set; }
+        public Sede? Sede { get; set; }
+    }
 }
 

@@ -10,11 +10,13 @@ public class Pedidos
     public string? Codigo { get; set; }
     public decimal Stock { get; set; }
     public decimal? VNeto { get; set; }
-    public decimal VVenta { get; set; }
+    public decimal VVenta { get; set; } = 0;
     public int InfopdvId { get; set; }
     public DateTime FechaRegistro { get; set; }
     public decimal SubTotal { get; set; }
     public virtual Ventas Venta { get; set; }
+    public decimal? IvaPorcentaje { get; set; }
+    public decimal? IvaValor { get; set; }
 }
 
 public class ProductoVentaDto

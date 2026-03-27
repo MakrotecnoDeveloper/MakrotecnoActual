@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -15,6 +16,7 @@ namespace Plataforma.Controllers
             _reporteService = reporteService;
             _dbContext = dbContext;
         }
+        [Authorize]
         public IActionResult Index(DateTime? fechaInicio, DateTime? fechaFin, int? idServicio)
         {
             // Si no viene rango, usamos hoy
@@ -48,6 +50,7 @@ namespace Plataforma.Controllers
                 nombre = s.NombreServicio
             }));
         }
+        [Authorize]
         public async Task<IActionResult> Diario()
         {
             var reporte = await _reporteService.GenerarReporteDelDiaAsync(DateTime.Today);

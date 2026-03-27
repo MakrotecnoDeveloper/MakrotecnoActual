@@ -184,11 +184,46 @@ namespace Plataforma.Servicios.Implementacion
                     : new List<Servicio>()
             };
         }
-        public Producto? ObtenerProductoGeneral(string codigo)
+        public VisualizarProductoPublicoViewModel? ObtenerProductoPublico(string codigo)
         {
-            return _dbContext.Productos
+            var producto = _dbContext.Productos
                 .AsNoTracking()
                 .FirstOrDefault(p => p.Cod_Producto == codigo && p.Estado == 1);
+
+            if (producto == null)
+                return null;
+
+            var categoria = _dbContext.CategoriaProductos
+                .AsNoTracking()
+                .FirstOrDefault(c => c.IdCateProducto == producto.IdCatepro);
+
+            // inventario principal: puedes tomar el más reciente o el primero con stock
+            var inventario = _dbContext.InventarioSedes
+                .AsNoTracking()
+                .Include(i => i.Sede)
+                .Where(i => i.ProductoId == producto.Cod_Producto)
+                .OrderByDescending(i => i.Cantidad > 0) // prioriza con stock
+                .ThenByDescending(i => i.ActualizadoEn)
+                .FirstOrDefault();
+
+            Servicio? servicio = null;
+
+            // SOLO si CategoriaProductos tiene relación con Servicio
+            if (categoria != null)
+            {
+                servicio = _dbContext.Servicio
+                    .AsNoTracking()
+                    .FirstOrDefault(s => s.IdServicio == categoria.IdServicio); // ajusta este campo si existe
+            }
+
+            return new VisualizarProductoPublicoViewModel
+            {
+                Producto = producto,
+                Categoria = categoria,
+                Servicio = servicio,
+                Inventario = inventario,
+                Sede = inventario?.Sede
+            };
         }
         public List<Producto> BuscarProductos(string searchTerm)
         {

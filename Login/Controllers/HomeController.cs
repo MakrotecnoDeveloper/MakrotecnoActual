@@ -11,7 +11,6 @@ using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
-    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly IUsuarioService _usuarioService;
@@ -21,64 +20,74 @@ namespace Plataforma.Controllers
             _usuarioService = usuarioService;
             _productoservice = productoservice;
         }
-
+        [AllowAnonymous]
         public IActionResult Index()
         {
             var TraerServicios = _usuarioService.ServTraerServicios();
             return View(TraerServicios);
             //return View("Belleza/Index");
         }
+        [AllowAnonymous]
         public IActionResult Nosotros()
         {
             //return View();
             return View("Belleza/Nosotros");
         }
+        [AllowAnonymous]
         public async Task<IActionResult> Agendar()
         {
             //return View();
             return View("Belleza/Agendar");
         }
+        [AllowAnonymous]
         public IActionResult Servicios()
         {
             //return View();
             return View("Belleza/Servicios");
         }
+        [AllowAnonymous]
         public IActionResult Contacto()
         {
             //return View();
             return View("Belleza/Contacto");
         }
+        [AllowAnonymous]
         public IActionResult Portal()
         {
             return View();
         }
+        [AllowAnonymous]
         public async Task<IActionResult> PreAgendamiento(int id)
         {
             var productosTraidosXBD = await _usuarioService.ConsultarCatProductos(id);
             //1. Mandar el ID al modelo, y que procese: 
             return View("Belleza/PreAgendamiento", productosTraidosXBD);
         }
-
+        [AllowAnonymous]
         public IActionResult PoliticasPrivacidad()
         {
             //return View();
             return View("Belleza/PoliticasPrivacidad");
         }
+        [AllowAnonymous]
         public IActionResult ServicioDomicilio()
         {
             //return View();
             return View("Belleza/ServicioDomicilio");
         }
+        [AllowAnonymous]
         public IActionResult FAQS()
         {
             //return View();
             return View("Belleza/FAQS");
         }
+        [AllowAnonymous]
         public IActionResult Empleos()
         {
             //return View();
             return View("Belleza/Empleos");
         }
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
@@ -209,11 +218,13 @@ namespace Plataforma.Controllers
 
 			return RedirectToAction("Login", "Home");
 		}
+        [AllowAnonymous]
         public IActionResult StocksTienda()
         {
             var traerProductosAbarrotes = _usuarioService.ProductosAbarrotes();
             return View(traerProductosAbarrotes);
         }
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> ModificarProInventario(string id, string campo, string newVal)
         {
@@ -242,6 +253,7 @@ namespace Plataforma.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> InsertarProInventario(string codigoProducto, string nombreProducto, int cantidadProducto, decimal? valorNetoProductoFloat, decimal? valorVentaProductoFloat, int valorUnidadInt, string id_empresa, int categoria, int estado, string ubicacion, int IdProveedor)
         {
@@ -264,7 +276,7 @@ namespace Plataforma.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
-
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> EliminarProductoXID(string id)
         {
@@ -286,28 +298,57 @@ namespace Plataforma.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
-        //Visualizar productos existentes para vender en la pagina inicial
-        [HttpGet]
-        public IActionResult Tienda(int idServicio, int sedeId = 1)
+        [AllowAnonymous]
+        [HttpGet("Home/Tienda/{idServicio}/{sedeId?}")]
+        public IActionResult Tienda(int idServicio, int? sedeId)
         {
             var categorias = _productoservice.ObtenerCategoriaProductos(idServicio);
+            var sedes = _productoservice.ObtenerSedes();
 
-            var productos = _productoservice
-                .ObtenerProductosPorServicioYSede(idServicio, sedeId);
+            int sedeFinal = sedeId ?? 0;
+            List<ProductoTiendaDTO> productos = new();
 
-            var sedes = _productoservice.ObtenerSedes(); // 👈 ya no usa _context
+            if (sedeFinal == 0)
+            {
+                foreach (var sede in sedes)
+                {
+                    var productosTmp = _productoservice.ObtenerProductosPorServicioYSede(idServicio, sede.Id_sede);
+                    if (productosTmp != null && productosTmp.Count > 0)
+                    {
+                        sedeFinal = sede.Id_sede;
+                        productos = productosTmp;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                productos = _productoservice.ObtenerProductosPorServicioYSede(idServicio, sedeFinal) ?? new List<ProductoTiendaDTO>();
+            }
 
             var vm = new ProductosCategoriaViewModel
             {
-                CategoriaProductos = categorias,
-                Productos = productos,
+                CategoriaProductos = categorias ?? new(),
+                Productos = productos ?? new(),
                 Servicio = idServicio,
-                Sedes = sedes,
-                SedeSeleccionada = sedeId
+                Sedes = sedes ?? new(),
+                SedeSeleccionada = sedeFinal
             };
 
             return View(vm);
         }
+        [AllowAnonymous]
+        [HttpGet("/producto/ver/{id}", Name = "ProductoPublico")]
+        public IActionResult VisualizarProducto(string id)
+        {
+            var vm = _productoservice.ObtenerProductoPublico(id);
+
+            if (vm == null)
+                return NotFound();
+
+            return View(vm);
+        }
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> SendContactMessage(ContactFormModel model)
         {

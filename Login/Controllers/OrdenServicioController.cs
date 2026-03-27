@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
@@ -18,6 +19,7 @@ namespace Plataforma.Controllers
             _tercerosService = tercerosService;
             _productoService = productoService;
         }
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var cedulaClaimStr = User.FindFirst("Cedula")?.Value;
@@ -90,7 +92,7 @@ namespace Plataforma.Controllers
             });
         }
 
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Dispositivos()
         {

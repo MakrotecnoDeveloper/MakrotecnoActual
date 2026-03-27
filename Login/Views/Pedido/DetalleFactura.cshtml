@@ -123,20 +123,19 @@
                             </div>
 
                             <div class="factura-label">Razón social</div>
-                            <div class="factura-value">TU NEGOCIO S.A.S</div>
+                            <div class="factura-value">@Model.Empresa?.Nombre</div>
 
-                            <div class="mt-2 factora-label"></div>
-                            <div class="factura-label">NIT</div>
-                            <div class="factura-value">000.000.000-0</div>
+                            <div class="mt-2 factura-label">NIT</div>
+                            <div class="factura-value">@Model.Empresa?.Id_empresa</div>
 
                             <div class="mt-2 factura-label">Dirección</div>
-                            <div class="factura-value">Cali, Valle del Cauca</div>
+                            <div class="factura-value">@Model.Empresa?.Direccion</div>
 
                             <div class="mt-2 factura-label">Teléfono</div>
-                            <div class="factura-value">300 000 0000</div>
+                            <div class="factura-value">@Model.Empresa?.Telefono</div>
 
-                            <div class="mt-2 factura-label">Correo</div>
-                            <div class="factura-value">ventas@tudominio.com</div>
+                            <div class="mt-2 factura-label">País</div>
+                            <div class="factura-value">@Model.Empresa?.Pais</div>
                         </div>
                     </div>
 

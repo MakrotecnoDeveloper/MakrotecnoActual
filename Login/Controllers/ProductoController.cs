@@ -20,6 +20,7 @@ namespace Plataforma.Controllers
             _dbContext = dbContext;
             _qrService = qrService;
         }
+        [Authorize]
         public IActionResult Index()
         {
             var model = new ProductosIndexViewModel
@@ -47,6 +48,7 @@ namespace Plataforma.Controllers
                 descripcion = c.Descripcion
             }));
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Insertar()
         {
@@ -239,15 +241,6 @@ namespace Plataforma.Controllers
             _productoservice.EliminarProducto(id);
             return RedirectToAction("Index");
         }
-        public IActionResult VisualizarProducto(string id)
-        {
-            var producto = _productoservice.ObtenerProductoGeneral(id);
-
-            if (producto == null)
-                return NotFound();
-
-            return View(producto);
-        }
         /*Visualizacion de  Recargas de Plataformas */
         [Authorize]
         [HttpGet]
@@ -339,6 +332,7 @@ namespace Plataforma.Controllers
             var productosTraidos = _productoservice.TraerProductosXCategoria(categoria);
             return PartialView("../Home/_ProductosParciales", productosTraidos);
         }
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> CategoriaProductos()
         {
@@ -379,6 +373,7 @@ namespace Plataforma.Controllers
             model.Servicios = await _productoservice.ObtenerServiciosAsync();
             return View(model);
         }
+        [Authorize]
         public async Task<IActionResult> CreateService()
         {
             var servicios = await _productoservice.ObtenerServicios();
@@ -403,6 +398,7 @@ namespace Plataforma.Controllers
             return BadRequest("Error al crear servicio");
         }
         // Vista principal con filtro por sede
+        [Authorize]
         public async Task<IActionResult> ProductosLista(int? sedeId, string? q)
         {
                 var sedes = await _dbContext.Sede.Where(s => s.Estado == 1)
@@ -565,6 +561,7 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
         }
+        [Authorize]
         [HttpGet]
         public IActionResult HabilitarProducto()
         {
@@ -661,10 +658,9 @@ namespace Plataforma.Controllers
                 .FirstOrDefaultAsync(x => x.ProductoId == codProducto);
 
             // 🔥 Construimos URL absoluta correcta
-            var urlProducto = Url.Action(
-                "VisualizarProducto",
-                "Producto",
-                new { codProducto = p.Cod_Producto },
+            var urlProducto = Url.RouteUrl(
+                "ProductoPublico",
+                new { id = p.Cod_Producto },
                 Request.Scheme
             );
 
