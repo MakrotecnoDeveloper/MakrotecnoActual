@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using Plataforma.Models.Dto.Pedido;
 using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
@@ -42,5 +43,7 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> EmitirFacturaAsync(int idVenta, string metodoPago);
         Task CambiarEstadoVentaAsync(int idVenta, string nuevoEstado);
         Task<List<ProductoVentaDto>> BuscarProductosPorNombreVentaAsync(string texto, ClaimsPrincipal usuario);
+        Task<List<Ventas>> ObtenerVentasFiltradasAsync(ContextoAccesoDto ctx);
+        Task<List<Factura>> ObtenerFacturasFiltradasAsync(ContextoAccesoDto ctx);
     }
 }

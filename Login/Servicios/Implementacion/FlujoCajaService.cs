@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
 using System.Text.Json;
 
@@ -69,30 +70,53 @@ namespace Plataforma.Servicios.Implementacion
 
             return vm;
         }
-        public async Task<(bool, string)> RegistrarCierreAsync(CierreCajaViewModel model, int cedula)
+        public async Task<(bool, string)> RegistrarCierreAsync(CierreCajaViewModel model, ContextoAccesoDto ctx)
         {
-            var hoy = DateTime.Today;
+            var fechaTrabajo = model.Fecha.Date;
+            var inicio = fechaTrabajo;
+            var fin = inicio.AddDays(1);
 
-            var facturasHoy = await _dbContext.Factura
-                .Where(f => f.FechaEmision.Date == hoy)
-                .Include(f => f.Venta)
-                .ToListAsync();
+            // 1) Validar si ya existe un cierre previo para esa cédula en esa fecha
+            var cierreExistente = await ObtenerCierreExistenteDelDiaAsync(ctx.Cedula, fechaTrabajo);
 
-            var facturasDelEmpleado = facturasHoy
-                .Where(f => f.Venta != null && f.Venta.Cedula == cedula)
-                .ToList();
+            if (cierreExistente != null)
+            {
+                return (false,
+                    $"Ya existe un cierre de caja registrado para la cédula {ctx.Cedula} en la fecha {fechaTrabajo:dd/MM/yyyy}. " +
+                    $"Si requiere un nuevo cierre, debe solicitar autorización del supervisor con cargo 'Administrador Lider'.");
+            }
 
-            if (!facturasDelEmpleado.Any())
-                return (false, "No se encontraron facturas de este día realizadas por usted.");
+            // 2) Traer facturas del contexto real: empleado + empresa + sede + PDV + fecha
+            var idsFacturas = await (
+                from f in _dbContext.Factura
+                join v in _dbContext.Ventas on f.IdVenta equals v.IdVenta
+                join p in _dbContext.Pedidos on v.IdVenta equals p.IdVenta
+                join pdv in _dbContext.Infopdv on p.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                where f.FechaEmision >= inicio && f.FechaEmision < fin
+                      && v.Cedula == ctx.Cedula
+                      && p.InfopdvId == ctx.PdvId
+                      && pdv.Id_Sede == ctx.SedeId
+                      && s.Id_empresa == ctx.EmpresaId
+                select f.IdFactura
+            ).Distinct().ToListAsync();
 
-            decimal totalFacturado = facturasDelEmpleado.Sum(f => f.Total);
+            if (!idsFacturas.Any())
+            {
+                return (false,
+                    "No se encontraron facturas de esa fecha realizadas por usted en este PDV.");
+            }
+
+            decimal totalFacturado = await _dbContext.Factura
+                .Where(f => idsFacturas.Contains(f.IdFactura))
+                .SumAsync(f => (decimal?)f.Total) ?? 0m;
+
             model.TotalFacturado = totalFacturado;
 
             decimal ingresos = model.Efectivo + model.Transferencia;
             decimal egresos = model.GastoEfectivo + model.GastoTransferencia;
             decimal diferencia = ingresos - egresos;
 
-            // Serializar snapshot de los conceptos
             string? conceptosJson = null;
             if (model.Conceptos != null && model.Conceptos.Any())
             {
@@ -101,19 +125,26 @@ namespace Plataforma.Servicios.Implementacion
 
             var cierre = new CierreCaja
             {
-                Fecha = hoy,
+                Fecha = fechaTrabajo,
                 TipoMovimiento = "Cierre Diario",
                 Monto = ingresos,
-                Concepto = $"Cierre de caja - Efectivo: {model.Efectivo}, Transferencia: {model.Transferencia}, " +
+                Concepto = $"Cierre de caja - Fecha: {fechaTrabajo:yyyy-MM-dd}, " +
+                           $"PDV: {ctx.PdvId}, Efectivo: {model.Efectivo}, Transferencia: {model.Transferencia}, " +
                            $"Gastos Efectivo: {model.GastoEfectivo}, Gastos Transf.: {model.GastoTransferencia}, " +
                            $"Total Facturado: {totalFacturado}, Diferencia: {diferencia}",
-                Cedula = cedula,
+                Cedula = ctx.Cedula,
                 Efectivo = model.Efectivo,
                 Transferencia = model.Transferencia,
                 GastosEfectivo = model.GastoEfectivo,
                 GastosTransferencia = model.GastoTransferencia,
                 Diferencia = diferencia,
-                ConceptosJson = conceptosJson
+                ConceptosJson = conceptosJson,
+
+                // contexto histórico
+                IdEmpresa = ctx.EmpresaId,
+                IdSede = ctx.SedeId,
+                InfopdvId = ctx.PdvId,
+                NombreRol = ctx.NombreRol
             };
 
             _dbContext.CierreCajas.Add(cierre);
@@ -128,29 +159,115 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(f => f.FechaEmision.Date == hoy)
                 .SumAsync(f => (decimal?)f.Total) ?? 0m;
         }
-        public async Task<List<ConceptoServicioVM>> ObtenerConceptosDelDiaAsync()
+        public async Task<decimal> ObtenerTotalFacturadoDelDiaAsync(
+    ContextoAccesoDto ctx,
+    DateTime? fecha = null)
         {
-            var inicio = DateTime.Today;
+            var baseFecha = (fecha ?? DateTime.Today).Date;
+            var inicio = baseFecha;
             var fin = inicio.AddDays(1);
 
-            // NOTA: cambia los campos según tu modelo real (Fecha, CodigoProducto/IdProducto, etc.)
-            var query = from ped in _dbContext.Pedidos
-                        where ped.FechaRegistro >= inicio && ped.FechaRegistro < fin
-                        join prod in _dbContext.Productos on ped.Codigo equals prod.Cod_Producto // o ped.IdProducto == prod.IdProducto
-                        join cat in _dbContext.CategoriaProductos on prod.IdCatepro equals cat.IdCateProducto
-                        join serv in _dbContext.Servicio on cat.IdServicio equals serv.IdServicio
-                        group new { ped } by new { serv.IdServicio, serv.NombreServicio } into g
-                        select new ConceptoServicioVM
-                        {
-                            IdServicio = g.Key.IdServicio,
-                            NombreServicio = g.Key.NombreServicio,
-                            TotalSubTotal = (decimal)g.Sum(x => x.ped.SubTotal),
-                            TotalVNeto = (decimal)g.Sum(x => x.ped.VNeto)
-                        };
+            var query =
+                from ped in _dbContext.Pedidos
+                join v in _dbContext.Ventas on ped.IdVenta equals v.IdVenta
+                join pdv in _dbContext.Infopdv on ped.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                where ped.FechaRegistro >= inicio && ped.FechaRegistro < fin
+                select new
+                {
+                    Pedido = ped,
+                    Venta = v,
+                    Pdv = pdv,
+                    Sede = s
+                };
+
+            if (!ctx.EsAdministradorLider)
+            {
+                query = query.Where(x =>
+                    x.Venta.Cedula == ctx.Cedula &&
+                    x.Pedido.InfopdvId == ctx.PdvId &&
+                    x.Pdv.Id_Sede == ctx.SedeId &&
+                    x.Sede.Id_empresa == ctx.EmpresaId);
+            }
+
+            return await query.SumAsync(x => (decimal?)x.Pedido.VNeto) ?? 0m;
+        }
+        public async Task<List<ConceptoServicioVM>> ObtenerConceptosDelDiaAsync(
+    ContextoAccesoDto ctx,
+    DateTime fecha)
+        {
+            var inicio = fecha.Date;
+            var fin = inicio.AddDays(1);
+
+            var query =
+                from ped in _dbContext.Pedidos
+                join v in _dbContext.Ventas on ped.IdVenta equals v.IdVenta
+                join pdv in _dbContext.Infopdv on ped.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                join prod in _dbContext.Productos on ped.Codigo equals prod.Cod_Producto
+                join cat in _dbContext.CategoriaProductos on prod.IdCatepro equals cat.IdCateProducto
+                join serv in _dbContext.Servicio on cat.IdServicio equals serv.IdServicio
+                where ped.FechaRegistro >= inicio && ped.FechaRegistro < fin
+                      && v.Cedula == ctx.Cedula
+                      && ped.InfopdvId == ctx.PdvId
+                      && pdv.Id_Sede == ctx.SedeId
+                      && s.Id_empresa == ctx.EmpresaId
+                select new
+                {
+                    Pedido = ped,
+                    Servicio = serv
+                };
 
             return await query
+                .GroupBy(x => new { x.Servicio.IdServicio, x.Servicio.NombreServicio })
+                .Select(g => new ConceptoServicioVM
+                {
+                    IdServicio = g.Key.IdServicio,
+                    NombreServicio = g.Key.NombreServicio,
+                    TotalSubTotal = g.Sum(x => x.Pedido.SubTotal),
+                    TotalVNeto = g.Sum(x => x.Pedido.VNeto ?? 0m)
+                })
                 .OrderBy(x => x.NombreServicio)
                 .ToListAsync();
+        }
+        public async Task<decimal> ObtenerTotalFacturadoAsync(ContextoAccesoDto ctx, DateTime fecha)
+        {
+            var inicio = fecha.Date;
+            var fin = inicio.AddDays(1);
+
+            var idsFacturas = await (
+                from f in _dbContext.Factura
+                join v in _dbContext.Ventas on f.IdVenta equals v.IdVenta
+                join p in _dbContext.Pedidos on v.IdVenta equals p.IdVenta
+                join pdv in _dbContext.Infopdv on p.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                where f.FechaEmision >= inicio && f.FechaEmision < fin
+                      && v.Cedula == ctx.Cedula
+                      && p.InfopdvId == ctx.PdvId
+                      && pdv.Id_Sede == ctx.SedeId
+                      && s.Id_empresa == ctx.EmpresaId
+                select f.IdFactura
+            ).Distinct().ToListAsync();
+
+            if (!idsFacturas.Any())
+                return 0m;
+
+            return await _dbContext.Factura
+                .Where(f => idsFacturas.Contains(f.IdFactura))
+                .SumAsync(f => (decimal?)f.Total) ?? 0m;
+        }
+        public async Task<CierreCaja?> ObtenerCierreExistenteDelDiaAsync(int cedula, DateTime fecha)
+        {
+            var inicio = fecha.Date;
+            var fin = inicio.AddDays(1);
+
+            return await _dbContext.CierreCajas
+                .Where(c => c.Cedula == cedula
+                         && c.Fecha >= inicio
+                         && c.Fecha < fin
+                         && (c.TipoMovimiento == "Cierre Diario" || c.TipoMovimiento == "Cierre Reautorizado"))
+                .OrderByDescending(c => c.Fecha)
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -9,6 +9,9 @@ public class TipoCargo
     public string? NombreCargo { get; set; }
     public string? DescripcionCargo { get; set; }
     public string? Id_empresa { get; set; }
+    public int? IdArea { get; set; }
+    [ForeignKey(nameof(IdArea))]
+    public virtual Area? Area { get; set; }
 }
 
 public class RolPermisoDTO

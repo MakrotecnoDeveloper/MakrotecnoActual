@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Plataforma.Models.ConceptoNomina>
+@{
+    ViewData["Title"] = "Conceptos";
+}
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Conceptos de nómina</h2>
+        <a asp-action="CrearConcepto" class="btn btn-primary">Nuevo concepto</a>
+    </div>
+
+@if (TempData["ok"] != null)
+{
+        <div class="alert alert-success">@TempData["ok"]</div>
+}
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Naturaleza</th>
+                <th>Modo</th>
+                <th>Servicio</th>
+                <th>%</th>
+                <th>Valor fijo</th>
+                <th>Activo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Codigo</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.Naturaleza</td>
+                    <td>@item.ModoCalculo</td>
+                    <td>@item.Servicio?.NombreServicio</td>
+                    <td>@item.Porcentaje?.ToString("N2")</td>
+                    <td>@item.ValorFijo?.ToString("N2")</td>
+                    <td>@(item.EsActivo ? "Sí" : "No")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

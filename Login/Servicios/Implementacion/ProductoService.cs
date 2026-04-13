@@ -26,7 +26,9 @@ namespace Plataforma.Servicios.Implementacion
 
         public List<CategoriaProductos> ObtenerCategorias()
         {
-            return _dbContext.CategoriaProductos.ToList();
+            return _dbContext.CategoriaProductos
+                             .Include(c => c.Servicio)
+                             .ToList();
         }
 
         public List<Producto> ObtenerProductosPorCategoria(int idCategoria)
@@ -89,11 +91,10 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(c => c.IdServicio == idServicio)
                 .ToListAsync();
         }
-        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto)
+        public Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal? valor_unidad, int unidadMedida, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto)
         {
             try
             {
-                int valorUnidad = 0;
                 int estado = 1;
                 string Ubicacion = "Web";
                 // Crear un nuevo objeto Producto con los parámetros proporcionados
@@ -104,7 +105,8 @@ namespace Plataforma.Servicios.Implementacion
                     CantidadProducto = stock,
                     ValorNetoProducto = valor_neto,
                     ValorVentaProducto = valor_unitario,
-                    ValorUnidad = valorUnidad,
+                    ValorUnidad = valor_unidad,
+                    IdUnidad = unidadMedida,
                     ID_Empresa = id_empresa,
                     IdCatepro = categorias,
                     Estado = estado,
@@ -306,7 +308,7 @@ namespace Plataforma.Servicios.Implementacion
             return _dbContext.Productos.ToList();
         }
         //a
-        public void EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, string? imagen)
+        public void EditarProducto(string codigo, string nombreProducto, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, string? imagen)
         {
 
             if (codigo == null || valorNeto < 0 || valorVenta < 0 || cantidad < 0)
@@ -319,6 +321,7 @@ namespace Plataforma.Servicios.Implementacion
             if (producto != null)
             {
                 producto.Cod_Producto = codigo;
+                producto.NombreProducto = nombreProducto;
                 producto.CantidadProducto = cantidad;
                 producto.ValorNetoProducto = valorNeto;
                 producto.ValorVentaProducto = valorVenta;
@@ -574,6 +577,10 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<List<Empresas>> TraerEmpresas()
         {
             return await _dbContext.Empresas.ToListAsync();
+        }
+        public async Task<List<UnidadMedida>> TraerUnidadesMedida()
+        {
+            return await _dbContext.UnidadesMedida.ToListAsync();
         }
         public async Task<int?> SeleccionarServicio(Producto p)
         {

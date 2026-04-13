@@ -138,63 +138,103 @@ namespace Plataforma.Controllers
 
 		}
         [HttpPost]
-        public IActionResult ValidacionLogin(int cedula, string password, int selectedPDV)
+        public async Task<IActionResult> ValidacionLogin(int cedula, string password, int selectedPDV)
         {
-                var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
-				var claims = new List<Claim>() {
-					new Claim("Cedula", validarUsuario.Cedula.ToString()),
-					new Claim("Nombre", validarUsuario.Nombre),
-					new Claim("Apellido", validarUsuario.Apellido),
-					new Claim("Genero", validarUsuario.Genero),
-					new Claim("Correo", validarUsuario.Correo),
-					new Claim("RH", validarUsuario.Rh),
-					new Claim("Celular", validarUsuario.Celular),
-					new Claim("Contrasena", validarUsuario.Contrasena),
-					};
-				int rolEmpleado = _usuarioService.ObtenerRolPermisos(validarUsuario.Cedula);
-				if (rolEmpleado > 0)
-				{
-					claims.Add(new Claim("Rol", rolEmpleado.ToString()));
-					var nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
-					if (nombreCargo != null)
-					{
-                        claims.Add(new Claim("NombreRol", nombreCargo.NombreCargo));
-                        claims.Add(new Claim("CargoId",   nombreCargo.TipoCargo.ToString()));
-                        claims.Add(new Claim("EmpresaId", nombreCargo.IdEmpresa.ToString()));
-                        claims.Add(new Claim("NombreEmpresa", nombreCargo.NombreEmpresa));
-                }
-					else
-					{
-						var mensaje = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
-						TempData["ErrorMessage"] = mensaje;
-						return RedirectToAction("Error", "Errores");
-					}
-				}
-				else
-				{
-					var mensaje = "Error: No tiene un cargo (ID) asignado en el Sistema Gestor de Empleados (SGE)";
-					TempData["ErrorMessage"] = mensaje;
-					return RedirectToAction("Error", "Errores");
-				}
-				var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-				var principal = new ClaimsPrincipal(identity);
+            var validarUsuario = _usuarioService.GetUsuarios(cedula, password);
+            if (validarUsuario == null)
+            {
+                TempData["ErrorMessage"] = "Usuario o contraseña inválidos.";
+                return RedirectToAction("Error", "Errores");
+            }
 
-				HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
-					new AuthenticationProperties()
-					{
-						ExpiresUtc = DateTime.UtcNow.AddMinutes(60),
-						AllowRefresh = true,
-						IsPersistent = false
-					});
-				int cedulaEmpleado = validarUsuario.Cedula;
-				string correoEmpleado = validarUsuario.Correo;
-				int estado = 1;
-                var varNombrePDV = _usuarioService.SeleccionarNombrePDV(selectedPDV);
-                int idPDV = varNombrePDV.InfopdvId;
-                _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado, idPDV);
-                return RedirectToAction("Index", "Inicio");
-		}
-		[Authorize]
+            int rolEmpleado = _usuarioService.ObtenerRolPermisos(validarUsuario.Cedula);
+            if (rolEmpleado <= 0)
+            {
+                TempData["ErrorMessage"] = "Error: No tiene un cargo (ID) asignado en el Sistema Gestor de Empleados (SGE)";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            var nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
+            if (nombreCargo == null)
+            {
+                TempData["ErrorMessage"] = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 1. Validar PDV seleccionado
+            var pdv = _usuarioService.SeleccionarNombrePDV(selectedPDV);
+            if (pdv == null)
+            {
+                TempData["ErrorMessage"] = "El PDV seleccionado no existe.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 2. Traer sede del PDV
+            var sede = _usuarioService.ObtenerSedePorId(pdv.Id_Sede);
+            if (sede == null)
+            {
+                TempData["ErrorMessage"] = "No se encontró la sede del PDV seleccionado.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 3. Validar coherencia empresa del usuario vs empresa de la sede
+            if (!string.Equals(sede.Id_empresa, nombreCargo.IdEmpresa?.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "El PDV seleccionado no pertenece a la empresa del usuario.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 4. Validar que el usuario sí esté autorizado en ese PDV
+            bool accesoPdvValido = _usuarioService.UsuarioTieneAccesoAPdv(validarUsuario.Cedula, selectedPDV);
+            if (!accesoPdvValido)
+            {
+                TempData["ErrorMessage"] = "El usuario no está autorizado para ingresar a este PDV.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            var claims = new List<Claim>()
+    {
+        new Claim("Cedula", validarUsuario.Cedula.ToString()),
+        new Claim("Nombre", validarUsuario.Nombre ?? ""),
+        new Claim("Apellido", validarUsuario.Apellido ?? ""),
+        new Claim("Genero", validarUsuario.Genero ?? ""),
+        new Claim("Correo", validarUsuario.Correo ?? ""),
+        new Claim("RH", validarUsuario.Rh ?? ""),
+        new Claim("Celular", validarUsuario.Celular ?? ""),
+        new Claim("Contrasena", validarUsuario.Contrasena ?? ""),
+        new Claim("Rol", rolEmpleado.ToString()),
+        new Claim("NombreRol", nombreCargo.NombreCargo ?? ""),
+        new Claim("CargoId", nombreCargo.TipoCargo.ToString()),
+        new Claim("EmpresaId", nombreCargo.IdEmpresa?.ToString() ?? ""),
+        new Claim("NombreEmpresa", nombreCargo.NombreEmpresa ?? ""),
+        new Claim("PdvId", pdv.InfopdvId.ToString()),
+        new Claim("NombrePdv", pdv.NombreInfoPDV ?? ""),
+        new Claim("SedeId", pdv.Id_Sede.ToString()),
+        new Claim("NombreSede", sede.NombreSede ?? "")
+    };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(60),
+                    AllowRefresh = true,
+                    IsPersistent = false
+                });
+
+            int cedulaEmpleado = validarUsuario.Cedula;
+            string correoEmpleado = validarUsuario.Correo ?? "";
+            int estado = 1;
+
+            _usuarioService.InsertarLogLogin(cedulaEmpleado, correoEmpleado, estado, pdv.InfopdvId);
+
+            return RedirectToAction("Index", "Inicio");
+        }
+        [Authorize]
 		public IActionResult Logout()
 		{
             var cedula = User.FindFirst("Cedula")?.Value;

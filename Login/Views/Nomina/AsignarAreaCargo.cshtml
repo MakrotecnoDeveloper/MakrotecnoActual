@@ -1,0 +1,30 @@
+﻿@model Plataforma.Models.AsignarAreaCargoVm
+@{
+    ViewData["Title"] = "Asignar área a cargo";
+}
+<div class="content-wrapper">
+    <h2>Asignar área a cargo</h2>
+
+    <form asp-action="AsignarAreaCargo" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row">
+            <div class="col-md-5 mb-3">
+                <label asp-for="IdTipoCargo" class="form-label">Cargo</label>
+                <select asp-for="IdTipoCargo" asp-items="Model.Cargos" class="form-select"></select>
+            </div>
+
+            <div class="col-md-5 mb-3">
+                <label asp-for="IdArea" class="form-label">Área</label>
+                <select asp-for="IdArea" asp-items="Model.Areas" class="form-select"></select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="CargoAreas" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

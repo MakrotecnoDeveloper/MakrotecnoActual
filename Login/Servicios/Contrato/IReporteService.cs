@@ -1,12 +1,11 @@
 ﻿using Plataforma.Models;
+using Plataforma.ViewModels.Reportes;
 
 namespace Plataforma.Servicios.Contrato
 {
     public interface IReporteService
     {
-        Task<ReporteFinancieroViewModel> GenerarReporteDelDiaAsync(DateTime fecha);
-        (decimal totalSubTotal, decimal totalVNeto) TraerTotalesPorRangoYServicio(DateTime fechaInicio, DateTime fechaFin, int idServicio);
-        List<ConceptoServicioVM> TraerServiciosUnicos(DateTime fechaInicio, DateTime fechaFin);
-        List<ConceptoServicioVM> TraerUtilidadPorServicios(DateTime fechaInicio, DateTime fechaFin);
+        Task<ReporteGeneralVm> ObtenerVistaGeneralAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<byte[]> ExportarVistaGeneralExcelAsync(DateTime fechaInicio, DateTime fechaFin);
     }
 }

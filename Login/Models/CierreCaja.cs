@@ -25,6 +25,20 @@ public class CierreCaja
     public int Cedula { get; set; }
     public DateTime Fecha { get; set; }
     public string? ConceptosJson { get; set; }
+    // NUEVOS
+    public string? IdEmpresa { get; set; }
+    public int IdSede { get; set; }
+    public int InfopdvId { get; set; }
+    public string? NombreRol { get; set; }
+    public string? NombreEmpresa { get; set; }
+    public string? NombreSede { get; set; }
+    public string? NombrePdv { get; set; }
+
+    /* Navegaciones */
+    public virtual Empleados? Empleado { get; set; }
+    public virtual Empresas? Empresa { get; set; }
+    public virtual Sede? Sede { get; set; }
+    public virtual Infopdv? Pdv { get; set; }
 
     // 🔑 Método helper para deserializar ConceptosJson
     public List<ConceptoServicioVM> GetConceptos()

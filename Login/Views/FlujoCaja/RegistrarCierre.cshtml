@@ -1,130 +1,206 @@
-﻿@model CierreCajaViewModel
+﻿@using System.Globalization
+@model CierreCajaViewModel
 @{
     ViewData["Title"] = "RegistrarCierre";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <div class="content-wrapper">
-    <h3 class="mb-4">Cierre de Caja - @DateTime.Today.ToShortDateString()</h3>
+    <div class="container mt-4">
 
-    <form asp-action="RegistrarCierre" method="post">
-        @Html.AntiForgeryToken()
+        <h3 class="mb-4">Cierre de Caja - @ViewBag.FechaTrabajo</h3>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <strong>Totales del día</strong>
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success mt-3">
+                @TempData["Ok"]
             </div>
+        }
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger mt-3">
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <div class="alert alert-secondary">
+            <strong>Empresa:</strong> @User.FindFirst("NombreEmpresa")?.Value <br />
+            <strong>Sede:</strong> @User.FindFirst("NombreSede")?.Value <br />
+            <strong>PDV:</strong> @User.FindFirst("NombrePdv")?.Value
+        </div>
+
+        <!-- Formulario GET para consultar otra fecha -->
+        <div class="card mb-3">
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Efectivo ingresado</label>
-                        <input asp-for="Efectivo" class="form-control" type="number" step="0.01" />
-                        <span asp-validation-for="Efectivo" class="text-danger"></span>
+                <form asp-action="RegistrarCierre" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha de cierre</label>
+                        <input type="date"
+                               id="fechaConsulta"
+                               name="fecha"
+                               class="form-control"
+                               value="@Model.Fecha.ToString("yyyy-MM-dd")" />
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Transferencias bancarias</label>
-                        <input asp-for="Transferencia" class="form-control" type="number" step="0.01" />
-                        <span asp-validation-for="Transferencia" class="text-danger"></span>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary">Consultar</button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Gasto en efectivo</label>
-                        <input asp-for="GastoEfectivo" class="form-control" type="number" step="0.01" />
-                        <span asp-validation-for="GastoEfectivo" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Gasto por transferencia</label>
-                        <input asp-for="GastoTransferencia" class="form-control" type="number" step="0.01" />
-                        <span asp-validation-for="GastoTransferencia" class="text-danger"></span>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>Conceptos de servicios (auto del día + manual)</strong>
-                <button type="button" id="btnAddConcepto" class="btn btn-sm btn-outline-primary">
-                    Agregar concepto
-                </button>
+        <!-- Formulario POST para guardar cierre -->
+        <form asp-action="RegistrarCierre" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="Fecha" type="hidden" id="fechaHidden" />
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Totales del día</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Efectivo" class="form-label">Efectivo ingresado</label>
+                            <input asp-for="Efectivo" class="form-control" type="number" step="0.01" min="0" value="@Model.Efectivo.ToString(CultureInfo.InvariantCulture)" />
+                            <span asp-validation-for="Efectivo" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Transferencia" class="form-label">Transferencias bancarias</label>
+                            <input asp-for="Transferencia" class="form-control" type="number" step="0.01" min="0" value="@Model.Transferencia.ToString(CultureInfo.InvariantCulture)" />
+                            <span asp-validation-for="Transferencia" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="GastoEfectivo" class="form-label">Gasto en efectivo</label>
+                            <input asp-for="GastoEfectivo" class="form-control" type="number" step="0.01" min="0" value="@Model.GastoEfectivo.ToString(CultureInfo.InvariantCulture)" />
+                            <span asp-validation-for="GastoEfectivo" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="GastoTransferencia" class="form-label">Gasto por transferencia</label>
+                            <input asp-for="GastoTransferencia" class="form-control" type="number" step="0.01" min="0" value="@Model.GastoTransferencia.ToString(CultureInfo.InvariantCulture)" />
+                            <span asp-validation-for="GastoTransferencia" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table align-middle" id="tablaConceptos">
-                        <thead>
-                            <tr>
-                                <th style="width:35%">Servicio</th>
-                                <th style="width:20%">Total SubTotal</th>
-                                <th style="width:20%">Total VNeto</th>
-                                <th style="width:10%"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.Conceptos != null && Model.Conceptos.Any())
-                            {
-                                for (int i = 0; i < Model.Conceptos.Count; i++)
+
+            <div class="alert alert-info">
+                <strong>Total facturado del sistema:</strong> @Model.TotalFacturado.ToString("N2")
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Conceptos de servicios (auto del día + manual)</strong>
+                    <button type="button" id="btnAddConcepto" class="btn btn-sm btn-outline-primary">
+                        Agregar concepto
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle" id="tablaConceptos">
+                            <thead>
+                                <tr>
+                                    <th style="width:35%">Servicio</th>
+                                    <th style="width:20%">Total SubTotal</th>
+                                    <th style="width:20%">Total VNeto</th>
+                                    <th style="width:10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Conceptos != null && Model.Conceptos.Any())
                                 {
-                                    <tr>
-                                        <td>
-                                            <input type="hidden" name="Conceptos[@i].IdServicio" value="@Model.Conceptos[i].IdServicio" />
-                                            <input name="Conceptos[@i].NombreServicio" value="@Model.Conceptos[i].NombreServicio"
-                                                   class="form-control" />
-                                        </td>
-                                        <td>
-                                            <input name="Conceptos[@i].TotalSubTotal" value="@Model.Conceptos[i].TotalSubTotal"
-                                                   class="form-control total-subtotal" type="text" />
-                                        </td>
-                                        <td>
-                                            <input name="Conceptos[@i].TotalVNeto" value="@Model.Conceptos[i].TotalVNeto"
-                                                   class="form-control total-vneto" type="text" />
-                                        </td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">Quitar</button>
-                                        </td>
-                                    </tr>
+                                    for (int i = 0; i < Model.Conceptos.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="hidden" name="Conceptos[@i].IdServicio" value="@Model.Conceptos[i].IdServicio" />
+                                                <input name="Conceptos[@i].NombreServicio"
+                                                       value="@Model.Conceptos[i].NombreServicio"
+                                                       class="form-control"
+                                                       placeholder="Ej: Accesorios" />
+                                            </td>
+                                            <td>
+                                                <input name="Conceptos[@i].TotalSubTotal"
+                                                       value="@Model.Conceptos[i].TotalSubTotal.ToString(CultureInfo.InvariantCulture)"
+                                                       class="form-control total-subtotal"
+                                                       type="number"
+                                                       step="0.01"
+                                                       min="0" />
+                                            </td>
+                                            <td>
+                                                <input name="Conceptos[@i].TotalVNeto"
+                                                       value="@Model.Conceptos[i].TotalVNeto.ToString(CultureInfo.InvariantCulture)"
+                                                       class="form-control total-vneto"
+                                                       type="number"
+                                                       step="0.01"
+                                                       min="0" />
+                                            </td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">
+                                                    Quitar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-end">Totales</th>
-                                <th><span id="sumaSubTotal">0.00</span></th>
-                                <th><span id="sumaVNeto">0.00</span></th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-end">Totales</th>
+                                    <th><span id="sumaSubTotal">0.00</span></th>
+                                    <th><span id="sumaVNeto">0.00</span></th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <template id="rowTemplate">
+                        <tr>
+                            <td>
+                                <input type="hidden" name="Conceptos[__index__].IdServicio" value="0" />
+                                <input name="Conceptos[__index__].NombreServicio"
+                                       class="form-control"
+                                       placeholder="Ej: Accesorios" />
+                            </td>
+                            <td>
+                                <input name="Conceptos[__index__].TotalSubTotal"
+                                       class="form-control total-subtotal"
+                                       type="number"
+                                       step="0.01"
+                                       min="0"
+                                       value="0.00" />
+                            </td>
+                            <td>
+                                <input name="Conceptos[__index__].TotalVNeto"
+                                       class="form-control total-vneto"
+                                       type="number"
+                                       step="0.01"
+                                       min="0"
+                                       value="0.00" />
+                            </td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">
+                                    Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
                 </div>
-
-                <!-- Plantilla para nuevas filas -->
-                <template id="rowTemplate">
-                    <tr>
-                        <td>
-                            <input type="hidden" name="Conceptos[__index__].IdServicio" value="0" />
-                            <input name="Conceptos[__index__].NombreServicio" class="form-control" placeholder="Ej: Accesorios" />
-                        </td>
-                        <td>
-                            <input name="Conceptos[__index__].TotalSubTotal" class="form-control total-subtotal" type="text" value="0.00" />
-                        </td>
-                        <td>
-                            <input name="Conceptos[__index__].TotalVNeto" class="form-control total-vneto" type="text" value="0.00" />
-                        </td>
-                        <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">Quitar</button>
-                        </td>
-                    </tr>
-                </template>
             </div>
-        </div>
-            <button type="submit" class="btn btn-primary">Guardar Cierre</button>
-        
-    </form>
 
-    @if (ViewBag.ErrorMessage != null)
-    {
-        <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
-    }
+            <button type="submit" class="btn btn-primary">Guardar Cierre</button>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
             const tbody = document.querySelector('#tablaConceptos tbody');
@@ -132,51 +208,74 @@
             const tpl = document.getElementById('rowTemplate');
             const sumaSubTotal = document.getElementById('sumaSubTotal');
             const sumaVNeto = document.getElementById('sumaVNeto');
+            const fechaConsulta = document.getElementById('fechaConsulta');
+            const fechaHidden = document.getElementById('fechaHidden');
 
-            let idx = tbody.querySelectorAll('tr').length;
+            let idx = tbody ? tbody.querySelectorAll('tr').length : 0;
+
+            function toNumber(value) {
+                if (value === null || value === undefined || value === '') return 0;
+                const normalized = value.toString().replace(',', '.');
+                const parsed = parseFloat(normalized);
+                return isNaN(parsed) ? 0 : parsed;
+            }
 
             function recalc() {
-                let tSub = 0, tNet = 0;
-                tbody.querySelectorAll('.total-subtotal').forEach(i => {
-                    const v = parseFloat(i.value);
-                    if (!isNaN(v)) tSub += v;
+                let tSub = 0;
+                let tNet = 0;
+
+                document.querySelectorAll('.total-subtotal').forEach(i => {
+                    tSub += toNumber(i.value);
                 });
-                tbody.querySelectorAll('.total-vneto').forEach(i => {
-                    const v = parseFloat(i.value);
-                    if (!isNaN(v)) tNet += v;
+
+                document.querySelectorAll('.total-vneto').forEach(i => {
+                    tNet += toNumber(i.value);
                 });
-                sumaSubTotal.textContent = tSub.toFixed(2);
-                sumaVNeto.textContent = tNet.toFixed(2);
+
+                if (sumaSubTotal) sumaSubTotal.textContent = tSub.toFixed(2);
+                if (sumaVNeto) sumaVNeto.textContent = tNet.toFixed(2);
             }
 
             function wire(tr) {
                 tr.querySelectorAll('.total-subtotal, .total-vneto').forEach(inp => {
                     inp.addEventListener('input', recalc);
                 });
+
                 tr.querySelector('.btnRemoveRow')?.addEventListener('click', () => {
                     tr.remove();
                     recalc();
                 });
             }
 
-            btnAdd.addEventListener('click', () => {
-                const html = tpl.innerHTML.replaceAll('__index__', idx);
-                const wrap = document.createElement('tbody');
-                wrap.innerHTML = html.trim();
-                const tr = wrap.firstElementChild;
-                tbody.appendChild(tr);
-                wire(tr);
-                idx++;
-                recalc();
+            if (fechaConsulta && fechaHidden) {
+                fechaConsulta.addEventListener('change', function () {
+                    fechaHidden.value = this.value;
+                });
+            }
 
-                if (window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive) {
-                    const form = jQuery(tr.closest('form'));
-                    jQuery.validator.unobtrusive.parse(form);
-                }
-            });
+            if (btnAdd && tpl && tbody) {
+                btnAdd.addEventListener('click', () => {
+                    const html = tpl.innerHTML.replaceAll('__index__', idx);
+                    const wrap = document.createElement('tbody');
+                    wrap.innerHTML = html.trim();
+                    const tr = wrap.firstElementChild;
 
-            // inicial
-            tbody.querySelectorAll('tr').forEach(wire);
+                    tbody.appendChild(tr);
+                    wire(tr);
+                    idx++;
+                    recalc();
+
+                    if (window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive) {
+                        const form = jQuery(tr.closest('form'));
+                        jQuery.validator.unobtrusive.parse(form);
+                    }
+                });
+            }
+
+            if (tbody) {
+                tbody.querySelectorAll('tr').forEach(wire);
+            }
+
             recalc();
         })();
     </script>

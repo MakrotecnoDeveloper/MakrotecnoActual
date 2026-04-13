@@ -1,0 +1,32 @@
+﻿@model Plataforma.Models.GenerarLiquidacionVm
+@{
+    ViewData["Title"] = "Generar liquidación";
+}
+<div class="content-wrapper">
+    <h2>Generar liquidación</h2>
+
+    <form asp-action="GenerarLiquidacion" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row">
+            <div class="col-md-5 mb-3">
+                <label asp-for="Cedula" class="form-label">Empleado</label>
+                <select asp-for="Cedula" asp-items="Model.Empleados" class="form-select"></select>
+                <span asp-validation-for="Cedula" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-5 mb-3">
+                <label asp-for="IdPeriodo" class="form-label">Período</label>
+                <select asp-for="IdPeriodo" asp-items="Model.Periodos" class="form-select"></select>
+                <span asp-validation-for="IdPeriodo" class="text-danger"></span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Generar</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}

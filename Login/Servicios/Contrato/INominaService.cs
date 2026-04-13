@@ -1,14 +1,34 @@
 ﻿using Plataforma.Models;
 
-namespace Plataforma.Servicios.Contrato
+namespace Plataforma.Services
 {
     public interface INominaService
     {
-        Task CrearContratoAsync(int Cedula, string TipoContrato, int SalarioBase, DateTime FechaInicio, DateTime FechaFin, bool Estado);
-        List<ConceptoServicioVM> GetConceptos(string? json);
-        List<string> ObtenerServicios();
-        Task CrearConceptoNominaAsync(string Nombre, string Tipo, string ServicioAsociado, decimal Porcentaje, decimal ValorFijo);
-        Task AsociarConceptoAsync(int Cedula, int IdConcepto);
-        Task<LiquidacionNomina> LiquidarPeriodoAsync(int cedulaEmpleado, DateTime fechaInicio, DateTime fechaFin);
+        Task<List<Empleados>> ObtenerEmpleadosAsync();
+        Task<List<Servicio>> ObtenerServiciosAsync();
+
+        Task<List<Contrato>> ObtenerContratosAsync();
+        Task CrearContratoAsync(ContratoFormVm vm);
+
+        Task<List<PeriodoNomina>> ObtenerPeriodosAsync();
+        Task CrearPeriodoAsync(PeriodoNominaFormVm vm);
+
+        Task<List<ConceptoNomina>> ObtenerConceptosAsync();
+        Task CrearConceptoAsync(ConceptoNominaFormVm vm);
+
+        Task<List<DetalleConceptoEmpleado>> ObtenerAsignacionesAsync(int? cedula = null);
+        Task AsignarConceptoAsync(AsignarConceptoEmpleadoVm vm);
+
+        Task<GeneracionNovedadesResultado> GenerarNovedadesDesdeCierreCajaAsync(int idPeriodo, string usuario);
+
+        Task<List<LiquidacionNomina>> ObtenerLiquidacionesAsync(int? idPeriodo = null, int? cedula = null);
+        Task<List<LiquidacionNomina>> ObtenerUltimasLiquidacionesAsync(int take = 15);
+        Task<LiquidacionNomina> GenerarLiquidacionAsync(int cedula, int idPeriodo, string usuario);
+        Task<LiquidacionNomina?> ObtenerLiquidacionDetalleAsync(int idLiquidacion);
+        Task<List<Area>> ObtenerAreasAsync();
+        Task CrearAreaAsync(AreaFormVm vm);
+
+        Task<List<TipoCargo>> ObtenerCargosAsync();
+        Task AsignarAreaCargoAsync(AsignarAreaCargoVm vm);
     }
 }

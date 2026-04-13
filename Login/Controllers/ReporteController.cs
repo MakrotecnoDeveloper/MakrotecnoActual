@@ -1,65 +1,42 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Plataforma.Models;
+using Plataforma.Services;
 using Plataforma.Servicios.Contrato;
-using Plataforma.Servicios.Implementacion;
+using Plataforma.ViewModels.Reportes;
 
 namespace Plataforma.Controllers
 {
+    [Authorize]
     public class ReporteController : Controller
     {
         private readonly IReporteService _reporteService;
-        private readonly BaseAdmContext _dbContext;
-        public ReporteController(IReporteService reporteService, BaseAdmContext dbContext)
+
+        public ReporteController(IReporteService reporteService)
         {
             _reporteService = reporteService;
-            _dbContext = dbContext;
         }
-        [Authorize]
-        public IActionResult Index(DateTime? fechaInicio, DateTime? fechaFin, int? idServicio)
-        {
-            // Si no viene rango, usamos hoy
-            var inicio = fechaInicio ?? DateTime.Today;
-            var fin = fechaFin ?? DateTime.Today;
 
-            var servicios = _reporteService.TraerServiciosUnicos(inicio, fin);
-
-            ViewBag.Servicios = servicios;
-            ViewBag.FechaInicio = inicio;
-            ViewBag.FechaFin = fin;
-
-            if (idServicio.HasValue)
-            {
-                var (totalSub, totalNeto) = _reporteService.TraerTotalesPorRangoYServicio(inicio, fin, idServicio.Value);
-                ViewBag.TotalSub = totalSub;
-                ViewBag.TotalNeto = totalNeto;
-                ViewBag.ServicioSeleccionado = idServicio.Value;
-            }
-
-            return View();
-        }
         [HttpGet]
-        public IActionResult GetServicios(DateTime fechaInicio, DateTime fechaFin)
+        public async Task<IActionResult> Index(DateTime? fechaInicio, DateTime? fechaFin)
         {
-            var servicios = _reporteService.TraerServiciosUnicos(fechaInicio, fechaFin);
+            var desde = fechaInicio?.Date ?? DateTime.Today;
+            var hasta = fechaFin?.Date ?? DateTime.Today;
 
-            return Json(servicios.Select(s => new
-            {
-                id = s.IdServicio,
-                nombre = s.NombreServicio
-            }));
+            var model = await _reporteService.ObtenerVistaGeneralAsync(desde, hasta);
+            return View(model);
         }
-        [Authorize]
-        public async Task<IActionResult> Diario()
+
+        [HttpGet]
+        public async Task<IActionResult> ExportarExcel(DateTime fechaInicio, DateTime fechaFin)
         {
-            var reporte = await _reporteService.GenerarReporteDelDiaAsync(DateTime.Today);
-            return View(reporte);
-        }
-        public IActionResult ReporteUtilidad(DateTime fechaInicio, DateTime fechaFin)
-        {
-            var datos = _reporteService.TraerUtilidadPorServicios(fechaInicio, fechaFin);
-            return View(datos);
+            var bytes = await _reporteService.ExportarVistaGeneralExcelAsync(fechaInicio, fechaFin);
+
+            var nombre = $"ReporteGeneral_{fechaInicio:yyyyMMdd}_{fechaFin:yyyyMMdd}.xlsx";
+
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                nombre);
         }
     }
 }

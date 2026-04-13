@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Plataforma.Models.Area>
+@{
+    ViewData["Title"] = "Áreas";
+}
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Áreas</h2>
+        <a asp-action="CrearArea" class="btn btn-primary">Nueva área</a>
+    </div>
+
+    @if (TempData["ok"] != null)
+    {
+        <div class="alert alert-success">@TempData["ok"]</div>
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IdArea</td>
+                    <td>@item.NombreArea</td>
+                    <td>@item.DescripcionArea</td>
+                    <td>@(item.Estado ? "Activa" : "Inactiva")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

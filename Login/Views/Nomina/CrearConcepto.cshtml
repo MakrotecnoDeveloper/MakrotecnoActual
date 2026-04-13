@@ -1,0 +1,94 @@
+﻿@model Plataforma.Models.ConceptoNominaFormVm
+@{
+    ViewData["Title"] = "Crear concepto";
+}
+<div class="content-wrapper">
+    <h2>Crear concepto</h2>
+
+    <form asp-action="CrearConcepto" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label asp-for="Codigo" class="form-label"></label>
+                <input asp-for="Codigo" class="form-control" />
+            </div>
+
+            <div class="col-md-5 mb-3">
+                <label asp-for="Nombre" class="form-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+            </div>
+
+            <div class="col-md-2 mb-3">
+                <label asp-for="Naturaleza" class="form-label"></label>
+                <select asp-for="Naturaleza" class="form-select">
+                    <option>Ingreso</option>
+                    <option>Deduccion</option>
+                    <option>AporteEmpresa</option>
+                    <option>Provision</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 mb-3">
+                <label asp-for="ModoCalculo" class="form-label"></label>
+                <select asp-for="ModoCalculo" class="form-select">
+                    <option>Fijo</option>
+                    <option>Porcentaje</option>
+                    <option>Manual</option>
+                    <option>Formula</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label asp-for="BaseCalculo" class="form-label"></label>
+                <input asp-for="BaseCalculo" class="form-control" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="IdServicio" class="form-label">Servicio asociado</label>
+                <select asp-for="IdServicio" asp-items="Model.Servicios" class="form-select"></select>
+            </div>
+
+            <div class="col-md-2 mb-3">
+                <label asp-for="Porcentaje" class="form-label"></label>
+                <input asp-for="Porcentaje" class="form-control" />
+            </div>
+
+            <div class="col-md-2 mb-3">
+                <label asp-for="ValorFijo" class="form-label"></label>
+                <input asp-for="ValorFijo" class="form-control" />
+            </div>
+
+            <div class="col-md-1 mb-3">
+                <label asp-for="OrdenVisualizacion" class="form-label"></label>
+                <input asp-for="OrdenVisualizacion" class="form-control" />
+            </div>
+
+            <div class="col-md-12 mb-3 d-flex gap-4">
+                <div class="form-check">
+                    <input asp-for="EsActivo" class="form-check-input" />
+                    <label asp-for="EsActivo" class="form-check-label"></label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="AplicaPrestaciones" class="form-check-input" />
+                    <label asp-for="AplicaPrestaciones" class="form-check-label"></label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="AplicaSeguridadSocial" class="form-check-input" />
+                    <label asp-for="AplicaSeguridadSocial" class="form-check-label"></label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="AplicaParafiscales" class="form-check-input" />
+                    <label asp-for="AplicaParafiscales" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="Conceptos" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}

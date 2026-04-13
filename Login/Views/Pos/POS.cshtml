@@ -1,0 +1,134 @@
+﻿@model Plataforma.Models.ViewModels.Pos.PosPantallaViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Venta POS";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var categoriasJson = JsonSerializer.Serialize(Model.Categorias ?? new List<string>());
+}
+
+<link rel="stylesheet" href="~/css/pos.css" />
+
+<div class="content-wrapper">
+    <div class="container-fluid px-2 py-2">
+        <div class="pos-container">
+            <div class="pos-header">
+                <select id="idCliente" class="form-control">
+                    <option value="">Seleccione cliente</option>
+                    @foreach (var cliente in Model.Clientes)
+                    {
+                        <option value="@cliente.Value">@cliente.Text</option>
+                    }
+                </select>
+
+                <input type="text" id="busqueda" placeholder="Escanear o buscar producto..." class="form-control" />
+                <input type="number" id="cantidad" value="1" min="1" class="form-control cantidad-input" />
+                <button type="button" onclick="agregarProductoDesdeBusqueda()" class="btn btn-primary">Agregar</button>
+                <button type="button" onclick="nuevaVenta()" class="btn btn-danger">Nueva Venta</button>
+            </div>
+
+            <div class="pos-body">
+                <div class="pos-left">
+                    <div class="mb-2">
+                        <strong>Sede:</strong> @Model.NombreSede
+                    </div>
+
+                    <div id="categorias" class="categorias"></div>
+
+                    <div id="productosUI" class="productos-grid"></div>
+                    <div id="paginacionProductos" class="paginacion-pos mt-3"></div>
+                </div>
+
+                <div class="pos-right">
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Observación / Concepto</label>
+                        <textarea id="conceptos" class="form-control" rows="2" placeholder="Observación de la venta"></textarea>
+                    </div>
+
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cant</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="carrito"></tbody>
+                    </table>
+
+                    <div class="resumen-pos">
+                        <div><strong>Subtotal:</strong> $<span id="subtotal">0</span></div>
+                        <div><strong>IVA:</strong> $<span id="ivaTotal">0</span></div>
+                    </div>
+
+                    <h2 class="total">$<span id="total">0</span></h2>
+
+                    <div class="pagos">
+                        <input id="nequi" type="number" min="0" step="0.01" placeholder="Nequi" class="form-control" />
+                        <input id="tarjeta" type="number" min="0" step="0.01" placeholder="Tarjeta" class="form-control" />
+                        <input id="efectivo" type="number" min="0" step="0.01" placeholder="Efectivo" class="form-control" />
+                        <input id="credito" type="number" min="0" step="0.01" placeholder="Crédito" class="form-control" />
+                        <input id="faltante" placeholder="Faltante / Devuelta" class="form-control" readonly />
+                    </div>
+
+                    <div id="bloqueFechaCredito" style="display:none;" class="mt-2">
+                        <label class="form-label">Vencimiento crédito</label>
+                        <input type="date" id="fechaVencimientoCredito" class="form-control" />
+                    </div>
+
+                    <div class="teclado">
+                        <button type="button" onclick="escribirNumero('1')">1</button>
+                        <button type="button" onclick="escribirNumero('2')">2</button>
+                        <button type="button" onclick="escribirNumero('3')">3</button>
+
+                        <button type="button" onclick="escribirNumero('4')">4</button>
+                        <button type="button" onclick="escribirNumero('5')">5</button>
+                        <button type="button" onclick="escribirNumero('6')">6</button>
+
+                        <button type="button" onclick="escribirNumero('7')">7</button>
+                        <button type="button" onclick="escribirNumero('8')">8</button>
+                        <button type="button" onclick="escribirNumero('9')">9</button>
+
+                        <button type="button" onclick="borrarNumero()">←</button>
+                        <button type="button" onclick="escribirNumero('0')">0</button>
+                        <button type="button" onclick="limpiarNumero()">C</button>
+                    </div>
+
+                    <button type="button" onclick="facturar()" class="btn btn-success w-100 mt-2">
+                        FACTURAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalIVA" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3 text-center">
+            <h5>¿Aplicar IVA?</h5>
+            <input type="number" id="inputIVA" class="form-control my-2" placeholder="Ej: 19">
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success w-100" onclick="confirmarIVA()">Aceptar</button>
+                <button type="button" class="btn btn-secondary w-100" onclick="cancelarIVA()">Sin IVA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<div id="ticket" class="d-none"></div>-->
+
+@section Scripts {
+    <script>
+        const POS_URLS = {
+            buscarProductos: '@Url.Action("BuscarProductos", "Pos")',
+            buscarCodigo: '@Url.Action("BuscarProductoPorCodigo", "Pos")',
+            facturar: '@Url.Action("Facturar", "Pos")'
+        };
+
+        const POS_CATEGORIAS = @Html.Raw(categoriasJson);
+    </script>
+    <script src="~/js/pos.js"></script>
+}

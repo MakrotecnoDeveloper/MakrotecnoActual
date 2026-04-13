@@ -1,0 +1,41 @@
+﻿@model Plataforma.Models.ViewModels.Cxc.RegistrarPagoCxcViewModel
+@{
+    ViewData["Title"] = "Registrar Pago";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2 class="mb-4">Registrar Pago</h2>
+
+        <form asp-action="RegistrarPago" method="post">
+            <input type="hidden" asp-for="IdCxc" />
+
+            <div class="mb-3">
+                <label asp-for="IdMetodo" class="form-label">Método de pago</label>
+                <select asp-for="IdMetodo" class="form-control" asp-items="ViewBag.MetodosPago">
+                    <option value="">Seleccione</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MontoPago" class="form-label">Monto</label>
+                <input asp-for="MontoPago" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FechaPago" class="form-label">Fecha</label>
+                <input asp-for="FechaPago" type="datetime-local" class="form-control"
+                       value="@Model.FechaPago.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Observacion" class="form-label">Observación</label>
+                <textarea asp-for="Observacion" class="form-control"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar pago</button>
+            <a asp-action="Detalle" asp-route-id="@Model.IdCxc" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

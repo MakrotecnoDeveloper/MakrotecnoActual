@@ -57,71 +57,139 @@ namespace Plataforma.Controllers
                 Servicios = await _productoservice.ObtenerServicios(),
                 Categorias = new List<CategoriaProductos>(),
                 Proveedores = await _productoservice.ObtenerProveedores(),
-                Empresas = await _productoservice.TraerEmpresas()
+                Empresas = await _productoservice.TraerEmpresas(),
+                Unidades = await _productoservice.TraerUnidadesMedida()
             };
 
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Insertar(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal stock, int categorias, int id_proveedor, IFormFile imagen, string? autenticidadProducto, string? condicionProducto)
+        public async Task<IActionResult> Insertar(
+    string id_empresa,
+    string codigo,
+    string descripcion,
+    decimal? valor_neto,
+    decimal? valor_unitario,
+    decimal? valor_unidad,
+    int unidadMedida,
+    decimal stock,
+    int categorias,
+    int id_proveedor,
+    IFormFile imagen,
+    string? autenticidadProducto,
+    string? condicionProducto)
         {
-
-                // 1️⃣ Buscar la categoría por id
+            try
+            {
                 var categoria = await _dbContext.CategoriaProductos.FindAsync(categorias);
                 if (categoria == null)
                     return Json(new { success = false, message = "Categoría no encontrada." });
 
-                // 2️⃣ Buscar el servicio usando el idServicio que está en la categoría
                 var servicio = await _dbContext.Servicio.FindAsync(categoria.IdServicio);
                 if (servicio == null)
                     return Json(new { success = false, message = "Servicio no encontrado." });
 
-                string? rutaImagen = null;
+                string rutaImagen;
+
                 if (imagen != null && imagen.Length > 0)
                 {
                     var extension = Path.GetExtension(imagen.FileName).ToLower();
-                    if (extension != ".jpg" && extension != ".png")
-                        return Json(new { success = false, message = "Solo se permiten imágenes .jpg o .png" });
+                    var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
 
-                    string servicioFolder = servicio.NombreServicio.Replace(" ", "_");
-                    string categoriaFolder = categoria.Descripcion.Replace(" ", "_");
+                    if (!extensionesPermitidas.Contains(extension))
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = "Solo se permiten imágenes JPG, JPEG, PNG o WEBP"
+                        });
+                    }
 
-                    // Crear carpeta dinámica
-                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(),
-                                                   "wwwroot", "img", "Productos",
-                                                   servicioFolder, categoriaFolder);
+                    var tiposPermitidos = new[] { "image/jpeg", "image/png", "image/webp", "image/jpg" };
+
+                    if (!tiposPermitidos.Contains(imagen.ContentType))
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"El archivo no es una imagen válida. ContentType recibido: {imagen.ContentType}"
+                        });
+                    }
+
+                    if (imagen.Length > 2 * 1024 * 1024)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = "La imagen no puede superar los 2MB"
+                        });
+                    }
+
+                    string servicioFolder = LimpiarNombreCarpeta(servicio.NombreServicio);
+                    string categoriaFolder = LimpiarNombreCarpeta(categoria.Descripcion);
+
+                    var uploadsPath = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot", "img", "Productos",
+                        servicioFolder,
+                        categoriaFolder
+                    );
 
                     if (!Directory.Exists(uploadsPath))
                         Directory.CreateDirectory(uploadsPath);
 
-                    var fileName = $"{codigo}{extension}";
+                    string fileName = $"{codigo}_{DateTime.Now.Ticks}{extension}";
                     var filePath = Path.Combine(uploadsPath, fileName);
 
-                    // 3.1️⃣ Si existe una imagen anterior, eliminarla
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-
-                    // 3.2️⃣ Guardar la nueva imagen
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await imagen.CopyToAsync(stream);
                     }
 
                     rutaImagen = $"/img/Productos/{servicioFolder}/{categoriaFolder}/{fileName}";
-                }else
+                }
+                else
                 {
-                    rutaImagen = $"/img/Productos/nodisponible.png";
+                    rutaImagen = "/img/Productos/nodisponible.png";
                 }
 
-                    // ✅ Llamar al servicio y guardar el producto
-                    var resultado = await _productoservice.AgregarProductoAsync(
-                        id_empresa, codigo, descripcion, valor_neto, valor_unitario,
-                        stock, categorias, id_proveedor, rutaImagen, autenticidadProducto, condicionProducto
-                    );
+                var resultado = await _productoservice.AgregarProductoAsync(
+                    id_empresa,
+                    codigo,
+                    descripcion,
+                    valor_neto,
+                    valor_unitario,
+                    valor_unidad,
+                    unidadMedida,
+                    stock,
+                    categorias,
+                    id_proveedor,
+                    rutaImagen,
+                    autenticidadProducto,
+                    condicionProducto
+                );
 
                 return Json(new { success = resultado });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Error al agregar producto: {ex.Message}",
+                    detail = ex.InnerException?.Message
+                });
+            }
+        }
+
+        private string LimpiarNombreCarpeta(string nombre)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                nombre = nombre.Replace(c, '_');
+            }
+
+            return nombre.Trim().Replace(" ", "_");
         }
         [HttpGet]
         public async Task<IActionResult> Editar(string searchTerm)
@@ -166,7 +234,7 @@ namespace Plataforma.Controllers
             return View(editarProducto); // @model List<Producto>
         }
         [HttpPost]
-        public async Task<IActionResult> EditarProducto(string codigo, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, IFormFile imagen)
+        public async Task<IActionResult> EditarProducto(string codigo, string nombreProducto, decimal? valorNeto, decimal? valorVenta, int valorUnidad, int cantidad, int categorias, int id_proveedor, IFormFile imagen, string imagenActual)
         {
             // 1️⃣ Buscar la categoría por id
             var categoria = await _dbContext.CategoriaProductos.FindAsync(categorias);
@@ -215,10 +283,10 @@ namespace Plataforma.Controllers
             }
             else
             {
-                rutaImagen = $"/img/Productos/nodisponible.png";
+                rutaImagen = imagenActual;
             }
             // Llama al método EditarProducto del servicio de productos
-            _productoservice.EditarProducto(codigo, valorNeto, valorVenta, valorUnidad, cantidad, categorias, id_proveedor, rutaImagen);
+            _productoservice.EditarProducto(codigo, nombreProducto, valorNeto, valorVenta, valorUnidad, cantidad, categorias, id_proveedor, rutaImagen);
 
             // Redirige a la acción que deseas después de editar el producto
             return RedirectToAction("Index"); // Por ejemplo, redirigir a la página de inicio del controlador de productos

@@ -16,7 +16,7 @@ public class Producto
         [Column("valorVentaProducto")]
         public decimal? ValorVentaProducto { get; set; }
         [Column("valorUnidad")]
-        public int ValorUnidad {  get; set; }
+        public decimal? ValorUnidad {  get; set; }
         [Column("id_empresa")]
         public string? ID_Empresa { get; set; }
         [Column("estado")]
@@ -31,6 +31,13 @@ public class Producto
         public string? AutenticidadProducto { get; set; }
         public string? CondicionProducto { get; set; }
         public int EstadoWeb { get; set; }
+
+        [Column("IdUnidad")]
+        public int IdUnidad { get; set; }
+
+        // 🔗 navegación
+        [ForeignKey("IdUnidad")]
+        public UnidadMedida Unidad { get; set; }
     public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
 }
 

@@ -1,16 +1,1 @@
-﻿@model Plataforma.Models.LiquidacionNomina
-@{
-    ViewData["Title"] = "Liquidacion";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-<div class="content-wrapper">
-    <h1>Liquidacion</h1>
-    <div class="container">
-        <h2>Resultado de Liquidación</h2>
-        <p><strong>Empleado:</strong> @Model.Cedula</p>
-        <p><strong>Periodo:</strong> @Model.PeriodoInicio.ToShortDateString() - @Model.PeriodoFin.ToShortDateString()</p>
-        <p><strong>Total Ingresos:</strong> @Model.TotalIngresos</p>
-        <p><strong>Total Deducciones:</strong> @Model.TotalDeducciones</p>
-        <p><strong>Neto a Pagar:</strong> @Model.NetoPagar</p>
-    </div>
-</div>
+﻿

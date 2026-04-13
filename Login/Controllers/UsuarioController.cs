@@ -25,6 +25,11 @@ namespace Plataforma.Controllers
             var empleado = await _usuarioService.ObtenerUsuarios();
             return View(empleado);
         }
+        [HttpGet]
+        public IActionResult _AgregarEmpleado()
+        {
+            return PartialView();
+        }
         [Authorize]
         [HttpPost]
         //POST para agregar empleado
@@ -100,25 +105,54 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
-        //Vista-Formulario para agregar una empresa
         public IActionResult FormEmpresas()
         {
+            var actividades = _usuarioService.ObtenerActividadesEconomicas();
+            ViewBag.Actividades = actividades;
+
             return View();
         }
+
         [Authorize]
         [HttpPost]
-        //POST para insertar una empresa nueva
-        public IActionResult InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
+        public IActionResult InsertarEmpresa(
+            string nit,
+            string nombreEmpresa,
+            string pais,
+            string calle,
+            string carrera,
+            string ciudad,
+            string departamento,
+            string indicativo,
+            string numero,
+            int actividadEconomicaId
+        )
         {
             var verificarExisEmpresa = _usuarioService.ValidarExistenciaEmpresa(nit);
-            if(verificarExisEmpresa != null)
+
+            if (verificarExisEmpresa != null)
             {
-                var mensaje = "Error: Ya existe esta empresa.";
-                TempData["ErrorMessage"] = mensaje;
+                TempData["ErrorMessage"] = "Error: Ya existe esta empresa.";
                 return RedirectToAction("Error", "Errores");
-            }else
+            }
+            else
             {
-                _usuarioService.InsertarEmpresa(nit, nombreEmpresa, pais, calle, carrera, ciudad, departamento, indicativo, numero);
+                string estado = "Activo";
+
+                _usuarioService.InsertarEmpresa(
+                    nit,
+                    nombreEmpresa,
+                    pais,
+                    calle,
+                    carrera,
+                    ciudad,
+                    departamento,
+                    indicativo,
+                    numero,
+                    estado,
+                    actividadEconomicaId
+                );
+
                 return RedirectToAction("Empresas");
             }
         }

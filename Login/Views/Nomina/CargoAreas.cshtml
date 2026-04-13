@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Plataforma.Models.TipoCargo>
+@{
+    ViewData["Title"] = "Cargos y áreas";
+}
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Cargos y áreas</h2>
+        <a asp-action="AsignarAreaCargo" class="btn btn-primary">Asignar área a cargo</a>
+    </div>
+
+    @if (TempData["ok"] != null)
+    {
+        <div class="alert alert-success">@TempData["ok"]</div>
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID Cargo</th>
+                <th>Cargo</th>
+                <th>Descripción</th>
+                <th>Área</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id_tipo</td>
+                    <td>@item.NombreCargo</td>
+                    <td>@item.DescripcionCargo</td>
+                    <td>@item.Area?.NombreArea</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.IdentityModel.Tokens;
 using Plataforma.Domain.Exceptions;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
-using Plataforma.Servicios.Implementacion;
+using System.Security.Claims;
 
 namespace Plataforma.Controllers
 {
@@ -21,6 +20,17 @@ namespace Plataforma.Controllers
             _productoservice = productoservice;
             _logger = logger;
             _tercerosService = tercerService;
+        }
+        private ContextoAccesoDto ObtenerContextoAcceso()
+        {
+            return new ContextoAccesoDto
+            {
+                Cedula = int.Parse(User.FindFirstValue("Cedula") ?? "0"),
+                EmpresaId = User.FindFirstValue("EmpresaId") ?? "",
+                SedeId = int.Parse(User.FindFirstValue("SedeId") ?? "0"),
+                PdvId = int.Parse(User.FindFirstValue("PdvId") ?? "0"),
+                NombreRol = User.FindFirstValue("NombreRol") ?? ""
+            };
         }
         public IActionResult Index()
         {
@@ -59,7 +69,8 @@ namespace Plataforma.Controllers
         [Authorize]
         public async Task<IActionResult> ListaVentas()
         {
-            var ventas = await _pedidoServicio.ObtenerTodasLasVentasAsync(); // este método trae las ventas
+            var ctx = ObtenerContextoAcceso();
+            var ventas = await _pedidoServicio.ObtenerVentasFiltradasAsync(ctx);
             return View(ventas);
         }
         [HttpGet]
@@ -230,7 +241,8 @@ namespace Plataforma.Controllers
         [Authorize]
         public async Task<IActionResult> ListaFacturas()
         {
-            var facturas = await _pedidoServicio.ObtenerFacturasConVentaCliente();
+            var ctx = ObtenerContextoAcceso();
+            var facturas = await _pedidoServicio.ObtenerFacturasFiltradasAsync(ctx);
             return View(facturas);
         }
         public async Task<IActionResult> DetalleFactura(int idFactura)

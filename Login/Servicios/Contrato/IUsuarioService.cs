@@ -18,11 +18,24 @@ namespace Plataforma.Servicios.Contrato
         //Task<Empleado> SaveUsuario(Empleado modelo);
 		List<Infopdv> FunValidarPDV(int cedula);
         List<TipoCargo> ObtenerCargos();
-        Empresas? ValidarExistenciaEmpresa(string nit);
+        object ValidarExistenciaEmpresa(string nit);
         List<Empresas> ObtenerEmpresas();
         TipoCargo? ValidarCargo(string nombreCargo);
         IEnumerable<TipoCargo> InsertarCargos(string nombreCargo, string descripcionCargo, string id_empresa);
-        IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero);
+        List<ActividadesEconomicas> ObtenerActividadesEconomicas();
+        void InsertarEmpresa(
+        string nit,
+        string nombreEmpresa,
+        string pais,
+        string calle,
+        string carrera,
+        string ciudad,
+        string departamento,
+        string indicativo,
+        string numero,
+        string estado,
+        int actividadEconomicaId
+    );
         List<Sede> ObtenerSedes();
         Sede? ValidarExistenciaSede(string nombreSede);
         IEnumerable<Sede> InsertarSede(string id_empresa, string nombreSede, string ciudad, string direccion, string telefono);
@@ -65,6 +78,8 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Producto>> ConsultarCatProductos(int id);
         Task<bool> RegistrarAgendamientoAsync(string codProducto, DateTime fecha, string NombreCliente, string CelularCliente);
         Task<bool> ExisteFechaAsync(string codProducto, DateTime fecha);
+        Sede ObtenerSedePorId(int idSede);
+        bool UsuarioTieneAccesoAPdv(int cedula, int pdvId);
 
     }
 }

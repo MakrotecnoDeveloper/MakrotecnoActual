@@ -5,4 +5,5 @@ public class ProductoInsertarViewModel
     public List<CategoriaProductos> Categorias { get; set; }
     public List<Proveedores> Proveedores { get; set; }
     public List<Empresas> Empresas { get; set; }
+    public List<UnidadMedida> Unidades { get; set; }
 }

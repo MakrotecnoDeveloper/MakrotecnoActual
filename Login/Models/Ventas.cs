@@ -77,4 +77,14 @@ public class DetalleVentaViewModel
     public string EstadoCxc { get; set; }
 }
 
+public class GeneracionNovedadesResultado
+{
+    public int VentasProcesadas { get; set; }
+    public int NovedadesCreadas { get; set; }
+    public int NovedadesActualizadas { get; set; }
+    public int RegistrosSinAsignacion { get; set; }
+    public decimal BaseVentasProcesada { get; set; }
+    public decimal TotalComisionesGeneradas { get; set; }
+}
+
 

@@ -9,5 +9,6 @@ public class CategoriaProductos
     public int IdCateProducto { get; set; }
     public string? Descripcion {  get; set; }
     public int IdServicio { get; set; }
-
+    [ForeignKey("IdServicio")]
+    public virtual Servicio Servicio { get; set; }
 }

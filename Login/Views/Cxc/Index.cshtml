@@ -1,0 +1,84 @@
+﻿@model Plataforma.Models.ViewModels.Cxc.CxcIndexViewModel
+@{
+    ViewData["Title"] = "Cuentas por Cobrar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <h2 class="mb-4">Cuentas por Cobrar</h2>
+
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-5">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="texto" value="@Model.Texto" class="form-control"
+                       placeholder="Cliente, cédula o venta" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="Abierta" selected="@(Model.Estado == "Abierta")">Abierta</option>
+                    <option value="Parcial" selected="@(Model.Estado == "Parcial")">Parcial</option>
+                    <option value="Pagada" selected="@(Model.Estado == "Pagada")">Pagada</option>
+                    <option value="Anulada" selected="@(Model.Estado == "Anulada")">Anulada</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>CxC</th>
+                        <th>Venta</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Saldo</th>
+                        <th>Estado</th>
+                        <th>Creación</th>
+                        <th>Vencimiento</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Any())
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.IdCxc</td>
+                                <td>@item.IdVenta</td>
+                                <td>
+                                    <strong>@item.Cliente</strong><br />
+                                    <small>@item.CedulaCliente</small>
+                                </td>
+                                <td>@item.Total.ToString("N2")</td>
+                                <td>@item.SaldoPendiente.ToString("N2")</td>
+                                <td>@item.EstadoCxc</td>
+                                <td>@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(item.FechaVencimiento?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                <td>
+                                    <a asp-action="Detalle" asp-route-id="@item.IdCxc" class="btn btn-sm btn-info">
+                                        Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center">No hay cuentas por cobrar registradas.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

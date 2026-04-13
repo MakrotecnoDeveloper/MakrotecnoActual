@@ -202,25 +202,49 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.SaveChanges();
             return _dbContext.TipoCargo.ToList();
         }
-        public Empresas? ValidarExistenciaEmpresa(string nit)
+        public object ValidarExistenciaEmpresa(string nit)
         {
-            return _dbContext.Empresas.FirstOrDefault(p => p.Id_empresa == nit);
+            return _dbContext.Empresas.FirstOrDefault(e => e.Id_empresa == nit);
         }
-        public IEnumerable<Empresas> InsertarEmpresa(string nit, string nombreEmpresa, string pais, string calle, string carrera, string ciudad, string departamento, string indicativo, string numero)
+        public List<ActividadesEconomicas> ObtenerActividadesEconomicas()
         {
-            var direccion = calle + " # " + carrera + ", " + ciudad + " - " + departamento;
-            var celular = indicativo + " " + numero;
-            var nuevaEmpresa = new Empresas
+            return _dbContext.ActividadesEconomicas
+                .Select(a => new ActividadesEconomicas
+                {
+                    IdActividad = a.IdActividad,
+                    NombreActividad = a.NombreActividad
+                })
+                .ToList();
+        }
+        public void InsertarEmpresa(
+        string nit,
+        string nombreEmpresa,
+        string pais,
+        string calle,
+        string carrera,
+        string ciudad,
+        string departamento,
+        string indicativo,
+        string numero,
+        string estado,
+        int actividadEconomicaId
+    )
+        {
+            var direccion = $"{calle} {carrera} {ciudad} {departamento}";
+            var telefono = $"{indicativo} {numero}";
+            var empresa = new Empresas
             {
                 Id_empresa = nit,
                 Nombre = nombreEmpresa,
                 Pais = pais,
                 Direccion = direccion,
-                Telefono = celular
+                Telefono = telefono,
+                Estado = estado,
+                ActividadEconomicaId = actividadEconomicaId
             };
-            _dbContext.Empresas.Add(nuevaEmpresa);
+
+            _dbContext.Empresas.Add(empresa);
             _dbContext.SaveChanges();
-            return _dbContext.Empresas.ToList();
         }
         public List<Sede> ObtenerSedes()
         {
@@ -917,6 +941,18 @@ namespace Plataforma.Servicios.Implementacion
             _dbContext.Agendamientos.Add(nuevoAgendamiento);
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+        public Sede ObtenerSedePorId(int idSede)
+        {
+            return _dbContext.Sede.FirstOrDefault(x => x.Id_sede == idSede);
+        }
+
+        public bool UsuarioTieneAccesoAPdv(int cedula, int pdvId)
+        {
+            return _dbContext.Syncpdv.Any(x =>
+                x.Cedula == cedula &&
+                x.InfopdvId == pdvId &&
+                x.Estado == 1);
         }
     }
 }

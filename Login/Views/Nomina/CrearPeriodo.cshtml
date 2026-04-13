@@ -1,0 +1,59 @@
+﻿@model Plataforma.Models.PeriodoNominaFormVm
+@{
+    ViewData["Title"] = "Crear período";
+}
+<div class="content-wrapper">
+    <h2>Crear período</h2>
+
+    <form asp-action="CrearPeriodo" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <input asp-for="Descripcion" class="form-control" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="TipoPeriodo" class="form-label"></label>
+                <select asp-for="TipoPeriodo" class="form-select">
+                    <option>Mensual</option>
+                    <option>Quincenal</option>
+                    <option>Semanal</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="Estado" class="form-label"></label>
+                <select asp-for="Estado" class="form-select">
+                    <option>Abierto</option>
+                    <option>Calculado</option>
+                    <option>Cerrado</option>
+                    <option>Pagado</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="FechaInicio" class="form-label"></label>
+                <input asp-for="FechaInicio" class="form-control" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="FechaFin" class="form-label"></label>
+                <input asp-for="FechaFin" class="form-control" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="FechaPago" class="form-label"></label>
+                <input asp-for="FechaPago" class="form-control" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="Periodos" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}

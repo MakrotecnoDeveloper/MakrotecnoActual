@@ -1,0 +1,66 @@
+﻿@model Plataforma.Models.LiquidacionNomina
+@{
+    ViewData["Title"] = "Detalle de liquidación";
+}
+<div class="content-wrapper">
+@if (TempData["ok"] != null)
+{
+        <div class="alert alert-success">@TempData["ok"]</div>
+}
+
+    <h2>Detalle de liquidación</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3"><strong>ID:</strong> @Model.IdLiquidacion</div>
+                <div class="col-md-3"><strong>Cédula:</strong> @Model.Cedula</div>
+                <div class="col-md-3"><strong>Estado:</strong> @Model.Estado</div>
+                <div class="col-md-3"><strong>Fecha:</strong> @Model.FechaLiquidacion.ToString("yyyy-MM-dd")</div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-4"><strong>Período:</strong> @Model.PeriodoNomina?.Descripcion</div>
+                <div class="col-md-4"><strong>Devengado:</strong> @Model.TotalDevengado.ToString("N2")</div>
+                <div class="col-md-4"><strong>Deducciones:</strong> @Model.TotalDeducciones.ToString("N2")</div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-4"><strong>Neto:</strong> @Model.NetoPagar.ToString("N2")</div>
+                <div class="col-md-4"><strong>Usuario:</strong> @Model.UsuarioLiquida</div>
+                <div class="col-md-4"><strong>Pago:</strong> @Model.FechaPago?.ToString("yyyy-MM-dd")</div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th>Naturaleza</th>
+                <th>Cantidad</th>
+                <th>Base</th>
+                <th>%</th>
+                <th>Valor unitario</th>
+                <th>Monto</th>
+                <th>Origen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.DetalleLiquidacion.OrderBy(x => x.Naturaleza).ThenBy(x => x.NombreConcepto))
+            {
+                <tr>
+                    <td>@item.NombreConcepto</td>
+                    <td>@item.Naturaleza</td>
+                    <td>@item.Cantidad.ToString("N2")</td>
+                    <td>@item.BaseAplicada?.ToString("N2")</td>
+                    <td>@item.PorcentajeAplicado?.ToString("N2")</td>
+                    <td>@item.ValorUnitario?.ToString("N2")</td>
+                    <td>@item.Monto.ToString("N2")</td>
+                    <td>@item.OrigenDetalle</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>

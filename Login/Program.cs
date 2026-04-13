@@ -72,6 +72,8 @@ builder.Services.AddScoped<IInicioService, InicioService>();
 builder.Services.AddScoped<INominaService, NominaService>();
 builder.Services.AddScoped<IMetodoPagoService, MetodoPagoService>();
 builder.Services.AddScoped<IQrService, QrService>();
+builder.Services.AddScoped<IPosService, PosService>();
+builder.Services.AddScoped<ICxcService, CxcService>();
 
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

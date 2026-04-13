@@ -57,10 +57,28 @@
                                     <input type="number" name="valor_neto" class="form-control" id="valorNeto" placeholder="0.00">
                                 </div>
 
-                                <!-- Valor Unitario -->
+                                <!-- Valor Venta -->
                                 <div class="col-md-6">
                                     <label for="valorVenta" class="form-label fw-semibold">Valor Unitario</label>
                                     <input type="number" name="valor_unitario" id="valorVenta" class="form-control" placeholder="0.00">
+                                </div>
+
+                                <!-- Valor Unidad -->
+                                <div class="col-md-6">
+                                    <label for="valorUnidad" class="form-label fw-semibold">Valor Unidad</label>
+                                    <input type="number" name="valor_unidad" id="valorUnidad" class="form-control" placeholder="0.00">
+                                </div>
+
+                                <!-- Unidad de Medida-->
+                                <div class="col-md-6">
+                                    <label for="unidadMedida" class="form-label fw-semibold">Unidad de Medida</label>
+                                    <select name="unidadMedida" id="unidadMedida" class="form-select">
+                                        <option disabled selected>Seleccione una unidad</option>
+                                        @foreach (var unidad in Model.Unidades)
+                                        {
+                                            <option value="@unidad.IdUnidad">@unidad.Nombre</option>
+                                        }
+                                    </select>
                                 </div>
 
                                 <!-- Stock -->
@@ -211,6 +229,28 @@
                     }
                 });
             });
+        });
+
+        let tiempoInicio = 0;
+        $("#codigo").on("keydown", function (e) {
+            if (tiempoInicio === 0) {
+                tiempoInicio = Date.now();
+            }
+
+            if (e.key === "Enter") {
+                let tiempoFin = Date.now();
+
+                e.preventDefault(); // 🚫 SIEMPRE evitar submit
+                tiempoInicio = 0;
+            }
+        });
+
+        $("#codigo").on("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+
+                $("#descripcion").focus(); // 👈 siguiente campo
+            }
         });
     </script>
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers
@@ -15,6 +16,17 @@ namespace Plataforma.Controllers
             _flujocajaService = flujocajaService;
             _dbContext = dbContext;
         }
+        private ContextoAccesoDto ObtenerContextoAcceso()
+        {
+            return new ContextoAccesoDto
+            {
+                Cedula = int.Parse(User.FindFirst("Cedula")?.Value ?? "0"),
+                EmpresaId = User.FindFirst("EmpresaId")?.Value ?? "",
+                SedeId = int.Parse(User.FindFirst("SedeId")?.Value ?? "0"),
+                PdvId = int.Parse(User.FindFirst("PdvId")?.Value ?? "0"),
+                NombreRol = User.FindFirst("NombreRol")?.Value ?? ""
+            };
+        }
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -24,20 +36,19 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> RegistrarCierre()
+        public async Task<IActionResult> RegistrarCierre(DateTime? fecha = null)
         {
-            var model = new CierreCajaViewModel();
+            var ctx = ObtenerContextoAcceso();
+            var fechaTrabajo = (fecha ?? DateTime.Today).Date;
 
-            // 1) Traer conceptos del día y precargar la tabla
-            model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync();
+            var model = new CierreCajaViewModel
+            {
+                Fecha = fechaTrabajo,
+                Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, fechaTrabajo),
+                TotalFacturado = await _flujocajaService.ObtenerTotalFacturadoAsync(ctx, fechaTrabajo)
+            };
 
-            // 2) (Opcional) Calcular TotalFacturado con la suma de VNeto de todos los pedidos del día
-            var inicio = DateTime.Today;
-            var fin = inicio.AddDays(1);
-            model.TotalFacturado = await _dbContext.Pedidos
-                .Where(p => p.FechaRegistro >= inicio && p.FechaRegistro < fin)
-                .SumAsync(p => (decimal?)p.VNeto) ?? 0m;
-
+            ViewBag.FechaTrabajo = fechaTrabajo.ToString("dd/MM/yyyy");
             return View(model);
         }
         [Authorize]
@@ -45,39 +56,44 @@ namespace Plataforma.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarCierre(CierreCajaViewModel model)
         {
-            // 1) Validar autenticación/cedula
-            var cedulaStr = User.FindFirst("Cedula")?.Value;
-            if (!int.TryParse(cedulaStr, out int cedula))
+            var ctx = ObtenerContextoAcceso();
+
+            if (ctx.Cedula <= 0 || ctx.PdvId <= 0 || ctx.SedeId <= 0 || string.IsNullOrWhiteSpace(ctx.EmpresaId))
             {
-                ViewBag.ErrorMessage = "Cédula inválida o no autenticada.";
-                // Devuelve la misma vista del formulario, no "Index"
+                ViewBag.ErrorMessage = "No fue posible identificar el contexto de empresa, sede o PDV.";
                 return View("RegistrarCierre", model);
             }
 
-            // 2) Validar modelo antes de ir al servicio
             if (!ModelState.IsValid)
             {
+                model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, model.Fecha.Date);
+                model.TotalFacturado = await _flujocajaService.ObtenerTotalFacturadoAsync(ctx, model.Fecha.Date);
+                ViewBag.FechaTrabajo = model.Fecha.ToString("dd/MM/yyyy");
                 ViewBag.ErrorMessage = "Por favor corrige los errores del formulario.";
                 return View("RegistrarCierre", model);
             }
 
             try
             {
-                var (exito, error) = await _flujocajaService.RegistrarCierreAsync(model, cedula);
+                var (exito, error) = await _flujocajaService.RegistrarCierreAsync(model, ctx);
 
                 if (!exito)
                 {
+                    model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, model.Fecha.Date);
+                    model.TotalFacturado = await _flujocajaService.ObtenerTotalFacturadoAsync(ctx, model.Fecha.Date);
+                    ViewBag.FechaTrabajo = model.Fecha.ToString("dd/MM/yyyy");
                     ViewBag.ErrorMessage = error ?? "No fue posible registrar el cierre.";
                     return View("RegistrarCierre", model);
                 }
 
                 TempData["Ok"] = "Cierre registrado correctamente.";
-                // Redirección PRG para evitar doble envío
-                return RedirectToAction(nameof(RegistrarCierre));
+                return RedirectToAction(nameof(RegistrarCierre), new { fecha = model.Fecha.ToString("yyyy-MM-dd") });
             }
-            catch (Exception ex)
+            catch
             {
-                // Loggea ex si tienes logger
+                model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, model.Fecha.Date);
+                model.TotalFacturado = await _flujocajaService.ObtenerTotalFacturadoAsync(ctx, model.Fecha.Date);
+                ViewBag.FechaTrabajo = model.Fecha.ToString("dd/MM/yyyy");
                 ViewBag.ErrorMessage = "Ocurrió un error al registrar el cierre.";
                 return View("RegistrarCierre", model);
             }

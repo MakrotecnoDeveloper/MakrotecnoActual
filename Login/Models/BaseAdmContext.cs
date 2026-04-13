@@ -1,6 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.Contracts;
+﻿using Microsoft.EntityFrameworkCore;
+using Plataforma.Data.Configurations;
 
 namespace Plataforma.Models;
 
@@ -46,11 +45,6 @@ public partial class BaseAdmContext : DbContext
     public DbSet<MetodoPagos> MetodoPagos { get; set; }
     public DbSet<GastosMensuales> GastosMensuales { get; set; }
     public DbSet<InventarioSede> InventarioSedes => Set<InventarioSede>();
-    public DbSet<Contratos> Contratos { get; set; }
-    public DbSet<ConceptoNomina> ConceptosNomina { get; set; }
-    public DbSet<DetalleConceptosEmpleado> DetallesConceptosEmpleado { get; set; }
-    public DbSet<LiquidacionNomina> LiquidacionesNomina { get; set; }
-    public DbSet<DetalleLiquidacion> DetallesLiquidacion { get; set; }
     public DbSet<CxcVentas> CxcVentas { get; set; }
     public DbSet<CxcPagos> CxcPagos { get; set; }
     public DbSet<Agendamientos> Agendamientos { get; set; }
@@ -61,6 +55,15 @@ public partial class BaseAdmContext : DbContext
     public DbSet<PlanesModulos> PlanesModulos { get; set; }
     public DbSet<ModulosActividadEconomica> ModulosActividadEconomica { get; set; }
     public DbSet<CargoModuloPermiso> CargoModuloPermiso { get; set; }
+    public DbSet<Contrato> Contratos => Set<Contrato>();
+    public DbSet<ConceptoNomina> ConceptosNomina => Set<ConceptoNomina>();
+    public DbSet<DetalleConceptoEmpleado> DetalleConceptosEmpleado => Set<DetalleConceptoEmpleado>();
+    public DbSet<PeriodoNomina> PeriodosNomina => Set<PeriodoNomina>();
+    public DbSet<NovedadNomina> NovedadesNomina => Set<NovedadNomina>();
+    public DbSet<LiquidacionNomina> LiquidacionesNomina => Set<LiquidacionNomina>();
+    public DbSet<DetalleLiquidacion> DetalleLiquidacion => Set<DetalleLiquidacion>();
+    public DbSet<UnidadMedida> UnidadesMedida { get; set; }
+    public DbSet<Area> Areas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,6 +108,7 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<LicenciasEmpresa>().HasKey(le => le.IdLicencia);
         modelBuilder.Entity<Modulos>().HasKey(mdl => mdl.IdModulo);
         modelBuilder.Entity<CargoModuloPermiso>().HasKey(id => id.Id);
+        modelBuilder.Entity<Area>().HasKey(id => id.IdArea);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -148,7 +152,69 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<CargoModuloPermiso>().HasOne<Empresas>().WithMany().HasForeignKey(f => f.EmpresaId);
         modelBuilder.Entity<CargoModuloPermiso>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.CargoId);
         modelBuilder.Entity<CargoModuloPermiso>().HasOne<Modulos>().WithMany().HasForeignKey(f => f.ModuloId);
+        modelBuilder.Entity<TipoCargo>().HasOne(tc => tc.Area).WithMany(a => a.TiposCargo).HasForeignKey(tc => tc.IdArea).OnDelete(DeleteBehavior.Restrict);
 
+        /*Configuracion para Nomina*/
+        modelBuilder.ApplyConfiguration(new ContratoConfiguration());
+        modelBuilder.ApplyConfiguration(new ConceptoNominaConfiguration());
+        modelBuilder.ApplyConfiguration(new DetalleConceptoEmpleadoConfiguration());
+        modelBuilder.ApplyConfiguration(new PeriodoNominaConfiguration());
+        modelBuilder.ApplyConfiguration(new NovedadNominaConfiguration());
+        modelBuilder.ApplyConfiguration(new LiquidacionNominaConfiguration());
+        modelBuilder.ApplyConfiguration(new DetalleLiquidacionConfiguration());
+
+        /*Factura*/
+        modelBuilder.Entity<Factura>(entity =>
+        {
+            entity.ToTable("Factura");
+
+            entity.HasKey(e => e.IdFactura);
+
+            entity.Property(e => e.NumeroFactura)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.SubTotal)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IVA)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.Total)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.EstadoFactura)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasDefaultValue("Generada");
+
+            entity.Property(e => e.EsElectronica)
+                .HasDefaultValue(false);
+
+            entity.Property(e => e.EstadoDian)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasDefaultValue("NoAplica");
+
+            entity.Property(e => e.Cufe)
+                .HasMaxLength(150);
+
+            entity.Property(e => e.TrackId)
+                .HasMaxLength(150);
+
+            entity.HasOne(e => e.Venta)
+                .WithOne()
+                .HasForeignKey<Factura>(e => e.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.IdVenta)
+                .IsUnique();
+
+            entity.HasIndex(e => e.NumeroFactura)
+                .IsUnique();
+
+            entity.HasIndex(e => e.EstadoDian);
+        });
 
         modelBuilder.Entity<GestionRealizada>()
             .Property(g => g.CostoTotal)
@@ -187,21 +253,6 @@ public partial class BaseAdmContext : DbContext
             eb.ToTable(tb => tb.HasTrigger("TR_GastosMensuales_SetUpdated"));
         });
 
-        // Ejemplo: relaciones
-        modelBuilder.Entity<Contratos>()
-            .HasOne(c => c.Empleado)
-            .WithMany(e => e.Contratos)
-            .HasForeignKey(c => c.Cedula);
-
-        modelBuilder.Entity<DetalleLiquidacion>()
-            .HasOne(dl => dl.Liquidacion)
-            .WithMany(l => l.Detalles)
-            .HasForeignKey(dl => dl.IdLiquidacion);
-
-        modelBuilder.Entity<LiquidacionNomina>()
-            .HasOne(c => c.Empleado)
-            .WithMany(e => e.Liquidaciones)
-            .HasForeignKey(c => c.Cedula);
 
         //Licenciamiento y Modulos
         // Tabla puente PlanModulo
@@ -254,6 +305,91 @@ public partial class BaseAdmContext : DbContext
            .HasMany(m => m.MenuOpciones)
            .WithOne(o => o.Modulo)
            .HasForeignKey(o => o.IdModulo);
+
+        modelBuilder.Entity<Producto>()
+        .HasOne(p => p.Unidad)
+        .WithMany(u => u.Productos)
+        .HasForeignKey(p => p.IdUnidad)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CierreCaja>(entity =>
+        {
+            entity.ToTable("CierreCaja"); // cambia si en SQL se llama distinto
+
+            entity.HasKey(e => e.IdFlujoCaja);
+
+            entity.Property(e => e.Monto)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.Efectivo)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.Transferencia)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.GastosEfectivo)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.GastosTransferencia)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.Diferencia)
+                .HasColumnType("decimal(10,2)");
+
+            entity.Property(e => e.IdEmpresa)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.NombreRol)
+                .HasMaxLength(150);
+
+            entity.Property(e => e.NombreEmpresa)
+                .HasMaxLength(200);
+
+            entity.Property(e => e.NombreSede)
+                .HasMaxLength(200);
+
+            entity.Property(e => e.NombrePdv)
+                .HasMaxLength(200);
+
+            entity.HasIndex(e => new { e.Fecha, e.Cedula, e.InfopdvId })
+                .HasDatabaseName("IX_CierreCajas_Fecha_Cedula_InfopdvId");
+
+            entity.HasIndex(e => e.IdEmpresa)
+                .HasDatabaseName("IX_CierreCajas_IdEmpresa");
+
+            entity.HasIndex(e => e.IdSede)
+                .HasDatabaseName("IX_CierreCajas_IdSede");
+
+            entity.HasIndex(e => e.InfopdvId)
+                .HasDatabaseName("IX_CierreCajas_InfopdvId");
+
+            entity.HasOne(e => e.Empleado)
+                .WithMany()
+                .HasForeignKey(e => e.Cedula)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Empresa)
+                .WithMany()
+                .HasForeignKey(e => e.IdEmpresa)
+                .HasPrincipalKey(e => e.Id_empresa)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Sede)
+                .WithMany()
+                .HasForeignKey(e => e.IdSede)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Pdv)
+                .WithMany()
+                .HasForeignKey(e => e.InfopdvId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CategoriaProductos>()
+        .HasOne(c => c.Servicio)
+        .WithMany(s => s.CategoriaProductos)
+        .HasForeignKey(c => c.IdServicio);
 
         foreach (var property in modelBuilder.Model
         .GetEntityTypes()

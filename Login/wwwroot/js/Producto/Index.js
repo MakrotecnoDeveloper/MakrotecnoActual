@@ -1,11 +1,17 @@
 ﻿// --- Traer productos reales desde Razor ---
 const productos = window.modelo.productos || [];
 const categorias = window.modelo.categoriaProductos || [];
-const servicio = window.modelo.servicio || null;
 
-// Ejemplo de verificación:
-//console.log("Productos cargados:", productos.length);
-//console.log("Categorías disponibles:", categorias.length);
+const categoriasMap = {};
+categorias.forEach(cat => {
+    categoriasMap[cat.idCateProducto] = cat;
+});
+
+
+categorias.forEach(cat => {
+    console.log("Categoría:", cat.descripcion);
+    console.log("Servicio:", cat.servicio.nombreServicio);
+});
 
   // --- Variables de paginación ---
   let currentPage = 1;
@@ -24,13 +30,18 @@ const servicio = window.modelo.servicio || null;
     });
   }
 
-  async function mostrarProductos(lista) {
+async function mostrarProductos(lista) {
+    console.log(lista);
     const grid = document.getElementById("grid");
     grid.innerHTML = "";
 
       const esRol6 = window.userData?.esRol6; // viene del backend
-      console.log(esRol6);
-      lista.forEach(p => {
+    lista.forEach(p => {
+
+        const categoria = categoriasMap[p.idCatepro];
+        const nombreCategoria = categoria?.descripcion || "Sin categoría";
+        const nombreServicio = categoria?.servicio?.nombreServicio || "Sin servicio";
+
           const estado = p.cantidadProducto === 0 ? "none" : p.cantidadProducto < 3 ? "low" : "ok";
 
           const card = document.createElement("div");
@@ -40,8 +51,8 @@ const servicio = window.modelo.servicio || null;
             <img src="${p.imagenPath}" alt="${p.nombreProducto}">
             <h3>${p.nombreProducto}</h3>
             <p>Código: ${p.cod_Producto}</p>
-            <p>Categoría: ${p.idCatepro}</p>
-            <p>Servicio: ${p.servicio}</p>
+            <p>Categoría: ${nombreCategoria}</p>
+            <p>Servicio: ${nombreServicio}</p>
             <p class="stock ${estado}">
               ${p.cantidadProducto === 0 ? "Sin stock" : p.cantidadProducto < 3 ? "Casi sin stock (" + p.cantidadProducto + ")" : "Stock: " + p.cantidadProducto}
             </p>

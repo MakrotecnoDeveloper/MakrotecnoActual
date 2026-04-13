@@ -1,0 +1,96 @@
+﻿@model Plataforma.Models.ContratoFormVm
+@{
+    ViewData["Title"] = "Crear contrato";
+}
+<div class="content-wrapper">
+    <h2>Crear contrato</h2>
+
+    <form asp-action="CrearContrato" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Cedula" class="form-label">Empleado</label>
+                <select asp-for="Cedula" asp-items="Model.Empleados" class="form-select"></select>
+                <span asp-validation-for="Cedula" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="TipoContrato" class="form-label"></label>
+                <select asp-for="TipoContrato" class="form-select">
+                    <option>Indefinido</option>
+                    <option>Fijo</option>
+                    <option>PrestacionServicios</option>
+                    <option>Temporal</option>
+                    <option>Socio</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="TipoSalario" class="form-label"></label>
+                <select asp-for="TipoSalario" class="form-select">
+                    <option>Fijo</option>
+                    <option>Variable</option>
+                    <option>Integral</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="IdTipoCargo" class="form-label">Cargo</label>
+                <select asp-for="IdTipoCargo" asp-items="Model.Cargos" class="form-select"></select>
+                <span asp-validation-for="IdTipoCargo" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="AreaNombre" class="form-label">Área</label>
+                <input asp-for="AreaNombre" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="SalarioBase" class="form-label"></label>
+                <input asp-for="SalarioBase" class="form-control" />
+                <span asp-validation-for="SalarioBase" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label asp-for="FechaInicio" class="form-label"></label>
+                <input asp-for="FechaInicio" class="form-control" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label asp-for="FechaFin" class="form-label"></label>
+                <input asp-for="FechaFin" class="form-control" />
+            </div>
+
+            <div class="col-md-2 mb-3">
+                <label asp-for="Estado" class="form-label"></label>
+                <select asp-for="Estado" class="form-select">
+                    <option>Activo</option>
+                    <option>Suspendido</option>
+                    <option>Finalizado</option>
+                    <option>Liquidado</option>
+                </select>
+            </div>
+
+            <div class="col-md-12 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="AuxilioTransporteAplica" class="form-check-input" />
+                    <label asp-for="AuxilioTransporteAplica" class="form-check-label"></label>
+                </div>
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label asp-for="Observaciones" class="form-label"></label>
+                <textarea asp-for="Observaciones" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="Contratos" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

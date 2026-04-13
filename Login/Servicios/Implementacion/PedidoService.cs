@@ -1,12 +1,9 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Vml;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Domain.Enums;
 using Plataforma.Domain.Exceptions;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
-using System.Linq;
 using System.Security.Claims;
 
 namespace Plataforma.Servicios.Implementacion
@@ -14,9 +11,11 @@ namespace Plataforma.Servicios.Implementacion
     public class PedidoService : IPedidoService
     {
         private readonly BaseAdmContext _dbContext;
-        public PedidoService(BaseAdmContext dbContext)
+        private readonly ICxcService _cxcService;
+        public PedidoService(BaseAdmContext dbContext, ICxcService cxcService)
         {
             _dbContext = dbContext;
+            _cxcService = cxcService;
         }
         public async Task<List<MetodoPagos>> TraerMetodosPagoDisponibles(int metodoPago)
         {
@@ -151,8 +150,8 @@ namespace Plataforma.Servicios.Implementacion
 
                     inv.Cantidad -= pedido.Stock;
 
-                    var valorUnitarioVenta = pedido.VVenta;
-                    var valorUnitarioNeto = pedido.VNeto ?? 0m;
+                    var valorUnitarioVenta = pedido.VVenta*pedido.Stock;
+                    var valorUnitarioNeto = pedido.VNeto*pedido.Stock ?? 0m;
                     var ivaPorcentaje = pedido.IvaPorcentaje ?? 0m;
 
                     var totalVentaLinea = pedido.Stock * valorUnitarioVenta;
@@ -164,8 +163,8 @@ namespace Plataforma.Servicios.Implementacion
                     pedido.InfopdvId = infoPdvId;
                     pedido.FechaRegistro = DateTime.Now;
 
-                    pedido.VVenta = totalVentaLinea;
-                    pedido.VNeto = totalNetoLinea;
+                    pedido.VVenta = valorUnitarioVenta;
+                    pedido.VNeto = valorUnitarioNeto;
                     pedido.IvaValor = ivaLinea;
                     pedido.SubTotal = subTotalConIva;
 
@@ -474,7 +473,7 @@ namespace Plataforma.Servicios.Implementacion
                 // 2️⃣ Crear factura
                 var factura = new Factura
                 {
-                    NumeroFactura = await GenerarNumeroFacturaAsync(),
+                    NumeroFactura = await GenerarNumeroFacturaAsync("FAC"),
                     IdVenta = venta.IdVenta,
                     FechaEmision = DateTime.Now,
                     SubTotal = subTotal,
@@ -501,18 +500,15 @@ namespace Plataforma.Servicios.Implementacion
                 throw;
             }
         }
-        private async Task<string> GenerarNumeroFacturaAsync()
+        private async Task<string> GenerarNumeroFacturaAsync(string prefijo)
         {
-            var ultimo = await _dbContext.Factura
-                .OrderByDescending(f => f.IdFactura)
-                .Select(f => f.NumeroFactura)
-                .FirstOrDefaultAsync();
+            var fecha = DateTime.Now.ToString("yyyyMMdd");
 
-            int nuevo = string.IsNullOrEmpty(ultimo)
-                ? 1
-                : int.Parse(ultimo) + 1;
+            var consecutivoHoy = await _dbContext.Factura
+                .CountAsync(f => f.NumeroFactura != null &&
+                                 f.NumeroFactura.StartsWith($"{prefijo}-{fecha}-"));
 
-            return nuevo.ToString("D6"); // 000001
+            return $"{prefijo}-{fecha}-{(consecutivoHoy + 1):D4}";
         }
         public async Task CambiarEstadoVentaAsync(int idVenta, string nuevoEstado)
         {
@@ -624,14 +620,13 @@ namespace Plataforma.Servicios.Implementacion
             return result;
         }
         public async Task<bool> FacturarConPagosAsync(
-    int idVenta,
-    int idCliente,
-    string metodoPagoFinal,
-    decimal montoEfectivo,
-    decimal montoTransferencia,
-    decimal montoCredito,
-    DateTime? fechaVencimientoCredito
-)
+        int idVenta,
+        int idCliente,
+        string metodoPagoFinal,
+        decimal montoEfectivo,
+        decimal montoTransferencia,
+        decimal montoCredito,
+        DateTime? fechaVencimientoCredito)
         {
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -643,6 +638,9 @@ namespace Plataforma.Servicios.Implementacion
 
                 if (venta == null) return false;
 
+                if (venta.IdCliente != idCliente)
+                    throw new Exception("El cliente enviado no coincide con la venta.");
+
                 if (venta.EstadoVenta == "Anulada")
                     throw new Exception("La venta está anulada.");
 
@@ -652,27 +650,27 @@ namespace Plataforma.Servicios.Implementacion
                 if (venta.EstadoVenta != "Confirmada")
                     throw new Exception("La venta debe estar en estado Confirmada para registrar pagos y facturar.");
 
-                // ✅ Validación crédito
                 if (montoCredito > 0 && !fechaVencimientoCredito.HasValue)
                     throw new Exception("Si hay crédito, debes ingresar la fecha de vencimiento.");
 
-                // ✅ Calcular factura
-                decimal subTotal = venta.Pedidos.Sum(p => p.SubTotal);
-                decimal iva = subTotal * 0.19m;
-                decimal totalFactura = subTotal + iva;
+                decimal baseFactura = venta.Pedidos.Sum(p => p.VVenta * p.Stock);
+                decimal iva = venta.Pedidos.Sum(p => p.IvaValor ?? 0m);
+                decimal totalFactura = venta.Pedidos.Sum(p => p.SubTotal);
 
-                // ✅ Validar suma de pagos
-                decimal totalPagos = montoEfectivo + montoTransferencia + montoCredito+iva;
-                if (totalPagos != totalFactura)
+                // OJO: deja + iva solo si en la vista los montos ingresados NO incluyen IVA.
+                decimal totalPagos = montoEfectivo + montoTransferencia + montoCredito;
+
+                if (Math.Abs(totalPagos - totalFactura) > 0.01m)
                     throw new Exception("La suma de los pagos no coincide con el total de la factura.");
 
-                // ✅ Crear factura con tus estados
+                var numeroFactura = await GenerarNumeroFacturaAsync("FAC");
+
                 var factura = new Factura
                 {
-                    NumeroFactura = await GenerarNumeroFacturaAsync(),
+                    NumeroFactura = numeroFactura,
                     IdVenta = venta.IdVenta,
                     FechaEmision = DateTime.Now,
-                    SubTotal = subTotal,
+                    SubTotal = baseFactura,
                     IVA = iva,
                     Total = totalFactura,
                     EstadoFactura = "Emitida"
@@ -680,30 +678,28 @@ namespace Plataforma.Servicios.Implementacion
 
                 _dbContext.Factura.Add(factura);
 
-                // ✅ Si hay crédito → CxC pendiente
-                if (montoCredito > 0)
-                {
-                    var cxc = new CxcVentas
-                    {
-                        IdVenta = venta.IdVenta,
-                        IdCliente = idCliente,
-                        Total = montoCredito,
-                        SaldoPendiente = montoCredito,
-                        EstadoCxc = "Pendiente",
-                        FechaCreacion = DateTime.Now,
-                        FechaVencimiento = fechaVencimientoCredito,
-                        Observacion = $"Crédito generado al facturar. Método: {metodoPagoFinal}"
-                    };
-                    _dbContext.CxcVentas.Add(cxc);
-                }
-
-                // ✅ Actualizar venta
                 venta.EstadoVenta = "Facturada";
                 venta.MetodoPago = metodoPagoFinal;
-                venta.NumeroFactura = factura.NumeroFactura;
-                venta.FechaEmisionFactura = DateTime.Now;
+                venta.NumeroFactura = numeroFactura;
+                venta.FechaEmisionFactura = factura.FechaEmision;
+                venta.Total = totalFactura;
 
                 await _dbContext.SaveChangesAsync();
+
+                if (montoCredito > 0)
+                {
+                    var resultadoCxc = await _cxcService.CrearDesdeVentaAsync(
+                        venta.IdVenta,
+                        venta.IdCliente,
+                        montoCredito,
+                        fechaVencimientoCredito,
+                        $"Crédito generado al facturar. Método: {metodoPagoFinal}"
+                    );
+
+                    if (!resultadoCxc.Ok)
+                        throw new Exception(resultadoCxc.Mensaje);
+                }
+
                 await transaction.CommitAsync();
                 return true;
             }
@@ -712,6 +708,61 @@ namespace Plataforma.Servicios.Implementacion
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+        public async Task<List<Ventas>> ObtenerVentasFiltradasAsync(ContextoAccesoDto ctx)
+        {
+            var query =
+                from v in _dbContext.Ventas
+                join p in _dbContext.Pedidos on v.IdVenta equals p.IdVenta
+                join pdv in _dbContext.Infopdv on p.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                select new { Venta = v, Pedido = p, Pdv = pdv, Sede = s };
+
+            if (!ctx.EsAdministradorLider)
+            {
+                query = query.Where(x =>
+                    x.Venta.Cedula == ctx.Cedula &&
+                    x.Pedido.InfopdvId == ctx.PdvId &&
+                    x.Pdv.Id_Sede == ctx.SedeId &&
+                    x.Sede.Id_empresa == ctx.EmpresaId);
+            }
+
+            return await query
+                .Select(x => x.Venta)
+                .Distinct()
+                .OrderByDescending(v => v.FechaVenta)
+                .ToListAsync();
+        }
+        public async Task<List<Factura>> ObtenerFacturasFiltradasAsync(ContextoAccesoDto ctx)
+        {
+            var query =
+                from f in _dbContext.Factura
+                join v in _dbContext.Ventas on f.IdVenta equals v.IdVenta
+                join p in _dbContext.Pedidos on v.IdVenta equals p.IdVenta
+                join pdv in _dbContext.Infopdv on p.InfopdvId equals pdv.InfopdvId
+                join s in _dbContext.Sede on pdv.Id_Sede equals s.Id_sede
+                select new { Factura = f, Venta = v, Pedido = p, Pdv = pdv, Sede = s };
+
+            if (!ctx.EsAdministradorLider)
+            {
+                query = query.Where(x =>
+                    x.Venta.Cedula == ctx.Cedula &&
+                    x.Pedido.InfopdvId == ctx.PdvId &&
+                    x.Pdv.Id_Sede == ctx.SedeId &&
+                    x.Sede.Id_empresa == ctx.EmpresaId);
+            }
+
+            var idsFacturas = await query
+                .Select(x => x.Factura.IdFactura)
+                .Distinct()
+                .ToListAsync();
+
+            return await _dbContext.Factura
+                .Where(f => idsFacturas.Contains(f.IdFactura))
+                .Include(f => f.Venta)
+                .ThenInclude(v => v.Pedidos)
+                .OrderByDescending(f => f.FechaEmision)
+                .ToListAsync();
         }
 
     }
