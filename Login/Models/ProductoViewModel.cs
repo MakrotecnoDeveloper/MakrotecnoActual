@@ -18,7 +18,7 @@ public class ProductoStockVm
     public decimal Cantidad { get; set; }              // total o por sede según filtro
     public int? SedeId { get; set; }                   // si viene filtrado por sede
     public string? SedeNombre { get; set; }            // opcional para mostrar
-    public decimal? ValorNeto { get; set; }
+    public decimal? ValorUnidad { get; set; }
     public decimal? ValorVenta { get; set; }
 }
 
@@ -67,9 +67,9 @@ public class ResultadoAsignacion
 
 public class ProductoUpdateDto
 {
-    public string ProductoId { get; set; }
-    public string Nombre { get; set; } // opcional si quieres actualizar nombre
-    public decimal? ValorNeto { get; set; }
+    public string ProductoId { get; set; } = string.Empty;
+    public string? Nombre { get; set; }
+    public decimal? VUnidad { get; set; }
     public decimal? ValorVenta { get; set; }
-    public int Cantidad { get; set; }
+    public decimal Cantidad { get; set; }
 }

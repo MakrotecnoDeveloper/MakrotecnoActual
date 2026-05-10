@@ -1,5 +1,4 @@
-﻿@using System.Globalization
-@model CierreCajaViewModel
+﻿@model CierreCajaViewModel
 @{
     ViewData["Title"] = "RegistrarCierre";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -50,7 +49,7 @@
         </div>
 
         <!-- Formulario POST para guardar cierre -->
-        <form asp-action="RegistrarCierre" method="post">
+        <form asp-action="RegistrarCierre" method="post" id="formRegistrarCierre">
             @Html.AntiForgeryToken()
             <input asp-for="Fecha" type="hidden" id="fechaHidden" />
 
@@ -61,26 +60,50 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="Efectivo" class="form-label">Efectivo ingresado</label>
-                            <input asp-for="Efectivo" class="form-control" type="number" step="0.01" min="0" value="@Model.Efectivo.ToString(CultureInfo.InvariantCulture)" />
+                            <label class="form-label">Efectivo ingresado</label>
+                            <input id="EfectivoVisible"
+                                   name="EfectivoVisible"
+                                   class="form-control decimal-input"
+                                   type="text"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   value="@Model.Efectivo.ToString("0.00")" />
                             <span asp-validation-for="Efectivo" class="text-danger"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="Transferencia" class="form-label">Transferencias bancarias</label>
-                            <input asp-for="Transferencia" class="form-control" type="number" step="0.01" min="0" value="@Model.Transferencia.ToString(CultureInfo.InvariantCulture)" />
+                            <label class="form-label">Transferencias bancarias</label>
+                            <input id="TransferenciaVisible"
+                                   name="TransferenciaVisible"
+                                   class="form-control decimal-input"
+                                   type="text"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   value="@Model.Transferencia.ToString("0.00")" />
                             <span asp-validation-for="Transferencia" class="text-danger"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="GastoEfectivo" class="form-label">Gasto en efectivo</label>
-                            <input asp-for="GastoEfectivo" class="form-control" type="number" step="0.01" min="0" value="@Model.GastoEfectivo.ToString(CultureInfo.InvariantCulture)" />
+                            <label class="form-label">Gasto en efectivo</label>
+                            <input id="GastoEfectivoVisible"
+                                   name="GastoEfectivoVisible"
+                                   class="form-control decimal-input"
+                                   type="text"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   value="@Model.GastoEfectivo.ToString("0.00")" />
                             <span asp-validation-for="GastoEfectivo" class="text-danger"></span>
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="GastoTransferencia" class="form-label">Gasto por transferencia</label>
-                            <input asp-for="GastoTransferencia" class="form-control" type="number" step="0.01" min="0" value="@Model.GastoTransferencia.ToString(CultureInfo.InvariantCulture)" />
+                            <label class="form-label">Gasto por transferencia</label>
+                            <input id="GastoTransferenciaVisible"
+                                   name="GastoTransferenciaVisible"
+                                   class="form-control decimal-input"
+                                   type="text"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   value="@Model.GastoTransferencia.ToString("0.00")" />
                             <span asp-validation-for="GastoTransferencia" class="text-danger"></span>
                         </div>
                     </div>
@@ -125,19 +148,19 @@
                                             </td>
                                             <td>
                                                 <input name="Conceptos[@i].TotalSubTotal"
-                                                       value="@Model.Conceptos[i].TotalSubTotal.ToString(CultureInfo.InvariantCulture)"
-                                                       class="form-control total-subtotal"
-                                                       type="number"
-                                                       step="0.01"
-                                                       min="0" />
+                                                       value="@Model.Conceptos[i].TotalSubTotal.ToString("0.00")"
+                                                       class="form-control total-subtotal decimal-input"
+                                                       type="text"
+                                                       inputmode="decimal"
+                                                       autocomplete="off" />
                                             </td>
                                             <td>
                                                 <input name="Conceptos[@i].TotalVNeto"
-                                                       value="@Model.Conceptos[i].TotalVNeto.ToString(CultureInfo.InvariantCulture)"
-                                                       class="form-control total-vneto"
-                                                       type="number"
-                                                       step="0.01"
-                                                       min="0" />
+                                                       value="@Model.Conceptos[i].TotalVNeto.ToString("0.00")"
+                                                       class="form-control total-vneto decimal-input"
+                                                       type="text"
+                                                       inputmode="decimal"
+                                                       autocomplete="off" />
                                             </td>
                                             <td class="text-end">
                                                 <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">
@@ -169,19 +192,19 @@
                             </td>
                             <td>
                                 <input name="Conceptos[__index__].TotalSubTotal"
-                                       class="form-control total-subtotal"
-                                       type="number"
-                                       step="0.01"
-                                       min="0"
-                                       value="0.00" />
+                                       class="form-control total-subtotal decimal-input"
+                                       type="text"
+                                       inputmode="decimal"
+                                       autocomplete="off"
+                                       value="0,00" />
                             </td>
                             <td>
                                 <input name="Conceptos[__index__].TotalVNeto"
-                                       class="form-control total-vneto"
-                                       type="number"
-                                       step="0.01"
-                                       min="0"
-                                       value="0.00" />
+                                       class="form-control total-vneto decimal-input"
+                                       type="text"
+                                       inputmode="decimal"
+                                       autocomplete="off"
+                                       value="0,00" />
                             </td>
                             <td class="text-end">
                                 <button type="button" class="btn btn-sm btn-outline-danger btnRemoveRow">
@@ -210,14 +233,63 @@
             const sumaVNeto = document.getElementById('sumaVNeto');
             const fechaConsulta = document.getElementById('fechaConsulta');
             const fechaHidden = document.getElementById('fechaHidden');
+            const form = document.getElementById('formRegistrarCierre');
 
             let idx = tbody ? tbody.querySelectorAll('tr').length : 0;
 
-            function toNumber(value) {
-                if (value === null || value === undefined || value === '') return 0;
-                const normalized = value.toString().replace(',', '.');
-                const parsed = parseFloat(normalized);
+            function parseFlexibleNumber(value) {
+                if (value === null || value === undefined) return 0;
+
+                let raw = value.toString().trim();
+                if (raw === '') return 0;
+
+                raw = raw.replace(/\s/g, '');
+
+                const lastComma = raw.lastIndexOf(',');
+                const lastDot = raw.lastIndexOf('.');
+
+                if (lastComma > -1 && lastDot > -1) {
+                    if (lastComma > lastDot) {
+                        raw = raw.replace(/\./g, '');
+                        raw = raw.replace(',', '.');
+                    } else {
+                        raw = raw.replace(/,/g, '');
+                    }
+                } else if (lastComma > -1) {
+                    raw = raw.replace(/\./g, '');
+                    raw = raw.replace(',', '.');
+                } else {
+                    const parts = raw.split('.');
+                    if (parts.length > 2) {
+                        const decimalPart = parts.pop();
+                        raw = parts.join('') + '.' + decimalPart;
+                    }
+                }
+
+                const parsed = parseFloat(raw);
                 return isNaN(parsed) ? 0 : parsed;
+            }
+
+            function formatForDisplay(value) {
+                const num = parseFlexibleNumber(value);
+                return num.toLocaleString('es-CO', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            function formatForServer(value) {
+                const num = parseFlexibleNumber(value);
+                return num.toFixed(2); // Ej: 6000.00
+            }
+
+            function setHiddenValue(visibleId, hiddenId) {
+                const visible = document.getElementById(visibleId);
+                const hidden = document.getElementById(hiddenId);
+
+                if (!visible || !hidden) return;
+
+                hidden.value = formatForServer(visible.value);
             }
 
             function recalc() {
@@ -225,20 +297,36 @@
                 let tNet = 0;
 
                 document.querySelectorAll('.total-subtotal').forEach(i => {
-                    tSub += toNumber(i.value);
+                    tSub += parseFlexibleNumber(i.value);
                 });
 
                 document.querySelectorAll('.total-vneto').forEach(i => {
-                    tNet += toNumber(i.value);
+                    tNet += parseFlexibleNumber(i.value);
                 });
 
-                if (sumaSubTotal) sumaSubTotal.textContent = tSub.toFixed(2);
-                if (sumaVNeto) sumaVNeto.textContent = tNet.toFixed(2);
+                if (sumaSubTotal) {
+                    sumaSubTotal.textContent = tSub.toLocaleString('es-CO', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+
+                if (sumaVNeto) {
+                    sumaVNeto.textContent = tNet.toLocaleString('es-CO', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
             }
 
             function wire(tr) {
                 tr.querySelectorAll('.total-subtotal, .total-vneto').forEach(inp => {
                     inp.addEventListener('input', recalc);
+
+                    inp.addEventListener('blur', function () {
+                        this.value = formatForDisplay(this.value);
+                        recalc();
+                    });
                 });
 
                 tr.querySelector('.btnRemoveRow')?.addEventListener('click', () => {
@@ -246,6 +334,15 @@
                     recalc();
                 });
             }
+
+            document.querySelectorAll('.decimal-input').forEach(inp => {
+                inp.value = formatForDisplay(inp.value);
+
+                inp.addEventListener('blur', function () {
+                    this.value = formatForDisplay(this.value);
+                    recalc();
+                });
+            });
 
             if (fechaConsulta && fechaHidden) {
                 fechaConsulta.addEventListener('change', function () {
@@ -266,14 +363,27 @@
                     recalc();
 
                     if (window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive) {
-                        const form = jQuery(tr.closest('form'));
-                        jQuery.validator.unobtrusive.parse(form);
+                        const jqForm = jQuery(tr.closest('form'));
+                        jQuery.validator.unobtrusive.parse(jqForm);
                     }
                 });
             }
 
             if (tbody) {
                 tbody.querySelectorAll('tr').forEach(wire);
+            }
+
+            if (form) {
+                form.addEventListener('submit', function () {
+                    setHiddenValue('EfectivoVisible', 'Efectivo');
+                    setHiddenValue('TransferenciaVisible', 'Transferencia');
+                    setHiddenValue('GastoEfectivoVisible', 'GastoEfectivo');
+                    setHiddenValue('GastoTransferenciaVisible', 'GastoTransferencia');
+
+                    form.querySelectorAll('.total-subtotal, .total-vneto').forEach(inp => {
+                        inp.value = formatForServer(inp.value);
+                    });
+                });
             }
 
             recalc();

@@ -171,7 +171,7 @@ function procesarProductoConIVA(iva) {
             codigo: producto.codigo,
             nombre: producto.nombre,
             precio: Number(producto.valorVenta || 0),
-            valorNeto: Number(producto.valorNeto || 0),
+            valorUnidad: Number(producto.valorUnidad || 0),
             categoria: producto.categoria || "Sin categoría",
             stockDisponible: Number(producto.stockDisponible || 0),
             cantidad: cantidad,

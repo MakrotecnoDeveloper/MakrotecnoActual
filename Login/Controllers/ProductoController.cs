@@ -77,8 +77,11 @@ namespace Plataforma.Controllers
     int id_proveedor,
     IFormFile imagen,
     string? autenticidadProducto,
-    string? condicionProducto)
+    string? condicionProducto,
+    decimal? iva,
+    bool aplicaIva = false)
         {
+            iva ??= 0;
             try
             {
                 var categoria = await _dbContext.CategoriaProductos.FindAsync(categorias);
@@ -166,7 +169,8 @@ namespace Plataforma.Controllers
                     id_proveedor,
                     rutaImagen,
                     autenticidadProducto,
-                    condicionProducto
+                    condicionProducto,
+                    iva
                 );
 
                 return Json(new { success = resultado });
@@ -580,7 +584,7 @@ namespace Plataforma.Controllers
             return Json(data.Select(x => new { id = x.IdProveedor, nombre = x.RazonSocial }));
         }
         [HttpPost]
-        public IActionResult AsignacionSedeProducto(string producto, int sede, int cantidad, int valorUnitario, int valorNeto)
+        public IActionResult AsignacionSedeProducto(string producto, int sede, int cantidad, int valorVenta, int vUnidad)
         {
             var cedulaClaim = User.FindFirst("Cedula")?.Value;
             var validarSede = _productoservice.ValidarSedeAsignacionProducto(sede);
@@ -596,7 +600,7 @@ namespace Plataforma.Controllers
                         var validarCantidadProducto = _productoservice.ValidarCantidadProducto(producto, cantidad);
                         if (validarCantidadProducto)
                         {
-                            var resultado = _productoservice.AsignarProductoSede(producto, sede, cantidad, valorUnitario, cedulaClaim, valorNeto);
+                            var resultado = _productoservice.AsignarProductoSede(producto, sede, cantidad, valorVenta, cedulaClaim, vUnidad);
                             return RedirectToAction("ProductosLista");
                         }
                         else
@@ -655,7 +659,7 @@ namespace Plataforma.Controllers
             var resultados = productos.Select(p => new {
                 label = $"{p.Cod_Producto} - {p.NombreProducto}",
                 value = p.Cod_Producto,
-                valorNeto = p.ValorNetoProducto,
+                valorUnidad = p.ValorUnidad,
                 valorVenta = p.ValorVentaProducto
             });
 
@@ -674,7 +678,7 @@ namespace Plataforma.Controllers
             {
                 productoId = producto.ProductoId,
                 nombre = producto.Producto.NombreProducto,
-                valorNeto = producto.ValorNeto,
+                valorUnidad = producto.VUnidad,
                 valorVenta = producto.PrecioUnitario,
                 cantidad = producto.Cantidad
             });
@@ -683,32 +687,52 @@ namespace Plataforma.Controllers
         [HttpPost]
         public async Task<IActionResult> ActualizarProducto([FromForm] ProductoUpdateDto model)
         {
+            if (string.IsNullOrWhiteSpace(model.ProductoId))
+                return Json(new { ok = false, message = "El producto es obligatorio." });
+
             var productoInventarioSede = await _dbContext.InventarioSedes
                 .FirstOrDefaultAsync(i => i.ProductoId == model.ProductoId);
 
             var producto = await _dbContext.Productos
                 .FirstOrDefaultAsync(i => i.Cod_Producto == model.ProductoId);
-            // 5 >= 2
-            if (producto.CantidadProducto >= model.Cantidad)
-            {
-                if (producto == null) return Json(new { ok = false });
 
-                productoInventarioSede.ValorNeto = (int?)model.ValorNeto;
-                productoInventarioSede.PrecioUnitario = (int?)model.ValorVenta;
-                //10 = 10+5 = 15
+            if (productoInventarioSede == null || producto == null)
+                return Json(new { ok = false, message = "No se encontró el producto." });
+
+            // Actualizar datos base siempre
+            if (!string.IsNullOrWhiteSpace(model.Nombre))
+                producto.NombreProducto = model.Nombre.Trim();
+
+            productoInventarioSede.VUnidad = (int?)model.VUnidad;
+            productoInventarioSede.PrecioUnitario = (int?)model.ValorVenta;
+
+            // Solo mover cantidad si el usuario realmente marcó el check y envió cantidad > 0
+            if (model.Cantidad > 0)
+            {
+                if (producto.CantidadProducto < model.Cantidad)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        message = "Error: La cantidad que desea asignar es mayor a la que tiene el producto en bodega."
+                    });
+                }
+
                 productoInventarioSede.Cantidad = productoInventarioSede.Cantidad + model.Cantidad;
-                //5 = 5-5 = 0
                 producto.CantidadProducto = producto.CantidadProducto - model.Cantidad;
-                await _dbContext.SaveChangesAsync();
-
-                return Json(new { ok = true });
-            }else
-            {
-                var mensaje = "Error: La cantidad que desea asignar es mayor a la que tiene el producto en bodega.";
-                TempData["ErrorMessage"] = mensaje;
-                return RedirectToAction("Error", "Errores");
             }
+
+            await _dbContext.SaveChangesAsync();
+
+            return Json(new
+            {
+                ok = true,
+                message = model.Cantidad > 0
+                    ? "Producto actualizado y cantidad agregada correctamente."
+                    : "Producto actualizado correctamente."
+            });
         }
+
         [HttpGet]
         public async Task<IActionResult> ImprimirSticker(
     string codProducto,
@@ -725,14 +749,9 @@ namespace Plataforma.Controllers
             var inventario = await _dbContext.InventarioSedes
                 .FirstOrDefaultAsync(x => x.ProductoId == codProducto);
 
-            // 🔥 Construimos URL absoluta correcta
-            var urlProducto = Url.RouteUrl(
-                "ProductoPublico",
-                new { id = p.Cod_Producto },
-                Request.Scheme
-            );
+            var codigoProducto = p.Cod_Producto?.ToString() ?? string.Empty;
 
-            var qrBase64 = _qrService.GenerarQrBase64PNG(urlProducto);
+            var qrBase64 = _qrService.GenerarQrBase64PNG(codigoProducto);
 
             var vm = new StickerPrintVm
             {

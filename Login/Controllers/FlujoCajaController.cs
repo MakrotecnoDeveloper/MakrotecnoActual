@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
+using System.Globalization;
 
 namespace Plataforma.Controllers
 {
@@ -64,6 +65,22 @@ namespace Plataforma.Controllers
                 return View("RegistrarCierre", model);
             }
 
+            // IMPORTANTE: reconstruir los valores manualmente desde Request.Form
+            model.Fecha = DateTime.TryParse(Request.Form["Fecha"], out var fecha)
+                ? fecha.Date
+                : DateTime.Today;
+
+            model.Efectivo = ParseDecimalEstricto(Request.Form["EfectivoVisible"]);
+            model.Transferencia = ParseDecimalEstricto(Request.Form["TransferenciaVisible"]);
+            model.GastoEfectivo = ParseDecimalEstricto(Request.Form["GastoEfectivoVisible"]);
+            model.GastoTransferencia = ParseDecimalEstricto(Request.Form["GastoTransferenciaVisible"]);
+
+            model.Conceptos = LeerConceptosDesdeRequest();
+
+            // Limpiar el ModelState para que tome estos valores corregidos
+            ModelState.Clear();
+            TryValidateModel(model);
+
             if (!ModelState.IsValid)
             {
                 model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, model.Fecha.Date);
@@ -89,14 +106,62 @@ namespace Plataforma.Controllers
                 TempData["Ok"] = "Cierre registrado correctamente.";
                 return RedirectToAction(nameof(RegistrarCierre), new { fecha = model.Fecha.ToString("yyyy-MM-dd") });
             }
-            catch
+            catch (Exception ex)
             {
-                model.Conceptos = await _flujocajaService.ObtenerConceptosDelDiaAsync(ctx, model.Fecha.Date);
-                model.TotalFacturado = await _flujocajaService.ObtenerTotalFacturadoAsync(ctx, model.Fecha.Date);
                 ViewBag.FechaTrabajo = model.Fecha.ToString("dd/MM/yyyy");
-                ViewBag.ErrorMessage = "Ocurrió un error al registrar el cierre.";
+                ViewBag.ErrorMessage = $"Ocurrió un error al registrar el cierre. Detalle: {ex.Message}";
                 return View("RegistrarCierre", model);
             }
+        }
+        private decimal ParseDecimalEstricto(string? valor)
+        {
+            if (string.IsNullOrWhiteSpace(valor))
+                return 0m;
+
+            var raw = valor.Trim().Replace(" ", "");
+
+            // Caso: 12.000,00  -> 12000.00
+            if (raw.Contains(",") && raw.Contains("."))
+            {
+                raw = raw.Replace(".", "");
+                raw = raw.Replace(",", ".");
+            }
+            // Caso: 12000,00 -> 12000.00
+            else if (raw.Contains(","))
+            {
+                raw = raw.Replace(",", ".");
+            }
+            // Caso: 12000.00 -> queda igual
+
+            if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                return result;
+
+            return 0m;
+        }
+        private List<ConceptoServicioVM> LeerConceptosDesdeRequest()
+        {
+            var conceptos = new List<ConceptoServicioVM>();
+            int index = 0;
+
+            while (Request.Form.ContainsKey($"Conceptos[{index}].NombreServicio") ||
+                   Request.Form.ContainsKey($"Conceptos[{index}].IdServicio") ||
+                   Request.Form.ContainsKey($"Conceptos[{index}].TotalSubTotal") ||
+                   Request.Form.ContainsKey($"Conceptos[{index}].TotalVNeto"))
+            {
+                int.TryParse(Request.Form[$"Conceptos[{index}].IdServicio"], out var idServicio);
+
+                conceptos.Add(new ConceptoServicioVM
+                {
+                    IdServicio = idServicio,
+                    NombreServicio = Request.Form[$"Conceptos[{index}].NombreServicio"].ToString(),
+                    TotalSubTotal = ParseDecimalEstricto(Request.Form[$"Conceptos[{index}].TotalSubTotal"]),
+                    TotalVNeto = ParseDecimalEstricto(Request.Form[$"Conceptos[{index}].TotalVNeto"])
+                });
+
+                index++;
+            }
+
+            return conceptos;
         }
     }
 }

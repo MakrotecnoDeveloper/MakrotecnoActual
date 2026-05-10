@@ -117,7 +117,8 @@ else
                                 <div class="mb-3">
                                     <label for="valorUnitario" class="form-label fw-semibold">Valor Unitario</label>
                                     <input type="number" class="form-control" id="valorUnitario" name="valorUnitario"
-                                           value="@p.ValorUnidad" step="0.01" placeholder="0.00" />
+                                           value="@(p.ValorUnidad?.ToString("0.##", CultureInfo.InvariantCulture) ?? "0")"
+                                           step="0.01" placeholder="0.00" />
                                 </div>
 
                                 <!-- Cantidad -->

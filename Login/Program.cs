@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Features;
 using Serilog;
 using Plataforma.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,25 @@ builder.Services.AddScoped<IQrService, QrService>();
 builder.Services.AddScoped<IPosService, PosService>();
 builder.Services.AddScoped<ICxcService, CxcService>();
 
+
+//Cultura de la aplicacion para formateo de n�meros, fechas y monedas, utilizando la cultura "es-CO" (español de Colombia).
+var culture = new CultureInfo("es-CO");
+culture.NumberFormat.NumberDecimalSeparator = ",";
+culture.NumberFormat.NumberGroupSeparator = ".";
+culture.NumberFormat.CurrencyDecimalSeparator = ",";
+culture.NumberFormat.CurrencyGroupSeparator = ".";
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(culture);
+    options.SupportedCultures = new List<CultureInfo> { culture };
+    options.SupportedUICultures = new List<CultureInfo> { culture };
+});
+
+
 //configura la autenticaci�n en la aplicaci�n web utilizando el esquema de autenticaci�n de cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -118,6 +139,12 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 var app = builder.Build();
+
+//Cultura de la aplicacion para formateo de n�meros, fechas y monedas, utilizando la cultura "es-CO" (español de Colombia).
+var locOptions = app.Services.GetRequiredService<
+    Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value;
+
+app.UseRequestLocalization(locOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -78,8 +78,8 @@
                                                 <tr>
                                                     <th>Código</th>
                                                     <th>Cantidad</th>
-                                                    <th>Valor Neto</th>
-                                                    <th>Valor Unitario</th>
+                                                    <th>Valor Unidad</th>
+                                                    <th>Valor Venta</th>
                                                     <th>IVA %</th>
                                                     <th>IVA Valor</th>
                                                     <th>Total</th>
@@ -100,7 +100,7 @@
                                                     </td>
 
                                                     <td>
-                                                        <input type="number" class="form-control" name="Productos[0].VNeto" placeholder="Valor Neto" id="vneto0">
+                                                        <input type="number" class="form-control" name="Productos[0].VNeto" placeholder="Valor Unidad" id="vunidad0">
                                                     </td>
 
                                                     <td>
@@ -305,7 +305,7 @@
         // ✅ (1) STOCK - helper
         // =========================
         // Opción A (preferida): tu endpoint /Pedido/BuscarProductoPorCodigoVenta debe devolver:
-        // { value,label, valorNeto, valorVenta, stockDisponible }
+        // { value,label, valorUnidad, valorVenta, stockDisponible }
         //
         // Opción B: crear endpoint /Pedido/ObtenerStockDisponible?codigo=XXX
         // y aquí llamas ese endpoint.
@@ -417,7 +417,7 @@
                         <input type="number" class="form-control" name="Productos[${i}].Stock" placeholder="Cantidad" id="stock${i}" min="1">
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="Productos[${i}].VNeto" placeholder="Valor Neto" id="vneto${i}">
+                        <input type="number" class="form-control" name="Productos[${i}].VNeto" placeholder="Valor Unidad" id="vunidad${i}">
                     </td>
                     <td>
                         <input type="number" class="form-control" name="Productos[${i}].VVenta" placeholder="Valor Venta" id="vventa${i}" min="0" step="0.01">
@@ -595,7 +595,7 @@
                     if (Array.isArray(data) && data.length > 0) {
                         const producto = data[0];
 
-                        fila.find('input[name$=".VNeto"]').val(producto.valorNeto);
+                        fila.find('input[name$=".VNeto"]').val(producto.valorUnidad);
                         fila.find('input[name$=".VVenta"]').val(producto.valorVenta);
 
                         // ✅ (1) Stock disponible: si viene en la respuesta, úsalo
@@ -837,52 +837,48 @@
             const texto = ($('#txtBuscarNombre').val() || '').trim();
             if (texto.length < 2) return;
 
-        $.ajax({
-            url: '/Pedido/BuscarProductoPorNombreVenta',
-            type: 'GET',
-            data: { texto },
-            success: function (list) {
+            $.ajax({
+                url: '/Pedido/BuscarProductoPorNombreVenta',
+                type: 'GET',
+                data: { texto },
+                success: function (list) {
+                    console.log(list);
+                    let html = '';
 
-                let html = '';
+                    (list || [])
+                        .filter(p =>
+                            p.stockDisponible !== null &&
+                            p.stockDisponible > 0
+                        )
+                        .forEach(p => {
+                            html += `<tr>
+                                        <td>${p.codigo}</td>
+                                        <td>${p.nombre}</td>
+                                        <td>${p.stockDisponible}</td>
+                                        <td>${p.valorUnidad}</td>
+                                        <td>${p.valorVenta}</td>
+                                        <td>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-success btnInsertarProducto"
+                                                    data-codigo="${p.codigo}"
+                                                    data-vunidad="${p.valorUnidad}"
+                                                    data-vventa="${p.valorVenta}"
+                                                    data-stock="${p.stockDisponible}">
+                                                Seleccionar
+                                            </button>
+                                        </td>
+                                    </tr>`;
+                        });
 
-                (list || [])
-                    .filter(p =>
-                        p.stockDisponible !== null &&
-                        p.stockDisponible > 0 &&
-                        p.valorNeto !== null &&
-                        p.valorVenta !== null
-                    )
-                    .forEach(p => {
-
-                        html += `<tr>
-                                    <td>${p.codigo}</td>
-                                    <td>${p.nombre}</td>
-                                    <td>${p.stockDisponible}</td>
-                                    <td>${p.valorNeto}</td>
-                                    <td>${p.valorVenta}</td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn btn-sm btn-success btnInsertarProducto"
-                                                data-codigo="${p.codigo}"
-                                                data-vneto="${p.valorNeto}"
-                                                data-vventa="${p.valorVenta}"
-                                                data-stock="${p.stockDisponible}">
-                                            Seleccionar
-                                        </button>
-                                    </td>
-                                </tr>`;
-                    });
-
-                $('#tblResultadosBusqueda').html(html);
-            }
-        });
-
+                    $('#tblResultadosBusqueda').html(html);
+                }
+            });
         });
 
         // Insertar producto desde modal en última fila activa (o última fila)
-        $(document).on('click', '.btnInsertarProducto', function () {
+                $(document).on('click', '.btnInsertarProducto', function () {
             const codigo = $(this).data('codigo');
-            const vneto = $(this).data('vneto');
+            const vunidad = $(this).data('vunidad');
             const vventa = $(this).data('vventa');
             const stockDisp = $(this).data('stock');
 
@@ -890,7 +886,7 @@
             if (!fila || fila.length === 0) fila = $('#tablaProductos tr').last();
 
             fila.find('input[name$=".Codigo"]').val(codigo);
-            fila.find('input[name$=".VNeto"]').val(vneto);
+            fila.find('input[name$=".VNeto"]').val(vunidad);
             fila.find('input[name$=".VVenta"]').val(vventa);
 
             if (stockDisp !== '' && stockDisp != null) {
@@ -904,7 +900,6 @@
             validarFormularioParaGuardar();
             guardarBorrador();
 
-            // cerrar modal
             const modalEl = document.getElementById('modalBuscarProducto');
             bootstrap.Modal.getInstance(modalEl)?.hide();
         });

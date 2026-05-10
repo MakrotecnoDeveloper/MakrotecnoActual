@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Plataforma.Services;
 using Plataforma.Servicios.Contrato;
-using Plataforma.ViewModels.Reportes;
+using Plataforma.Models.ViewModels.Reportes;
+using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers
 {
@@ -38,5 +38,21 @@ namespace Plataforma.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 nombre);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ReporteVentas(
+            ReporteVentasFiltroViewModel filtros,
+            int pagina = 1,
+            int registrosPorPagina = 20)
+        {
+            var vm = await _reporteService.ObtenerReporteVentasAsync(
+                filtros,
+                pagina,
+                registrosPorPagina
+            );
+
+            return View(vm);
+        }
+
     }
 }

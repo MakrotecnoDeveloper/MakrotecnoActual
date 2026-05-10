@@ -74,8 +74,8 @@ namespace Plataforma.Servicios.Implementacion
                     Codigo = p.Cod_Producto ?? "",
                     Nombre = p.NombreProducto ?? "Sin nombre",
                     Categoria = cat != null ? (cat.Descripcion ?? "Sin categoría") : "Sin categoría",
+                    ValorUnidad = p.ValorUnidad,
                     ValorVenta = p.ValorVentaProducto ?? 0,
-                    ValorNeto = p.ValorNetoProducto ?? inv.ValorNeto ?? 0,
                     StockDisponible = inv.Cantidad,
                     ImagenPath = p.ImagenPath
                 };
@@ -130,8 +130,8 @@ namespace Plataforma.Servicios.Implementacion
                     Codigo = p.Cod_Producto ?? "",
                     Nombre = p.NombreProducto ?? "Sin nombre",
                     Categoria = cat != null ? (cat.Descripcion ?? "Sin categoría") : "Sin categoría",
+                    ValorUnidad = p.ValorUnidad,
                     ValorVenta = p.ValorVentaProducto ?? 0,
-                    ValorNeto = p.ValorNetoProducto ?? inv.ValorNeto ?? 0,
                     StockDisponible = inv.Cantidad,
                     ImagenPath = p.ImagenPath
                 }
@@ -266,10 +266,10 @@ namespace Plataforma.Servicios.Implementacion
                         var inventario = data.Inventario;
 
                         decimal valorVentaUnitario = producto.ValorVentaProducto ?? 0m;
-                        decimal valorNetoUnitario = producto.ValorNetoProducto ?? inventario.ValorNeto ?? 0m;
+                        decimal? valorUnidadUnitario = producto.ValorUnidad;
 
                         decimal valorVentaTotal = item.Cantidad * valorVentaUnitario;
-                        decimal valorNetoTotal = item.Cantidad * valorNetoUnitario;
+                        decimal? valorUnidadTotal = item.Cantidad * valorUnidadUnitario;
                         decimal valorIvaLinea = valorVentaTotal * (item.IvaPorcentaje / 100m);
                         decimal subtotalLinea = valorVentaTotal + valorIvaLinea;
 
@@ -282,7 +282,8 @@ namespace Plataforma.Servicios.Implementacion
                             IdVenta = venta.IdVenta,
                             Codigo = producto.Cod_Producto,
                             Stock = item.Cantidad,
-                            VNeto = valorNetoTotal,
+                            VUnidad = valorUnidadTotal,
+                            VNeto = valorUnidadUnitario,
                             VVenta = valorVentaTotal,
                             InfopdvId = ctx.InfoPdvId,
                             FechaRegistro = DateTime.Now,

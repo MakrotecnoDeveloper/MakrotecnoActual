@@ -151,20 +151,20 @@ namespace Plataforma.Servicios.Implementacion
                     inv.Cantidad -= pedido.Stock;
 
                     var valorUnitarioVenta = pedido.VVenta*pedido.Stock;
-                    var valorUnitarioNeto = pedido.VNeto*pedido.Stock ?? 0m;
+                    var valorUnitarioNeto = pedido.VNeto*pedido.Stock;
                     var ivaPorcentaje = pedido.IvaPorcentaje ?? 0m;
 
-                    var totalVentaLinea = pedido.Stock * valorUnitarioVenta;
-                    var totalNetoLinea = pedido.Stock * valorUnitarioNeto;
-                    var ivaLinea = totalVentaLinea * (ivaPorcentaje / 100m);
-                    var subTotalConIva = totalVentaLinea + ivaLinea;
+                    //var totalVentaLinea = pedido.Stock * valorUnitarioVenta;
+                    //var totalNetoLinea = pedido.Stock * valorUnitarioNeto;
+                    var ivaLinea = valorUnitarioVenta * (ivaPorcentaje / 100m);
+                    var subTotalConIva = valorUnitarioVenta + ivaLinea;
 
                     pedido.IdVenta = idVenta;
                     pedido.InfopdvId = infoPdvId;
                     pedido.FechaRegistro = DateTime.Now;
 
                     pedido.VVenta = valorUnitarioVenta;
-                    pedido.VNeto = valorUnitarioNeto;
+                    pedido.VUnidad = valorUnitarioNeto;
                     pedido.IvaValor = ivaLinea;
                     pedido.SubTotal = subTotalConIva;
 
@@ -593,7 +593,7 @@ namespace Plataforma.Servicios.Implementacion
                 {
                     Codigo = i.ProductoId,
                     Stock = (decimal?)i.Cantidad,
-                    ValorNeto = i.ValorNeto,
+                    i.VUnidad,
                     ValorVenta = i.PrecioUnitario // ✅ usar el precio real por sede
                 })
                 .ToListAsync();
@@ -612,7 +612,7 @@ namespace Plataforma.Servicios.Implementacion
                     codigo = p.Codigo,
                     nombre = p.Nombre,
                     stockDisponible = inv?.Stock,        // null si no hay inventario en esa sede
-                    valorNeto = inv?.ValorNeto,          // real por sede
+                    valorUnidad = inv?.VUnidad,          // real por sede
                     valorVenta = inv?.ValorVenta         // real por sede (PrecioUnitario)
                 });
             }

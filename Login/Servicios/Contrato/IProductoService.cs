@@ -3,7 +3,7 @@ namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
     {
-        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal? valor_unidad, int unidadMedida, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto);
+        Task<bool> AgregarProductoAsync(string id_empresa, string codigo, string descripcion, decimal? valor_neto, decimal? valor_unitario, decimal? valor_unidad, int unidadMedida, decimal stock, int categorias, int id_proveedor, string? rutaImagen, string? autenticidadProducto, string? condicionProducto, decimal? iva);
         List<CategoriaProductos> ObtenerCategorias();
         List<Producto> ObtenerProductos();
         List<Producto> ObtenerProductosPorCategoria(int idCategoria);
@@ -49,7 +49,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Servicio>> GetServiciosAsync();
         Task<List<CategoriaProductos>> GetCategoriasPorServicioAsync(int servicioId);
         Task<List<Proveedores>> GetProveedoresAsync();
-        InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorUnitario, string cedulaClaim, int valorNeto);
+        InventarioSede AsignarProductoSede(string producto, int sede, int cantidad, int valorVenta, string cedulaClaim, int vUnidad);
         bool ValidarSedeAsignacionProducto(int idSede);
         bool ValidarProductoAsignacion(string producto);
         bool ValidarCantidadProducto(string producto, decimal cantidad);

@@ -1,8 +1,9 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Plataforma.Data;
 using Plataforma.Models;
+using Plataforma.Models.ViewModels.Reportes;
 using Plataforma.Servicios.Contrato;
 using Plataforma.ViewModels.Reportes;
 using System.Text.Json;
@@ -295,6 +296,364 @@ namespace Plataforma.Servicios.Implementacion
             public decimal? MontoSubTotal { get; set; }
 
             public decimal? Utilidad { get; set; }
+        }
+        public async Task<ReporteVentasViewModel> ObtenerReporteVentasAsync(
+            ReporteVentasFiltroViewModel filtros,
+            int pagina,
+            int registrosPorPagina)
+        {
+            if (pagina < 1)
+                pagina = 1;
+
+            if (registrosPorPagina <= 0)
+                registrosPorPagina = 20;
+
+            var query =
+                from venta in _context.Ventas.AsNoTracking()
+                join factura in _context.Factura.AsNoTracking()
+                    on venta.IdVenta equals factura.IdVenta into facturaJoin
+                from factura in facturaJoin.DefaultIfEmpty()
+                select new
+                {
+                    Venta = venta,
+                    Factura = factura
+                };
+
+            if (filtros.FiltrarFecha)
+            {
+                if (filtros.FechaInicial.HasValue)
+                {
+                    var fechaInicial = filtros.FechaInicial.Value.Date;
+                    query = query.Where(x => x.Venta.FechaVenta.Date >= fechaInicial);
+                }
+
+                if (filtros.FechaFinal.HasValue)
+                {
+                    var fechaFinal = filtros.FechaFinal.Value.Date;
+                    query = query.Where(x => x.Venta.FechaVenta.Date <= fechaFinal);
+                }
+            }
+
+            if (filtros.FiltrarVendedor && filtros.CedulaVendedor.HasValue)
+            {
+                query = query.Where(x => x.Venta.Cedula == filtros.CedulaVendedor.Value);
+            }
+
+            if (filtros.FiltrarMetodoPago && !string.IsNullOrWhiteSpace(filtros.MetodoPago))
+            {
+                query = query.Where(x => x.Venta.MetodoPago == filtros.MetodoPago);
+            }
+
+            if (filtros.FiltrarEstadoVenta && !string.IsNullOrWhiteSpace(filtros.EstadoVenta))
+            {
+                query = query.Where(x => x.Venta.EstadoVenta == filtros.EstadoVenta);
+            }
+
+            if (filtros.FiltrarEstadoFactura && !string.IsNullOrWhiteSpace(filtros.EstadoFactura))
+            {
+                query = query.Where(x =>
+                    x.Factura != null &&
+                    x.Factura.EstadoFactura == filtros.EstadoFactura
+                );
+            }
+
+            if (filtros.FiltrarCliente && !string.IsNullOrWhiteSpace(filtros.Cliente))
+            {
+                var cliente = filtros.Cliente.Trim();
+
+                query = query.Where(x =>
+                    x.Venta.IdCliente.ToString().Contains(cliente) ||
+                    x.Venta.CedulaCliente.ToString().Contains(cliente)
+                );
+            }
+
+            if (filtros.FiltrarFactura && !string.IsNullOrWhiteSpace(filtros.NumeroFactura))
+            {
+                var numeroFactura = filtros.NumeroFactura.Trim();
+
+                query = query.Where(x =>
+                    (
+                        x.Factura != null &&
+                        x.Factura.NumeroFactura.Contains(numeroFactura)
+                    )
+                    ||
+                    (
+                        x.Venta.NumeroFactura != null &&
+                        x.Venta.NumeroFactura.Contains(numeroFactura)
+                    )
+                );
+            }
+
+            /*
+                IMPORTANTE:
+                Ventas actualmente no tiene IdSede ni InfopdvId.
+                Por eso, mientras no estén en Ventas, se cruza con CierreCaja
+                por Cedula + Fecha.
+
+                Esto funciona como solución temporal, pero el dato no es perfecto
+                si un vendedor trabaja en más de una sede o PDV el mismo día.
+            */
+
+            if (filtros.FiltrarSede && filtros.IdSede.HasValue)
+            {
+                query = query.Where(x =>
+                    _context.CierreCajas.Any(c =>
+                        c.Cedula == x.Venta.Cedula &&
+                        c.Fecha.Date == x.Venta.FechaVenta.Date &&
+                        c.IdSede == filtros.IdSede.Value
+                    )
+                );
+            }
+
+            if (filtros.FiltrarPdv && filtros.InfopdvId.HasValue)
+            {
+                query = query.Where(x =>
+                    _context.CierreCajas.Any(c =>
+                        c.Cedula == x.Venta.Cedula &&
+                        c.Fecha.Date == x.Venta.FechaVenta.Date &&
+                        c.InfopdvId == filtros.InfopdvId.Value
+                    )
+                );
+            }
+
+            var totalRegistros = await query.CountAsync();
+
+            var totalGeneralFiltrado = await query
+                .SumAsync(x => (decimal?)x.Venta.Total) ?? 0;
+
+            var totalPaginas = (int)Math.Ceiling(totalRegistros / (double)registrosPorPagina);
+
+            var datosBase = await query
+                .OrderByDescending(x => x.Venta.FechaVenta)
+                .ThenByDescending(x => x.Venta.IdVenta)
+                .Skip((pagina - 1) * registrosPorPagina)
+                .Take(registrosPorPagina)
+                .Select(x => new
+                {
+                    x.Venta.IdVenta,
+                    x.Venta.IdCliente,
+                    x.Venta.CedulaCliente,
+                    x.Venta.Cedula,
+                    x.Venta.FechaVenta,
+                    x.Venta.MetodoPago,
+                    x.Venta.Total,
+                    x.Venta.EstadoVenta,
+                    x.Venta.TipoVenta,
+                    x.Venta.Conceptos,
+
+                    NumeroFacturaVenta = x.Venta.NumeroFactura,
+                    FechaEmisionFacturaVenta = x.Venta.FechaEmisionFactura,
+
+                    IdFactura = x.Factura != null ? (int?)x.Factura.IdFactura : null,
+                    NumeroFacturaReal = x.Factura != null ? x.Factura.NumeroFactura : null,
+                    FechaEmisionFacturaReal = x.Factura != null ? (DateTime?)x.Factura.FechaEmision : null,
+                    TotalFactura = x.Factura != null ? (decimal?)x.Factura.Total : null,
+                    EstadoFactura = x.Factura != null ? x.Factura.EstadoFactura : null
+                })
+                .ToListAsync();
+
+            var cedulas = datosBase
+                .Select(x => x.Cedula)
+                .Distinct()
+                .ToList();
+
+            var fechas = datosBase
+                .Select(x => x.FechaVenta.Date)
+                .Distinct()
+                .ToList();
+
+            var empleados = await _context.Empleado
+                .AsNoTracking()
+                .Where(e => cedulas.Contains(e.Cedula))
+                .ToListAsync();
+
+            var cierres = await _context.CierreCajas
+                .AsNoTracking()
+                .Where(c =>
+                    cedulas.Contains(c.Cedula) &&
+                    fechas.Contains(c.Fecha.Date)
+                )
+                .ToListAsync();
+
+            var resultados = datosBase.Select(item =>
+            {
+                var empleado = empleados.FirstOrDefault(e => e.Cedula == item.Cedula);
+
+                var cierre = cierres
+                    .Where(c =>
+                        c.Cedula == item.Cedula &&
+                        c.Fecha.Date == item.FechaVenta.Date
+                    )
+                    .OrderByDescending(c => c.Fecha)
+                    .FirstOrDefault();
+
+                return new ReporteVentasItemViewModel
+                {
+                    IdVenta = item.IdVenta,
+                    IdFactura = item.IdFactura,
+
+                    NumeroFactura = item.NumeroFacturaReal ?? item.NumeroFacturaVenta,
+
+                    FechaVenta = item.FechaVenta,
+                    FechaEmisionFactura = item.FechaEmisionFacturaReal ?? item.FechaEmisionFacturaVenta,
+
+                    IdCliente = item.IdCliente,
+                    CedulaCliente = item.CedulaCliente,
+
+                    CedulaVendedor = item.Cedula,
+
+                    /*
+                        Ajusta empleado.Nombre según tu modelo real:
+                        puede ser NombreCompleto, NombreEmpleado, Nombres, etc.
+                    */
+                    NombreVendedor = empleado != null
+                        ? empleado.Nombre
+                        : item.Cedula.ToString(),
+
+                    MetodoPago = item.MetodoPago,
+
+                    NombreSede = cierre?.NombreSede,
+                    NombrePdv = cierre?.NombrePdv,
+
+                    TotalVenta = item.Total,
+                    TotalFactura = item.TotalFactura,
+
+                    EstadoVenta = item.EstadoVenta,
+                    EstadoFactura = item.EstadoFactura,
+
+                    TipoVenta = item.TipoVenta,
+                    Conceptos = item.Conceptos
+                };
+            }).ToList();
+
+            return new ReporteVentasViewModel
+            {
+                Filtros = filtros,
+                Resultados = resultados,
+
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas,
+                TotalRegistros = totalRegistros,
+                RegistrosPorPagina = registrosPorPagina,
+
+                TotalPagina = resultados.Sum(x => x.TotalVenta),
+                TotalGeneralFiltrado = totalGeneralFiltrado,
+
+                Vendedores = await CargarVendedoresAsync(),
+                Sedes = await CargarSedesAsync(),
+                Pdvs = await CargarPdvsAsync(),
+                EstadosVenta = await CargarEstadosVentaAsync(),
+                EstadosFactura = await CargarEstadosFacturaAsync(),
+                MetodosPago = await CargarMetodosPagoAsync()
+            };
+        }
+
+        private async Task<List<SelectListItem>> CargarVendedoresAsync()
+        {
+            var vendedores = await _context.Ventas
+                .AsNoTracking()
+                .Select(v => v.Cedula)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+
+            var empleados = await _context.Empleado
+                .AsNoTracking()
+                .Where(e => vendedores.Contains(e.Cedula))
+                .ToListAsync();
+
+            var items = vendedores.Select(cedula =>
+            {
+                var empleado = empleados.FirstOrDefault(e => e.Cedula == cedula);
+
+                return new SelectListItem
+                {
+                    Value = cedula.ToString(),
+
+                    /*
+                        Ajusta empleado.Nombre según tu modelo real.
+                    */
+                    Text = empleado != null
+                        ? $"{empleado.Nombre} - {cedula}"
+                        : cedula.ToString()
+                };
+            }).ToList();
+
+            return items;
+        }
+
+        private async Task<List<SelectListItem>> CargarSedesAsync()
+        {
+            return await _context.Sede
+                .AsNoTracking()
+                .OrderBy(s => s.NombreSede)
+                .Select(s => new SelectListItem
+                {
+                    Value = s.Id_sede.ToString(),
+                    Text = s.NombreSede ?? "Sin nombre"
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> CargarPdvsAsync()
+        {
+            return await _context.Infopdv
+                .AsNoTracking()
+                .OrderBy(p => p.NombreInfoPDV)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.InfopdvId.ToString(),
+                    Text = p.NombreInfoPDV ?? "Sin nombre"
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> CargarMetodosPagoAsync()
+        {
+            return await _context.Ventas
+                .AsNoTracking()
+                .Where(v => v.MetodoPago != null && v.MetodoPago != "")
+                .Select(v => v.MetodoPago)
+                .Distinct()
+                .OrderBy(m => m)
+                .Select(m => new SelectListItem
+                {
+                    Value = m,
+                    Text = m
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> CargarEstadosVentaAsync()
+        {
+            return await _context.Ventas
+                .AsNoTracking()
+                .Where(v => v.EstadoVenta != null && v.EstadoVenta != "")
+                .Select(v => v.EstadoVenta)
+                .Distinct()
+                .OrderBy(e => e)
+                .Select(e => new SelectListItem
+                {
+                    Value = e,
+                    Text = e
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> CargarEstadosFacturaAsync()
+        {
+            return await _context.Factura
+                .AsNoTracking()
+                .Where(f => f.EstadoFactura != null && f.EstadoFactura != "")
+                .Select(f => f.EstadoFactura)
+                .Distinct()
+                .OrderBy(e => e)
+                .Select(e => new SelectListItem
+                {
+                    Value = e,
+                    Text = e
+                })
+                .ToListAsync();
         }
     }
 }

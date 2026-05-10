@@ -1,0 +1,477 @@
+﻿@model Plataforma.Models.ViewModels.Reportes.ReporteVentasViewModel
+
+@{
+    ViewData["Title"] = "Reporte de Ventas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int paginaAnterior = Model.PaginaActual - 1;
+    int paginaSiguiente = Model.PaginaActual + 1;
+}
+
+<div class="content-wrapper">
+    <div class="container-fluid mt-4">
+
+        <h2 class="text-center mb-4">Reporte de Ventas y Facturas</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                Filtros del reporte
+            </div>
+
+            <div class="card-body">
+                <form method="get" asp-action="ReporteVentas" asp-controller="Reportes">
+
+                    <div class="row">
+
+                        <div class="col-md-12 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarFecha"
+                                           data-target=".filtro-fecha" />
+                                    <label class="form-check-label fw-bold">
+                                        Filtrar por fecha
+                                    </label>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>Fecha inicial</label>
+                                        <input type="date" class="form-control filtro-fecha" asp-for="Filtros.FechaInicial" />
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>Fecha final</label>
+                                        <input type="date" class="form-control filtro-fecha" asp-for="Filtros.FechaFinal" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarVendedor"
+                                           data-target=".filtro-vendedor" />
+                                    <label class="form-check-label fw-bold">Vendedor</label>
+                                </div>
+
+                                <select class="form-control filtro-vendedor"
+                                        asp-for="Filtros.CedulaVendedor"
+                                        asp-items="Model.Vendedores">
+                                    <option value="">Seleccione vendedor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarSede"
+                                           data-target=".filtro-sede" />
+                                    <label class="form-check-label fw-bold">Sede</label>
+                                </div>
+
+                                <select class="form-control filtro-sede"
+                                        asp-for="Filtros.IdSede"
+                                        asp-items="Model.Sedes">
+                                    <option value="">Seleccione sede</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarPdv"
+                                           data-target=".filtro-pdv" />
+                                    <label class="form-check-label fw-bold">PDV</label>
+                                </div>
+
+                                <select class="form-control filtro-pdv"
+                                        asp-for="Filtros.InfopdvId"
+                                        asp-items="Model.Pdvs">
+                                    <option value="">Seleccione PDV</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarMetodoPago"
+                                           data-target=".filtro-metodo" />
+                                    <label class="form-check-label fw-bold">Método de pago</label>
+                                </div>
+
+                                <select class="form-control filtro-metodo"
+                                        asp-for="Filtros.MetodoPago"
+                                        asp-items="Model.MetodosPago">
+                                    <option value="">Seleccione método</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarEstadoVenta"
+                                           data-target=".filtro-estado-venta" />
+                                    <label class="form-check-label fw-bold">Estado venta</label>
+                                </div>
+
+                                <select class="form-control filtro-estado-venta"
+                                        asp-for="Filtros.EstadoVenta"
+                                        asp-items="Model.EstadosVenta">
+                                    <option value="">Seleccione estado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarEstadoFactura"
+                                           data-target=".filtro-estado-factura" />
+                                    <label class="form-check-label fw-bold">Estado factura</label>
+                                </div>
+
+                                <select class="form-control filtro-estado-factura"
+                                        asp-for="Filtros.EstadoFactura"
+                                        asp-items="Model.EstadosFactura">
+                                    <option value="">Seleccione estado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarCliente"
+                                           data-target=".filtro-cliente" />
+                                    <label class="form-check-label fw-bold">Cliente</label>
+                                </div>
+
+                                <input type="text"
+                                       class="form-control filtro-cliente"
+                                       asp-for="Filtros.Cliente"
+                                       placeholder="ID cliente o cédula cliente" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filtro-check"
+                                           type="checkbox"
+                                           asp-for="Filtros.FiltrarFactura"
+                                           data-target=".filtro-factura" />
+                                    <label class="form-check-label fw-bold">Número factura</label>
+                                </div>
+
+                                <input type="text"
+                                       class="form-control filtro-factura"
+                                       asp-for="Filtros.NumeroFactura"
+                                       placeholder="Número de factura" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row align-items-end mt-2">
+                        <div class="col-md-3">
+                            <label>Registros por página</label>
+                            <select class="form-control" name="registrosPorPagina">
+                                <option value="10" selected="@(Model.RegistrosPorPagina == 10)">10</option>
+                                <option value="20" selected="@(Model.RegistrosPorPagina == 20)">20</option>
+                                <option value="50" selected="@(Model.RegistrosPorPagina == 50)">50</option>
+                                <option value="100" selected="@(Model.RegistrosPorPagina == 100)">100</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-9 text-end mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                Buscar
+                            </button>
+
+                            <a asp-action="ReporteVentas"
+                               asp-controller="Reportes"
+                               class="btn btn-secondary">
+                                Limpiar
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h6>Total registros</h6>
+                        <h4>@Model.TotalRegistros</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h6>Total página</h6>
+                        <h4>@Model.TotalPagina.ToString("C0")</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6>Total general filtrado</h6>
+                        <h4>@Model.TotalGeneralFiltrado.ToString("C0")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-sm align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha venta</th>
+                            <th>ID Venta</th>
+                            <th>Factura</th>
+                            <th>Cliente</th>
+                            <th>Cédula cliente</th>
+                            <th>Vendedor</th>
+                            <th>Sede</th>
+                            <th>PDV</th>
+                            <th>Método pago</th>
+                            <th>Total venta</th>
+                            <th>Total factura</th>
+                            <th>Estado venta</th>
+                            <th>Estado factura</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.Resultados.Any())
+                        {
+                            foreach (var item in Model.Resultados)
+                            {
+                                <tr>
+                                    <td>@item.FechaVenta.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@item.IdVenta</td>
+                                    <td>@(item.NumeroFactura ?? "Sin factura")</td>
+                                    <td>@item.IdCliente</td>
+                                    <td>@item.CedulaCliente</td>
+                                    <td>@item.NombreVendedor</td>
+                                    <td>@(item.NombreSede ?? "N/A")</td>
+                                    <td>@(item.NombrePdv ?? "N/A")</td>
+                                    <td>@item.MetodoPago</td>
+                                    <td class="text-end">@item.TotalVenta.ToString("C0")</td>
+                                    <td class="text-end">
+                                        @(item.TotalFactura.HasValue? item.TotalFactura.Value.ToString("C0") : "N/A")
+                                    </td>
+                                    <td>@item.EstadoVenta</td>
+                                    <td>@(item.EstadoFactura ?? "N/A")</td>
+                                    <td>@item.TipoVenta</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-primary"
+                                           asp-controller="Pedido"
+                                           asp-action="DetalleVenta"
+                                           asp-route-idVenta="@item.IdVenta">
+                                            Venta
+                                        </a>
+
+                                        @if (item.IdFactura.HasValue)
+                                        {
+                                            <a class="btn btn-sm btn-info"
+                                               asp-controller="Pedido"
+                                               asp-action="DetalleFactura"
+                                               asp-route-idFactura="@item.IdFactura.Value">
+                                                Factura
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="15" class="text-center text-muted">
+                                    No se encontraron registros.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                    @if (Model.Resultados.Any())
+                    {
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td colspan="9" class="text-end">Total página:</td>
+                                <td class="text-end">@Model.TotalPagina.ToString("C0")</td>
+                                <td colspan="5"></td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalPaginas > 1)
+        {
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="ReporteVentas"
+                           asp-route-pagina="@paginaAnterior"
+                           asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                           asp-route-Filtros.FiltrarFecha="@Model.Filtros.FiltrarFecha"
+                           asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FiltrarVendedor="@Model.Filtros.FiltrarVendedor"
+                           asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                           asp-route-Filtros.FiltrarSede="@Model.Filtros.FiltrarSede"
+                           asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                           asp-route-Filtros.FiltrarPdv="@Model.Filtros.FiltrarPdv"
+                           asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                           asp-route-Filtros.FiltrarMetodoPago="@Model.Filtros.FiltrarMetodoPago"
+                           asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                           asp-route-Filtros.FiltrarEstadoVenta="@Model.Filtros.FiltrarEstadoVenta"
+                           asp-route-Filtros.EstadoVenta="@Model.Filtros.EstadoVenta"
+                           asp-route-Filtros.FiltrarEstadoFactura="@Model.Filtros.FiltrarEstadoFactura"
+                           asp-route-Filtros.EstadoFactura="@Model.Filtros.EstadoFactura"
+                           asp-route-Filtros.FiltrarCliente="@Model.Filtros.FiltrarCliente"
+                           asp-route-Filtros.Cliente="@Model.Filtros.Cliente"
+                           asp-route-Filtros.FiltrarFactura="@Model.Filtros.FiltrarFactura"
+                           asp-route-Filtros.NumeroFactura="@Model.Filtros.NumeroFactura">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="ReporteVentas"
+                               asp-route-pagina="@i"
+                               asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                               asp-route-Filtros.FiltrarFecha="@Model.Filtros.FiltrarFecha"
+                               asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                               asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                               asp-route-Filtros.FiltrarVendedor="@Model.Filtros.FiltrarVendedor"
+                               asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                               asp-route-Filtros.FiltrarSede="@Model.Filtros.FiltrarSede"
+                               asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                               asp-route-Filtros.FiltrarPdv="@Model.Filtros.FiltrarPdv"
+                               asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                               asp-route-Filtros.FiltrarMetodoPago="@Model.Filtros.FiltrarMetodoPago"
+                               asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                               asp-route-Filtros.FiltrarEstadoVenta="@Model.Filtros.FiltrarEstadoVenta"
+                               asp-route-Filtros.EstadoVenta="@Model.Filtros.EstadoVenta"
+                               asp-route-Filtros.FiltrarEstadoFactura="@Model.Filtros.FiltrarEstadoFactura"
+                               asp-route-Filtros.EstadoFactura="@Model.Filtros.EstadoFactura"
+                               asp-route-Filtros.FiltrarCliente="@Model.Filtros.FiltrarCliente"
+                               asp-route-Filtros.Cliente="@Model.Filtros.Cliente"
+                               asp-route-Filtros.FiltrarFactura="@Model.Filtros.FiltrarFactura"
+                               asp-route-Filtros.NumeroFactura="@Model.Filtros.NumeroFactura">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="ReporteVentas"
+                           asp-route-pagina="@paginaSiguiente"
+                           asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                           asp-route-Filtros.FiltrarFecha="@Model.Filtros.FiltrarFecha"
+                           asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FiltrarVendedor="@Model.Filtros.FiltrarVendedor"
+                           asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                           asp-route-Filtros.FiltrarSede="@Model.Filtros.FiltrarSede"
+                           asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                           asp-route-Filtros.FiltrarPdv="@Model.Filtros.FiltrarPdv"
+                           asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                           asp-route-Filtros.FiltrarMetodoPago="@Model.Filtros.FiltrarMetodoPago"
+                           asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                           asp-route-Filtros.FiltrarEstadoVenta="@Model.Filtros.FiltrarEstadoVenta"
+                           asp-route-Filtros.EstadoVenta="@Model.Filtros.EstadoVenta"
+                           asp-route-Filtros.FiltrarEstadoFactura="@Model.Filtros.FiltrarEstadoFactura"
+                           asp-route-Filtros.EstadoFactura="@Model.Filtros.EstadoFactura"
+                           asp-route-Filtros.FiltrarCliente="@Model.Filtros.FiltrarCliente"
+                           asp-route-Filtros.Cliente="@Model.Filtros.Cliente"
+                           asp-route-Filtros.FiltrarFactura="@Model.Filtros.FiltrarFactura"
+                           asp-route-Filtros.NumeroFactura="@Model.Filtros.NumeroFactura">
+                            Siguiente
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            inicializarFiltros();
+
+            document.querySelectorAll(".filtro-check").forEach(function (check) {
+                check.addEventListener("change", function () {
+                    activarFiltro(check);
+                });
+            });
+        });
+
+        function inicializarFiltros() {
+            document.querySelectorAll(".filtro-check").forEach(function (check) {
+                activarFiltro(check);
+            });
+        }
+
+        function activarFiltro(check) {
+            const target = check.getAttribute("data-target");
+            if (!target) return;
+
+            document.querySelectorAll(target).forEach(function (campo) {
+                campo.disabled = !check.checked;
+
+                if (!check.checked) {
+                    if (campo.tagName === "SELECT") {
+                        campo.selectedIndex = 0;
+                    } else {
+                        campo.value = "";
+                    }
+                }
+            });
+        }
+    </script>
+}

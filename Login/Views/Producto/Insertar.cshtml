@@ -4,157 +4,318 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .step-menu {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .step-btn {
+        border: 1px solid #dbe3ea;
+        background: #fff;
+        color: #495057;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-weight: 600;
+        transition: .2s ease-in-out;
+        box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    }
+
+        .step-btn:hover {
+            transform: translateY(-1px);
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        .step-btn.active {
+            background: #0d6efd;
+            color: #fff;
+            border-color: #0d6efd;
+        }
+
+    .step-panel {
+        display: none;
+    }
+
+        .step-panel.active {
+            display: block;
+        }
+
+    .section-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0,0,0,.06);
+    }
+
+    .soft-box {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 14px;
+    }
+
+    .resumen-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: .95rem;
+    }
+
+    .preview-wrap {
+        min-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border: 2px dashed #ced4da;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+        .preview-wrap img {
+            max-height: 220px;
+            object-fit: contain;
+        }
+</style>
+
 <div class="content-wrapper py-4" style="background-color: #f8f9fa;">
     <form id="formularioProducto" enctype="multipart/form-data" method="POST">
         <div class="container">
-            <!-- Título -->
             <div class="row mb-4">
-                <div class="col-md-8 mx-auto text-center">
+                <div class="col-lg-10 mx-auto text-center">
                     <h1 class="fw-bold text-primary mb-2">
-                        <i class="bi bi-box-seam"></i> Agregar Productos
+                        <i class="bi bi-box-seam"></i> Agregar Producto
                     </h1>
-                    <p class="text-muted">
-                        Interfaz para registrar nuevos productos en el sistema
-                    </p>
-                    <hr class="w-50 mx-auto">
+                    <p class="text-muted mb-0">Registra el producto por secciones para una carga más clara y ordenada</p>
                 </div>
             </div>
 
-            <!-- Formulario -->
             <div class="row">
-                <div class="col-md-8 mx-auto">
-                    <div class="card shadow-lg border-0 rounded-3">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card section-card">
                         <div class="card-body p-4">
-                            <div class="row g-3">
 
-                                <!-- Empresa -->
-                                <div class="col-md-6">
-                                    <label for="id_empresa" class="form-label fw-semibold">Empresa</label>
-                                    <select name="id_empresa" id="id_empresa" class="form-select">
-                                        <option disabled selected>Seleccione una empresa</option>
-                                        @foreach (var empresas in Model.Empresas)
-                                        {
-                                            <option value="@empresas.Id_empresa">@empresas.Nombre</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                <!-- Código -->
-                                <div class="col-md-6">
-                                    <label for="codigo" class="form-label fw-semibold">Código</label>
-                                    <input type="text" name="codigo" class="form-control" id="codigo" placeholder="Código del producto">
-                                </div>
-
-                                <!-- Descripción -->
-                                <div class="col-md-12">
-                                    <label for="descripcion" class="form-label fw-semibold">Descripción</label>
-                                    <input type="text" name="descripcion" class="form-control" id="descripcion" placeholder="Nombre o descripción del producto">
-                                </div>
-
-                                <!-- Valor Neto -->
-                                <div class="col-md-6">
-                                    <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
-                                    <input type="number" name="valor_neto" class="form-control" id="valorNeto" placeholder="0.00">
-                                </div>
-
-                                <!-- Valor Venta -->
-                                <div class="col-md-6">
-                                    <label for="valorVenta" class="form-label fw-semibold">Valor Unitario</label>
-                                    <input type="number" name="valor_unitario" id="valorVenta" class="form-control" placeholder="0.00">
-                                </div>
-
-                                <!-- Valor Unidad -->
-                                <div class="col-md-6">
-                                    <label for="valorUnidad" class="form-label fw-semibold">Valor Unidad</label>
-                                    <input type="number" name="valor_unidad" id="valorUnidad" class="form-control" placeholder="0.00">
-                                </div>
-
-                                <!-- Unidad de Medida-->
-                                <div class="col-md-6">
-                                    <label for="unidadMedida" class="form-label fw-semibold">Unidad de Medida</label>
-                                    <select name="unidadMedida" id="unidadMedida" class="form-select">
-                                        <option disabled selected>Seleccione una unidad</option>
-                                        @foreach (var unidad in Model.Unidades)
-                                        {
-                                            <option value="@unidad.IdUnidad">@unidad.Nombre</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                <!-- Stock -->
-                                <div class="col-md-6">
-                                    <label for="stock" class="form-label fw-semibold">Stock</label>
-                                    <input type="number" name="stock" id="stock" class="form-control" placeholder="Cantidad en inventario">
-                                </div>
-
-                                <!-- Servicio -->
-                                <div class="col-md-6">
-                                    <label for="servicio" class="form-label fw-semibold">Servicio</label>
-                                    <select name="servicio" id="servicio" class="form-select">
-                                        <option disabled selected>Seleccione un servicio</option>
-                                        @foreach (var servicio in Model.Servicios)
-                                        {
-                                            <option value="@servicio.IdServicio">@servicio.NombreServicio</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                <!-- Categoría -->
-                                <div class="col-md-6">
-                                    <label for="categorias" class="form-label fw-semibold">Categoría</label>
-                                    <select name="categorias" id="categorias" class="form-select">
-                                        <!-- JS llena dinámicamente -->
-                                    </select>
-                                </div>
-
-                                <!-- Proveedor -->
-                                <div class="col-md-6">
-                                    <label for="id_proveedor" class="form-label fw-semibold">Proveedor</label>
-                                    <select name="id_proveedor" id="proveedor" class="form-select">
-                                        <option disabled selected>Seleccione un proveedor</option>
-                                        @foreach (var proveedor in Model.Proveedores)
-                                        {
-                                            <option value="@proveedor.IdProveedor">@proveedor.RazonSocial</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                <!-- Autenticidad Producto -->
-                                <div class="col-md-6">
-                                    <label for="autenticidadProducto" class="form-label fw-semibold">Autenticidad Producto</label>
-                                    <select name="autenticidadProducto" id="autenticidadProducto" class="form-select">
-                                        <option value="Original">Original</option>
-                                        <option value="Replica">Replica</option>
-                                    </select>
-                                </div>
-
-                                <!-- Condicion Producto -->
-                                <div class="col-md-6">
-                                    <label for="condicionProducto" class="form-label fw-semibold">Condicion Producto</label>
-                                    <select name="condicionProducto" id="condicionProducto" class="form-select">
-                                        <option value="Nuevo">Nuevo</option>
-                                        <option value="Segunda">Segunda</option>
-                                        <option value="Remanufacturado">Remanufacturado</option>
-                                    </select>
-                                </div>
-
-                                <!-- Imagen -->
-                                <div class="col-md-12">
-                                    <label class="form-label fw-semibold">Imagen del Producto</label>
-                                    <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
-                                    <div class="mt-2 text-center">
-                                        <img id="previewImg" src="" alt="Vista previa" class="img-thumbnail d-none" style="max-height: 200px;">
-                                    </div>
-                                </div>
-
+                            <!-- Menú horizontal -->
+                            <div class="step-menu">
+                                <button type="button" class="step-btn active" data-step="info">
+                                    <i class="bi bi-info-circle me-2"></i>Información Producto
+                                </button>
+                                <button type="button" class="step-btn" data-step="iva">
+                                    <i class="bi bi-receipt me-2"></i>IVA
+                                </button>
+                                <button type="button" class="step-btn" data-step="precios">
+                                    <i class="bi bi-cash-coin me-2"></i>Precios
+                                </button>
+                                <button type="button" class="step-btn" data-step="foto">
+                                    <i class="bi bi-image me-2"></i>Foto
+                                </button>
                             </div>
 
-                            <!-- Botón -->
+                            <!-- SECCIÓN 1 -->
+                            <div class="step-panel active" id="panel-info">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="id_empresa" class="form-label fw-semibold">Empresa</label>
+                                        <select name="id_empresa" id="id_empresa" class="form-select">
+                                            <option disabled selected>Seleccione una empresa</option>
+                                            @foreach (var empresas in Model.Empresas)
+                                            {
+                                                <option value="@empresas.Id_empresa">@empresas.Nombre</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="codigo" class="form-label fw-semibold">Código</label>
+                                        <input type="text" name="codigo" class="form-control" id="codigo" placeholder="Código del producto">
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+                                        <input type="text" name="descripcion" class="form-control" id="descripcion" placeholder="Nombre o descripción del producto">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="unidadMedida" class="form-label fw-semibold">Unidad de Medida</label>
+                                        <select name="unidadMedida" id="unidadMedida" class="form-select">
+                                            <option disabled selected>Seleccione una unidad</option>
+                                            @foreach (var unidad in Model.Unidades)
+                                            {
+                                                <option value="@unidad.IdUnidad">@unidad.Nombre</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="stock" class="form-label fw-semibold">Stock</label>
+                                        <input type="number" step="1" min="0" name="stock" id="stock" class="form-control" placeholder="Cantidad en inventario">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="servicio" class="form-label fw-semibold">Servicio</label>
+                                        <select name="servicio" id="servicio" class="form-select">
+                                            <option disabled selected>Seleccione un servicio</option>
+                                            @foreach (var servicio in Model.Servicios)
+                                            {
+                                                <option value="@servicio.IdServicio">@servicio.NombreServicio</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="categorias" class="form-label fw-semibold">Categoría</label>
+                                        <select name="categorias" id="categorias" class="form-select">
+                                            <option disabled selected>Seleccione una categoría</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="proveedor" class="form-label fw-semibold">Proveedor</label>
+                                        <select name="id_proveedor" id="proveedor" class="form-select">
+                                            <option disabled selected>Seleccione un proveedor</option>
+                                            @foreach (var proveedor in Model.Proveedores)
+                                            {
+                                                <option value="@proveedor.IdProveedor">@proveedor.RazonSocial</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label for="autenticidadProducto" class="form-label fw-semibold">Autenticidad</label>
+                                        <select name="autenticidadProducto" id="autenticidadProducto" class="form-select">
+                                            <option value="Original">Original</option>
+                                            <option value="Replica">Replica</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label for="condicionProducto" class="form-label fw-semibold">Condición</label>
+                                        <select name="condicionProducto" id="condicionProducto" class="form-select">
+                                            <option value="Nuevo">Nuevo</option>
+                                            <option value="Segunda">Segunda</option>
+                                            <option value="Remanufacturado">Remanufacturado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN 2 -->
+                            <div class="step-panel" id="panel-iva">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <div class="form-check form-switch soft-box">
+                                            <input class="form-check-input" type="checkbox" id="aplicaIva" name="aplicaIva" value="true">
+                                            <label class="form-check-label fw-semibold" for="aplicaIva">
+                                                ¿Este producto aplica IVA?
+                                            </label>
+                                            <div class="text-muted small mt-1">
+                                                Si no se selecciona, el IVA se enviará como 0.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 d-none" id="bloqueIva">
+                                        <label for="iva" class="form-label fw-semibold">Porcentaje de IVA (%)</label>
+                                        <input type="number" step="0.01" min="0" name="iva" id="iva" class="form-control" placeholder="Ej: 19">
+                                        <div class="form-text">Ejemplo: 19 para IVA del 19%</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="soft-box h-100">
+                                            <div class="fw-semibold mb-2">Vista rápida del IVA</div>
+                                            <div class="resumen-item">
+                                                <span>Aplica IVA:</span>
+                                                <strong id="txtAplicaIva">No</strong>
+                                            </div>
+                                            <div class="resumen-item">
+                                                <span>Porcentaje:</span>
+                                                <strong id="txtPorcentajeIva">0%</strong>
+                                            </div>
+                                            <div class="resumen-item mb-0">
+                                                <span>Valor IVA calculado:</span>
+                                                <strong id="txtValorIva">$0.00</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN 3 -->
+                            <div class="step-panel" id="panel-precios">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="valorUnidad" class="form-label fw-semibold">Valor Unidad</label>
+                                        <input type="number" step="0.01" min="0" name="valor_unidad" id="valorUnidad" class="form-control" placeholder="0.00">
+                                        <div class="form-text">Costo o valor base por unidad</div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="valorNeto" class="form-label fw-semibold">Valor Neto</label>
+                                        <input type="number" step="0.01" min="0" name="valor_neto" class="form-control" id="valorNeto" placeholder="0.00" readonly>
+                                        <div class="form-text">Se calcula automáticamente</div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="valorVenta" class="form-label fw-semibold">Valor Venta</label>
+                                        <input type="number" step="0.01" min="0" name="valor_unitario" id="valorVenta" class="form-control" placeholder="0.00">
+                                        <div class="form-text">Este valor se ingresa manualmente</div>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="soft-box">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="resumen-item">
+                                                        <span>Base sin IVA:</span>
+                                                        <strong id="txtBaseSinIva">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="resumen-item">
+                                                        <span>IVA calculado:</span>
+                                                        <strong id="txtIvaCalculado">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="resumen-item">
+                                                        <span>Total Neto:</span>
+                                                        <strong id="txtTotalNeto">$0.00</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN 4 -->
+                            <div class="step-panel" id="panel-foto">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Imagen del Producto</label>
+                                        <input type="file" class="form-control" id="imagen" name="imagen" accept="image/*">
+                                        <div class="form-text">Formatos sugeridos: JPG, PNG, WEBP</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="preview-wrap">
+                                            <img id="previewImg" src="" alt="Vista previa" class="d-none">
+                                            <span id="previewPlaceholder" class="text-muted">
+                                                La vista previa aparecerá aquí
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="d-grid mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg shadow-sm">
                                     <i class="bi bi-plus-circle"></i> Agregar Producto
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -167,19 +328,87 @@
     <script>
         $(document).ready(function () {
 
+            function formatearMoneda(valor) {
+                return new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 2
+                }).format(valor || 0);
+            }
+
+            function obtenerNumero(selector) {
+                let valor = parseFloat($(selector).val());
+                return isNaN(valor) ? 0 : valor;
+            }
+
+            function recalcularValores() {
+                let valorUnidad = obtenerNumero('#valorUnidad');
+                let stock = obtenerNumero('#stock');
+                let base = valorUnidad * stock;
+
+                let aplicaIva = $('#aplicaIva').is(':checked');
+                let porcentajeIva = aplicaIva ? obtenerNumero('#iva') : 0;
+                let valorIva = base * (porcentajeIva / 100);
+                let valorNeto = base + valorIva;
+
+                $('#valorNeto').val(valorNeto.toFixed(2));
+
+                $('#txtAplicaIva').text(aplicaIva ? 'Sí' : 'No');
+                $('#txtPorcentajeIva').text(porcentajeIva.toFixed(2) + '%');
+                $('#txtValorIva').text(formatearMoneda(valorIva));
+
+                $('#txtBaseSinIva').text(formatearMoneda(base));
+                $('#txtIvaCalculado').text(formatearMoneda(valorIva));
+                $('#txtTotalNeto').text(formatearMoneda(valorNeto));
+            }
+
+            // Navegación por secciones
+            $('.step-btn').on('click', function () {
+                let step = $(this).data('step');
+
+                $('.step-btn').removeClass('active');
+                $(this).addClass('active');
+
+                $('.step-panel').removeClass('active');
+                $('#panel-' + step).addClass('active');
+            });
+
             // Preview de imagen
             $("#imagen").on("change", function () {
                 const file = this.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        $("#previewImg").attr("src", e.target.result).removeClass("d-none");
+                        $("#previewImg")
+                            .attr("src", e.target.result)
+                            .removeClass("d-none");
+
+                        $("#previewPlaceholder").addClass("d-none");
                     };
                     reader.readAsDataURL(file);
+                } else {
+                    $("#previewImg").addClass("d-none").attr("src", "");
+                    $("#previewPlaceholder").removeClass("d-none");
                 }
             });
 
-            // Carga de categorías dinámicas
+            // Mostrar u ocultar IVA
+            $('#aplicaIva').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#bloqueIva').removeClass('d-none');
+                } else {
+                    $('#bloqueIva').addClass('d-none');
+                    $('#iva').val('');
+                }
+                recalcularValores();
+            });
+
+            // Recalcular
+            $('#valorUnidad, #stock, #iva').on('input', function () {
+                recalcularValores();
+            });
+
+            // Carga de categorías
             $('#servicio').on('change', function () {
                 var idServicio = $(this).val();
                 if (idServicio) {
@@ -190,6 +419,8 @@
                         success: function (categorias) {
                             var $categoriaSelect = $('#categorias');
                             $categoriaSelect.empty();
+                            $categoriaSelect.append('<option disabled selected>Seleccione una categoría</option>');
+
                             $.each(categorias, function (i, categoria) {
                                 $categoriaSelect.append(
                                     $('<option>', {
@@ -210,6 +441,19 @@
             $('#formularioProducto').submit(function (e) {
                 e.preventDefault();
 
+                if (!$('#aplicaIva').is(':checked')) {
+                    if ($('#iva').length === 0) {
+                        $('<input>').attr({
+                            type: 'hidden',
+                            id: 'iva',
+                            name: 'iva',
+                            value: '0'
+                        }).appendTo('#formularioProducto');
+                    } else {
+                        $('#iva').val('0');
+                    }
+                }
+
                 var formData = new FormData(this);
 
                 $.ajax({
@@ -218,39 +462,39 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: function () {
-                        alert('Producto agregado correctamente.');
-                        $('#formularioProducto')[0].reset();
-                        $('#previewImg').addClass("d-none");
-                        $('#categorias').empty();
+                    success: function (resp) {
+                        if (resp.success) {
+                            alert('Producto agregado correctamente.');
+                            $('#formularioProducto')[0].reset();
+                            $('#previewImg').addClass("d-none").attr("src", "");
+                            $('#previewPlaceholder').removeClass("d-none");
+                            $('#categorias').empty().append('<option disabled selected>Seleccione una categoría</option>');
+                            $('#bloqueIva').addClass('d-none');
+                            recalcularValores();
+
+                            $('.step-btn').removeClass('active');
+                            $('.step-btn[data-step="info"]').addClass('active');
+                            $('.step-panel').removeClass('active');
+                            $('#panel-info').addClass('active');
+                        } else {
+                            alert(resp.message || 'No se pudo agregar el producto.');
+                        }
                     },
                     error: function () {
                         alert('Error al agregar el producto.');
                     }
                 });
             });
-        });
 
-        let tiempoInicio = 0;
-        $("#codigo").on("keydown", function (e) {
-            if (tiempoInicio === 0) {
-                tiempoInicio = Date.now();
-            }
+            // Evitar submit con Enter en código
+            $("#codigo").on("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    $("#descripcion").focus();
+                }
+            });
 
-            if (e.key === "Enter") {
-                let tiempoFin = Date.now();
-
-                e.preventDefault(); // 🚫 SIEMPRE evitar submit
-                tiempoInicio = 0;
-            }
-        });
-
-        $("#codigo").on("keydown", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-
-                $("#descripcion").focus(); // 👈 siguiente campo
-            }
+            recalcularValores();
         });
     </script>
 }

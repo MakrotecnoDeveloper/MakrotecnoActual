@@ -225,7 +225,7 @@ namespace Plataforma.Servicios.Implementacion
                     IdServicio = g.Key.IdServicio,
                     NombreServicio = g.Key.NombreServicio,
                     TotalSubTotal = g.Sum(x => x.Pedido.SubTotal),
-                    TotalVNeto = g.Sum(x => x.Pedido.VNeto ?? 0m)
+                    TotalVNeto = g.Sum(x => x.Pedido.VUnidad ?? 0m)
                 })
                 .OrderBy(x => x.NombreServicio)
                 .ToListAsync();

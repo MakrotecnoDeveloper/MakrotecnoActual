@@ -528,7 +528,8 @@ namespace Plataforma.Servicios.Implementacion
                         idProveedor = producto.idProveedor,
                         ImagenPath = producto.ImagenPath,
                         AutenticidadProducto = producto.AutenticidadProducto,
-                        CondicionProducto = producto.CondicionProducto
+                        CondicionProducto = producto.CondicionProducto,
+                        IdUnidad = 4
                     };
 
                     _dbContext.Productos.Add(nuevoProducto);
@@ -616,7 +617,8 @@ namespace Plataforma.Servicios.Implementacion
                 idProveedor = IdProveedor,
                 ImagenPath = $"/img/Productos/nodisponible.png",
                 AutenticidadProducto = "Original",
-                CondicionProducto = "Nuevo"
+                CondicionProducto = "Nuevo",
+                IdUnidad = 4
             };
             _dbContext.Productos.Add(nuevoProductoInventario);
             await _dbContext.SaveChangesAsync();

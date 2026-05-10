@@ -335,7 +335,7 @@ namespace Plataforma.Controllers
             var resultados = productos.Select(p => new {
                 label = $"{p.ProductoId} - {p.Producto.NombreProducto}",
                 value = p.ProductoId,
-                valorNeto = p.ValorNeto,
+                valorUnidad = p.VUnidad,
                 valorVenta = p.PrecioUnitario
             });
 

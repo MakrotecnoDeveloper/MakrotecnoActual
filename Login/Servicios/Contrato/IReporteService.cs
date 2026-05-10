@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using Plataforma.Models.ViewModels.Reportes;
 using Plataforma.ViewModels.Reportes;
 
 namespace Plataforma.Servicios.Contrato
@@ -7,5 +8,10 @@ namespace Plataforma.Servicios.Contrato
     {
         Task<ReporteGeneralVm> ObtenerVistaGeneralAsync(DateTime fechaInicio, DateTime fechaFin);
         Task<byte[]> ExportarVistaGeneralExcelAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<ReporteVentasViewModel> ObtenerReporteVentasAsync(
+            ReporteVentasFiltroViewModel filtros,
+            int pagina,
+            int registrosPorPagina
+        );
     }
 }

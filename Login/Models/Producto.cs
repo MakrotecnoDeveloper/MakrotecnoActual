@@ -34,11 +34,11 @@ public class Producto
 
         [Column("IdUnidad")]
         public int IdUnidad { get; set; }
-
+        public decimal? Iva { get; set; }
         // 🔗 navegación
         [ForeignKey("IdUnidad")]
         public UnidadMedida Unidad { get; set; }
-    public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
+        public ICollection<InventarioSede> Inventarios { get; set; } = new List<InventarioSede>();
 }
 
 public class StickerPrintVm
