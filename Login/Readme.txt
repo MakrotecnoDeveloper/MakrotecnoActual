@@ -1,5 +1,11 @@
 ---README 
+estructura del proyecto
 
+Backend: .net framework 8.0
+Frontend: Razor, Boostrap
+BD: SQL Server
+
+----------------------
 Update
 Create a new branch for the update, and then merge it back to the main branch after testing.
 1. Create a new branch for the update:
