@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Streaming;
+using Plataforma.Models.ViewModels.Plataformas;
 using Plataforma.Servicios.Contrato;
+using Plataforma.Servicios.Implementacion;
 using Plataforma.Utils;
 
 namespace Plataforma.Controllers
@@ -14,11 +17,13 @@ namespace Plataforma.Controllers
         private readonly IProductoService _productoservice;
         private readonly BaseAdmContext _dbContext;
         private readonly IQrService _qrService;
-        public ProductoController(IProductoService productoservice, BaseAdmContext dbContext, IQrService qrService)
+        private readonly IStreamingService _streamingService;
+        public ProductoController(IProductoService productoservice, BaseAdmContext dbContext, IQrService qrService, IStreamingService streamingService)
         {
             _productoservice = productoservice;
             _dbContext = dbContext;
             _qrService = qrService;
+            _streamingService = streamingService;
         }
         [Authorize]
         public IActionResult Index()
@@ -337,10 +342,57 @@ namespace Plataforma.Controllers
         }
         [Authorize]
         [HttpGet]
-        public IActionResult FormInserClienPlatf()
+        public async Task<IActionResult> formInserClienPlatf()
         {
-            var traerPlataformas = _productoservice.SuscripcionesActivas();
-            return View(traerPlataformas);
+            var vm = await _productoservice.ObtenerFormularioClientePlataforma();
+
+            return View(vm);
+        }
+        [HttpGet]
+        public async Task<IActionResult> BuscarClienteStreaming(string termino)
+        {
+            var resultado = await _productoservice.BuscarClienteStreaming(termino);
+
+            return Json(resultado);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> insertVentClientPltf(ClientePlataformaRegistroViewModel model)
+        {
+            var resultado = await _productoservice.InsertarVentaClientePlataforma(model);
+
+            if (!resultado.ok)
+            {
+                TempData["Error"] = resultado.mensaje;
+                return RedirectToAction(nameof(formInserClienPlatf));
+            }
+
+            TempData["Success"] = resultado.mensaje;
+
+            return RedirectToAction(nameof(formInserClienPlatf));
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetCuentasPorClientes(string idsClienteStreaming)
+        {
+            try
+            {
+                var cuentas = await _streamingService.ObtenerCuentasPorClientesAsync(idsClienteStreaming);
+
+                return Json(new
+                {
+                    ok = true,
+                    cuentas
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al obtener las cuentas del cliente.",
+                    detalle = ex.Message
+                });
+            }
         }
         public IActionResult InsertVentClientPltf(string nombrecliente, string celularcliente, string correo, string contrasena, int idPltfSuscripcion, int cantidad, string ppm, DateTime feciniplat, DateTime fecfinplat, int valorventa, int valorneto, int cedula, int estado, string clave)
         {
@@ -362,10 +414,65 @@ namespace Plataforma.Controllers
             return View(searchPlataform);
         }
         [HttpGet]
+        public async Task<IActionResult> BuscarClientesStreaming(string termino)
+        {
+            try
+            {
+                var clientes = await _streamingService.BuscarClientesStreamingAsync(termino);
+
+                return Json(new
+                {
+                    ok = true,
+                    clientes
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al buscar clientes.",
+                    detalle = ex.Message
+                });
+            }
+        }
+        [HttpGet]
         public async Task<IActionResult> GetSuscripcionesActivas(int plataformaId)
         {
             var suscripciones = await _productoservice.ObtenerSuscripcionesActivas(plataformaId);
             return Json(suscripciones);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ActualizarCuentaClienteStreaming([FromBody] ActualizarCuentaClienteStreamingDTO model)
+        {
+            try
+            {
+                var resultado = await _streamingService.ActualizarCuentaClienteStreamingAsync(model);
+
+                if (!resultado.ok)
+                {
+                    return BadRequest(new
+                    {
+                        ok = false,
+                        mensaje = resultado.mensaje
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = resultado.mensaje
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al actualizar los datos de la cuenta.",
+                    detalle = ex.Message
+                });
+            }
         }
 
         // Obtener datos de clientes relacionados con una suscripción

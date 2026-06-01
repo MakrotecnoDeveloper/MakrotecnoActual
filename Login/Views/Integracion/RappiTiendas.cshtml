@@ -1,0 +1,94 @@
+﻿@model List<MakroTecno.ViewModels.Integraciones.RappiTiendaViewModel>
+
+@{
+    ViewData["Title"] = "Tiendas Rappi";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-store"></i> Tiendas Rappi
+                </h4>
+
+                <a asp-action="CrearEditarRappiTienda" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus"></i> Nueva tienda
+                </a>
+            </div>
+
+            <div class="card-body">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <table class="table table-bordered table-striped table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID Rappi</th>
+                            <th>Nombre tienda Rappi</th>
+                            <th>Sede ERP</th>
+                            <th>Estado</th>
+                            <th style="width: 120px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.IdTiendaRappi</td>
+                                    <td>@item.NombreTiendaRappi</td>
+                                    <td>
+                                        <strong>@item.SedeId</strong><br />
+                                        <small>@item.NombreSede</small>
+                                    </td>
+                                    <td>
+                                        @if (item.Activa)
+                                        {
+                                            <span class="badge bg-success">Activa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactiva</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="CrearEditarRappiTienda"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    No hay tiendas Rappi configuradas.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>

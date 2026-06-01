@@ -1,189 +1,763 @@
 ﻿@model List<Plataformas>
+
 @{
-    ViewData["Title"] = "formVisuPlatf";
+    ViewData["Title"] = "Cuentas por Cliente";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .tabla-cuentas-cliente th {
+        background: #343a40;
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .tabla-cuentas-cliente td {
+        vertical-align: top;
+        min-width: 270px;
+    }
+
+    .cuenta-bloque {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #adb5bd;
+    }
+
+    .cuenta-bloque:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .cuenta-label {
+        font-weight: bold;
+        color: #343a40;
+    }
+
+    .cliente-info-card {
+        border-left: 5px solid #007bff;
+    }
+
+    .resultado-cliente {
+        cursor: pointer;
+    }
+</style>
+
 <div class="content-wrapper">
-    <div class="container">
-        <div class="row">
+    <div class="container-fluid mt-4">
 
-            <div class="col-12">
-                <div id="contCuentasActivas">
-                    <select id="tiposPlataformas" class="form-control">
-                        <option value="">Seleccione Plataforma</option>
-                        @foreach (var plataforma in Model)
-                        {
-                            <option value="@plataforma.IdPlataforma">@plataforma.NombrePltf</option>
-                        }
-                    </select>
+        <h2 class="mb-4">Cuentas por Cliente</h2>
 
-                    <select id="ctaActivasPlataformas" class="form-control" disabled>
-                        <option value="">Seleccione suscripcion</option>
-                    </select>
-                </div>
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Buscar cliente
             </div>
-            <div class="col-12">
-                <div id="contenedorDatos">
+
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-md-10">
+                        <label for="terminoBusqueda">
+                            Buscar por nombre, celular o correo
+                        </label>
+
+                        <input type="text"
+                               id="terminoBusqueda"
+                               class="form-control"
+                               placeholder="Ej: Álvaro Carvajal, 320639714 o correo@gmail.com">
+                    </div>
+
+                    <div class="form-group col-md-2 d-flex align-items-end">
+                        <button type="button" id="btnBuscarCliente" class="btn btn-primary btn-block">
+                            Buscar
+                        </button>
+                    </div>
                 </div>
+
+                <div id="resultadoBusqueda" class="mt-3"></div>
+            </div>
+        </div>
+
+        <div id="contenedorClienteUnico"></div>
+
+    </div>
+
+    <div class="modal fade" id="modalEditarCuenta" tabindex="-1" role="dialog" aria-labelledby="modalEditarCuentaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalEditarCuentaLabel">Modificar datos de la cuenta</h5>
+
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="editIdClientePlataforma">
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Fecha inicio</label>
+                            <input type="datetime-local" class="form-control" id="editFechaIniPago">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Fecha fin</label>
+                            <input type="datetime-local" class="form-control" id="editFechaFinPago">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Clave perfil</label>
+                            <input type="text" class="form-control" id="editClavePerfil">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Cantidad</label>
+                            <input type="number" class="form-control" id="editCantidad" min="1">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>PPM</label>
+                            <select class="form-control" id="editPpm">
+                                <option value="Pantalla">Pantalla</option>
+                                <option value="Perfil">Perfil</option>
+                                <option value="Meses">Meses</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Valor venta</label>
+                            <input type="number" class="form-control" id="editValorVenta">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Valor neto</label>
+                            <input type="number" class="form-control" id="editValorNeto">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Estado</label>
+                            <select class="form-control" id="editEstado">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        Usa esta opción cuando el cliente renueve la cuenta o necesites corregir fechas, clave de perfil o valores.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-primary" onclick="guardarCambiosCuenta()">
+                        Guardar cambios
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts {
     <script>
-        // Cuando cambia la selección en el primer select
-        document.getElementById('tiposPlataformas').addEventListener('change', async function (event) {
-            const plataformaId = event.target.value;
-            if (!plataformaId) {
+        const plataformas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.Select(p => new
+                    {
+                            idPlataforma = p.IdPlataforma,
+                            nombrePlataforma = p.NombrePltf
+                    })
+            ));
+
+    const btnBuscarCliente = document.getElementById("btnBuscarCliente");
+    const terminoBusqueda = document.getElementById("terminoBusqueda");
+    const resultadoBusqueda = document.getElementById("resultadoBusqueda");
+    const contenedorClienteUnico = document.getElementById("contenedorClienteUnico");
+
+        let clienteActual = null;
+
+        btnBuscarCliente.addEventListener("click", buscarCliente);
+
+        terminoBusqueda.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                buscarCliente();
+            }
+        });
+
+        async function buscarCliente() {
+            const termino = terminoBusqueda.value.trim();
+
+            if (!termino) {
+                resultadoBusqueda.innerHTML = `
+                    <div class="alert alert-warning">
+                        Debe ingresar nombre, celular o correo.
+                    </div>
+                `;
                 return;
             }
 
-            // Limpiar y habilitar el segundo select
-            const ctaActivasPlataformas = document.getElementById('ctaActivasPlataformas');
-            ctaActivasPlataformas.innerHTML = "<option> Cargando...</option>";
-            ctaActivasPlataformas.disabled = true;
+            resultadoBusqueda.innerHTML = `
+                <div class="alert alert-info">
+                    Buscando cliente...
+                </div>
+            `;
 
-            // Hacer la consulta asincrónica para obtener las suscripciones activas para la plataforma seleccionada
-            const response = await fetch(`/Producto/GetSuscripcionesActivas?plataformaId=${plataformaId}`);
-            const suscripciones = await response.json();
-            // Llenar el select de suscripciones
-            ctaActivasPlataformas.innerHTML = "<option value=''>Seleccione suscripción</option>";
-            suscripciones.forEach(suscripcion => {
-                const option = document.createElement('option');
-                option.value = suscripcion.idPltfSuscripcion;
-                option.textContent = suscripcion.descripcion;
-                ctaActivasPlataformas.appendChild(option);
+            contenedorClienteUnico.innerHTML = "";
+
+            try {
+                const response = await fetch(`/Producto/BuscarClientesStreaming?termino=${encodeURIComponent(termino)}`);
+                const data = await leerJsonSeguro(response);
+
+                const clientes = data.clientes || [];
+
+                if (clientes.length === 0) {
+                    resultadoBusqueda.innerHTML = `
+                        <div class="alert alert-info">
+                            No se encontraron clientes con ese criterio.
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (clientes.length === 1) {
+                    resultadoBusqueda.innerHTML = "";
+                    seleccionarCliente(clientes[0]);
+                    return;
+                }
+
+                pintarOpcionesClientes(clientes);
+
+            } catch (error) {
+                console.error(error);
+
+                resultadoBusqueda.innerHTML = `
+                    <div class="alert alert-danger">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function pintarOpcionesClientes(clientes) {
+            let html = `
+                <div class="alert alert-secondary mb-2">
+                    Se encontraron varios clientes. Selecciona uno:
+                </div>
+
+                <div class="list-group">
+            `;
+
+            clientes.forEach(cliente => {
+                html += `
+                    <button type="button"
+                            class="list-group-item list-group-item-action resultado-cliente"
+                            data-ids="${escaparHtml(cliente.idsClienteStreaming || '')}"
+                            data-nombre="${escaparHtml(cliente.nombreCliente || '')}"
+                            data-celular="${escaparHtml(cliente.celularCliente || '')}"
+                            data-correo="${escaparHtml(cliente.correoCliente || '')}"
+                            onclick="seleccionarClienteDesdeBoton(this)">
+
+                        <strong>${escaparHtml(cliente.nombreCliente || 'Sin nombre')}</strong><br>
+                        <small>
+                            Celular: ${escaparHtml(cliente.celularCliente || 'No registrado')} |
+                            Correo: ${escaparHtml(cliente.correoCliente || 'No registrado')}
+                        </small>
+                    </button>
+                `;
             });
 
-            ctaActivasPlataformas.disabled = false;
-        });
+            html += `</div>`;
 
-        // Cuando se selecciona una suscripción
-        document.getElementById('ctaActivasPlataformas').addEventListener('change', async function (event) {
-            const suscripcionId = event.target.value;
-            if (!suscripcionId) {
+            resultadoBusqueda.innerHTML = html;
+        }
+
+        function seleccionarClienteDesdeBoton(btn) {
+            const cliente = {
+                idsClienteStreaming: btn.dataset.ids,
+                nombreCliente: btn.dataset.nombre,
+                celularCliente: btn.dataset.celular,
+                correoCliente: btn.dataset.correo
+            };
+
+            seleccionarCliente(cliente);
+        }
+
+        async function seleccionarCliente(cliente) {
+            clienteActual = cliente;
+
+            resultadoBusqueda.innerHTML = "";
+
+            contenedorClienteUnico.innerHTML = `
+                <div class="card cliente-info-card mb-4">
+                    <div class="card-header bg-light">
+                        <strong>Cliente consultado</strong>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Nombre:</strong><br>
+                                ${escaparHtml(cliente.nombreCliente || '')}
+                            </div>
+
+                            <div class="col-md-4">
+                                <strong>Celular:</strong><br>
+                                ${escaparHtml(cliente.celularCliente || '')}
+                            </div>
+
+                            <div class="col-md-4">
+                                <strong>Correo:</strong><br>
+                                ${escaparHtml(cliente.correoCliente || '')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    Cargando cuentas del cliente...
+                </div>
+            `;
+
+            await cargarCuentasCliente(cliente);
+        }
+
+        async function cargarCuentasCliente(cliente) {
+            try {
+                const response = await fetch(`/Producto/GetCuentasPorClientes?idsClienteStreaming=${encodeURIComponent(cliente.idsClienteStreaming)}`);
+                const data = await leerJsonSeguro(response);
+
+                const cuentas = data.cuentas || [];
+
+                pintarVentanaUnicaCliente(cliente, cuentas);
+
+            } catch (error) {
+                console.error(error);
+
+                contenedorClienteUnico.innerHTML += `
+                    <div class="alert alert-danger">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function pintarVentanaUnicaCliente(cliente, cuentas) {
+            let html = `
+                <div class="card cliente-info-card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <strong>Cliente consultado</strong>
+                        <span class="badge badge-primary">${cuentas.length} cuenta(s)</span>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Nombre:</strong><br>
+                                ${escaparHtml(cliente.nombreCliente || '')}
+                            </div>
+
+                            <div class="col-md-4">
+                                <strong>Celular:</strong><br>
+                                ${escaparHtml(cliente.celularCliente || '')}
+                            </div>
+
+                            <div class="col-md-4">
+                                <strong>Correo:</strong><br>
+                                ${escaparHtml(cliente.correoCliente || '')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (!cuentas || cuentas.length === 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        Este cliente no tiene cuentas registradas.
+                    </div>
+                `;
+
+                contenedorClienteUnico.innerHTML = html;
                 return;
             }
 
-            // Hacer la consulta asincrónica para obtener los datos de la suscripción y clientes
-            const response = await fetch(`/Producto/GetDatosSuscripcion?suscripcionId=${suscripcionId}`);
-            const datos = await response.json();
-            // Llenar el contenedor de datos con la tabla
-            const contenedorDatos = document.getElementById('contenedorDatos');
-            contenedorDatos.innerHTML = '';
+            html += `
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        Cuentas del cliente por plataforma
+                    </div>
 
-            const tabla = document.createElement('table');
-            tabla.className = 'table table-bordered';
-            tabla.innerHTML = `
-                        <thead>
-                            <tr>
-                                <th>ID Cliente</th>
-                                <th>ID Asignación</th>
-                                <th>Correo</th>
-                                <th>Contraseña</th>
-                                <th>Perfil</th>
-                                <th>Clave Perfil</th>
-                                <th>Celular</th>
-                                <th>Fecha Inicio</th>
-                                <th>Fecha Fin</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-sm tabla-cuentas-cliente">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 180px;">Usuario</th>
+                                    <th style="min-width: 130px;">Número</th>
+            `;
 
-                            </tr>
-                        </thead>
-                                <tbody>
-                            ${datos.map(cliente => {
-                const whatsappMessage = encodeURIComponent(`*---| Cuenta ${cliente.nombrePlataforma} |---*\n` +
-                    `- Correo: ${cliente.correoPlataforma}\n` +
-                    `- Contraseña: ${cliente.clavePlataforma}\n` +
-                    `- Perfil: ${cliente.nombreCliente}\n` +
-                    `- Clave Perfil: ${cliente.clavePerfil}\n` +
-                    `- Fecha Inicio: ${new Date(cliente.fechaIni).toLocaleDateString()}\n` +
-                    `- Fecha Fin: ${new Date(cliente.fechaFin).toLocaleDateString()}\n` +
-                    `- Celular: ${new Date(cliente.celular).toLocaleDateString()}`);
+            plataformas.forEach(plataforma => {
+                html += `
+                    <th>
+                        ${escaparHtml(plataforma.nombrePlataforma || '')}
+                    </th>
+                `;
+            });
 
-                return `
-                                    <tr>
-                                        <td>${cliente.idCliente}</td>
-                                        <td>${cliente.idPltfSuscripcion}</td>
-                                        <td>${cliente.correoPlataforma}</td>
-                                        <td>${cliente.clavePlataforma}</td>
-                                        <td>${cliente.nombreCliente}</td>
-                                        <td>${cliente.clavePerfil}</td>
-                                        <td>${cliente.celular}</td>
-                                        <td>${new Date(cliente.fechaIni).toLocaleDateString()}</td>
-                                        <td>${new Date(cliente.fechaFin).toLocaleDateString()}</td>
-                                        <td>${cliente.estado ? 'Activo' : 'Inactivo'}</td>
-                                        <td>
-                                            <button class="btn btn-warning btn-sm" onclick="editarEstado(${cliente.idPltfSuscripcion}, ${cliente.estado}, ${cliente.idCliente})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${cliente.idCliente})">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                            <a href="https://wa.me/${cliente.celular}?text=${whatsappMessage}" class="btn btn-success btn-sm" target="_blank">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
-                                        </td>
-                                    </tr>`;
-            }).join('')}
-                        </tbody>
+            html += `
+                                </tr>
+                            </thead>
 
-                    `;
-            contenedorDatos.appendChild(tabla);
-        });
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>${escaparHtml(cliente.nombreCliente || '')}</strong><br>
+                                        <small>${escaparHtml(cliente.correoCliente || '')}</small>
+                                    </td>
 
+                                    <td>
+                                        ${escaparHtml(cliente.celularCliente || '')}
+                                    </td>
+            `;
 
-        //Acciones btn
-        function editarEstado(idClientePlataforma, estado, idCliente) {
+            plataformas.forEach(plataforma => {
+                const cuentasPlataforma = cuentas.filter(c => c.idPlataforma === plataforma.idPlataforma);
 
-            // Mostrar el cuadro de diálogo para que el usuario ingrese el nuevo estado
-            var nuevoEstado = prompt("Ingrese el nuevo estado:", estado);
+                html += `<td>`;
 
-            // Verificar que el usuario haya ingresado un estado
-            if (nuevoEstado !== null && nuevoEstado.trim() !== "") {
-                // Enviar los datos al controlador mediante una solicitud AJAX
-                $.ajax({
-                    url: '@Url.Action("EditarEstadoCta", "Producto")',
-                    type: 'POST',
-                    data: {
-                        id: idClientePlataforma,
-                        estado: nuevoEstado,
-                        idCliente: idCliente
-                    },
-                    success: function (response) {
-                        // Manejar la respuesta del servidor si es necesario
-                        alert("Estado actualizado exitosamente.");
-                        // Opcional: Puedes actualizar la página o la parte de la interfaz de usuario aquí
-                    },
-                    error: function (xhr, status, error) {
-                        // Manejar errores aquí
-                        alert("Hubo un error al actualizar el estado.");
-                    }
-                });
-            } else {
-                alert("El estado no puede estar vacío.");
-            }
-        }
-
-        function eliminarCliente(idClientePlataforma) {
-            if (confirm('¿Está seguro que desea eliminar este cliente?')) {
-                fetch(`/Producto/Delete?id=${idClientePlataforma}`, { method: 'DELETE' })
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Cliente eliminado con éxito.');
-                            location.reload(); // Refresca la tabla
-                        } else {
-                            alert('Error al eliminar el cliente.');
-                        }
+                if (cuentasPlataforma.length === 0) {
+                    html += `<span class="text-muted">Sin cuenta</span>`;
+                } else {
+                    cuentasPlataforma.forEach((cuenta, index) => {
+                        html += pintarBloqueCuenta(cuenta);
                     });
-            }
+                }
+
+                html += `</td>`;
+            });
+
+            html += `
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            contenedorClienteUnico.innerHTML = html;
         }
 
+        function pintarBloqueCuenta(cuenta) {
+            const fechaIni = cuenta.fechaIni
+                ? new Date(cuenta.fechaIni).toLocaleDateString("es-CO")
+                : "";
+
+            const fechaFin = cuenta.fechaFin
+                ? new Date(cuenta.fechaFin).toLocaleDateString("es-CO")
+                : "";
+
+            const estadoTexto = cuenta.estado === 1 ? "Activo" : "Inactivo";
+            const estadoClase = cuenta.estado === 1 ? "badge-success" : "badge-danger";
+
+            const celular = cuenta.celularCliente || clienteActual?.celularCliente || "";
+
+            const whatsappMessage = encodeURIComponent(
+                `*---| Cuenta ${cuenta.nombrePlataforma || ''} |---*\n` +
+                `- Correo: ${cuenta.correoPlataforma || ''}\n` +
+                `- Contraseña: ${cuenta.clavePlataforma || ''}\n` +
+                `- Perfil: ${cuenta.nombreCliente || clienteActual?.nombreCliente || ''}\n` +
+                `- Clave Perfil: ${cuenta.clavePerfil || ''}\n` +
+                `- Fecha Inicio: ${fechaIni}\n` +
+                `- Fecha Fin: ${fechaFin}\n` +
+                `- Celular: ${celular}`
+            );
+
+            return `
+                <div class="cuenta-bloque">
+                    <div class="mb-2">
+                        <span class="badge ${estadoClase}">
+                            ${estadoTexto}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Suscripción:</span>
+                        ${escaparHtml(cuenta.nombreSuscripcion || '')}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Correo:</span>
+                        ${escaparHtml(cuenta.correoPlataforma || '')}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Contraseña:</span>
+                        ${escaparHtml(cuenta.clavePlataforma || '')}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Perfil:</span>
+                        ${escaparHtml(cuenta.nombreCliente || clienteActual?.nombreCliente || '')}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Clave perfil:</span>
+                        ${escaparHtml(cuenta.clavePerfil || '')}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Inicio:</span>
+                        ${fechaIni}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Fin:</span>
+                        ${fechaFin}
+                    </div>
+
+                    <div>
+                        <span class="cuenta-label">Valor venta:</span>
+                        ${formatearMoneda(cuenta.valorVenta)}
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="button"
+                                class="btn btn-info btn-sm"
+                                title="Modificar datos"
+                                onclick='abrirModalEditarCuenta(${JSON.stringify(cuenta)})'>
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-warning btn-sm"
+                                title="Actualizar estado"
+                                onclick="editarEstadoCuenta(${cuenta.idClientePlataforma}, ${cuenta.estado})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                title="Eliminar cuenta"
+                                onclick="eliminarCuentaCliente(${cuenta.idClientePlataforma})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+
+                        <a href="https://wa.me/${limpiarCelularWhatsapp(celular)}?text=${whatsappMessage}"
+                           class="btn btn-success btn-sm"
+                           title="Enviar WhatsApp"
+                           target="_blank">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function editarEstadoCuenta(idClientePlataforma, estadoActual) {
+            const nuevoEstado = prompt("Ingrese el nuevo estado: 1 = Activo, 0 = Inactivo", estadoActual);
+
+            if (nuevoEstado === null || nuevoEstado.trim() === "") {
+                alert("El estado no puede estar vacío.");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("EditarEstadoCta", "Producto")',
+                type: 'POST',
+                data: {
+                    id: idClientePlataforma,
+                    estado: nuevoEstado
+                },
+                success: function () {
+                    alert("Estado actualizado correctamente.");
+
+                    if (clienteActual) {
+                        cargarCuentasCliente(clienteActual);
+                    }
+                },
+                error: function () {
+                    alert("Hubo un error al actualizar el estado.");
+                }
+            });
+        }
+
+        function eliminarCuentaCliente(idClientePlataforma) {
+            if (!confirm("¿Está seguro que desea eliminar esta cuenta del cliente?")) {
+                return;
+            }
+
+            fetch(`/Producto/Delete?id=${idClientePlataforma}`, {
+                method: "DELETE"
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Cuenta eliminada correctamente.");
+
+                    if (clienteActual) {
+                        cargarCuentasCliente(clienteActual);
+                    }
+                } else {
+                    alert("Error al eliminar la cuenta.");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Error al eliminar la cuenta.");
+            });
+        }
+
+        async function leerJsonSeguro(response) {
+            const texto = await response.text();
+
+            let data;
+
+            try {
+                data = JSON.parse(texto);
+            } catch {
+                console.error("Respuesta no JSON:", texto);
+                throw new Error("El servidor devolvió una respuesta no válida.");
+            }
+
+            if (!response.ok || data.ok === false) {
+                throw new Error(data.mensaje || "Error en la solicitud.");
+            }
+
+            return data;
+        }
+
+        function formatearMoneda(valor) {
+            const numero = Number(valor || 0);
+
+            return new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0
+            }).format(numero);
+        }
+
+        function limpiarCelularWhatsapp(celular) {
+            if (!celular) return "";
+
+            let limpio = String(celular).replace(/\D/g, "");
+
+            if (limpio.startsWith("57")) {
+                return limpio;
+            }
+
+            if (limpio.length === 10) {
+                return "57" + limpio;
+            }
+
+            return limpio;
+        }
+
+        function escaparHtml(valor) {
+            if (valor === null || valor === undefined) return "";
+
+            return String(valor)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatearFechaInput(fecha) {
+            if (!fecha) return "";
+
+            const d = new Date(fecha);
+
+            if (isNaN(d.getTime())) return "";
+
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            const hours = String(d.getHours()).padStart(2, "0");
+            const minutes = String(d.getMinutes()).padStart(2, "0");
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function abrirModalEditarCuenta(cuenta) {
+            document.getElementById("editIdClientePlataforma").value = cuenta.idClientePlataforma || 0;
+
+            document.getElementById("editFechaIniPago").value = formatearFechaInput(cuenta.fechaIni);
+            document.getElementById("editFechaFinPago").value = formatearFechaInput(cuenta.fechaFin);
+
+            document.getElementById("editClavePerfil").value = cuenta.clavePerfil || "";
+            document.getElementById("editCantidad").value = cuenta.cantidad || 1;
+            document.getElementById("editPpm").value = cuenta.ppm || "Pantalla";
+            document.getElementById("editValorVenta").value = cuenta.valorVenta || 0;
+            document.getElementById("editValorNeto").value = cuenta.valorNeto || 0;
+            document.getElementById("editEstado").value = cuenta.estado || 0;
+
+            $("#modalEditarCuenta").modal("show");
+        }
+
+        async function guardarCambiosCuenta() {
+            const model = {
+                idClientePlataforma: parseInt(document.getElementById("editIdClientePlataforma").value || "0"),
+                fechaIniPago: document.getElementById("editFechaIniPago").value,
+                fechaFinPago: document.getElementById("editFechaFinPago").value,
+                clavePerfil: document.getElementById("editClavePerfil").value,
+                cantidad: parseInt(document.getElementById("editCantidad").value || "0"),
+                ppm: document.getElementById("editPpm").value,
+                valorVenta: parseInt(document.getElementById("editValorVenta").value || "0"),
+                valorNeto: parseInt(document.getElementById("editValorNeto").value || "0"),
+                estado: parseInt(document.getElementById("editEstado").value || "0")
+            };
+
+            if (model.idClientePlataforma <= 0) {
+                alert("No se encontró la cuenta a modificar.");
+                return;
+            }
+
+            if (!model.fechaIniPago || !model.fechaFinPago) {
+                alert("Debe ingresar fecha inicio y fecha fin.");
+                return;
+            }
+
+            if (model.cantidad <= 0) {
+                alert("La cantidad debe ser mayor a cero.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/Producto/ActualizarCuentaClienteStreaming", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(model)
+                });
+
+                const data = await leerJsonSeguro(response);
+
+                alert(data.mensaje || "Cuenta actualizada correctamente.");
+
+                $("#modalEditarCuenta").modal("hide");
+
+                if (clienteActual) {
+                    await cargarCuentasCliente(clienteActual);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
     </script>
 }
-
-

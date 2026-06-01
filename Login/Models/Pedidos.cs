@@ -18,6 +18,8 @@ public class Pedidos
     public virtual Ventas Venta { get; set; }
     public decimal? IvaPorcentaje { get; set; }
     public decimal? IvaValor { get; set; }
+    [ForeignKey("Codigo")]
+    public virtual Producto Producto { get; set; }
 }
 
 public class ProductoVentaDto

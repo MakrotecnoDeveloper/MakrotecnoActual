@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.ViewModels.Plataformas;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Servicios.Implementacion
@@ -404,6 +405,137 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.Plataformasuscripcion.ToList();
         }
+        public async Task<ClientePlataformaRegistroViewModel> ObtenerFormularioClientePlataforma()
+        {
+            var plataformas = await _dbContext.Plataformasuscripcion
+                .Where(p => p.Estado == 1)
+                .OrderBy(p => p.Descripcion)
+                .ToListAsync();
+
+            var vm = new ClientePlataformaRegistroViewModel
+            {
+                Plataformas = plataformas,
+                FechaIniPago = DateTime.Now,
+                FechaFinPago = DateTime.Now.AddMonths(1),
+                Estado = 1
+            };
+
+            return vm;
+        }
+        public async Task<object> BuscarClienteStreaming(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                return new
+                {
+                    ok = false,
+                    mensaje = "Debe ingresar un nombre, celular o correo."
+                };
+            }
+
+            termino = termino.Trim().ToLower();
+
+            var clientes = await _dbContext.ClientesStreaming
+                .Where(c =>
+                    c.Estado == 1 &&
+                    (
+                        c.NombreCliente.ToLower().Contains(termino) ||
+                        c.CelularCliente.Contains(termino) ||
+                        c.Correo.ToLower().Contains(termino)
+                    )
+                )
+                .Select(c => new
+                {
+                    c.IdClienteStreaming,
+                    c.NombreCliente,
+                    c.CelularCliente,
+                    c.Correo
+                })
+                .Take(10)
+                .ToListAsync();
+
+            if (!clientes.Any())
+            {
+                return new
+                {
+                    ok = false,
+                    mensaje = "No se encontró ningún cliente."
+                };
+            }
+
+            return new
+            {
+                ok = true,
+                clientes
+            };
+        }
+        public async Task<(bool ok, string mensaje)> InsertarVentaClientePlataforma(ClientePlataformaRegistroViewModel model)
+        {
+            if (model.IdPltfSuscripcion <= 0)
+            {
+                return (false, "Debe seleccionar una plataforma.");
+            }
+
+            if (model.Cantidad <= 0)
+            {
+                return (false, "La cantidad debe ser mayor a cero.");
+            }
+
+            ClienteStreaming? cliente = null;
+
+            if (model.IdClienteStreaming.HasValue && model.IdClienteStreaming.Value > 0)
+            {
+                cliente = await _dbContext.ClientesStreaming
+                    .FirstOrDefaultAsync(c => c.IdClienteStreaming == model.IdClienteStreaming.Value);
+            }
+
+            if (cliente == null)
+            {
+                if (string.IsNullOrWhiteSpace(model.NombreCliente))
+                {
+                    return (false, "Debe ingresar el nombre del cliente.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.CelularCliente) &&
+                    string.IsNullOrWhiteSpace(model.CorreoCliente))
+                {
+                    return (false, "Debe ingresar al menos celular o correo del cliente.");
+                }
+
+                cliente = new ClienteStreaming
+                {
+                    NombreCliente = model.NombreCliente?.Trim(),
+                    CelularCliente = model.CelularCliente?.Trim(),
+                    Correo = model.CorreoCliente?.Trim(),
+                    Estado = 1,
+                    FechaRegistro = DateTime.Now
+                };
+
+                _dbContext.ClientesStreaming.Add(cliente);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            var clientePlataforma = new ClientesPlataforma
+            {
+                IdClienteStreaming = cliente.IdClienteStreaming,
+                IdPltfSuscripcion = model.IdPltfSuscripcion,
+                Cantidad = model.Cantidad,
+                Ppm = model.Ppm,
+                FechaIniPago = model.FechaIniPago,
+                FechaFinPago = model.FechaFinPago,
+                ValorVenta = model.ValorVenta,
+                ValorNeto = model.ValorNeto,
+                CedulaEmpleado = model.CedulaEmpleado,
+                Estado = model.Estado,
+                ClavePerfil = model.ClavePerfil
+            };
+
+            _dbContext.ClientesPlataforma.Add(clientePlataforma);
+
+            await _dbContext.SaveChangesAsync();
+
+            return (true, "Plataforma registrada correctamente al cliente.");
+        }
         public async Task<List<Plataformasuscripcion>> ObtenerSuscripcionesActivas(int plataformaId)
         {
             // Consultar las suscripciones activas para una plataforma específica
@@ -417,24 +549,40 @@ namespace Plataforma.Servicios.Implementacion
         {
             var datos = await _dbContext.ClientesPlataforma
                 .Where(cp => cp.IdPltfSuscripcion == suscripcionId && cp.Estado == 1)
+                .Join(_dbContext.ClientesStreaming,
+                    cp => cp.IdClienteStreaming,
+                    cs => cs.IdClienteStreaming,
+                    (cp, cs) => new { cp, cs })
                 .Join(_dbContext.Plataformasuscripcion,
-                    cp => cp.IdPltfSuscripcion,
+                    x => x.cp.IdPltfSuscripcion,
                     ps => ps.IdPltfSuscripcion,
-                    (cp, ps) => new ClientePlataformaDTO
+                    (x, ps) => new ClientePlataformaDTO
                     {
-                        IdCliente = cp.IdCliPltf,
-                        IdClientePlataforma = ps.IdPlataforma,
-                        NombreCliente = cp.NombreCliente,
+                        IdCliente = x.cs.IdClienteStreaming,
+
+                        IdClientePlataforma = x.cp.IdCliPltf,
+
+                        NombreCliente = x.cs.NombreCliente,
+
+                        Celular = x.cs.CelularCliente,
+
                         CorreoPlataforma = ps.Correo,
+
                         ClavePlataforma = ps.Contrasena,
-                        ClavePerfil = cp.ClavePerfil,
-                        Celular = cp.CelularCliente,
-                        FechaIni = cp.FechaIniPago,
-                        FechaFin = cp.FechaFinPago,
+
+                        ClavePerfil = x.cp.ClavePerfil,
+
+                        FechaIni = x.cp.FechaIniPago,
+
+                        FechaFin = x.cp.FechaFinPago,
+
                         Plataforma = ps.IdPlataforma,
+
                         NombrePlataforma = ps.Descripcion,
-                        Estado = cp.Estado,
-                        IdPltfSuscripcion = cp.IdPltfSuscripcion
+
+                        Estado = x.cp.Estado,
+
+                        IdPltfSuscripcion = x.cp.IdPltfSuscripcion
                     })
                 .ToListAsync();
 
@@ -495,10 +643,6 @@ namespace Plataforma.Servicios.Implementacion
                     //agregar cuenta
                     var nuevoVentClientPltf = new ClientesPlataforma
                     {
-                        NombreCliente = nombrecliente,
-                        CelularCliente = celularcliente,
-                        Correo = correo,
-                        Clave = contrasena,
                         IdPltfSuscripcion = idPltfSuscripcion,
                         Cantidad = cantidad,
                         Ppm = ppm,

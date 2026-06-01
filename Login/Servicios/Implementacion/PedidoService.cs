@@ -154,16 +154,12 @@ namespace Plataforma.Servicios.Implementacion
                     var valorUnitarioNeto = pedido.VNeto*pedido.Stock;
                     var ivaPorcentaje = pedido.IvaPorcentaje ?? 0m;
 
-                    //var totalVentaLinea = pedido.Stock * valorUnitarioVenta;
-                    //var totalNetoLinea = pedido.Stock * valorUnitarioNeto;
                     var ivaLinea = valorUnitarioVenta * (ivaPorcentaje / 100m);
                     var subTotalConIva = valorUnitarioVenta + ivaLinea;
 
                     pedido.IdVenta = idVenta;
                     pedido.InfopdvId = infoPdvId;
                     pedido.FechaRegistro = DateTime.Now;
-
-                    pedido.VVenta = valorUnitarioVenta;
                     pedido.VUnidad = valorUnitarioNeto;
                     pedido.IvaValor = ivaLinea;
                     pedido.SubTotal = subTotalConIva;
@@ -336,6 +332,7 @@ namespace Plataforma.Servicios.Implementacion
             var factura = await _dbContext.Factura
                 .Include(f => f.Venta)
                     .ThenInclude(v => v.Pedidos)
+                        .ThenInclude(p => p.Producto)
                 .FirstOrDefaultAsync(f => f.IdFactura == idFactura);
 
             if (factura == null) return null;

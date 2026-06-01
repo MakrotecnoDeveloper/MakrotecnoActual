@@ -1,0 +1,97 @@
+﻿@model MakroTecno.ViewModels.Integraciones.RappiExportResultadoViewModel
+
+@{
+    ViewData["Title"] = "Productos personalizados Rappi";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-excel"></i> Productos personalizados Rappi
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong>Total productos:</strong> @Model.TotalProductos
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Válidos:</strong> @Model.TotalValidos
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Con errores:</strong> @Model.TotalConErrores
+                    </div>
+                </div>
+
+                @if (Model.ArchivosGenerados.Any())
+                {
+                    <div class="alert alert-info">
+                        <strong>Archivos generados:</strong>
+                        <ul>
+                            @foreach (var archivo in Model.ArchivosGenerados)
+                            {
+                                <li>
+                                    <a href="@archivo" target="_blank">Descargar archivo</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <table class="table table-sm table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Producto</th>
+                            <th>Categoría Rappi</th>
+                            <th>Stock</th>
+                            <th>Unidad</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Productos)
+                        {
+                            <tr>
+                                <td>@item.Sku</td>
+                                <td>@item.Nombre</td>
+                                <td>@item.Categoria</td>
+                                <td>@item.StockSede</td>
+                                <td>@item.UnidadMedida</td>
+                                <td>
+                                    @if (item.EstadoValidacion == "OK")
+                                    {
+                                        <span class="badge bg-success">OK</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">ERROR</span>
+                                    }
+                                </td>
+                                <td>@item.Observacion</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>

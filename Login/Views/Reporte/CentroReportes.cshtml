@@ -1,0 +1,313 @@
+﻿@model Plataforma.Models.ViewModels.Reportes.CentroReportesViewModel
+
+@{
+    ViewData["Title"] = "Centro de Reportes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int paginaAnterior = Model.PaginaActual - 1;
+    int paginaSiguiente = Model.PaginaActual + 1;
+    var accionFormulario = ViewContext.RouteData.Values["action"]?.ToString() ?? "CentroReportes";
+}
+<div class="content-wrapper">
+    <div class="container-fluid mt-4">
+
+        <h2 class="text-center mb-4">Centro de Reportes Operativos</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                Filtros del reporte
+            </div>
+            <div class="card-body">
+                <form method="get" asp-controller="Reporte" asp-action="@accionFormulario">
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+                            <label>Tipo de reporte</label>
+                            <select class="form-control" asp-for="Filtros.TipoReporte" asp-items="Model.TiposReporte">
+                                <option value="">Seleccione un reporte</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label>Fecha inicial</label>
+                            <input type="date" class="form-control" asp-for="Filtros.FechaInicial" />
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label>Fecha final</label>
+                            <input type="date" class="form-control" asp-for="Filtros.FechaFinal" />
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label>Concepto / código / producto</label>
+                            <input type="text"
+                                   class="form-control"
+                                   asp-for="Filtros.Concepto"
+                                   placeholder="Buscar por código, producto o concepto" />
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Sede</label>
+                            <select class="form-control" asp-for="Filtros.IdSede" asp-items="Model.Sedes">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>PDV</label>
+                            <select class="form-control" asp-for="Filtros.InfopdvId" asp-items="Model.Pdvs">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Vendedor / empleado</label>
+                            <select class="form-control" asp-for="Filtros.CedulaVendedor" asp-items="Model.Vendedores">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Método de pago</label>
+                            <select class="form-control" asp-for="Filtros.MetodoPago" asp-items="Model.MetodosPago">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Stock mínimo</label>
+                            <input type="number"
+                                   step="0.01"
+                                   class="form-control"
+                                   asp-for="Filtros.StockMinimo"
+                                   placeholder="Ej: 5" />
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label>Registros por página</label>
+                            <select class="form-control" name="registrosPorPagina">
+                                @if (Model.RegistrosPorPagina == 10)
+                                {
+                                    <option value="10" selected>10</option>
+                                }
+                                else
+                                {
+                                    <option value="10">10</option>
+                                }
+
+                                @if (Model.RegistrosPorPagina == 20)
+                                {
+                                    <option value="20" selected>20</option>
+                                }
+                                else
+                                {
+                                    <option value="20">20</option>
+                                }
+
+                                @if (Model.RegistrosPorPagina == 50)
+                                {
+                                    <option value="50" selected>50</option>
+                                }
+                                else
+                                {
+                                    <option value="50">50</option>
+                                }
+
+                                @if (Model.RegistrosPorPagina == 100)
+                                {
+                                    <option value="100" selected>100</option>
+                                }
+                                else
+                                {
+                                    <option value="100">100</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3 d-flex align-items-end justify-content-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                Buscar
+                            </button>
+
+                            <a asp-controller="Reporte"
+                               asp-action="@accionFormulario"
+                               class="btn btn-secondary me-2">
+                                Limpiar
+                            </a>
+
+                            <button type="button" class="btn btn-success" disabled>
+                                Exportar Excel
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Mensaje))
+        {
+            <div class="alert alert-info">
+                @Model.Mensaje
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.TituloReporte))
+        {
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6>Reporte</h6>
+                            <h5>@Model.TituloReporte</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h6>Total registros</h6>
+                            <h4>@Model.TotalRegistros</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6>Total general</h6>
+                            <h4>@Model.TotalGeneral.ToString("C0")</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="card shadow-sm">
+            <div class="card-body table-responsive">
+
+                @if (Model.Columnas.Any())
+                {
+                    <table class="table table-bordered table-hover table-sm align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                @foreach (var columna in Model.Columnas)
+                                {
+                                    <th>@columna</th>
+                                }
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.Filas.Any())
+                            {
+                                foreach (var fila in Model.Filas)
+                                {
+                                    <tr>
+                                        @foreach (var columna in Model.Columnas)
+                                        {
+                                            <td>
+                                                @(fila.Valores.ContainsKey(columna) ? fila.Valores[columna] : "")
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="@Model.Columnas.Count" class="text-center text-muted">
+                                        No se encontraron registros con los filtros seleccionados.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        Seleccione un reporte y presione buscar.
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        @if (Model.TotalPaginas > 1)
+        {
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-controller="Reporte"
+                           asp-action="@accionFormulario"
+                           asp-route-pagina="@paginaAnterior"
+                           asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                           asp-route-Filtros.TipoReporte="@Model.Filtros.TipoReporte"
+                           asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.Concepto="@Model.Filtros.Concepto"
+                           asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                           asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                           asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                           asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                           asp-route-Filtros.StockMinimo="@Model.Filtros.StockMinimo">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        if (i == 1 || i == Model.TotalPaginas || Math.Abs(i - Model.PaginaActual) <= 2)
+                        {
+                            <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                <a class="page-link"
+                                   asp-controller="Reporte"
+                                   asp-action="@accionFormulario"
+                                   asp-route-pagina="@i"
+                                   asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                                   asp-route-Filtros.TipoReporte="@Model.Filtros.TipoReporte"
+                                   asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                                   asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                                   asp-route-Filtros.Concepto="@Model.Filtros.Concepto"
+                                   asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                                   asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                                   asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                                   asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                                   asp-route-Filtros.StockMinimo="@Model.Filtros.StockMinimo">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-controller="Reporte"
+                           asp-action="@accionFormulario"
+                           asp-route-pagina="@paginaSiguiente"
+                           asp-route-registrosPorPagina="@Model.RegistrosPorPagina"
+                           asp-route-Filtros.TipoReporte="@Model.Filtros.TipoReporte"
+                           asp-route-Filtros.FechaInicial="@Model.Filtros.FechaInicial?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.FechaFinal="@Model.Filtros.FechaFinal?.ToString("yyyy-MM-dd")"
+                           asp-route-Filtros.Concepto="@Model.Filtros.Concepto"
+                           asp-route-Filtros.IdSede="@Model.Filtros.IdSede"
+                           asp-route-Filtros.InfopdvId="@Model.Filtros.InfopdvId"
+                           asp-route-Filtros.CedulaVendedor="@Model.Filtros.CedulaVendedor"
+                           asp-route-Filtros.MetodoPago="@Model.Filtros.MetodoPago"
+                           asp-route-Filtros.StockMinimo="@Model.Filtros.StockMinimo">
+                            Siguiente
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+
+    </div>
+</div>

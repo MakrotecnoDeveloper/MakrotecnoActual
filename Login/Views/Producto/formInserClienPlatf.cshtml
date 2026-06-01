@@ -1,103 +1,358 @@
-﻿@model List<Plataformasuscripcion>
-
+﻿@model Plataforma.Models.ViewModels.Plataformas.ClientePlataformaRegistroViewModel
 @{
-    ViewData["Title"] = "formInserClienPlatf";
+    ViewData["Title"] = "Agregar Venta de Cliente de Plataforma";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
     var cedulaClaim = User.FindFirst("Cedula")?.Value;
     int cedula = int.Parse(cedulaClaim ?? "0");
 }
 
 <div class="content-wrapper">
     <div class="container mt-5">
+
         <h2 class="mb-4">Agregar Venta de Cliente de Plataforma</h2>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Buscar cliente existente
+            </div>
+
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-md-10">
+                        <label for="terminoBusqueda">Buscar por nombre, celular o correo</label>
+                        <input type="text" class="form-control" id="terminoBusqueda" placeholder="Ej: Pepito, 3001234567 o correo@gmail.com">
+                    </div>
+
+                    <div class="form-group col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary btn-block" id="btnBuscarCliente">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultadoBusqueda" class="mt-3"></div>
+            </div>
+        </div>
+
         <form role="form" asp-controller="Producto" asp-action="insertVentClientPltf" method="POST">
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="nombrecliente">Nombre Cliente</label>
-                    <input type="text" class="form-control" id="nombrecliente" name="nombrecliente">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" id="IdClienteStreaming" name="IdClienteStreaming" value="" />
+
+            <div id="cardClienteSeleccionado" class="card mb-4 d-none">
+                <div class="card-header bg-success text-white">
+                    Cliente seleccionado
                 </div>
-                <div class="form-group col-md-4">
-                    <label for="clave">Clave Perfil</label>
-                    <input type="password" class="form-control" id="clave" name="clave">
-                </div>
-                <div class="form-group col-md-2">
-                    <label for="celularcliente">Celular Cliente</label>
-                    <input type="text" class="form-control" id="celularcliente" name="celularcliente">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="correo">Correo</label>
-                    <input type="email" class="form-control" id="correo" name="correo">
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="contrasena">Contraseña</label>
-                    <input type="password" class="form-control" id="contrasena" name="contrasena">
+
+                <div class="card-body">
+                    <p class="mb-1"><strong>Nombre:</strong> <span id="clienteSeleccionadoNombre"></span></p>
+                    <p class="mb-1"><strong>Celular:</strong> <span id="clienteSeleccionadoCelular"></span></p>
+                    <p class="mb-1"><strong>Correo:</strong> <span id="clienteSeleccionadoCorreo"></span></p>
+
+                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="btnQuitarCliente">
+                        Quitar cliente seleccionado
+                    </button>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="idPlataforma">Plataforma</label>
-                <select class="form-control" id="idPlataforma" name="idPltfSuscripcion">
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var plataforma in Model)
-                        {
-                            <option value="@plataforma.IdPltfSuscripcion">@plataforma.Descripcion</option>
-                        }
-                    }
-                    else
-                    {
-                        <option value="">No hay plataformas disponibles</option>
-                    }
-                </select>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="cantidad">Cantidad</label>
-                    <input type="number" class="form-control" id="cantidad" name="cantidad">
+
+            <div id="cardNuevoCliente" class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    Datos del cliente nuevo
                 </div>
-                <div class="form-group col-md-6">
-                    <label for="ppm">PPM</label>
-                    <select class="form-control" id="ppm" name="ppm">
-                        <option value="Pantalla">Pantalla</option>
-                        <option value="Perfil">Perfil</option>
-                        <option value="Meses">Meses</option>
-                    </select>
+
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="NombreCliente">Nombre Cliente</label>
+                            <input type="text" class="form-control" id="NombreCliente" name="NombreCliente">
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="CelularCliente">Celular Cliente</label>
+                            <input type="text" class="form-control" id="CelularCliente" name="CelularCliente">
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label for="CorreoCliente">Correo Cliente</label>
+                            <input type="email" class="form-control" id="CorreoCliente" name="CorreoCliente">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="feciniplat">Fecha Inicio Plataforma</label>
-                    <input type="datetime-local" class="form-control" id="feciniplat" name="feciniplat">
+
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    Datos de la plataforma a agregar
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+                        <label for="IdPltfSuscripcion">Plataforma</label>
+                        <select class="form-control" id="IdPltfSuscripcion" name="IdPltfSuscripcion">
+                            @if (Model.Plataformas != null && Model.Plataformas.Any())
+                            {
+                                foreach (var plataforma in Model.Plataformas)
+                                {
+                                    <option value="@plataforma.IdPltfSuscripcion"
+                                            data-valorventa="@plataforma.ValorVenta"
+                                            data-valorneto="@plataforma.ValorNeto"
+                                            data-fechaini="@plataforma.FechaIniPago.ToString("yyyy-MM-ddTHH:mm")"
+                                            data-fechafin="@plataforma.FechaFinPago.ToString("yyyy-MM-ddTHH:mm")">
+                                        @plataforma.Descripcion
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="">No hay plataformas disponibles</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="ClavePerfil">Clave Perfil</label>
+                            <input type="password" class="form-control" id="ClavePerfil" name="ClavePerfil">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label for="Cantidad">Cantidad</label>
+                            <input type="number" class="form-control" id="Cantidad" name="Cantidad" value="1" min="1">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label for="Ppm">PPM</label>
+                            <select class="form-control" id="Ppm" name="Ppm">
+                                <option value="Pantalla">Pantalla</option>
+                                <option value="Perfil">Perfil</option>
+                                <option value="Meses">Meses</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="FechaIniPago">Fecha Inicio Plataforma</label>
+                            <input type="datetime-local" class="form-control" id="FechaIniPago" name="FechaIniPago" value="@Model.FechaIniPago.ToString("yyyy-MM-ddTHH:mm")">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="FechaFinPago">Fecha Fin Plataforma</label>
+                            <input type="datetime-local" class="form-control" id="FechaFinPago" name="FechaFinPago" value="@Model.FechaFinPago.ToString("yyyy-MM-ddTHH:mm")">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="ValorVenta">Valor Venta</label>
+                            <input type="number" class="form-control" id="ValorVenta" name="ValorVenta">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="ValorNeto">Valor Neto</label>
+                            <input type="number" class="form-control" id="ValorNeto" name="ValorNeto">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="CedulaEmpleado">Cédula Empleado</label>
+                            <input type="number" class="form-control" id="CedulaEmpleado" name="CedulaEmpleado" value="@cedula" readonly>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="Estado">Estado</label>
+                            <select class="form-control" id="Estado" name="Estado">
+                                <option value="1" selected>Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="fecFinPlat">Fecha Fin Plataforma</label>
-                    <input type="datetime-local" class="form-control" id="fecFinPlat" name="fecFinPlat">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="valorventa">Valor Venta</label>
-                    <input type="number" class="form-control" id="valorventa" name="valorventa">
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="valorneto">Valor Neto</label>
-                    <input type="number" class="form-control" id="valorneto" name="valorneto">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="cedula">Cédula</label>
-                    <input type="number" class="form-control" id="cedula" name="cedula" value="@cedula">
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="estado">Estado</label>
-                    <input type="number" class="form-control" id="estado" name="estado">
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrar Venta</button>
+
+            <button type="submit" class="btn btn-primary">
+                Registrar Plataforma al Cliente
+            </button>
+
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const btnBuscarCliente = document.getElementById("btnBuscarCliente");
+            const resultadoBusqueda = document.getElementById("resultadoBusqueda");
+
+            const idClienteStreaming = document.getElementById("IdClienteStreaming");
+
+            const cardClienteSeleccionado = document.getElementById("cardClienteSeleccionado");
+            const cardNuevoCliente = document.getElementById("cardNuevoCliente");
+
+            const clienteSeleccionadoNombre = document.getElementById("clienteSeleccionadoNombre");
+            const clienteSeleccionadoCelular = document.getElementById("clienteSeleccionadoCelular");
+            const clienteSeleccionadoCorreo = document.getElementById("clienteSeleccionadoCorreo");
+
+            const btnQuitarCliente = document.getElementById("btnQuitarCliente");
+
+            const nombreCliente = document.getElementById("NombreCliente");
+            const celularCliente = document.getElementById("CelularCliente");
+            const correoCliente = document.getElementById("CorreoCliente");
+
+            const selectPlataforma = document.getElementById("IdPltfSuscripcion");
+            const valorVenta = document.getElementById("ValorVenta");
+            const valorNeto = document.getElementById("ValorNeto");
+            const fechaIniPago = document.getElementById("FechaIniPago");
+            const fechaFinPago = document.getElementById("FechaFinPago");
+
+            function seleccionarCliente(cliente) {
+                idClienteStreaming.value = cliente.idClienteStreaming;
+
+                clienteSeleccionadoNombre.innerText = cliente.nombreCliente || "";
+                clienteSeleccionadoCelular.innerText = cliente.celularCliente || "";
+                clienteSeleccionadoCorreo.innerText = cliente.correo || "";
+
+                cardClienteSeleccionado.classList.remove("d-none");
+                cardNuevoCliente.classList.add("d-none");
+
+                nombreCliente.value = "";
+                celularCliente.value = "";
+                correoCliente.value = "";
+
+                resultadoBusqueda.innerHTML = "";
+            }
+
+            function quitarClienteSeleccionado() {
+                idClienteStreaming.value = "";
+
+                cardClienteSeleccionado.classList.add("d-none");
+                cardNuevoCliente.classList.remove("d-none");
+
+                clienteSeleccionadoNombre.innerText = "";
+                clienteSeleccionadoCelular.innerText = "";
+                clienteSeleccionadoCorreo.innerText = "";
+            }
+
+            btnQuitarCliente.addEventListener("click", function () {
+                quitarClienteSeleccionado();
+            });
+
+            btnBuscarCliente.addEventListener("click", function () {
+                const termino = document.getElementById("terminoBusqueda").value.trim();
+
+                if (!termino) {
+                    resultadoBusqueda.innerHTML = `
+                        <div class="alert alert-warning">
+                            Debe ingresar un nombre, celular o correo para buscar.
+                        </div>
+                    `;
+                    return;
+                }
+
+                fetch(`/Producto/BuscarClienteStreaming?termino=${encodeURIComponent(termino)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.ok) {
+                            resultadoBusqueda.innerHTML = `
+                                <div class="alert alert-info">
+                                    ${data.mensaje}
+                                    <br>
+                                    Puede registrar el cliente nuevo en el formulario inferior.
+                                </div>
+                            `;
+
+                            quitarClienteSeleccionado();
+
+                            nombreCliente.value = termino;
+                            return;
+                        }
+
+                        let html = `
+                            <div class="list-group">
+                        `;
+
+                        data.clientes.forEach(cliente => {
+                            html += `
+                                <button type="button"
+                                        class="list-group-item list-group-item-action btnSeleccionarCliente"
+                                        data-id="${cliente.idClienteStreaming}"
+                                        data-nombre="${cliente.nombreCliente || ''}"
+                                        data-celular="${cliente.celularCliente || ''}"
+                                        data-correo="${cliente.correo || ''}">
+                                    <strong>${cliente.nombreCliente || 'Sin nombre'}</strong><br>
+                                    Celular: ${cliente.celularCliente || 'No registrado'} |
+                                    Correo: ${cliente.correo || 'No registrado'}
+                                </button>
+                            `;
+                        });
+
+                        html += `</div>`;
+
+                        resultadoBusqueda.innerHTML = html;
+
+                        document.querySelectorAll(".btnSeleccionarCliente").forEach(btn => {
+                            btn.addEventListener("click", function () {
+                                const cliente = {
+                                    idClienteStreaming: this.dataset.id,
+                                    nombreCliente: this.dataset.nombre,
+                                    celularCliente: this.dataset.celular,
+                                    correo: this.dataset.correo
+                                };
+
+                                seleccionarCliente(cliente);
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error(error);
+
+                        resultadoBusqueda.innerHTML = `
+                            <div class="alert alert-danger">
+                                Ocurrió un error al buscar el cliente.
+                            </div>
+                        `;
+                    });
+            });
+
+            function cargarDatosPlataformaSeleccionada() {
+                const option = selectPlataforma.options[selectPlataforma.selectedIndex];
+
+                if (!option) return;
+
+                const venta = option.dataset.valorventa;
+                const neto = option.dataset.valorneto;
+                const fechaIni = option.dataset.fechaini;
+                const fechaFin = option.dataset.fechafin;
+
+                if (venta) valorVenta.value = venta;
+                if (neto) valorNeto.value = neto;
+                if (fechaIni) fechaIniPago.value = fechaIni;
+                if (fechaFin) fechaFinPago.value = fechaFin;
+            }
+
+            selectPlataforma.addEventListener("change", cargarDatosPlataformaSeleccionada);
+
+            cargarDatosPlataformaSeleccionada();
+        });
+    </script>
+}

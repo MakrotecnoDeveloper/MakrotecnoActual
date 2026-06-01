@@ -53,6 +53,34 @@ namespace Plataforma.Controllers
 
             return View(vm);
         }
+        [HttpGet]
+        public async Task<IActionResult> CentroReportes(
+            CentroReportesFiltroViewModel filtros,
+            int pagina = 1,
+            int registrosPorPagina = 20)
+        {
+            var vm = await _reporteService.ObtenerCentroReportesAsync(
+                filtros,
+                pagina,
+                registrosPorPagina
+            );
+
+            return View(vm);
+        }
+        [HttpGet]
+        public async Task<IActionResult> CentroReportesAvanzados(
+            CentroReportesFiltroViewModel filtros,
+            int pagina = 1,
+            int registrosPorPagina = 20)
+        {
+            var vm = await _reporteService.ObtenerCentroReportesAvanzadosAsync(
+                filtros,
+                pagina,
+                registrosPorPagina
+            );
+
+            return View("CentroReportes", vm);
+        }
 
     }
 }

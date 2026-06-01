@@ -1,0 +1,128 @@
+﻿@model MakroTecno.ViewModels.Compras.FacturaCompraViewModel
+
+@{
+    ViewData["Title"] = "Editar factura de compra";
+}
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit"></i> Editar factura de compra
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <form asp-action="EditarFacturaCompra" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="IdFacturaCompra" />
+                    <input type="hidden" asp-for="RutaArchivoActual" />
+                    <input type="hidden" asp-for="NombreArchivoOriginal" />
+
+                    <div class="row">
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Prefijo</label>
+                            <input asp-for="PrefijoFactura" class="form-control"/>
+                            <span asp-validation-for="PrefijoFactura" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Número de factura</label>
+                            <input asp-for="NumeroFactura" class="form-control" />
+                            <span asp-validation-for="NumeroFactura" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Proveedor</label>
+                            <select asp-for="IdProveedor" asp-items="Model.Proveedores" class="form-control">
+                                <option value="">Seleccione un proveedor</option>
+                            </select>
+                            <span asp-validation-for="IdProveedor" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fecha de compra</label>
+                            <input asp-for="FechaCompra" type="date" class="form-control" />
+                            <span asp-validation-for="FechaCompra" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Observación</label>
+                            <textarea asp-for="Observacion" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Archivo actual</label>
+                            <br />
+
+                            @if (!string.IsNullOrWhiteSpace(Model.RutaArchivoActual))
+                            {
+                                var extension = System.IO.Path.GetExtension(Model.RutaArchivoActual)?.ToLower();
+
+                                <a href="@Model.RutaArchivoActual" target="_blank" class="btn btn-sm btn-outline-secondary mb-3">
+                                    <i class="fas fa-eye"></i> Ver archivo actual
+                                </a>
+
+                                @if (extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".webp")
+                                {
+                                    <div>
+                                        <img src="@Model.RutaArchivoActual"
+                                             class="img-fluid rounded border"
+                                             style="max-height: 350px; max-width: 100%; object-fit: contain;" />
+                                    </div>
+                                }
+                                else if (extension == ".pdf")
+                                {
+                                    <div class="border rounded">
+                                        <iframe src="@Model.RutaArchivoActual"
+                                                width="100%"
+                                                height="400px"
+                                                style="border: none;">
+                                        </iframe>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">No hay archivo actual.</span>
+                            }
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Reemplazar archivo</label>
+                            <input asp-for="ArchivoFactura" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf" />
+                            <small class="text-muted">
+                                Si no selecciona un archivo nuevo, se conservará el archivo actual.
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="FacturasCompra" class="btn btn-secondary me-2">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Actualizar factura
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

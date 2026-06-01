@@ -7,7 +7,7 @@
             @foreach (var cuenta in Model)
             {
                 <li class="list-group-item">
-                    <strong>@cuenta.NombreCliente</strong> - Vence el @cuenta.FechaFinPago.ToString("dd/MM/yyyy")
+                    <strong>@cuenta.ClienteStreaming.NombreCliente</strong> - Vence el @cuenta.FechaFinPago.ToString("dd/MM/yyyy")
                 </li>
             }
         </ul>

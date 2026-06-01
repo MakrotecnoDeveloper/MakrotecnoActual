@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MakroTecno.ViewModels.Compras;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
 using Plataforma.Servicios.Contrato;
@@ -72,6 +73,129 @@ namespace Plataforma.Controllers
             });
 
             return Json(resultados);
+        }
+        [HttpGet]
+        public async Task<IActionResult> FacturasCompra()
+        {
+            var facturas = await _comprasService.ObtenerFacturasCompraAsync();
+            return View(facturas);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CrearFacturaCompra()
+        {
+            var model = new FacturaCompraViewModel
+            {
+                FechaCompra = DateTime.Now,
+                Proveedores = await _comprasService.ObtenerProveedoresSelectAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearFacturaCompra(FacturaCompraViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    model.Proveedores = await _comprasService.ObtenerProveedoresSelectAsync();
+                    return View(model);
+                }
+
+                await _comprasService.CrearFacturaCompraAsync(model);
+
+                TempData["Success"] = "Factura de compra guardada correctamente.";
+                return RedirectToAction(nameof(FacturasCompra));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                model.Proveedores = await _comprasService.ObtenerProveedoresSelectAsync();
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditarFacturaCompra(int id)
+        {
+            var factura = await _comprasService.ObtenerFacturaCompraPorIdAsync(id);
+
+            if (factura == null)
+                return NotFound();
+
+            var model = new FacturaCompraViewModel
+            {
+                IdFacturaCompra = factura.IdFacturaCompra,
+                IdProveedor = factura.IdProveedor,
+                NumeroFactura = factura.NumeroFactura,
+                PrefijoFactura = factura.PrefijoFactura,
+                FechaCompra = factura.FechaCompra,
+                Observacion = factura.Observacion,
+                RutaArchivoActual = factura.RutaArchivo,
+                NombreArchivoOriginal = factura.NombreArchivoOriginal,
+                Proveedores = await _comprasService.ObtenerProveedoresSelectAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarFacturaCompra(FacturaCompraViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    model.Proveedores = await _comprasService.ObtenerProveedoresSelectAsync();
+                    return View(model);
+                }
+
+                await _comprasService.ActualizarFacturaCompraAsync(model);
+
+                TempData["Success"] = "Factura de compra actualizada correctamente.";
+                return RedirectToAction(nameof(FacturasCompra));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                model.Proveedores = await _comprasService.ObtenerProveedoresSelectAsync();
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VerFacturaCompra(int id)
+        {
+            var factura = await _comprasService.ObtenerFacturaCompraPorIdAsync(id);
+
+            if (factura == null)
+                return NotFound();
+
+            return View(factura);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> InactivarFacturaCompra(int id, string? motivoInactivacion)
+        {
+            try
+            {
+                string? usuario = User.Identity?.Name;
+
+                await _comprasService.InactivarFacturaCompraAsync(id, motivoInactivacion, usuario);
+
+                TempData["Success"] = "Factura inactivada correctamente. El archivo fue conservado para trazabilidad documental.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(FacturasCompra));
         }
     }
 }

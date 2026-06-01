@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using Plataforma.Models.ViewModels.Plataformas;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IProductoService
@@ -21,6 +22,9 @@ namespace Plataforma.Servicios.Contrato
         void InserPlataformaService(int idPlataforma, string descripcion, int valorventa, int valorneto, DateTime fechaInipago, DateTime fechaFinpago, int cantidad, string correo, string contrasena, int cedula, int estado);
         List<Plataformas> TraerPlataformasExistentes();
         List<Plataformasuscripcion> SuscripcionesActivas();
+        Task<ClientePlataformaRegistroViewModel> ObtenerFormularioClientePlataforma();
+        Task<object> BuscarClienteStreaming(string termino);
+        Task<(bool ok, string mensaje)> InsertarVentaClientePlataforma(ClientePlataformaRegistroViewModel model);
         Task<List<Plataformasuscripcion>> ObtenerSuscripcionesActivas(int plataformaId);
         Task<List<ClientePlataformaDTO>> ObtenerDatosSuscripcion(int suscripcionId);
         Task<List<ClientePlataformaDTO>> ObtenerDatosPlataforma(int suscripcionId);

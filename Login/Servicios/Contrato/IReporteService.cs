@@ -13,5 +13,15 @@ namespace Plataforma.Servicios.Contrato
             int pagina,
             int registrosPorPagina
         );
+        Task<CentroReportesViewModel> ObtenerCentroReportesAsync(
+            CentroReportesFiltroViewModel filtros,
+            int pagina,
+            int registrosPorPagina
+        );
+        Task<CentroReportesViewModel> ObtenerCentroReportesAvanzadosAsync(
+            CentroReportesFiltroViewModel filtros,
+            int pagina,
+            int registrosPorPagina
+        );
     }
 }

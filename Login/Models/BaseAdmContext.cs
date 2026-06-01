@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MakroTecno.Models;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Data.Configurations;
 
 namespace Plataforma.Models;
@@ -64,6 +65,16 @@ public partial class BaseAdmContext : DbContext
     public DbSet<DetalleLiquidacion> DetalleLiquidacion => Set<DetalleLiquidacion>();
     public DbSet<UnidadMedida> UnidadesMedida { get; set; }
     public DbSet<Area> Areas { get; set; }
+    public DbSet<ModulosEmpresa> ModulosEmpresa { get; set; }
+    public DbSet<ClienteStreaming> ClientesStreaming { get; set; }
+    public DbSet<FacturaCompra> FacturaCompra { get; set; }
+    /*Integraciones Rappi Inicio*/
+    public DbSet<RappiTienda> RappiTienda { get; set; }
+    public DbSet<RappiCategoriaMapeo> RappiCategoriaMapeo { get; set; }
+    public DbSet<RappiProductoConfig> RappiProductoConfig { get; set; }
+    public DbSet<RappiSincronizacion> RappiSincronizacion { get; set; }
+    public DbSet<RappiSincronizacionDetalle> RappiSincronizacionDetalle { get; set; }
+    /*Integraciones Rappi Fin*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -109,6 +120,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Modulos>().HasKey(mdl => mdl.IdModulo);
         modelBuilder.Entity<CargoModuloPermiso>().HasKey(id => id.Id);
         modelBuilder.Entity<Area>().HasKey(id => id.IdArea);
+        modelBuilder.Entity<ClienteStreaming>().HasKey(id => id.IdClienteStreaming);
+        modelBuilder.Entity<FacturaCompra>().HasKey(id => id.IdFacturaCompra);
         //Llaves foraneas
         modelBuilder.Entity<Factura>().HasOne(f => f.Venta).WithMany().HasForeignKey(f => f.IdVenta);
         modelBuilder.Entity<Ventas>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -126,7 +139,8 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<Plataformasuscripcion>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.CedulaEmpleado);
         modelBuilder.Entity<Plataformasuscripcion>().HasOne<Plataformas>().WithMany().HasForeignKey(f => f.IdPlataforma);
         modelBuilder.Entity<LogsLogin>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
-        modelBuilder.Entity<ClientesPlataforma>().HasOne<Plataformasuscripcion>().WithMany().HasForeignKey(f => f.IdPltfSuscripcion);
+        modelBuilder.Entity<ClientesPlataforma>().HasOne(cp => cp.PlataformaSuscripcion).WithMany().HasForeignKey(f => f.IdPltfSuscripcion).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ClientesPlataforma>().HasOne(cp => cp.ClienteStreaming).WithMany(c => c.PlataformasCliente).HasForeignKey(cp => cp.IdClienteStreaming).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<Infopdv>().HasOne<Sede>().WithMany().HasForeignKey(f => f.Id_Sede);
         modelBuilder.Entity<Syncpdv>().HasOne<Infopdv>().WithMany().HasForeignKey(f => f.InfopdvId);
         modelBuilder.Entity<Syncpdv>().HasOne<Empleados>().WithMany().HasForeignKey(f => f.Cedula);
@@ -153,6 +167,14 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<CargoModuloPermiso>().HasOne<TipoCargo>().WithMany().HasForeignKey(f => f.CargoId);
         modelBuilder.Entity<CargoModuloPermiso>().HasOne<Modulos>().WithMany().HasForeignKey(f => f.ModuloId);
         modelBuilder.Entity<TipoCargo>().HasOne(tc => tc.Area).WithMany(a => a.TiposCargo).HasForeignKey(tc => tc.IdArea).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Pedidos>().HasOne(p => p.Producto).WithMany().HasForeignKey(p => p.Codigo).HasPrincipalKey(pr => pr.Cod_Producto);
+        modelBuilder.Entity<ClientesPlataforma>().HasOne(cp => cp.ClienteStreaming).WithMany(c => c.PlataformasCliente).HasForeignKey(cp => cp.IdClienteStreaming);
+        /*Integraciones Rappi Inicio*/
+        modelBuilder.Entity<RappiProductoConfig>().HasOne(x => x.Producto).WithMany().HasForeignKey(x => x.ProductoId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RappiCategoriaMapeo>().HasOne(x => x.CategoriaProducto).WithMany().HasForeignKey(x => x.IdCateProducto).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RappiTienda>().HasOne(x => x.Sede).WithMany().HasForeignKey(x => x.SedeId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RappiSincronizacionDetalle>().HasOne(x => x.RappiSincronizacion).WithMany(x => x.Detalles).HasForeignKey(x => x.RappiSincronizacionId).OnDelete(DeleteBehavior.Cascade);
+        /*Integraciones Rappi Fin*/
 
         /*Configuracion para Nomina*/
         modelBuilder.ApplyConfiguration(new ContratoConfiguration());
@@ -399,5 +421,12 @@ public partial class BaseAdmContext : DbContext
             property.SetPrecision(10);
             property.SetScale(2);
         }
+
+        /*Evitar que mas de un proveedor tengan la misma factura*/
+         modelBuilder.Entity<FacturaCompra>()
+        .HasOne(f => f.Proveedor)
+        .WithMany(p => p.FacturasCompra)
+        .HasForeignKey(f => f.IdProveedor)
+        .OnDelete(DeleteBehavior.Restrict);
     }
 }

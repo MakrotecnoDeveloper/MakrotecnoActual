@@ -19,7 +19,6 @@ namespace Plataforma.Servicios.Implementacion
             if (string.IsNullOrEmpty(idEmpresa) || idCargo <= 0)
                 return new List<ModuloMenuDto>();
 
-            // 1. Obtener los módulos activos del cargo y empresa
             var modulosActivosIds = await _dbContext.CargoModuloPermiso
                 .Where(p => p.EmpresaId == idEmpresa
                          && p.CargoId == idCargo
@@ -31,7 +30,6 @@ namespace Plataforma.Servicios.Implementacion
             if (!modulosActivosIds.Any())
                 return new List<ModuloMenuDto>();
 
-            // 2. Traer las opciones de menú asociadas a esos módulos
             var opciones = await _dbContext.MenuOpciones
                 .Include(o => o.Modulo)
                 .Where(o => modulosActivosIds.Contains(o.IdModulo))
@@ -40,37 +38,55 @@ namespace Plataforma.Servicios.Implementacion
             if (!opciones.Any())
                 return new List<ModuloMenuDto>();
 
-            // 3. Construir estructura Header -> Grupo -> Opciones
             var resultado = opciones
-                .GroupBy(o => new { o.Header, o.IconoHeader, o.OrdenHeader })
-                .OrderBy(g => g.Key.OrdenHeader)
-                .Select(headerGroup => new ModuloMenuDto
+                .GroupBy(o => (o.Header ?? "").Trim().ToUpper())
+                .Select(headerGroup =>
                 {
-                    Header = headerGroup.Key.Header,
-                    IconoHeader = headerGroup.Key.IconoHeader,
-                    OrdenHeader = headerGroup.Key.OrdenHeader,
+                    var primerHeader = headerGroup
+                        .OrderBy(x => x.OrdenHeader)
+                        .ThenBy(x => x.Header)
+                        .First();
 
-                    Grupos = headerGroup
-                        .GroupBy(o => new { o.Grupo, o.IconoGrupo, o.OrdenGrupo })
-                        .OrderBy(g2 => g2.Key.OrdenGrupo)
-                        .Select(grupo => new GrupoMenuDto
-                        {
-                            NombreGrupo = grupo.Key.Grupo,
-                            IconoGrupo = grupo.Key.IconoGrupo,
-                            OrdenGrupo = grupo.Key.OrdenGrupo,
+                    return new ModuloMenuDto
+                    {
+                        Header = primerHeader.Header?.Trim(),
+                        IconoHeader = primerHeader.IconoHeader,
+                        OrdenHeader = headerGroup.Min(x => x.OrdenHeader),
 
-                            Opciones = grupo
-                                .OrderBy(o => o.OrdenOpcion)
-                                .Select(o => new OpcionMenuDto
+                        Grupos = headerGroup
+                            .GroupBy(o => (o.Grupo ?? "").Trim().ToUpper())
+                            .Select(grupo =>
+                            {
+                                var primerGrupo = grupo
+                                    .OrderBy(x => x.OrdenGrupo)
+                                    .ThenBy(x => x.Grupo)
+                                    .First();
+
+                                return new GrupoMenuDto
                                 {
-                                    Titulo = o.Modulo.NombreModulo,
-                                    Controller = o.Controller,
-                                    Action = o.Action,
-                                    Icono = o.IconoOpcion,
-                                    OrdenOpcion = o.OrdenOpcion
-                                }).ToList()
-                        }).ToList()
-                }).ToList();
+                                    NombreGrupo = primerGrupo.Grupo?.Trim(),
+                                    IconoGrupo = primerGrupo.IconoGrupo,
+                                    OrdenGrupo = grupo.Min(x => x.OrdenGrupo),
+
+                                    Opciones = grupo
+                                        .OrderBy(o => o.OrdenOpcion)
+                                        .Select(o => new OpcionMenuDto
+                                        {
+                                            Titulo = o.Modulo.NombreModulo,
+                                            Controller = o.Controller,
+                                            Action = o.Action,
+                                            Icono = o.IconoOpcion,
+                                            OrdenOpcion = o.OrdenOpcion
+                                        })
+                                        .ToList()
+                                };
+                            })
+                            .OrderBy(g => g.OrdenGrupo)
+                            .ToList()
+                    };
+                })
+                .OrderBy(h => h.OrdenHeader)
+                .ToList();
 
             return resultado;
         }

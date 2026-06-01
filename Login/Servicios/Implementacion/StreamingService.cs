@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Streaming;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Servicios.Implementacion
@@ -61,11 +62,9 @@ namespace Plataforma.Servicios.Implementacion
                     {
                         IdCliente = cp.IdCliPltf,
                         IdClientePlataforma = ps.IdPlataforma,
-                        NombreCliente = cp.NombreCliente,
                         CorreoPlataforma = ps.Correo,
                         ClavePlataforma = ps.Contrasena,
                         ClavePerfil = cp.ClavePerfil,
-                        Celular = cp.CelularCliente,
                         FechaIni = cp.FechaIniPago,
                         FechaFin = cp.FechaFinPago,
                         Plataforma = ps.IdPlataforma,
@@ -133,10 +132,6 @@ namespace Plataforma.Servicios.Implementacion
                     //agregar cuenta
                     var nuevoVentClientPltf = new ClientesPlataforma
                     {
-                        NombreCliente = nombrecliente,
-                        CelularCliente = celularcliente,
-                        Correo = correo,
-                        Clave = contrasena,
                         IdPltfSuscripcion = idPltfSuscripcion,
                         Cantidad = cantidad,
                         Ppm = ppm,
@@ -186,6 +181,156 @@ namespace Plataforma.Servicios.Implementacion
                 clientePlataforma.Estado = estado;
                 await _dbContext.SaveChangesAsync();
             }
+        }
+        public async Task<List<ClienteStreamingBusquedaDTO>> BuscarClientesStreamingAsync(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                return new List<ClienteStreamingBusquedaDTO>();
+            }
+
+            termino = termino.Trim().ToLower();
+
+            var clientesBase = await _dbContext.ClientesStreaming
+                .Where(c =>
+                    c.Estado == 1 &&
+                    (
+                        (c.NombreCliente != null && c.NombreCliente.ToLower().Contains(termino)) ||
+                        (c.CelularCliente != null && c.CelularCliente.Contains(termino)) ||
+                        (c.Correo != null && c.Correo.ToLower().Contains(termino))
+                    )
+                )
+                .Select(c => new
+                {
+                    c.IdClienteStreaming,
+                    c.NombreCliente,
+                    c.CelularCliente,
+                    c.Correo
+                })
+                .ToListAsync();
+
+            var clientesAgrupados = clientesBase
+                .GroupBy(c => new
+                {
+                    Nombre = (c.NombreCliente ?? "").Trim().ToLower(),
+                    Celular = (c.CelularCliente ?? "").Trim(),
+                    Correo = (c.Correo ?? "").Trim().ToLower()
+                })
+                .Select(g => new ClienteStreamingBusquedaDTO
+                {
+                    IdsClienteStreaming = string.Join(",", g.Select(x => x.IdClienteStreaming)),
+                    NombreCliente = g.FirstOrDefault()?.NombreCliente,
+                    CelularCliente = g.FirstOrDefault()?.CelularCliente,
+                    CorreoCliente = g.FirstOrDefault()?.Correo
+                })
+                .OrderBy(c => c.NombreCliente)
+                .Take(10)
+                .ToList();
+
+            return clientesAgrupados;
+        }
+
+        public async Task<List<CuentaClienteStreamingDTO>> ObtenerCuentasPorClientesAsync(string idsClienteStreaming)
+        {
+            if (string.IsNullOrWhiteSpace(idsClienteStreaming))
+            {
+                return new List<CuentaClienteStreamingDTO>();
+            }
+
+            var ids = idsClienteStreaming
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => int.TryParse(x, out var id) ? id : 0)
+                .Where(x => x > 0)
+                .Distinct()
+                .ToList();
+
+            if (!ids.Any())
+            {
+                return new List<CuentaClienteStreamingDTO>();
+            }
+
+            var cuentas = await (
+                from cp in _dbContext.ClientesPlataforma
+
+                join cs in _dbContext.ClientesStreaming
+                    on cp.IdClienteStreaming equals cs.IdClienteStreaming
+
+                join ps in _dbContext.Plataformasuscripcion
+                    on cp.IdPltfSuscripcion equals ps.IdPltfSuscripcion
+
+                join p in _dbContext.Plataformas
+                    on ps.IdPlataforma equals p.IdPlataforma
+
+                where ids.Contains(cp.IdClienteStreaming)
+
+                select new CuentaClienteStreamingDTO
+                {
+                    IdClienteStreaming = cs.IdClienteStreaming,
+                    NombreCliente = cs.NombreCliente,
+                    CelularCliente = cs.CelularCliente,
+                    CorreoCliente = cs.Correo,
+
+                    IdClientePlataforma = cp.IdCliPltf,
+                    IdPltfSuscripcion = cp.IdPltfSuscripcion,
+
+                    IdPlataforma = p.IdPlataforma,
+                    NombrePlataforma = p.NombrePltf,
+                    NombreSuscripcion = ps.Descripcion,
+
+                    CorreoPlataforma = ps.Correo,
+                    ClavePlataforma = ps.Contrasena,
+                    ClavePerfil = cp.ClavePerfil,
+
+                    Cantidad = cp.Cantidad,
+                    Ppm = cp.Ppm,
+
+                    FechaIni = cp.FechaIniPago,
+                    FechaFin = cp.FechaFinPago,
+
+                    ValorVenta = cp.ValorVenta,
+                    ValorNeto = cp.ValorNeto,
+
+                    Estado = cp.Estado
+                }
+            )
+            .OrderBy(c => c.NombrePlataforma)
+            .ThenBy(c => c.FechaFin)
+            .ToListAsync();
+
+            return cuentas;
+        }
+        public async Task<(bool ok, string mensaje)> ActualizarCuentaClienteStreamingAsync(ActualizarCuentaClienteStreamingDTO model)
+        {
+            var cuenta = await _dbContext.ClientesPlataforma
+                .FirstOrDefaultAsync(x => x.IdCliPltf == model.IdClientePlataforma);
+
+            if (cuenta == null)
+            {
+                return (false, "No se encontró la cuenta del cliente.");
+            }
+
+            if (model.Cantidad <= 0)
+            {
+                return (false, "La cantidad debe ser mayor a cero.");
+            }
+
+            if (model.FechaFinPago < model.FechaIniPago)
+            {
+                return (false, "La fecha fin no puede ser menor que la fecha inicio.");
+            }
+
+            cuenta.FechaIniPago = model.FechaIniPago;
+            cuenta.FechaFinPago = model.FechaFinPago;
+            cuenta.ClavePerfil = model.ClavePerfil;
+            cuenta.Cantidad = model.Cantidad;
+            cuenta.Ppm = model.Ppm;
+            cuenta.ValorVenta = model.ValorVenta;
+            cuenta.ValorNeto = model.ValorNeto;
+            cuenta.Estado = model.Estado;
+
+            await _dbContext.SaveChangesAsync();
+
+            return (true, "Datos de la cuenta actualizados correctamente.");
         }
     }
 }

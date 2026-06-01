@@ -1,14 +1,15 @@
+using MakroTecno.Services.InicializacionClientes;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Services;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.Features;
 using Serilog;
-using Plataforma.Services;
 using System.Globalization;
-using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +77,8 @@ builder.Services.AddScoped<IMetodoPagoService, MetodoPagoService>();
 builder.Services.AddScoped<IQrService, QrService>();
 builder.Services.AddScoped<IPosService, PosService>();
 builder.Services.AddScoped<ICxcService, CxcService>();
+builder.Services.AddScoped<IInicializacionClienteService, InicializacionClienteService>();
+builder.Services.AddScoped<IIntegracionService, IntegracionService>();
 
 
 //Cultura de la aplicacion para formateo de n�meros, fechas y monedas, utilizando la cultura "es-CO" (español de Colombia).

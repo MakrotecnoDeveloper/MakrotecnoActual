@@ -1,0 +1,217 @@
+@model MakroTecno.ViewModels.Integraciones.RappiActualizacionResultadoViewModel
+
+@{
+    ViewData["Title"] = "Actualizar productos Rappi";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-sync-alt"></i> Actualizar productos existentes Rappi
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <div class="alert alert-info">
+                    Este proceso toma el Excel de actualización descargado desde Rappi y actualiza únicamente:
+                    <strong>Precio</strong>, <strong>Descuento</strong> y <strong>Disponibilidad</strong>,
+                    con base en el inventario real de la sede asociada a la tienda Rappi.
+                </div>
+
+                <form asp-action="RappiActualizarProductos"
+                      asp-controller="Integracion"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tienda Rappi</label>
+                            <select name="rappiTiendaId" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                @foreach (var tienda in Model.TiendasRappi)
+                                {
+                                    if (Model.RappiTiendaId?.ToString() == tienda.Value)
+                                    {
+                                        <option value="@tienda.Value" selected>@tienda.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@tienda.Value">@tienda.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Archivo Excel de Rappi</label>
+                            <input type="file" name="archivo" class="form-control" accept=".xlsx" required />
+                            <small class="text-muted">
+                                Debe ser el archivo de actualización de productos descargado desde Rappi.
+                            </small>
+                        </div>
+
+                        <div class="col-md-3 mb-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-file-excel"></i> Generar Excel actualizado
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ArchivoGenerado))
+                {
+                    <hr />
+
+                    <div class="alert alert-success">
+                        <strong>Archivo generado:</strong>
+                        <a href="@Model.ArchivoGenerado" target="_blank" class="btn btn-primary btn-sm ms-2">
+                            <i class="fas fa-download"></i> Descargar Excel actualizado
+                        </a>
+                    </div>
+                }
+
+                @if (Model.TotalFilas > 0)
+                {
+                    <hr />
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-2">
+                            <div class="card text-center border-dark">
+                                <div class="card-body p-2">
+                                    <strong>Total</strong>
+                                    <h5>@Model.TotalFilas</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="card text-center border-success">
+                                <div class="card-body p-2">
+                                    <strong>Actualizados</strong>
+                                    <h5>@Model.TotalActualizados</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="card text-center border-danger">
+                                <div class="card-body p-2">
+                                    <strong>No encontrados</strong>
+                                    <h5>@Model.TotalNoEncontrados</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="card text-center border-warning">
+                                <div class="card-body p-2">
+                                    <strong>Sin precio</strong>
+                                    <h5>@Model.TotalSinPrecio</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="card text-center border-secondary">
+                                <div class="card-body p-2">
+                                    <strong>Sin inventario</strong>
+                                    <h5>@Model.TotalSinInventario</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fila</th>
+                                    <th>SKU Rappi</th>
+                                    <th>SKU ERP</th>
+                                    <th>Producto Rappi</th>
+                                    <th>Producto ERP</th>
+                                    <th>Precio anterior</th>
+                                    <th>Precio nuevo</th>
+                                    <th>Stock sede</th>
+                                    <th>Disp. anterior</th>
+                                    <th>Disp. nueva</th>
+                                    <th>Estado</th>
+                                    <th>Observación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Detalles)
+                                {
+                                    <tr>
+                                        <td>@item.FilaExcel</td>
+                                        <td>@item.SkuRappi</td>
+                                        <td>@item.SkuErpDetectado</td>
+                                        <td>@item.NombreProductoRappi</td>
+                                        <td>
+                                            <strong>@item.ProductoErpId</strong><br />
+                                            <small>@item.NombreProductoErp</small>
+                                        </td>
+                                        <td>@item.PrecioAnterior</td>
+                                        <td>@item.PrecioNuevo</td>
+                                        <td>@item.StockSede</td>
+                                        <td>@item.DisponibilidadAnterior</td>
+                                        <td>@item.DisponibilidadNueva</td>
+                                        <td>
+                                            @if (item.Estado == "OK")
+                                            {
+                                                <span class="badge bg-success">OK</span>
+                                            }
+                                            else if (item.Estado == "NO_ENCONTRADO")
+                                            {
+                                                <span class="badge bg-danger">No encontrado</span>
+                                            }
+                                            else if (item.Estado == "SIN_PRECIO")
+                                            {
+                                                <span class="badge bg-warning text-dark">Sin precio</span>
+                                            }
+                                            else if (item.Estado == "SIN_INVENTARIO_SEDE")
+                                            {
+                                                <span class="badge bg-secondary">Sin inventario</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-dark">@item.Estado</span>
+                                            }
+                                        </td>
+                                        <td>@item.Observacion</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <a asp-action="Index" class="btn btn-secondary btn-sm mt-3">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>

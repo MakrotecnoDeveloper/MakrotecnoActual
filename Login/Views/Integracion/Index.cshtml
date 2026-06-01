@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Integraciones";
+}
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plug"></i> Integraciones
+                </h4>
+            </div>
+
+            <div class="card-body">
+                <p>Desde este módulo podrás administrar las integraciones externas del ERP.</p>
+
+                <div class="row">
+
+                    <div class="col-md-4">
+                        <div class="card border-primary mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Rappi</h5>
+                                <p class="card-text">
+                                    Configura tiendas, categorías y productos para exportar archivos compatibles con Rappi.
+                                </p>
+
+                                <a asp-action="RappiTiendas" class="btn btn-primary btn-sm">
+                                    Tiendas Rappi
+                                </a>
+
+                                <a asp-action="RappiCategorias" class="btn btn-secondary btn-sm">
+                                    Categorías
+                                </a>
+
+                                <a asp-action="RappiProductosConfig" class="btn btn-info btn-sm">
+                                    Productos
+                                </a>
+                                <a asp-action="RappiProductosPersonalizados"
+                                   asp-route-rappiTiendaId="1"
+                                   asp-route-soloConStock="true"
+                                   class="btn btn-warning btn-sm">
+                                    Productos personalizados
+                                </a>
+                                <a asp-action="RappiActualizarProductos" class="btn btn-info btn-sm">
+                                    Actualizar Productos
+                                </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
