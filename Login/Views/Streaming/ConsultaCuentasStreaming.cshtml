@@ -1,0 +1,300 @@
+﻿@{
+    ViewData["Title"] = "Consulta de Cuentas Streaming";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container-fluid mt-4">
+
+        <h2 class="mb-4">Consulta de Cuentas Streaming</h2>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Filtros de búsqueda
+            </div>
+
+            <div class="card-body">
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label>Buscar</label>
+                        <input type="text"
+                               id="termino"
+                               class="form-control"
+                               placeholder="Correo, cliente o celular">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Fecha inicio</label>
+                        <input type="date" id="fechaInicio" class="form-control">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Fecha fin</label>
+                        <input type="date" id="fechaFin" class="form-control">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Indicador</label>
+                        <select id="indicador" class="form-control">
+                            <option value="TODAS">Todas</option>
+                            <option value="PROXIMAS">Próximas a vencer</option>
+                            <option value="VENCIDAS">Vencidas</option>
+                            <option value="AL_DIA">Al día</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-2 d-flex align-items-end">
+                        <button type="button"
+                                class="btn btn-primary btn-block"
+                                onclick="consultarCuentas()">
+                            Consultar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="resumenConsulta"></div>
+
+        <div id="contenedorResultados"></div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function leerJsonSeguro(response) {
+            const texto = await response.text();
+
+            let data;
+
+            try {
+                data = JSON.parse(texto);
+            } catch {
+                console.error("Respuesta no JSON:", texto);
+                throw new Error("El servidor devolvió una respuesta no válida.");
+            }
+
+            if (!response.ok || data.ok === false) {
+                throw new Error(data.mensaje || "Error en la solicitud.");
+            }
+
+            return data;
+        }
+
+        async function consultarCuentas() {
+            const termino = document.getElementById("termino").value.trim();
+            const fechaInicio = document.getElementById("fechaInicio").value;
+            const fechaFin = document.getElementById("fechaFin").value;
+            const indicador = document.getElementById("indicador").value;
+
+            const params = new URLSearchParams();
+
+            if (termino) params.append("termino", termino);
+            if (fechaInicio) params.append("fechaInicio", fechaInicio);
+            if (fechaFin) params.append("fechaFin", fechaFin);
+            if (indicador) params.append("indicador", indicador);
+
+            document.getElementById("contenedorResultados").innerHTML = `
+                <div class="alert alert-info">
+                    Consultando cuentas...
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/Streaming/ConsultarCuentasStreamingJson?${params.toString()}`);
+                const data = await leerJsonSeguro(response);
+
+                pintarResultados(data.cuentas || []);
+
+            } catch (error) {
+                console.error(error);
+
+                document.getElementById("contenedorResultados").innerHTML = `
+                    <div class="alert alert-danger">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function pintarResultados(cuentas) {
+            const resumenConsulta = document.getElementById("resumenConsulta");
+            const contenedor = document.getElementById("contenedorResultados");
+
+            if (!cuentas || cuentas.length === 0) {
+                resumenConsulta.innerHTML = "";
+                contenedor.innerHTML = `
+                    <div class="alert alert-warning">
+                        No se encontraron cuentas con los filtros seleccionados.
+                    </div>
+                `;
+                return;
+            }
+
+            const total = cuentas.length;
+            const vencidas = cuentas.filter(x => x.estadoCalculado === "Vencida").length;
+            const proximas = cuentas.filter(x => x.estadoCalculado === "Próxima a vencer").length;
+            const alDia = cuentas.filter(x => x.estadoCalculado === "Al día").length;
+
+            resumenConsulta.innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="small-box bg-info p-3 rounded text-white">
+                            <h4>${total}</h4>
+                            <p>Total cuentas</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-danger p-3 rounded text-white">
+                            <h4>${vencidas}</h4>
+                            <p>Vencidas</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-warning p-3 rounded">
+                            <h4>${proximas}</h4>
+                            <p>Próximas a vencer</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-success p-3 rounded text-white">
+                            <h4>${alDia}</h4>
+                            <p>Al día</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let html = `
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        Resultado de cuentas
+                    </div>
+
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Celular</th>
+                                    <th>Plataforma</th>
+                                    <th>Correo plataforma</th>
+                                    <th>Contraseña</th>
+                                    <th>Perfil</th>
+                                    <th>Clave perfil</th>
+                                    <th>Fecha inicio</th>
+                                    <th>Fecha fin</th>
+                                    <th>Días</th>
+                                    <th>Estado</th>
+                                    <th>Tipo cuenta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            cuentas.forEach(cuenta => {
+                html += `
+                    <tr>
+                        <td>${escaparHtml(cuenta.nombreCliente || '')}</td>
+                        <td>${escaparHtml(cuenta.celularCliente || '')}</td>
+                        <td>${escaparHtml(cuenta.nombrePlataforma || '')}</td>
+                        <td>${escaparHtml(cuenta.correoPlataforma || '')}</td>
+                        <td>${escaparHtml(cuenta.clavePlataforma || '')}</td>
+                        <td>${escaparHtml(cuenta.nombreCliente || '')}</td>
+                        <td>${escaparHtml(cuenta.clavePerfil || '')}</td>
+                        <td>${formatearFecha(cuenta.fechaIniPago)}</td>
+                        <td>${formatearFecha(cuenta.fechaFinPago)}</td>
+                        <td>${cuenta.diasParaVencer}</td>
+                        <td>${pintarEstado(cuenta.estadoCalculado)}</td>
+                        <td>${escaparHtml(cuenta.tipoCuenta || '')}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm"
+                                    title="Modificar datos"
+                                    onclick='abrirModalEditarCuenta(${JSON.stringify(cuenta)})'>
+                                <i class="fas fa-pen"></i>
+                            </button>
+
+                            <a href="https://wa.me/${limpiarCelularWhatsapp(cuenta.celularCliente)}?text=${crearMensajeWhatsapp(cuenta)}"
+                               class="btn btn-success btn-sm"
+                               target="_blank"
+                               title="Enviar WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            contenedor.innerHTML = html;
+        }
+
+        function pintarEstado(estado) {
+            if (estado === "Vencida") {
+                return `<span class="badge badge-danger">Vencida</span>`;
+            }
+
+            if (estado === "Próxima a vencer") {
+                return `<span class="badge badge-warning">Próxima a vencer</span>`;
+            }
+
+            return `<span class="badge badge-success">Al día</span>`;
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return "";
+
+            return new Date(fecha).toLocaleDateString("es-CO");
+        }
+
+        function crearMensajeWhatsapp(cuenta) {
+            const mensaje =
+                `*---| Cuenta ${cuenta.nombrePlataforma || ''} |---*\n` +
+                `- Correo: ${cuenta.correoPlataforma || ''}\n` +
+                `- Contraseña: ${cuenta.clavePlataforma || ''}\n` +
+                `- Perfil: ${cuenta.nombreCliente || ''}\n` +
+                `- Clave Perfil: ${cuenta.clavePerfil || ''}\n` +
+                `- Fecha Inicio: ${formatearFecha(cuenta.fechaIniPago)}\n` +
+                `- Fecha Fin: ${formatearFecha(cuenta.fechaFinPago)}\n` +
+                `- Estado: ${cuenta.estadoCalculado || ''}`;
+
+            return encodeURIComponent(mensaje);
+        }
+
+        function limpiarCelularWhatsapp(celular) {
+            if (!celular) return "";
+
+            let limpio = String(celular).replace(/\D/g, "");
+
+            if (limpio.startsWith("57")) return limpio;
+
+            if (limpio.length === 10) return "57" + limpio;
+
+            return limpio;
+        }
+
+        function escaparHtml(valor) {
+            if (valor === null || valor === undefined) return "";
+
+            return String(valor)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+}

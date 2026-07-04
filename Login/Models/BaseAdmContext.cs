@@ -75,6 +75,10 @@ public partial class BaseAdmContext : DbContext
     public DbSet<RappiSincronizacion> RappiSincronizacion { get; set; }
     public DbSet<RappiSincronizacionDetalle> RappiSincronizacionDetalle { get; set; }
     /*Integraciones Rappi Fin*/
+    /*Importaciones Inicio*/
+    public virtual DbSet<ImportacionesProducto> ImportacionesProductos { get; set; }
+    public virtual DbSet<ImportacionesProductosDetalle> ImportacionesProductosDetalles { get; set; }
+    /*Importaciones Fin*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -236,6 +240,59 @@ public partial class BaseAdmContext : DbContext
                 .IsUnique();
 
             entity.HasIndex(e => e.EstadoDian);
+            entity.Property(e => e.TipoDocumento)
+            .IsRequired()
+            .HasMaxLength(30)
+            .HasDefaultValue("FacturaVenta");
+
+            entity.Property(e => e.OrigenModulo)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("VentaNormal");
+
+            entity.Property(e => e.CodigoReferenciaOrigen)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Observacion)
+                .HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<Ventas>(entity =>
+        {
+            entity.ToTable("ventas", "dbo");
+
+            entity.Property(e => e.MetodoPago)
+                .HasMaxLength(100)
+                .HasDefaultValue("Pendiente");
+
+            entity.Property(e => e.EstadoVenta)
+                .HasMaxLength(30)
+                .HasDefaultValue("Pendiente");
+
+            entity.Property(e => e.TipoVenta)
+                .HasMaxLength(30)
+                .HasDefaultValue("Normal");
+
+            entity.Property(e => e.TipoOperacion)
+                .HasMaxLength(30)
+                .HasDefaultValue("Producto");
+
+            entity.Property(e => e.OrigenModulo)
+                .HasMaxLength(50)
+                .HasDefaultValue("VentaNormal");
+
+            entity.Property(e => e.CodigoReferenciaOrigen)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.ObservacionVenta)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Total)
+                .HasColumnType("decimal(18,2)");
+
+            entity.HasIndex(e => e.OrigenModulo);
+            entity.HasIndex(e => e.CodigoReferenciaOrigen);
+            entity.HasIndex(e => new { e.OrigenModulo, e.IdOrigenModulo });
         });
 
         modelBuilder.Entity<GestionRealizada>()
@@ -428,5 +485,57 @@ public partial class BaseAdmContext : DbContext
         .WithMany(p => p.FacturasCompra)
         .HasForeignKey(f => f.IdProveedor)
         .OnDelete(DeleteBehavior.Restrict);
+
+        /*Importaciones Inicio*/
+        modelBuilder.Entity<ImportacionesProducto>(entity =>
+        {
+            entity.HasKey(e => e.IdImportacion);
+
+            entity.ToTable("ImportacionesProductos");
+
+            entity.Property(e => e.IdEmpresa)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.TipoOperacion)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.Property(e => e.TipoEntrada)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.Property(e => e.NombreArchivo)
+                .HasMaxLength(255);
+
+            entity.Property(e => e.Usuario)
+                .HasMaxLength(150);
+
+            entity.Property(e => e.FechaImportacion)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasMany(e => e.Detalles)
+                .WithOne(e => e.Importacion)
+                .HasForeignKey(e => e.IdImportacion);
+        });
+
+        modelBuilder.Entity<ImportacionesProductosDetalle>(entity =>
+        {
+            entity.HasKey(e => e.IdDetalle);
+
+            entity.ToTable("ImportacionesProductosDetalle");
+
+            entity.Property(e => e.CodProducto)
+                .HasMaxLength(255);
+
+            entity.Property(e => e.EstadoProceso)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+
+            entity.Property(e => e.FechaRegistro)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+        });
+        /*Importaciones Fin*/
     }
 }

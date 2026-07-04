@@ -10,7 +10,7 @@
     // =========================
     var empresaNombre = "MakroTecno S.A.S.";
     var empresaNit = "NIT 1234193470-6";
-    var empresaRegimen = "Régimen: Responsable de IVA";
+    var empresaRegimen = "Régimen: No Responsable de IVA";
     var empresaDir = "Cali - Valle del Cauca";
     var empresaDireccion = "Calle 33E #25-11, Alfonso Barberena, Cali";
     var empresaTel = "318 531 3379 / 316 566 6293";
@@ -26,9 +26,25 @@
     var clienteRef = Model?.Factura.Venta?.IdCliente.ToString() ?? "-";
     var cedulaCliente = Model?.Factura.Venta?.CedulaCliente.ToString() ?? "-";
 
+    //Tipo de documentos
+    var tipoDocumento = Model?.Factura?.TipoDocumento ?? "FacturaVenta";
+    var origenModulo = Model?.Factura?.OrigenModulo
+                       ?? Model?.Factura?.Venta?.OrigenModulo
+                       ?? "VentaNormal";
+
+    var codigoReferencia = Model?.Factura?.CodigoReferenciaOrigen
+                           ?? Model?.Factura?.Venta?.CodigoReferenciaOrigen
+                           ?? "N/A";
+
+    var tipoOperacion = Model?.Factura?.Venta?.TipoOperacion ?? "Producto";
+
+    var observacionDocumento = Model?.Factura?.Observacion
+                               ?? Model?.Factura?.Venta?.ObservacionVenta
+                               ?? "";
+
     // URL/Texto para QR (puedes meter un link a tu factura si luego lo tienes)
     // Por ahora: datos clave para verificación rápida
-    var qrText = $"Factura:{Model?.Factura.NumeroFactura}|Venta:{Model?.Factura.IdVenta}|Fecha:{Model?.Factura.FechaEmision:yyyy-MM-dd}|Total:{Model?.Factura.Total}";
+    var qrText = $"Factura:{Model?.Factura.NumeroFactura}|Venta:{Model?.Factura.IdVenta}|Origen:{origenModulo}|Ref:{codigoReferencia}|Fecha:{Model?.Factura.FechaEmision:yyyy-MM-dd}|Total:{Model?.Factura.Total}";
 }
 
 <!DOCTYPE html>
@@ -95,68 +111,155 @@
         }
 
         /* =========================
-           HEADER
+           HEADER MEJORADO
            ========================= */
-        .brand-row{
-            display:flex;
-            align-items:flex-start;
-            justify-content:space-between;
-            gap: 16px;
-            border-bottom: 2px solid var(--line);
-            padding-bottom: 10px;
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 18px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px 20px;
             margin-bottom: 10px;
+            background: #fff;
         }
 
-        .brand{
-            display:flex;
-            gap: 12px;
-            align-items:center;
+        .invoice-brand {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
         }
 
-        .brand img{
-            height: 54px;
-            width:auto;
-            object-fit: contain;
+        .logo-box {
+            width: 92px;
+            height: 92px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            flex-shrink: 0;
         }
 
-        .brand h1{
-            font-size: 18px;
-            margin:0;
+            .logo-box img {
+                max-width: 78px;
+                max-height: 78px;
+                object-fit: contain;
+            }
+
+        .business-name {
+            margin: 0;
+            font-size: 22px;
             font-weight: 900;
-            letter-spacing:.2px;
+            color: var(--ink);
+            line-height: 1.1;
         }
 
-        .brand .meta{
-            margin-top:2px;
-            color:var(--muted);
+        .business-subtitle {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 3px;
+            margin-bottom: 8px;
+        }
+
+        .business-meta {
             font-size: 12px;
+            color: var(--muted);
             line-height: 1.35;
         }
 
-        .doc-title{
-            text-align:right;
+        .invoice-doc {
+            min-width: 250px;
+            text-align: right;
+            border-left: 1px solid var(--line);
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .doc-title .label{
-            font-size: 11px;
-            color: var(--muted);
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-        }
-        .doc-title .value{
-            font-size: 18px;
-            font-weight: 900;
-        }
-        .doc-title .chip{
-            display:inline-block;
-            margin-top: 6px;
-            padding: 6px 10px;
-            border-radius: 999px;
+            .invoice-doc .status {
+                align-self: flex-end;
+                display: inline-block;
+                padding: 5px 14px;
+                border-radius: 999px;
+                border: 1px solid #bbf7d0;
+                background: #f0fdf4;
+                color: #15803d;
+                font-size: 12px;
+                font-weight: 800;
+                margin-bottom: 10px;
+            }
+
+            .invoice-doc .title {
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: .8px;
+                color: var(--muted);
+                font-weight: 800;
+            }
+
+            .invoice-doc .number {
+                font-size: 21px;
+                font-weight: 900;
+                color: var(--ink);
+                margin-top: 3px;
+                word-break: break-word;
+            }
+
+            .invoice-doc .date-label {
+                margin-top: 10px;
+                font-size: 11px;
+                color: var(--muted);
+            }
+
+            .invoice-doc .date-value {
+                font-size: 14px;
+                font-weight: 900;
+                color: var(--ink);
+            }
+
+        .invoice-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
             border: 1px solid var(--line);
-            font-size: 12px;
-            color: var(--muted);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background: var(--soft);
         }
+
+        .invoice-strip-item {
+            padding: 9px 12px;
+            border-right: 1px solid var(--line);
+        }
+
+            .invoice-strip-item:last-child {
+                border-right: none;
+            }
+
+            .invoice-strip-item span {
+                display: block;
+                font-size: 10.5px;
+                text-transform: uppercase;
+                letter-spacing: .5px;
+                color: var(--muted);
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            .invoice-strip-item strong {
+                display: block;
+                font-size: 12.5px;
+                color: var(--ink);
+                font-weight: 900;
+                word-break: break-word;
+            }
 
         /* =========================
            BLOQUES INFO
@@ -307,8 +410,8 @@
 
         /* Tirilla (opcional) */
         body.size-receipt @@page {
-            size: 80mm auto;
-            margin: 6mm;
+            size: 80mm 297mm;
+            margin: 3mm;
         }
 
         /* Responsive: si media carta o tirilla, apila */
@@ -320,6 +423,286 @@
             width: 82px;
             height: 82px;
         }
+        /* =========================
+           MEDIA CARTA
+           ========================= */
+        body.size-half-letter .sheet {
+            padding: 8mm;
+        }
+
+        body.size-half-letter .invoice-header {
+            padding: 12px 14px;
+            gap: 12px;
+        }
+
+        body.size-half-letter .logo-box {
+            width: 68px;
+            height: 68px;
+            border-radius: 12px;
+        }
+
+            body.size-half-letter .logo-box img {
+                max-width: 58px;
+                max-height: 58px;
+            }
+
+        body.size-half-letter .business-name {
+            font-size: 18px;
+        }
+
+        body.size-half-letter .business-subtitle {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        body.size-half-letter .business-meta {
+            font-size: 10.5px;
+        }
+
+        body.size-half-letter .invoice-doc {
+            min-width: 205px;
+            padding-left: 12px;
+        }
+
+            body.size-half-letter .invoice-doc .number {
+                font-size: 16px;
+            }
+
+        body.size-half-letter .invoice-strip {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        body.size-half-letter .invoice-strip-item {
+            border-bottom: 1px solid var(--line);
+        }
+
+            body.size-half-letter .invoice-strip-item:nth-child(2n) {
+                border-right: none;
+            }
+
+        body.size-half-letter .grid-3 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+            body.size-half-letter .grid-3 .box:last-child {
+                grid-column: 1 / -1;
+            }
+
+        body.size-half-letter table.items {
+            font-size: 11px;
+        }
+
+            body.size-half-letter table.items thead th,
+            body.size-half-letter table.items tbody td {
+                padding: 6px 5px;
+            }
+
+        body.size-half-letter .totals {
+            width: 260px;
+        }
+        /* =========================
+           TIRILLA 80MM
+           ========================= */
+        body.size-receipt {
+            font-family: Arial, sans-serif;
+        }
+
+            body.size-receipt .sheet {
+                width: 80mm;
+                padding: 4mm;
+            }
+
+            body.size-receipt .invoice-header {
+                display: block;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+                margin-bottom: 6px;
+                text-align: center;
+            }
+
+            body.size-receipt .invoice-brand {
+                display: block;
+            }
+
+            body.size-receipt .logo-box {
+                width: auto;
+                height: auto;
+                border: none;
+                border-radius: 0;
+                margin-bottom: 4px;
+            }
+
+                body.size-receipt .logo-box img {
+                    max-width: 42mm;
+                    max-height: 20mm;
+                }
+
+            body.size-receipt .business-name {
+                font-size: 14px;
+                text-align: center;
+            }
+
+            body.size-receipt .business-subtitle {
+                font-size: 10px;
+                text-align: center;
+                margin-bottom: 4px;
+            }
+
+            body.size-receipt .business-meta {
+                font-size: 9.5px;
+                text-align: center;
+                line-height: 1.25;
+                border-bottom: 1px dashed #999;
+                padding-bottom: 6px;
+            }
+
+            body.size-receipt .invoice-doc {
+                min-width: 0;
+                border-left: none;
+                padding-left: 0;
+                margin-top: 6px;
+                text-align: center;
+                display: block;
+            }
+
+                body.size-receipt .invoice-doc .status {
+                    display: inline-block;
+                    margin-bottom: 5px;
+                    padding: 3px 8px;
+                    font-size: 10px;
+                }
+
+                body.size-receipt .invoice-doc .title {
+                    font-size: 12px;
+                    color: var(--ink);
+                }
+
+                body.size-receipt .invoice-doc .number {
+                    font-size: 12px;
+                    margin-top: 2px;
+                }
+
+                body.size-receipt .invoice-doc .date-label {
+                    font-size: 9px;
+                    margin-top: 4px;
+                }
+
+                body.size-receipt .invoice-doc .date-value {
+                    font-size: 10px;
+                }
+
+            body.size-receipt .invoice-strip {
+                display: block;
+                border: none;
+                border-radius: 0;
+                background: #fff;
+                border-top: 1px dashed #999;
+                border-bottom: 1px dashed #999;
+                padding: 5px 0;
+                margin-bottom: 6px;
+            }
+
+            body.size-receipt .invoice-strip-item {
+                display: flex;
+                justify-content: space-between;
+                gap: 6px;
+                border: none;
+                padding: 1px 0;
+            }
+
+                body.size-receipt .invoice-strip-item span {
+                    font-size: 9.5px;
+                    text-transform: none;
+                    letter-spacing: 0;
+                    margin: 0;
+                }
+
+                body.size-receipt .invoice-strip-item strong {
+                    font-size: 9.5px;
+                    text-align: right;
+                    max-width: 42mm;
+                }
+
+            body.size-receipt .grid-3 {
+                display: block;
+            }
+
+            body.size-receipt .box {
+                border: none;
+                border-radius: 0;
+                padding: 5px 0;
+                border-bottom: 1px dashed #999;
+            }
+
+                body.size-receipt .box .box-title {
+                    font-size: 10px;
+                    margin-bottom: 4px;
+                }
+
+            body.size-receipt .kv {
+                grid-template-columns: 24mm 1fr;
+                font-size: 9.5px;
+                row-gap: 2px;
+            }
+
+            body.size-receipt .box:nth-child(1),
+            body.size-receipt .box:nth-child(3) {
+                display: none;
+            }
+
+            body.size-receipt table.items {
+                font-size: 9.5px;
+                margin-top: 6px;
+            }
+
+                body.size-receipt table.items thead th {
+                    font-size: 8.5px;
+                    padding: 4px 2px;
+                }
+
+                body.size-receipt table.items tbody td {
+                    padding: 4px 2px;
+                }
+
+                body.size-receipt table.items th:nth-child(1),
+                body.size-receipt table.items td:nth-child(1) {
+                    display: none;
+                }
+
+                body.size-receipt table.items th:nth-child(2),
+                body.size-receipt table.items td:nth-child(2) {
+                    width: 42%;
+                }
+
+            body.size-receipt .totals-wrap {
+                display: block;
+            }
+
+            body.size-receipt .totals {
+                width: 100%;
+                border: none;
+                border-radius: 0;
+                background: #fff;
+                padding: 5px 0;
+                border-top: 1px dashed #999;
+            }
+
+                body.size-receipt .totals .row {
+                    font-size: 10px;
+                }
+
+                body.size-receipt .totals .grand {
+                    font-size: 11px;
+                }
+
+            body.size-receipt .legal {
+                font-size: 8.5px;
+                text-align: center;
+                border-top: 1px dashed #999;
+                margin-top: 6px;
+                padding-top: 6px;
+            }
     </style>
 </head>
 
@@ -340,28 +723,56 @@
     <div class="sheet">
 
         <!-- Encabezado -->
-        <div class="brand-row">
-            <div class="brand">
-                <img src="~/img/logo.png" alt="Logo" />
+        <div class="invoice-header">
+            <div class="invoice-brand">
+                <div class="logo-box">
+                    <img src="~/img/logo.png" alt="Logo" />
+                </div>
+
                 <div>
-                    <h1>@empresaNombre</h1>
-                    <div class="meta">
+                    <h1 class="business-name">@empresaNombre</h1>
+                    <div class="business-subtitle">Soluciones tecnológicas integrales</div>
+
+                    <div class="business-meta">
                         <div><b>@empresaNit</b> · @empresaRegimen</div>
                         <div>@empresaDireccion</div>
-                        <div>@empresaDir · @empresaTel</div>
+                        <div>@empresaDir</div>
+                        <div>Tel: @empresaTel</div>
                         <div>@empresaEmail</div>
                     </div>
                 </div>
             </div>
 
-            <div class="doc-title">
-                <div class="label">Factura de Venta</div>
-                <div class="value">@Model.Factura.NumeroFactura</div>
-                <div class="chip">Estado: @Model.Factura.EstadoFactura</div>
-                <div class="mt-2" style="font-size:12px;">
-                    <div class="muted">Fecha emisión</div>
-                    <div style="font-weight:800;">@Model.Factura.FechaEmision.ToString("dd/MM/yyyy")</div>
-                </div>
+            <div class="invoice-doc">
+                <div class="status">@Model.Factura.EstadoFactura</div>
+
+                <div class="title">Factura de venta</div>
+                <div class="number">@Model.Factura.NumeroFactura</div>
+
+                <div class="date-label">Fecha de emisión</div>
+                <div class="date-value">@Model.Factura.FechaEmision.ToString("dd/MM/yyyy")</div>
+            </div>
+        </div>
+
+        <div class="invoice-strip">
+            <div class="invoice-strip-item">
+                <span>Tipo documento</span>
+                <strong>@tipoDocumento</strong>
+            </div>
+
+            <div class="invoice-strip-item">
+                <span>Origen</span>
+                <strong>@origenModulo</strong>
+            </div>
+
+            <div class="invoice-strip-item">
+                <span>Referencia</span>
+                <strong>@codigoReferencia</strong>
+            </div>
+
+            <div class="invoice-strip-item">
+                <span>Tipo operación</span>
+                <strong>@tipoOperacion</strong>
             </div>
         </div>
 
@@ -384,6 +795,9 @@
                     <div class="k">Cédula</div><div class="v">@cedulaCliente</div>
                     <div class="k">Venta</div><div class="v">#@Model.Factura.IdVenta</div>
                     <div class="k">Método</div><div class="v">@(Model?.Factura.Venta?.MetodoPago ?? "N/A")</div>
+                    <div class="k">Origen</div><div class="v">@origenModulo</div>
+                    <div class="k">Referencia</div><div class="v">@codigoReferencia</div>
+                    <div class="k">Tipo operación</div><div class="v">@tipoOperacion</div>
                 </div>
             </div>
 
@@ -422,7 +836,7 @@
             {
                 <tr>
                     <td style="font-weight:800;">@pedido.Codigo</td>
-                    <td class="muted">Producto / Servicio</td>
+                        <td class="muted">@(pedido.Producto?.NombreProducto ?? "Producto / Servicio")</td>
                     <td class="text-end">@pedido.Stock</td>
                     <td class="text-end">@pedido.VVenta.ToString("C0", cultura)</td>
                     <td class="text-end" style="font-weight:900;">@pedido.SubTotal.ToString("C0", cultura)</td>
@@ -448,6 +862,13 @@
                 </div>
             </div>
         </div>
+
+        @if (!string.IsNullOrWhiteSpace(observacionDocumento))
+        {
+            <div class="legal">
+                <b>Observación:</b> @observacionDocumento
+            </div>
+        }
 
         <!-- Nota -->
         <div class="legal">

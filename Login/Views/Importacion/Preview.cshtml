@@ -1,0 +1,129 @@
+﻿@model Plataforma.Models.ResultadoImportacionDto
+
+@{
+    ViewData["Title"] = "Vista previa importación";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>Vista previa de importación</h1>
+    </section>
+
+    <section class="content">
+
+        @if (!Model.Exitoso)
+        {
+            <div class="alert alert-danger">
+                @Model.Mensaje
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                @Model.Mensaje
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@Model.TotalLeidos</h3>
+                        <p>Registros leídos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@Model.TotalProcesados</h3>
+                        <p>Registros procesados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@Model.TotalErrores</h3>
+                        <p>Errores</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Errores.Any())
+        {
+            <div class="alert alert-warning">
+                <h5>Observaciones</h5>
+                <ul>
+                    @foreach (var error in Model.Errores)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Productos detectados</h3>
+            </div>
+
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Valor Neto</th>
+                            <th>Valor Unidad</th>
+                            <th>Valor Venta</th>
+                            <th>Estado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Productos)
+                        {
+                            var clase = item.EstadoProceso == "NoExiste" ? "table-warning" :
+                            item.EstadoProceso == "Error" ? "table-danger" :
+                            "table-success";
+
+                            <tr class="@clase">
+                                <td>@item.CodProducto</td>
+                                <td>@item.NombreProducto</td>
+                                <td>@item.ValorNetoProducto?.ToString("N0")</td>
+                                <td>@item.ValorUnidad?.ToString("N0")</td>
+                                <td>@item.ValorVentaProducto?.ToString("N0")</td>
+                                <td>@item.EstadoProceso</td>
+                                <td>@item.Observacion</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer text-right">
+                <form asp-action="Confirmar" asp-controller="Importacion" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="idImportacion" value="@Model.IdImportacion" />
+                    <input type="hidden" name="tipoOperacion" value="@Model.TipoOperacion" />
+                    <input type="hidden" name="camposOrdenadosJson" value='@Model.CamposOrdenadosJson' />
+
+                    <a asp-action="Index" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        Confirmar Importación
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </section>
+</div>

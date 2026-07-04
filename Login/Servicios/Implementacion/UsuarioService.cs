@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.ViewModels.Productos;
 using Plataforma.Servicios.Contrato;
 using System.Runtime.InteropServices;
 
@@ -262,7 +263,8 @@ namespace Plataforma.Servicios.Implementacion
                 NombreSede = nombreSede,
                 Ciudad = ciudad,
                 Direccion = direccion,
-                Telefono = telefono
+                Telefono = telefono,
+                Estado = 1
             };
             _dbContext.Sede.Add(nuevaSede);
             _dbContext.SaveChanges();
@@ -955,6 +957,69 @@ namespace Plataforma.Servicios.Implementacion
                 x.Cedula == cedula &&
                 x.InfopdvId == pdvId &&
                 x.Estado == 1);
+        }
+
+        public SeleccionAccesoLoginVm ObtenerAccesosLoginPorUsuario(int cedula, string password)
+        {
+            var sedesUsuario = _dbContext.Sedeempleado
+                .Where(se => se.Cedula == cedula)
+                .Select(se => se.Id_sede)
+                .Distinct()
+                .ToList();
+
+            var sedes = (from s in _dbContext.Sede
+                         join e in _dbContext.Empresas
+                            on s.Id_empresa equals e.Id_empresa
+                         where sedesUsuario.Contains(s.Id_sede)
+                         select new SedeLoginVm
+                         {
+                             SedeId = s.Id_sede,
+                             NombreSede = s.NombreSede ?? "",
+                             EmpresaId = s.Id_empresa ?? ""
+                         })
+                .Distinct()
+                .ToList();
+
+            var empresasIds = sedes
+                .Select(x => x.EmpresaId)
+                .Distinct()
+                .ToList();
+
+            var empresas = _dbContext.Empresas
+                .Where(e => e.Id_empresa != null && empresasIds.Contains(e.Id_empresa))
+                .Select(e => new EmpresaLoginVm
+                {
+                    EmpresaId = e.Id_empresa ?? "",
+                    NombreEmpresa = e.Nombre ?? ""
+                })
+                .ToList();
+
+            var pdvs = _dbContext.Infopdv
+                .Where(p => sedesUsuario.Contains(p.Id_Sede))
+                .Select(p => new PdvLoginVm
+                {
+                    PdvId = p.InfopdvId,
+                    NombrePdv = p.NombreInfoPDV ?? "",
+                    SedeId = p.Id_Sede
+                })
+                .ToList();
+
+            return new SeleccionAccesoLoginVm
+            {
+                Cedula = cedula,
+                Password = password,
+                Empresas = empresas,
+                Sedes = sedes,
+                Pdvs = pdvs
+            };
+        }
+
+        public int ObtenerRolPermisosPorSede(int cedula, int sedeId)
+        {
+            return _dbContext.Sedeempleado
+                .Where(se => se.Cedula == cedula && se.Id_sede == sedeId)
+                .Select(se => se.Id_cargo)
+                .FirstOrDefault();
         }
     }
 }

@@ -37,15 +37,20 @@ namespace Plataforma.Servicios.Implementacion
         public async Task<bool> InsertarCompraAsync(CompraViewModel model)
         {
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
             try
             {
-                //Si hay descuento..
-                var total = model.Productos.Sum(p => p.VTotal);
-                if(model.Iva > 0)
+                var subtotal = model.Productos.Sum(p => p.VTotal);
+
+                var total = subtotal;
+
+                if (model.Iva > 0)
                 {
-                    total = ((total * model.Iva) / 100) + total;
+                    total = total + ((total * model.Iva) / 100);
                 }
-                // 1. Crear la compra
+
+                total = total - model.DescuentoFactura;
+
                 var compra = new Compras
                 {
                     IdProveedor = model.IdProveedor,
@@ -53,21 +58,25 @@ namespace Plataforma.Servicios.Implementacion
                     FechaCompra = DateTime.Now,
                     Estado = 1,
                     Iva = model.Iva,
-                    DescuentoFactura = total - model.DescuentoFactura,
+                    DescuentoFactura = model.DescuentoFactura,
                     CodFacturaExterno = model.CodFacturaExterno
                 };
 
                 _dbContext.Compras.Add(compra);
-                await _dbContext.SaveChangesAsync(); // Guarda y obtiene IdCompra
+                await _dbContext.SaveChangesAsync();
 
-                // 2. Crear los detalles
                 foreach (var producto in model.Productos)
                 {
+                    var productoExistente = await _dbContext.Productos
+                        .FirstOrDefaultAsync(p => p.Cod_Producto == producto.Codigo);
 
-                    var productoExistente = _dbContext.Productos.FirstOrDefault(p => p.Cod_Producto == producto.Codigo);
-                    if(productoExistente != null)
+                    if (productoExistente != null)
                     {
                         productoExistente.CantidadProducto += producto.Stock;
+
+                        productoExistente.ValorUnidad = producto.ValorUnidad;
+                        productoExistente.ValorVentaProducto = producto.ValorVentaProducto;
+
                         _dbContext.Productos.Update(productoExistente);
                     }
 
@@ -76,21 +85,28 @@ namespace Plataforma.Servicios.Implementacion
                         IdCompra = compra.IdCompra,
                         Codigo = producto.Codigo,
                         Stock = producto.Stock,
-                        VNeto = producto.VNeto,
-                        VVenta = producto.VVenta,
+
+                        // Se mantienen estos campos si DetalleCompra todavía se llama VNeto/VVenta
+                        VNeto = producto.ValorUnidad,
+                        VVenta = producto.ValorVentaProducto,
+
                         VTotal = producto.VTotal
                     };
+
                     _dbContext.DetalleCompras.Add(detalle);
                 }
 
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
+
                 return true;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                // Log ex (implementa tu logger o consola)
+
+                Console.WriteLine($"Error InsertarCompraAsync: {ex.Message}");
+
                 return false;
             }
         }

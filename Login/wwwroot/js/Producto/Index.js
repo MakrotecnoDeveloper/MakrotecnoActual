@@ -2,15 +2,155 @@
 const productos = window.modelo.productos || [];
 const categorias = window.modelo.categoriaProductos || [];
 
+function renderCategoriasExportacion() {
+    const contenedor = document.getElementById("contenedorCategorias");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    if (!categorias || categorias.length === 0) {
+        contenedor.innerHTML = `<div class="text-muted">No hay categorías disponibles.</div>`;
+        return;
+    }
+
+    categorias.forEach(cat => {
+        const item = document.createElement("div");
+        item.className = "form-check mb-1";
+        item.innerHTML = `
+            <input class="form-check-input categoria-exportar"
+                   type="checkbox"
+                   value="${cat.idCateProducto}"
+                   id="cat_${cat.idCateProducto}"
+                   disabled>
+            <label class="form-check-label" for="cat_${cat.idCateProducto}">
+                ${cat.descripcion}
+            </label>
+        `;
+
+        contenedor.appendChild(item);
+    });
+}
+
+function actualizarEstadoCategorias() {
+    const checkTodasCategorias = document.getElementById("checkTodasCategorias");
+    const checksCategorias = document.querySelectorAll(".categoria-exportar");
+
+    if (!checkTodasCategorias) return;
+
+    if (checkTodasCategorias.checked) {
+        checksCategorias.forEach(chk => {
+            chk.checked = false;
+            chk.disabled = true;
+        });
+    } else {
+        checksCategorias.forEach(chk => {
+            chk.disabled = false;
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderCategoriasExportacion();
+
+    const checkTodasCategorias = document.getElementById("checkTodasCategorias");
+    const checkTodosCampos = document.getElementById("checkTodosCampos");
+
+    actualizarEstadoCategorias();
+
+    if (checkTodasCategorias) {
+        checkTodasCategorias.addEventListener("change", function () {
+            actualizarEstadoCategorias();
+        });
+    }
+
+    if (checkTodosCampos) {
+        checkTodosCampos.addEventListener("change", function () {
+            const checks = document.querySelectorAll(".campo-exportar");
+            checks.forEach(c => c.checked = this.checked);
+        });
+    }
+
+    document.addEventListener("change", function (e) {
+        if (e.target.classList.contains("campo-exportar")) {
+            const todos = document.querySelectorAll(".campo-exportar");
+            const marcados = document.querySelectorAll(".campo-exportar:checked");
+            const checkTodos = document.getElementById("checkTodosCampos");
+
+            if (checkTodos) {
+                checkTodos.checked = todos.length === marcados.length;
+            }
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    renderCategoriasExportacion();
+
+    const checkTodasCategorias = document.getElementById("checkTodasCategorias");
+    const checkTodosCampos = document.getElementById("checkTodosCampos");
+
+    if (checkTodasCategorias) {
+        checkTodasCategorias.addEventListener("change", function () {
+            const checks = document.querySelectorAll(".categoria-exportar");
+            checks.forEach(c => c.checked = this.checked);
+        });
+    }
+
+    if (checkTodosCampos) {
+        checkTodosCampos.addEventListener("change", function () {
+            const checks = document.querySelectorAll(".campo-exportar");
+            checks.forEach(c => c.checked = this.checked);
+        });
+    }
+
+    document.addEventListener("change", function (e) {
+        if (e.target.classList.contains("categoria-exportar")) {
+            const todas = document.querySelectorAll(".categoria-exportar");
+            const marcadas = document.querySelectorAll(".categoria-exportar:checked");
+            document.getElementById("checkTodasCategorias").checked = todas.length === marcadas.length;
+        }
+
+        if (e.target.classList.contains("campo-exportar")) {
+            const todos = document.querySelectorAll(".campo-exportar");
+            const marcados = document.querySelectorAll(".campo-exportar:checked");
+            document.getElementById("checkTodosCampos").checked = todos.length === marcados.length;
+        }
+    });
+});
+
+function exportarExcelPersonalizado() {
+    const todasCategorias = document.getElementById("checkTodasCategorias").checked;
+
+    let categoriasSeleccionadas = [];
+    if (!todasCategorias) {
+        categoriasSeleccionadas = Array.from(document.querySelectorAll(".categoria-exportar:checked"))
+            .map(x => x.value);
+
+        if (categoriasSeleccionadas.length === 0) {
+            alert("Debes seleccionar al menos una categoría o marcar 'Todas las categorías'.");
+            return;
+        }
+    }
+
+    const camposSeleccionados = Array.from(document.querySelectorAll(".campo-exportar:checked"))
+        .map(x => x.value);
+
+    if (camposSeleccionados.length === 0) {
+        alert("Debes seleccionar al menos un campo para exportar.");
+        return;
+    }
+
+    let url = "/Producto/ExportarExcelPersonalizado?";
+    url += "todasCategorias=" + todasCategorias;
+    url += "&categorias=" + encodeURIComponent(categoriasSeleccionadas.join(","));
+    url += "&campos=" + encodeURIComponent(camposSeleccionados.join(","));
+
+    window.location.href = url;
+}
+
 const categoriasMap = {};
 categorias.forEach(cat => {
     categoriasMap[cat.idCateProducto] = cat;
-});
-
-
-categorias.forEach(cat => {
-    console.log("Categoría:", cat.descripcion);
-    console.log("Servicio:", cat.servicio.nombreServicio);
 });
 
   // --- Variables de paginación ---
@@ -31,7 +171,6 @@ categorias.forEach(cat => {
   }
 
 async function mostrarProductos(lista) {
-    console.log(lista);
     const grid = document.getElementById("grid");
     grid.innerHTML = "";
 

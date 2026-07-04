@@ -1,32 +1,105 @@
-﻿@model OrdenesServicioViewModel
+﻿@model Plataforma.ViewModels.Pedido.CrearVentaViewModel
+
 @{
     ViewData["Title"] = "Crear Venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var cedula = User.FindFirst("Cedula");
 }
+
 <div class="content-wrapper">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Crear Nueva Venta</h2>
-        <form method="POST" asp-action="CrearVenta" asp-controller="Pedido">
-            <div class="mb-3">
-                <label class="form-label">Cédula del Cliente</label>
-                <select name="IdCliente" id="m_cliente" class="form-control">
-                    <option disabled selected>Seleccione un cliente</option>
-                    @foreach (var clientes in Model.Clientes)
-                    {
-                        <option value="@clientes.IdCliente">@clientes.NombreCliente</option>
-                    }
-                </select>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-shopping-cart"></i> Crear Nueva Venta
+                </h4>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Concepto</label>
-                <input type="text" name="Conceptos" class="form-control" />
+
+            <div class="card-body">
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <form method="POST" asp-action="CrearVenta" asp-controller="Pedido">
+                    @Html.AntiForgeryToken()
+
+                    <div class="alert alert-light border mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Origen</small>
+                                <strong>Venta normal</strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Tipo de operación</small>
+                                <strong>Producto</strong>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Estado inicial</small>
+                                <strong>Pendiente</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input asp-for="Cedula" type="hidden" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cliente</label>
+                        <select asp-for="IdCliente" id="m_cliente" class="form-control" required>
+                            <option value="" disabled selected>Seleccione un cliente</option>
+
+                            @foreach (var cliente in Model.Clientes)
+                            {
+                                <option value="@cliente.IdCliente">
+                                    @cliente.NombreCliente
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Concepto</label>
+                        <input asp-for="Conceptos"
+                               type="text"
+                               class="form-control"
+                               placeholder="Ej: Venta de accesorios tecnológicos"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Observación</label>
+                        <textarea asp-for="ObservacionVenta"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Observación interna de la venta, si aplica"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cédula del vendedor</label>
+                        <input asp-for="Cedula"
+                               type="number"
+                               class="form-control"
+                               readonly />
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="ListaVentas" asp-controller="Pedido" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Crear venta
+                        </button>
+                    </div>
+                </form>
+
             </div>
-            <div class="mb-3">
-                <label class="form-label">Cédula del Vendedor</label>
-                <input type="number" name="Cedula" class="form-control" value="@cedula.Value" placeholder="@cedula.Value" readonly />
-            </div>
-            <button type="submit" class="btn btn-primary">Crear Venta</button>
-        </form>
+        </div>
+
     </div>
 </div>

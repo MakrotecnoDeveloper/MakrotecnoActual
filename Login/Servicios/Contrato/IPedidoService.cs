@@ -1,12 +1,12 @@
 ﻿using Plataforma.Models;
 using Plataforma.Models.Dto.Pedido;
+using Plataforma.ViewModels.Pedido;
 using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
     public interface IPedidoService
     {
         Task<List<MetodoPagos>> TraerMetodosPagoDisponibles(int metodoPago);
-        Task<bool> CrearVentaAsync(Ventas venta);
         Task<Ventas?> ObtenerVentaConDetalleAsync(int idVenta);
         Task<List<Ventas>> ObtenerTodasLasVentasAsync();
         Task<(decimal? valorVenta, decimal? valorNeto)?> BuscarProductoPorCodigoAsync(string codigo);
@@ -30,7 +30,7 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> AgregarAdicionFacturaAsync(int IdFactura, decimal valor, string descripcion, int cedulaEmpleado, string EstadoAdicion);
         List<AdicionFactura> ObtenerConceptosCompletos();
         List<InventarioSede> ValidarProductoPorCodigo(string Codigo);
-        Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo);
+        Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo, ClaimsPrincipal usuario);
         Task<bool> FacturarConPagosAsync(
             int idVenta,
             int idCliente,
@@ -45,5 +45,7 @@ namespace Plataforma.Servicios.Contrato
         Task<List<ProductoVentaDto>> BuscarProductosPorNombreVentaAsync(string texto, ClaimsPrincipal usuario);
         Task<List<Ventas>> ObtenerVentasFiltradasAsync(ContextoAccesoDto ctx);
         Task<List<Factura>> ObtenerFacturasFiltradasAsync(ContextoAccesoDto ctx);
+        Task<CrearVentaViewModel> ConstruirCrearVentaViewModelAsync(ClaimsPrincipal usuario);
+        Task<bool> CrearVentaAsync(CrearVentaViewModel vm);
     }
 }

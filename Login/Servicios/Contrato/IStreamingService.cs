@@ -17,6 +17,16 @@ namespace Plataforma.Servicios.Contrato
 
         Task<List<CuentaClienteStreamingDTO>> ObtenerCuentasPorClientesAsync(string idsClienteStreaming);
         Task<(bool ok, string mensaje)> ActualizarCuentaClienteStreamingAsync(ActualizarCuentaClienteStreamingDTO model);
+        Task<List<CuentaStreamingConsultaDTO>> ConsultarCuentasStreamingAsync(FiltroCuentasStreamingDTO filtro);
+        Task<(bool ok, string mensaje)> RenovarCuentaStreamingAsync(RenovarCuentaStreamingDTO model);
+        Task<List<Plataformas>> ObtenerPlataformasAsync();
+
+        Task<List<EstructuraPlataformaDTO>> ObtenerEstructuraPorPlataformaAsync(int idPlataforma);
+        Task<(bool ok, string mensaje)> ActualizarCuentaPlanAsync(ActualizarCuentaPlanDTO model);
+        Task<(bool ok, string mensaje)> AsignarClienteACuentaAsync(AsignarClienteACuentaDTO model);
+        Task<(bool ok, string mensaje)> ActualizarPerfilCuentaAsync(ActualizarPerfilCuentaDTO model);
+
+
 
     }
 }

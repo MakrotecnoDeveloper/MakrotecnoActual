@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.ViewModels.Inicio;
 using Plataforma.Servicios.Contrato;
 
 namespace Plataforma.Controllers
@@ -9,29 +11,66 @@ namespace Plataforma.Controllers
     {
         private readonly IUsuarioService _usuarioService;
         private readonly IInicioService _inicioService;
-        public InicioController(IUsuarioService usuarioService, IInicioService inicioService)
+        private readonly BaseAdmContext _dbContext;
+
+        public InicioController(IUsuarioService usuarioService, IInicioService inicioService, BaseAdmContext dbContext)
         {
             _usuarioService = usuarioService;
             _inicioService = inicioService;
+            _dbContext = dbContext;
         }
         [Authorize]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var cedulaClaim = User.FindFirst("Cedula");
-            if (cedulaClaim != null && int.TryParse(cedulaClaim.Value, out int cedula))
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+            var nombreEmpresa = User.FindFirst("NombreEmpresa")?.Value;
+            var sedeIdClaim = User.FindFirst("SedeId")?.Value;
+            var nombreSede = User.FindFirst("NombreSede")?.Value;
+            var pdvIdClaim = User.FindFirst("PdvId")?.Value;
+            var nombrePdv = User.FindFirst("NombrePdv")?.Value;
+
+            var cedulaClaim = User.FindFirst("Cedula")?.Value;
+            var nombreUsuario = User.FindFirst("Nombre")?.Value;
+            var apellidoUsuario = User.FindFirst("Apellido")?.Value;
+            var nombreRol = User.FindFirst("NombreRol")?.Value;
+
+            if (string.IsNullOrWhiteSpace(empresaId) ||
+                string.IsNullOrWhiteSpace(sedeIdClaim) ||
+                string.IsNullOrWhiteSpace(pdvIdClaim))
             {
-                int idPDVActual = _usuarioService.TraerUltimoIDPdv(cedula);
-                var totalFactXDia = await _usuarioService.TraerFactXDia(cedula, idPDVActual);
-                var viewModel = totalFactXDia.FirstOrDefault();
-                return View(viewModel);
-            }
-            else
-            {
-                var mensaje = "El claim 'Cedula' no existe o la conversión falló.";
-                TempData["ErrorMessage"] = mensaje;
+                TempData["ErrorMessage"] = "No se encontró el contexto de empresa, sede o punto de venta del usuario.";
                 return RedirectToAction("Error", "Errores");
             }
 
+            int sedeId = int.Parse(sedeIdClaim);
+            int pdvId = int.Parse(pdvIdClaim);
+            int cedula = int.TryParse(cedulaClaim, out var ced) ? ced : 0;
+
+            var vm = new InicioPortalVm
+            {
+                EmpresaId = empresaId,
+                NombreEmpresa = nombreEmpresa ?? "",
+                SedeId = sedeId,
+                NombreSede = nombreSede ?? "",
+                PdvId = pdvId,
+                NombrePdv = nombrePdv ?? "",
+                Cedula = cedula,
+                NombreUsuario = $"{nombreUsuario} {apellidoUsuario}".Trim(),
+                NombreRol = nombreRol ?? "",
+
+                TotalSedesEmpresa = _dbContext.Sede
+                    .Count(x => x.Id_empresa == empresaId),
+
+                TotalPdvSede = _dbContext.Infopdv
+                    .Count(x => x.Id_Sede == sedeId),
+
+                TotalEmpleadosSede = _dbContext.Sedeempleado
+                    .Count(x => x.Id_sede == sedeId),
+
+                EstadoConexion = "Activo"
+            };
+
+            return View(vm);
         }
         [Authorize]
         [HttpGet]

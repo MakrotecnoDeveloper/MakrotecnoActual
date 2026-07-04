@@ -4,6 +4,7 @@ using Plataforma.Domain.Exceptions;
 using Plataforma.Models;
 using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
+using Plataforma.ViewModels.Pedido;
 using System.Security.Claims;
 
 namespace Plataforma.Controllers
@@ -38,33 +39,37 @@ namespace Plataforma.Controllers
             var facturas = _pedidoServicio.ObtenerFacturasFechaDescendente();
             return View(facturas);
         }
-        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> CrearVenta() 
+        public async Task<IActionResult> CrearVenta()
         {
-            var model = new OrdenesServicioViewModel
-            {
-                Clientes = await _tercerosService.ObtenerClientes()
-            };
-            return View(model);
+            var vm = await _pedidoServicio.ConstruirCrearVentaViewModelAsync(User);
+            return View(vm);
         }
         [HttpPost]
-        public async Task<IActionResult> CrearVenta(Ventas venta)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearVenta(CrearVentaViewModel vm)
         {
-            venta.FechaVenta = DateTime.Now;
-            venta.EstadoVenta = "Pendiente";
-            venta.Total = 0;
-            venta.MetodoPago = "Pendiente"; // informativo
+            if (vm.IdCliente <= 0)
+            {
+                TempData["ErrorMessage"] = "Debe seleccionar un cliente.";
+                return RedirectToAction(nameof(CrearVenta));
+            }
 
-            var creada = await _pedidoServicio.CrearVentaAsync(venta);
+            if (string.IsNullOrWhiteSpace(vm.Conceptos))
+            {
+                TempData["ErrorMessage"] = "Debe ingresar un concepto para la venta.";
+                return RedirectToAction(nameof(CrearVenta));
+            }
+
+            var creada = await _pedidoServicio.CrearVentaAsync(vm);
 
             if (!creada)
             {
                 TempData["ErrorMessage"] = "No se pudo crear la venta.";
-                return RedirectToAction("CrearVenta");
+                return RedirectToAction(nameof(CrearVenta));
             }
 
-            return RedirectToAction("AgregarProductoAVenta", new { idVenta = venta.IdVenta });
+            return RedirectToAction("AgregarProductoAVenta", new { idVenta = vm.IdVentaCreada });
         }
         [Authorize]
         public async Task<IActionResult> ListaVentas()
@@ -109,7 +114,12 @@ namespace Plataforma.Controllers
             {
                 IdVenta = venta.IdVenta,
                 IdCliente = venta.IdCliente,
-                TotalVenta = venta.Total
+                TotalVenta = venta.Total,
+
+                OrigenModulo = venta.OrigenModulo,
+                TipoOperacion = venta.TipoOperacion,
+                CodigoReferenciaOrigen = venta.CodigoReferenciaOrigen,
+                ObservacionVenta = venta.ObservacionVenta
             };
 
             return PartialView("_RegistrarPagos", viewModel);
@@ -331,7 +341,7 @@ namespace Plataforma.Controllers
         public async Task<IActionResult> BuscarProductoPorCodigoVenta(string codigo)
         {
             //Console.WriteLine("Me oprimiste aca" + codigo);
-            var productos = await _pedidoServicio.BuscarProductosPorCodigo(codigo);
+            var productos = await _pedidoServicio.BuscarProductosPorCodigo(codigo, User);
             var resultados = productos.Select(p => new {
                 label = $"{p.ProductoId} - {p.Producto.NombreProducto}",
                 value = p.ProductoId,

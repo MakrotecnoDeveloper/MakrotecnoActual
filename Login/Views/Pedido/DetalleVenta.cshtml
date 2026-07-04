@@ -42,6 +42,47 @@
                                 <div class="fw-semibold">@Model.Venta.MetodoPago</div>
                             }
                         </div>
+                        <hr />
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="text-muted small">Origen del módulo</div>
+                                <div class="fw-semibold">
+                                    @(Model.Venta.OrigenModulo ?? "VentaNormal")
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">Tipo de operación</div>
+                                <div class="fw-semibold">
+                                    @(Model.Venta.TipoOperacion ?? "Producto")
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">Referencia origen</div>
+                                <div class="fw-semibold">
+                                    @(Model.Venta.CodigoReferenciaOrigen ?? "N/A")
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">ID origen</div>
+                                <div class="fw-semibold">
+                                    @(Model.Venta.IdOrigenModulo?.ToString() ?? "N/A")
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.Venta.ObservacionVenta))
+                            {
+                                <div class="col-12">
+                                    <div class="text-muted small">Observación de venta</div>
+                                    <div class="fw-semibold">
+                                        @Model.Venta.ObservacionVenta
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

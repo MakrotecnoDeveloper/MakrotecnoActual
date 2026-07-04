@@ -112,16 +112,15 @@ namespace Plataforma.Controllers
                     return RedirectToAction("Error", "Errores");
                 }else
                 {
-                    var varValidarPDV = _usuarioService.FunValidarPDV(cedula);
-                    if(varValidarPDV.Any())
-                    {
-                        ViewBag.Cedula = cedula;
-                        ViewBag.Password = password;
+                    var accesosLogin = _usuarioService.ObtenerAccesosLoginPorUsuario(cedula, password);
 
-                        return View(varValidarPDV);
-                    }else
+                    if (accesosLogin.Empresas.Any() && accesosLogin.Sedes.Any() && accesosLogin.Pdvs.Any())
                     {
-                        var mensaje = "Error: No hay puntos de venta configurados con este empleado.";
+                        return View(accesosLogin);
+                    }
+                    else
+                    {
+                        var mensaje = "Error: No hay empresas, sedes o puntos de venta configurados con este empleado.";
                         TempData["ErrorMessage"] = mensaje;
                         return RedirectToAction("Error", "Errores");
                     }
@@ -147,21 +146,6 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
 
-            int rolEmpleado = _usuarioService.ObtenerRolPermisos(validarUsuario.Cedula);
-            if (rolEmpleado <= 0)
-            {
-                TempData["ErrorMessage"] = "Error: No tiene un cargo (ID) asignado en el Sistema Gestor de Empleados (SGE)";
-                return RedirectToAction("Error", "Errores");
-            }
-
-            var nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
-            if (nombreCargo == null)
-            {
-                TempData["ErrorMessage"] = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
-                return RedirectToAction("Error", "Errores");
-            }
-
-            // 1. Validar PDV seleccionado
             var pdv = _usuarioService.SeleccionarNombrePDV(selectedPDV);
             if (pdv == null)
             {
@@ -169,11 +153,24 @@ namespace Plataforma.Controllers
                 return RedirectToAction("Error", "Errores");
             }
 
-            // 2. Traer sede del PDV
             var sede = _usuarioService.ObtenerSedePorId(pdv.Id_Sede);
             if (sede == null)
             {
                 TempData["ErrorMessage"] = "No se encontró la sede del PDV seleccionado.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            int rolEmpleado = _usuarioService.ObtenerRolPermisosPorSede(validarUsuario.Cedula, sede.Id_sede);
+            if (rolEmpleado <= 0)
+            {
+                TempData["ErrorMessage"] = "Error: No tiene un cargo asignado para la sede seleccionada.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            var nombreCargo = _usuarioService.ObtenerNombreRolPermisos(rolEmpleado);
+            if (nombreCargo == null)
+            {
+                TempData["ErrorMessage"] = "Error: El nombre del cargo no esta asignado desde el Sistema Gestor de Empleados (SGE)";
                 return RedirectToAction("Error", "Errores");
             }
 

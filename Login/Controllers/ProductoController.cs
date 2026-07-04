@@ -580,36 +580,70 @@ namespace Plataforma.Controllers
         [Authorize]
         public async Task<IActionResult> ProductosLista(int? sedeId, string? q)
         {
-                var sedes = await _dbContext.Sede.Where(s => s.Estado == 1)
-                    .OrderBy(s => s.NombreSede)
-                    .Select(s => new SelectListItem { Value = s.Id_sede.ToString(), Text = s.NombreSede })
-                    .ToListAsync();
-                
-                var productos = _dbContext.Productos.ToList();
-                var sedesLista = _dbContext.Sede.ToList(); 
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+            if (string.IsNullOrWhiteSpace(empresaId))
+                return Unauthorized("No se encontró la empresa activa del usuario.");
 
-                sedes.Insert(0, new SelectListItem { Value = "", Text = "Todas las sedes" });
-
-                var vm = new ProductosIndexVm
+            var sedes = await _dbContext.Sede
+                .Where(s => s.Estado == 1 && s.Id_empresa == empresaId)
+                .OrderBy(s => s.NombreSede)
+                .Select(s => new SelectListItem
                 {
-                    FiltroSedeId = sedeId,
-                    Sedes = sedes,
-                    Q = q,
-                    Productos = productos,
-                    Sede = sedesLista
-                };
+                    Value = s.Id_sede.ToString(),
+                    Text = s.NombreSede
+                })
+                .ToListAsync();
 
-                return View(vm);
-         }
+            sedes.Insert(0, new SelectListItem { Value = "", Text = "Todas las sedes" });
+
+            var productos = await _dbContext.Productos
+                .Where(p => p.ID_Empresa == empresaId)
+                .ToListAsync();
+
+            var sedesLista = await _dbContext.Sede
+                .Where(s => s.Estado == 1 && s.Id_empresa == empresaId)
+                .ToListAsync();
+
+            var vm = new ProductosIndexVm
+            {
+                FiltroSedeId = sedeId,
+                Sedes = sedes,
+                Q = q,
+                Productos = productos,
+                Sede = sedesLista,
+                EmpresaIdActual = empresaId
+            };
+
+            return View(vm);
+        }
 
         // Endpoint para AJAX (JSON)
         [HttpGet]
         public async Task<IActionResult> StockAsignacionProductoSede(
-        int? sedeId, string? q, int page = 1, int pageSize = 20,
-        string? sortBy = null, bool desc = false)
+    int? sedeId,
+    string? q,
+    int page = 1,
+    int pageSize = 20,
+    string? sortBy = null,
+    bool desc = false)
         {
-            var pageData = await _productoservice.ObtenerStockAsync(sedeId, q, page, pageSize, sortBy, desc);
-            var resumen = await _productoservice.ResumenAsync(sedeId, q);
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+            if (string.IsNullOrWhiteSpace(empresaId))
+                return Unauthorized();
+
+            var pageData = await _productoservice.ObtenerStockAsync(
+                empresaId,
+                sedeId,
+                q,
+                page,
+                pageSize,
+                sortBy,
+                desc);
+
+            var resumen = await _productoservice.ResumenAsync(
+                empresaId,
+                sedeId,
+                q);
 
             return Json(new
             {
@@ -627,8 +661,18 @@ namespace Plataforma.Controllers
         [HttpGet]
         public async Task<IActionResult> ExportarExcel(int? sedeId, string? q, string? sortBy = null, bool desc = false)
         {
-            // Trae TODO lo filtrado para exportar (pageSize muy grande o segundo método Get-all)
-            var all = await _productoservice.ObtenerStockAsync(sedeId, q, page: 1, pageSize: int.MaxValue, sortBy, desc);
+            var empresaId = User.FindFirst("EmpresaId")?.Value;
+            if (string.IsNullOrWhiteSpace(empresaId))
+                return Unauthorized();
+
+            var all = await _productoservice.ObtenerStockAsync(
+                empresaId,
+                sedeId,
+                q,
+                page: 1,
+                pageSize: int.MaxValue,
+                sortBy,
+                desc);
 
             using var wb = new XLWorkbook();
             var ws = wb.AddWorksheet("Inventario");
@@ -638,14 +682,21 @@ namespace Plataforma.Controllers
             ws.Cell(row, col++).Value = "Producto";
             if (sedeId != null) ws.Cell(row, col++).Value = "Sede";
             ws.Cell(row, col++).Value = "Cantidad";
+            ws.Cell(row, col++).Value = "Valor Unidad";
+            ws.Cell(row, col++).Value = "Valor Venta";
             ws.Row(row).Style.Font.Bold = true;
 
             foreach (var r in all.Rows)
             {
-                row++; col = 1;
+                row++;
+                col = 1;
+
+                ws.Cell(row, col++).Value = r.ProductoId;
                 ws.Cell(row, col++).Value = r.Nombre;
                 if (sedeId != null) ws.Cell(row, col++).Value = r.SedeNombre ?? "";
                 ws.Cell(row, col++).Value = r.Cantidad;
+                ws.Cell(row, col++).Value = r.ValorUnidad;
+                ws.Cell(row, col++).Value = r.ValorVenta;
             }
 
             ws.Columns().AdjustToContents();
@@ -655,7 +706,9 @@ namespace Plataforma.Controllers
             stream.Position = 0;
 
             var fileName = $"Inventario_{(sedeId?.ToString() ?? "Todas")}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
-            return File(stream.ToArray(),
+
+            return File(
+                stream.ToArray(),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
         }
@@ -874,6 +927,57 @@ namespace Plataforma.Controllers
             };
 
             return View("ImprimirSticker", vm);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ExportarExcelPersonalizado(
+            bool todasCategorias = true,
+            string? categorias = null,
+            string? campos = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(campos))
+                {
+                    return BadRequest("Debes seleccionar al menos un campo.");
+                }
+
+                var camposSeleccionados = campos
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList();
+
+                var categoriasIds = new List<int>();
+
+                if (!todasCategorias && !string.IsNullOrWhiteSpace(categorias))
+                {
+                    categoriasIds = categorias
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(x =>
+                        {
+                            bool ok = int.TryParse(x, out var id);
+                            return new { ok, id };
+                        })
+                        .Where(x => x.ok)
+                        .Select(x => x.id)
+                        .ToList();
+                }
+
+                var resultado = await _productoservice.ExportarExcelPersonalizadoAsync(
+                    todasCategorias,
+                    categoriasIds,
+                    camposSeleccionados
+                );
+
+                return File(resultado.archivo, resultado.contentType, resultado.nombreArchivo);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al exportar el Excel: {ex.Message}");
+            }
         }
     }
 }

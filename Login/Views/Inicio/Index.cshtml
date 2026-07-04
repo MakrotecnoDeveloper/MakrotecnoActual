@@ -1,389 +1,173 @@
-﻿@model Plataforma.Models.FacProUserViewModel
+﻿@model Plataforma.Models.ViewModels.Inicio.InicioPortalVm
+
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Portal Administrativo";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    string nombre;
-    var nombreClaim = User.FindFirst("Nombre");
-    var rolClaim = User.FindFirst("Rol")?.Value;
-    var NombreRolClaim = User.FindFirst("NombreRol")?.Value;
-    if (nombreClaim != null && nombreClaim.Value != null)
-    {
-        nombre = nombreClaim.Value;
-    }
-    else
-    {
-        <script>
-            window.location.href = '@Url.Action("Login", "Home")';
-        </script>
-    }
 }
 
 <div class="content-wrapper">
-
-    <!-- Card para manejo del titulo y el nombre del empleado-->
-    <div class="content-header">
+    <section class="content-header">
         <div class="container-fluid">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <strong><i class="fas fa-store"></i> Punto de Venta:</strong>
-                                    <span class="ms-2">@Model.NombrePDV</span>
-                                </div>
-                            </div>
-
-                            <hr />
-
-                            <h5><i class="fas fa-door-open"></i> Estado PDV</h5>
-                            <form id="estadoPDVForm" class="row g-2 align-items-center mt-2">
-                                <div class="col-auto">
-                                    <select class="form-select" name="estadopdv" id="estadopdv">
-                                        <option value="1">Apertura</option>
-                                        <option value="0">Cierre</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" value="@Model.IdPDV" name="idPDV" id="idPDV">
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-check"></i> Enviar
-                                    </button>
-                                </div>
-                            </form>
-
-                        </div>
-                    </div>
+            <div class="row align-items-center mb-3">
+                <div class="col-md-8">
+                    <h1 class="mb-1">Portal Administrativo</h1>
+                    <p class="text-muted mb-0">
+                        Información actual de la empresa, sede y punto de venta conectado.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-success px-3 py-2">
+                        @Model.EstadoConexion
+                    </span>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Card para manejo del titulo y el nombre del empleado-->
+    </section>
 
     <section class="content">
         <div class="container-fluid">
 
-            <!-- Card para manejo de estadisticas -->
-            <div class="row">
-                <div class="col-lg-3 col-6">
+            <div class="row mb-4">
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Empresa</small>
+                            <h5 class="mt-2 mb-1">@Model.NombreEmpresa</h5>
+                            <p class="mb-0 text-muted">NIT/ID: @Model.EmpresaId</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Sede conectada</small>
+                            <h5 class="mt-2 mb-1">@Model.NombreSede</h5>
+                            <p class="mb-0 text-muted">ID Sede: @Model.SedeId</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Punto de venta</small>
+                            <h5 class="mt-2 mb-1">@Model.NombrePdv</h5>
+                            <p class="mb-0 text-muted">ID PDV: @Model.PdvId</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="small-box bg-primary">
+                        <div class="inner">
+                            <h3>@Model.TotalSedesEmpresa</h3>
+                            <p>Sedes de la empresa</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-3">
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>@Model.TotalSumaCodFactura</h3>
-
-                            <p>Facturas Realizadas en el dia</p>
+                            <h3>@Model.TotalPdvSede</h3>
+                            <p>PDV en esta sede</p>
                         </div>
                         <div class="icon">
-                            <i class="ion ion-document-text"></i>
+                            <i class="fas fa-cash-register"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-6">
+
+                <div class="col-lg-3 col-md-6 mb-3">
                     <div class="small-box bg-success">
                         <div class="inner">
-                            <h3>$@Model.TotalVentaDia</h3>
-
-                            <p>Valor Venta en el dia</p>
+                            <h3>@Model.TotalEmpleadosSede</h3>
+                            <p>Empleados en esta sede</p>
                         </div>
                         <div class="icon">
-                            <i class="ion ion-cash"></i>
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-warning">
-                        <div class="inner">
-                            <h3>@Model.TotalEmpleados</h3>
 
-                            <p>Miembros en el Sistema</p>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="small-box bg-secondary">
+                        <div class="inner">
+                            <h3>@Model.NombreRol</h3>
+                            <p>Rol actual</p>
                         </div>
                         <div class="icon">
-                            <i class="ion ion-person-stalker"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="small-box bg-danger">
-                        <div class="inner">
-                            <h3>@Model.TotalProductos</h3>
-
-                            <p>Productos Existentes</p>
-                        </div>
-                        <div class="icon">
-                            <i class="ion ion-pricetags"></i>
+                            <i class="fas fa-user-shield"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Gráficas -->
             <div class="row">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header"><h3 class="card-title">Ventas últimos 30 días</h3></div>
-                        <div class="card-body"><canvas id="chartVentas30"></canvas></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header"><h3 class="card-title">Ventas por Servicio</h3></div>
-                        <div class="card-body"><canvas id="chartServicio"></canvas></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tablas -->
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between">
-                            <h3 class="card-title">Órdenes de servicio abiertas</h3>
-                            <a asp-controller="OrdenServicio" asp-action="Index" class="btn btn-sm btn-outline-primary">Ver todas</a>
+                <div class="col-lg-8 mb-3">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <strong>Resumen del contexto actual</strong>
                         </div>
-                        <div class="card-body p-0">
-                            <table class="table table-striped mb-0" id="tblOS">
-                                <thead><tr><th>#</th><th>Cliente</th><th>Técnico</th><th>Estado</th></tr></thead>
-                                <tbody></tbody>
+                        <div class="card-body">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr>
+                                    <th>Usuario:</th>
+                                    <td>@Model.NombreUsuario</td>
+                                </tr>
+                                <tr>
+                                    <th>Cédula:</th>
+                                    <td>@Model.Cedula</td>
+                                </tr>
+                                <tr>
+                                    <th>Empresa:</th>
+                                    <td>@Model.NombreEmpresa</td>
+                                </tr>
+                                <tr>
+                                    <th>Sede:</th>
+                                    <td>@Model.NombreSede</td>
+                                </tr>
+                                <tr>
+                                    <th>Punto de venta:</th>
+                                    <td>@Model.NombrePdv</td>
+                                </tr>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between">
-                            <h3 class="card-title">Productos con stock bajo</h3>
-                            <a asp-controller="Producto" asp-action="Index" class="btn btn-sm btn-outline-primary">Ver catálogo</a>
+                <div class="col-lg-4 mb-3">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <strong>Accesos rápidos</strong>
                         </div>
-                        <div class="card-body p-0">
-                            <table class="table table-striped mb-0" id="tblStockBajo">
-                                <thead><tr><th>Código</th><th>Producto</th><th>Stock</th><th>Mínimo</th></tr></thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        <div class="card-body">
+                            <a href="/Producto/ProductosIndex" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-boxes"></i> Productos
+                            </a>
 
-            <!-- Acciones rápidas -->
-            <div class="row">
-                <div class="col">
-                    <div class="callout callout-info">
-                        <b>Acciones rápidas:</b>
-                        <a asp-controller="Pedido" asp-action="CrearVenta" class="btn btn-sm btn-primary">Crear Venta</a>
-                        <a asp-controller="Pedido" asp-action="CrearFactura" class="btn btn-sm btn-primary">Crear Factura</a>
-                        <a asp-controller="Producto" asp-action="Insertar" class="btn btn-sm btn-outline-secondary">Agregar Producto</a>
-                        <a asp-controller="Compras" asp-action="InsertarCompra" class="btn btn-sm btn-outline-secondary">Registrar Compra</a>
-                        <a asp-controller="Gastos" asp-action="Index" class="btn btn-sm btn-outline-secondary">Gastos</a>
+                            <a href="/Pedido/Index" class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-file-invoice-dollar"></i> Ventas
+                            </a>
+
+                            <a href="/Compras/Index" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-shopping-cart"></i> Compras
+                            </a>
+
+                            <a href="/Usuario/Index" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-users-cog"></i> Usuarios
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </div>
-            <!-- /.row (main row) -->
-        </div><!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
-    @section scripts{
-    <script>
-            //Codigo para cambiar estado de PDV en el Inicio/Index
-            $(document).ready(function () {
-                $('#estadoPDVForm').submit(function (event) {
-                    event.preventDefault(); // Evita que el formulario se envíe de manera tradicional
-
-                    var estadoPDV = $('#estadopdv').val(); // Obtiene el valor seleccionado
-                    var idPDV = $('#idPDV').val();
-
-                    $.ajax({
-                        url: '@Url.Action("EstadoPDV", "Inicio")', // URL a la que se envía la solicitud
-                        type: 'POST',
-                        data: { estadopdv: estadoPDV, idPDV: idPDV }, // Datos a enviar
-                        success: function (response) {
-                            if (response.success) {
-                                alert(response.message); // Muestra el mensaje de éxito
-                            }else {
-                                alert(response.message);
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            // Maneja el error aquí
-                            //$('#resultado').html('Error: ' + error);
-                            alert("Error cambiando el estado del PDV");
-                        }
-                    });
-                });
-            });
-            //Fin Codigo
-
-        // Tablas básicas
-              async function cargarOS() {
-          const url = '@Url.Action("OSAbiertasTop", "Inicio")?take=8';
-          const res = await fetch(url);
-          if (!res.ok) { console.error('OSAbiertasTop', res.status, await res.text()); return; }
-          const data = await res.json();
-          const $tb = $('#tblOS tbody').empty();
-          data.forEach(x=>{
-            $tb.append(`<tr><td>${x.id}</td><td>${x.cliente}</td><td>${x.tecnico}</td><td>${x.estado}</td></tr>`);
-          });
-        }
-
-        async function cargarStockBajo() {
-          const url = '@Url.Action("StockBajo", "Inicio")?take=8';
-          const res = await fetch(url);
-          if (!res.ok) { console.error('StockBajo', res.status, await res.text()); return; }
-          const data = await res.json();
-          const $tb = $('#tblStockBajo tbody').empty();
-          data.forEach(x=>{
-            $tb.append(`<tr><td>${x.codigo}</td><td>${x.nombre}</td><td>${x.stock}</td><td>${x.minimo}</td></tr>`);
-          });
-        }
-
-
-              // URLs seguras generadas por MVC
-        const URL_VENTAS30 = '@Url.Action("Ventas30", "Inicio")';
-        const URL_VENTAS_POR_SERVICIO = '@Url.Action("VentasPorServicio", "Inicio")';
-
-        // Helpers
-        const fmtCOP = v => (v ?? 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-        const fechaCortaCO = s => new Date(s).toLocaleDateString('es-CO', { year:'2-digit', month:'2-digit', day:'2-digit' });
-
-        // --- FETCHERS -------------------------------------------------------------
-        async function getVentas30({ dias = 30, idPdv = null } = {}) {
-          const params = new URLSearchParams({ dias: String(dias) });
-          if (idPdv != null && idPdv !== '') params.append('idPdv', idPdv);
-          const res = await fetch(`${URL_VENTAS30}?${params.toString()}`);
-          if (!res.ok) { console.error('Ventas30', res.status, await res.text()); return []; }
-          return res.json(); // espera [{ fecha, total }, ...]
-        }
-
-        async function getVentasPorServicio({ desde, hasta, idPdv = null } = {}) {
-          const params = new URLSearchParams({ desde, hasta });
-          if (idPdv != null && idPdv !== '') params.append('idPdv', idPdv);
-          const res = await fetch(`${URL_VENTAS_POR_SERVICIO}?${params.toString()}`);
-          if (!res.ok) { console.error('VentasPorServicio', res.status, await res.text()); return []; }
-          return res.json(); // espera [{ etiqueta, valor }, ...]
-        }
-
-        // --- CHARTS ---------------------------------------------------------------
-        let chartVentas30, chartServicio;
-
-        async function cargarChartVentas30() {
-          const idPdv = document.getElementById('filtroPdv')?.value || '';
-          const data = await getVentas30({ dias: 30, idPdv });
-
-          const labels = data.map(d => fechaCortaCO(d.fecha));
-          const valores = data.map(d => d.total);
-
-          const ctx = document.getElementById('chartVentas30').getContext('2d');
-
-          if (chartVentas30) { // actualizar
-            chartVentas30.data.labels = labels;
-            chartVentas30.data.datasets[0].data = valores;
-            chartVentas30.update();
-            return;
-          }
-
-          chartVentas30 = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels,
-              datasets: [{
-                label: 'Ventas (COP)',
-                data: valores,
-                fill: false,
-                tension: 0.2
-              }]
-            },
-            options: {
-              responsive: true,
-              scales: {
-                y: { ticks: { callback: v => fmtCOP(v) } }
-              },
-              plugins: {
-                tooltip: { callbacks: { label: ctx => `${fmtCOP(ctx.parsed.y)}` } }
-              }
-            }
-          });
-        }
-
-        function firstDayOfMonth(yyyyMm) {
-          // yyyyMm = "2025-08"
-          const [y, m] = yyyyMm.split('-').map(Number);
-          return new Date(y, m - 1, 1);
-        }
-        function nextMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 1); }
-        function toIsoDate(d) { return d.toISOString().slice(0,10); } // "YYYY-MM-DD"
-
-        async function cargarChartServicio() {
-          const idPdv = document.getElementById('filtroPdv')?.value || '';
-          const mesSel = document.getElementById('filtroMes')?.value; // input type="month"
-          const d1 = mesSel ? firstDayOfMonth(mesSel) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-          const d2 = nextMonth(d1);
-
-          const data = await getVentasPorServicio({
-            desde: toIsoDate(d1),
-            hasta: toIsoDate(d2),
-            idPdv
-          });
-
-          const labels = data.map(x => x.etiqueta);
-          const valores = data.map(x => x.valor);
-
-          const ctx = document.getElementById('chartServicio').getContext('2d');
-
-          if (chartServicio) {
-            chartServicio.data.labels = labels;
-            chartServicio.data.datasets[0].data = valores;
-            chartServicio.update();
-            return;
-          }
-
-          chartServicio = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels,
-              datasets: [{
-                label: 'Ventas por Servicio (COP)',
-                data: valores
-              }]
-            },
-            options: {
-              responsive: true,
-              indexAxis: 'y', // barras horizontales (opcional)
-              scales: {
-                x: { ticks: { callback: v => fmtCOP(v) } }
-              },
-              plugins: {
-                tooltip: { callbacks: { label: ctx => `${fmtCOP(ctx.parsed.x ?? ctx.parsed.y)}` } },
-                legend: { display: false }
-              }
-            }
-          });
-        }
-
-        // --- WIRES ---------------------------------------------------------------
-        // refrescar cuando cambien filtros
-        $('#btnRefrescar,#filtroMes,#filtroPdv').on('change click', () => {
-          cargarChartVentas30();
-          cargarChartServicio();
-        });
-
-
-
-        // init
-        (function init(){
-        // set mes actual si está vacío
-        const $mes = $('#filtroMes');
-        if (!$mes.val()) {
-          const d = new Date(); const mm = ('0' + (d.getMonth()+1)).slice(-2);
-          $mes.val(`${d.getFullYear()}-${mm}`);
-        }
-          cargarOS(); 
-          cargarStockBajo();
-          cargarChartVentas30();
-          cargarChartServicio();
-        })();
-    </script>
-    }
 </div>
-<!-- /.content-wrapper -->

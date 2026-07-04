@@ -17,10 +17,13 @@ namespace Plataforma.Services
         public async Task<GeneracionNovedadesResultado> GenerarNovedadesDesdeCierreCajaAsync(int idPeriodo, string usuario)
         {
             var periodo = await _context.PeriodosNomina
-                .FirstOrDefaultAsync(x => x.IdPeriodo == idPeriodo);
+            .FirstOrDefaultAsync(x => x.IdPeriodo == idPeriodo);
 
             if (periodo == null)
                 throw new Exception("El período de nómina no existe.");
+
+            if (!string.Equals(periodo.Estado, "Abierto", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Solo se pueden generar novedades cuando el período está en estado Abierto.");
 
             var conceptosComisionables = await _context.ConceptosNomina
                 .Where(x =>
@@ -260,10 +263,13 @@ namespace Plataforma.Services
                 throw new Exception("El empleado no tiene contrato activo.");
 
             var periodo = await _context.PeriodosNomina
-                .FirstOrDefaultAsync(x => x.IdPeriodo == idPeriodo);
+            .FirstOrDefaultAsync(x => x.IdPeriodo == idPeriodo);
 
             if (periodo == null)
                 throw new Exception("El período no existe.");
+
+            if (!string.Equals(periodo.Estado, "Calculado", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Solo se pueden generar liquidaciones cuando el período está en estado Calculado.");
 
             var yaExiste = await _context.LiquidacionesNomina
                 .AnyAsync(x => x.Cedula == cedula && x.IdPeriodo == idPeriodo);
@@ -701,6 +707,95 @@ namespace Plataforma.Services
                 throw new Exception("El área no existe.");
 
             cargo.IdArea = vm.IdArea;
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task CambiarEstadoPeriodoAsync(int idPeriodo, string nuevoEstado)
+        {
+            var periodo = await _context.PeriodosNomina
+                .FirstOrDefaultAsync(x => x.IdPeriodo == idPeriodo);
+
+            if (periodo == null)
+                throw new Exception("El período no existe.");
+
+            var estadoActual = (periodo.Estado ?? "").Trim();
+
+            var estadosPermitidos = new[] { "Abierto", "Calculado", "Cerrado", "Pagado" };
+            if (!estadosPermitidos.Contains(nuevoEstado))
+                throw new Exception("El estado solicitado no es válido.");
+
+            // Flujo obligatorio
+            var siguienteEstadoValido = estadoActual switch
+            {
+                "Abierto" => "Calculado",
+                "Calculado" => "Cerrado",
+                "Cerrado" => "Pagado",
+                "Pagado" => "",
+                _ => throw new Exception("El estado actual del período no es válido.")
+            };
+
+            if (string.IsNullOrWhiteSpace(siguienteEstadoValido))
+                throw new Exception("El período ya está en estado final.");
+
+            if (!string.Equals(siguienteEstadoValido, nuevoEstado, StringComparison.OrdinalIgnoreCase))
+                throw new Exception($"Solo se permite pasar de {estadoActual} a {siguienteEstadoValido}.");
+
+            var fechaInicio = periodo.FechaInicio.Date;
+            var fechaFinExclusiva = periodo.FechaFin.Date.AddDays(1);
+
+            if (nuevoEstado == "Calculado")
+            {
+                var existeCierre = await _context.CierreCajas
+                    .AnyAsync(x =>
+                        x.Fecha >= fechaInicio &&
+                        x.Fecha < fechaFinExclusiva &&
+                        !string.IsNullOrWhiteSpace(x.ConceptosJson));
+
+                if (!existeCierre)
+                    throw new Exception("No puedes pasar a Calculado porque el período no tiene cierres de caja.");
+
+                var existeNovedad = await _context.NovedadesNomina
+                    .AnyAsync(x => x.IdPeriodo == idPeriodo);
+
+                if (!existeNovedad)
+                    throw new Exception("No puedes pasar a Calculado porque aún no se han generado novedades.");
+            }
+
+            if (nuevoEstado == "Cerrado")
+            {
+                var existeLiquidacion = await _context.LiquidacionesNomina
+                    .AnyAsync(x => x.IdPeriodo == idPeriodo);
+
+                if (!existeLiquidacion)
+                    throw new Exception("No puedes pasar a Cerrado porque no hay liquidaciones generadas.");
+
+                var novedadesPendientes = await _context.NovedadesNomina
+                    .AnyAsync(x => x.IdPeriodo == idPeriodo && x.Estado == "Pendiente");
+
+                if (novedadesPendientes)
+                    throw new Exception("No puedes pasar a Cerrado porque todavía hay novedades pendientes por aplicar.");
+            }
+
+            if (nuevoEstado == "Pagado")
+            {
+                var liquidaciones = await _context.LiquidacionesNomina
+                    .Where(x => x.IdPeriodo == idPeriodo)
+                    .ToListAsync();
+
+                if (!liquidaciones.Any())
+                    throw new Exception("No puedes pasar a Pagado porque no hay liquidaciones generadas.");
+
+                foreach (var liquidacion in liquidaciones)
+                {
+                    if (!liquidacion.FechaPago.HasValue)
+                        liquidacion.FechaPago = periodo.FechaPago ?? DateTime.Today;
+
+                    if (string.IsNullOrWhiteSpace(liquidacion.Estado) || liquidacion.Estado == "Confirmada")
+                        liquidacion.Estado = "Pagada";
+                }
+            }
+
+            periodo.Estado = nuevoEstado;
 
             await _context.SaveChangesAsync();
         }

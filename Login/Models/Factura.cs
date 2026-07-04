@@ -26,12 +26,27 @@ public class Factura
     [Column(TypeName = "decimal(18,2)")]
     public decimal Total { get; set; }
 
-    // Estado interno del ERP
     [Required]
     [StringLength(30)]
     public string EstadoFactura { get; set; } = "Generada";
 
-    // Preparación facturación electrónica
+    // NUEVO: FacturaVenta / FacturaElectronica / DocumentoSoporte / NotaCredito / NotaDebito
+    [Required]
+    [StringLength(30)]
+    public string TipoDocumento { get; set; } = "FacturaVenta";
+
+    // NUEVO: POS / VentaNormal / ServicioTecnico / AgendaCitas / Produccion / Manual
+    [StringLength(50)]
+    public string OrigenModulo { get; set; } = "VentaNormal";
+
+    // NUEVO: copia de la referencia para consulta rápida
+    [StringLength(50)]
+    public string? CodigoReferenciaOrigen { get; set; }
+
+    // NUEVO: observación que puede imprimirse en factura
+    [StringLength(500)]
+    public string? Observacion { get; set; }
+
     public bool EsElectronica { get; set; } = false;
 
     [Required]

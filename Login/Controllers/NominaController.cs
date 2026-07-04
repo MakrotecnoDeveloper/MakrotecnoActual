@@ -173,17 +173,27 @@ namespace Plataforma.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GenerarNovedadesDesdeCierreCaja(int idPeriodo)
+        public async Task<IActionResult> GenerarNovedadesDesdeCierre(int idPeriodo)
         {
             var usuario = User.Identity?.Name ?? "sistema";
 
             try
             {
+                var periodos = await _nominaService.ObtenerPeriodosAsync();
+                var periodo = periodos.FirstOrDefault(x => x.IdPeriodo == idPeriodo);
+
+                if (periodo == null)
+                    throw new Exception("El período no existe.");
+
+                if (!string.Equals(periodo.Estado, "Abierto", StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("Solo se pueden generar novedades cuando el período está en estado Abierto.");
+
                 var resultado = await _nominaService.GenerarNovedadesDesdeCierreCajaAsync(idPeriodo, usuario);
 
                 TempData["ok"] = $"Proceso ejecutado. " +
                                  $"Creadas: {resultado.NovedadesCreadas}, " +
                                  $"Actualizadas: {resultado.NovedadesActualizadas}, " +
+                                 $"Sin asignación: {resultado.RegistrosSinAsignacion}, " +
                                  $"Base utilidad procesada: {resultado.BaseVentasProcesada:N2}.";
             }
             catch (Exception ex)
@@ -196,6 +206,12 @@ namespace Plataforma.Controllers
 
         public async Task<IActionResult> Liquidaciones(int? idPeriodo, int? cedula)
         {
+            if (idPeriodo.HasValue)
+            {
+                var periodos = await _nominaService.ObtenerPeriodosAsync();
+                var periodo = periodos.FirstOrDefault(x => x.IdPeriodo == idPeriodo.Value);
+                ViewBag.EstadoPeriodo = periodo?.Estado;
+            }
             var data = await _nominaService.ObtenerLiquidacionesAsync(idPeriodo, cedula);
             ViewBag.IdPeriodo = idPeriodo;
             ViewBag.Cedula = cedula;
@@ -221,6 +237,23 @@ namespace Plataforma.Controllers
 
             try
             {
+                var periodos = await _nominaService.ObtenerPeriodosAsync();
+                var periodo = periodos.FirstOrDefault(x => x.IdPeriodo == vm.IdPeriodo);
+
+                if (periodo == null)
+                {
+                    ModelState.AddModelError(string.Empty, "El período seleccionado no existe.");
+                    vm = await ConstruirGenerarLiquidacionVmAsync(vm);
+                    return View(vm);
+                }
+
+                if (!string.Equals(periodo.Estado, "Calculado", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelState.AddModelError(string.Empty, "Solo puedes generar liquidaciones de períodos en estado Calculado.");
+                    vm = await ConstruirGenerarLiquidacionVmAsync(vm);
+                    return View(vm);
+                }
+
                 var usuario = User.Identity?.Name ?? "sistema";
                 var liquidacion = await _nominaService.GenerarLiquidacionAsync(vm.Cedula, vm.IdPeriodo, usuario);
 
@@ -338,12 +371,19 @@ namespace Plataforma.Controllers
                 .ToList();
 
             vm.Periodos = periodos
-                .Select(x => new SelectListItem
-                {
-                    Value = x.IdPeriodo.ToString(),
-                    Text = $"{x.Descripcion} ({x.FechaInicio:yyyy-MM-dd} a {x.FechaFin:yyyy-MM-dd})"
-                })
-                .ToList();
+            .Where(x => x.Estado == "Calculado")
+            .Select(x => new SelectListItem
+            {
+                Value = x.IdPeriodo.ToString(),
+                Text = $"{x.Descripcion} ({x.FechaInicio:yyyy-MM-dd} a {x.FechaFin:yyyy-MM-dd})"
+            })
+            .ToList();
+
+            vm.Periodos.Insert(0, new SelectListItem
+            {
+                Value = "0",
+                Text = "Seleccione un período calculado"
+            });
 
             vm.Empleados.Insert(0, new SelectListItem { Value = "0", Text = "Seleccione un empleado" });
             vm.Periodos.Insert(0, new SelectListItem { Value = "0", Text = "Seleccione un período" });
@@ -447,6 +487,22 @@ namespace Plataforma.Controllers
             vm.Areas.Insert(0, new SelectListItem { Value = "0", Text = "Seleccione un área" });
 
             return vm;
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoPeriodo(int idPeriodo, string nuevoEstado)
+        {
+            try
+            {
+                await _nominaService.CambiarEstadoPeriodoAsync(idPeriodo, nuevoEstado);
+                TempData["ok"] = $"El período fue cambiado a estado {nuevoEstado}.";
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Periodos));
         }
     }
 }

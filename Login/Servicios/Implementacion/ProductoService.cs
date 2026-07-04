@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.InkML;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
@@ -741,9 +742,15 @@ namespace Plataforma.Servicios.Implementacion
             await _dbContext.SaveChangesAsync();
             return servicio;
         }
+
         public async Task<PagedResult<ProductoStockVm>> ObtenerStockAsync(
-        int? sedeId, string? q, int page, int pageSize,
-        string? sortBy = null, bool desc = false)
+        string empresaId,
+        int? sedeId,
+        string? q,
+        int page,
+        int pageSize,
+        string? sortBy = null,
+        bool desc = false)
         {
             page = page <= 0 ? 1 : page;
             pageSize = pageSize <= 0 ? 20 : pageSize;
@@ -755,36 +762,48 @@ namespace Plataforma.Servicios.Implementacion
 
             if (!hasSede)
             {
-                // TODAS las sedes (agregado por producto)
+                // Todas las sedes de la empresa activa, agrupado por producto
                 baseQuery =
-                from i in _dbContext.InventarioSedes
-                join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
-                where p.Estado == 1
-                select new ProductoStockVm
-                {
-                    ProductoId = p.Cod_Producto,
-                    Nombre = p.NombreProducto,
-                    Cantidad = i.Cantidad,
-                    ValorUnidad = i.VUnidad,      // 🔑 Trae el valor tal cual está en InventarioSede
-                    ValorVenta = i.PrecioUnitario    // 🔑 Igual aquí
-                };
+                    from i in _dbContext.InventarioSedes
+                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    join s in _dbContext.Sede on i.SedeId equals s.Id_sede
+                    where p.Estado == 1
+                          && p.ID_Empresa == empresaId
+                          && s.Id_empresa == empresaId
+                    group new { i, p, s } by new
+                    {
+                        p.Cod_Producto,
+                        p.NombreProducto
+                    }
+                    into g
+                    select new ProductoStockVm
+                    {
+                        ProductoId = g.Key.Cod_Producto,
+                        Nombre = g.Key.NombreProducto,
+                        Cantidad = g.Sum(x => x.i.Cantidad),
+                        ValorUnidad = g.Select(x => x.i.VUnidad).FirstOrDefault(),
+                        ValorVenta = g.Select(x => x.i.PrecioUnitario).FirstOrDefault()
+                    };
             }
             else
             {
-                // SOLO la sede seleccionada
                 var sedeNombre = await _dbContext.Sede
-                    .Where(s => s.Id_sede == sedeId.Value)
+                    .Where(s => s.Id_sede == sedeId.Value && s.Id_empresa == empresaId)
                     .Select(s => s.NombreSede)
                     .FirstOrDefaultAsync();
 
                 baseQuery =
                     from i in _dbContext.InventarioSedes
                     join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
-                    where p.Estado == 1 && i.SedeId == sedeId.Value
+                    join s in _dbContext.Sede on i.SedeId equals s.Id_sede
+                    where p.Estado == 1
+                          && p.ID_Empresa == empresaId
+                          && s.Id_empresa == empresaId
+                          && i.SedeId == sedeId.Value
                     select new ProductoStockVm
                     {
-                        ProductoId = p.Cod_Producto!,
-                        Nombre = p.NombreProducto!,
+                        ProductoId = p.Cod_Producto,
+                        Nombre = p.NombreProducto,
                         Cantidad = i.Cantidad,
                         SedeId = sedeId.Value,
                         SedeNombre = sedeNombre,
@@ -793,26 +812,27 @@ namespace Plataforma.Servicios.Implementacion
                     };
             }
 
-            // Filtro de búsqueda (SKU o Nombre)
-            if (!string.IsNullOrEmpty(q))
+            if (!string.IsNullOrWhiteSpace(q))
             {
                 var qLower = q.ToLower();
                 baseQuery = baseQuery.Where(x =>
                     x.ProductoId.ToLower().Contains(qLower) ||
-                    x.Nombre.ToLower().Contains(qLower)
-                );
+                    x.Nombre.ToLower().Contains(qLower));
             }
 
-            // Orden
             baseQuery = (sortBy?.ToLower()) switch
             {
-                "cantidad" => desc ? baseQuery.OrderByDescending(x => x.Cantidad)
-                                   : baseQuery.OrderBy(x => x.Cantidad),
-                _ => desc ? baseQuery.OrderByDescending(x => x.Nombre)
-                                   : baseQuery.OrderBy(x => x.Nombre),
+                "cantidad" => desc
+                    ? baseQuery.OrderByDescending(x => x.Cantidad)
+                    : baseQuery.OrderBy(x => x.Cantidad),
+
+                _ => desc
+                    ? baseQuery.OrderByDescending(x => x.Nombre)
+                    : baseQuery.OrderBy(x => x.Nombre),
             };
 
             var totalRows = await baseQuery.CountAsync();
+
             var rows = await baseQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -828,51 +848,70 @@ namespace Plataforma.Servicios.Implementacion
         }
 
 
-        public async Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(int? sedeId, string? q)
+        public async Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(
+        string empresaId,
+        int? sedeId,
+        string? q)
         {
-            // Construimos la misma base de datos que arriba pero solo para sumar
-            IQueryable<ProductoStockVm> baseQuery;
+            q = (q ?? string.Empty).Trim();
+            var hasSede = sedeId.HasValue && sedeId.Value > 0;
 
-            if (sedeId == null)
+            IQueryable<ProductoStockVm> resumenQuery;
+
+            if (!hasSede)
             {
-                baseQuery =
+                resumenQuery =
                     from i in _dbContext.InventarioSedes
                     join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    join s in _dbContext.Sede on i.SedeId equals s.Id_sede
                     where p.Estado == 1
-                    group i by new { p.Cod_Producto, p.NombreProducto } into g
+                          && p.ID_Empresa == empresaId
+                          && s.Id_empresa == empresaId
+                    group new { i, p } by new
+                    {
+                        p.Cod_Producto,
+                        p.NombreProducto
+                    }
+                    into g
                     select new ProductoStockVm
                     {
                         ProductoId = g.Key.Cod_Producto,
                         Nombre = g.Key.NombreProducto,
-                        Cantidad = g.Sum(x => x.Cantidad) // suma aunque sea 0
+                        Cantidad = g.Sum(x => x.i.Cantidad)
                     };
             }
             else
             {
-                baseQuery =
-                    from p in _dbContext.Productos
+                resumenQuery =
+                    from i in _dbContext.InventarioSedes
+                    join p in _dbContext.Productos on i.ProductoId equals p.Cod_Producto
+                    join s in _dbContext.Sede on i.SedeId equals s.Id_sede
                     where p.Estado == 1
-                    join i in _dbContext.InventarioSedes.Where(x => x.SedeId == sedeId.Value)
-                        on p.Cod_Producto equals i.ProductoId into gi
-                    from i in gi.DefaultIfEmpty()
+                          && p.ID_Empresa == empresaId
+                          && s.Id_empresa == empresaId
+                          && i.SedeId == sedeId.Value
                     select new ProductoStockVm
                     {
                         ProductoId = p.Cod_Producto,
                         Nombre = p.NombreProducto,
-                        Cantidad = i != null ? i.Cantidad : 0
+                        Cantidad = i.Cantidad
                     };
             }
 
-            if (!string.IsNullOrEmpty(q))
+            if (!string.IsNullOrWhiteSpace(q))
             {
                 var qLower = q.ToLower();
-                baseQuery = baseQuery.Where(x =>
+                resumenQuery = resumenQuery.Where(x =>
+                    x.ProductoId.ToLower().Contains(qLower) ||
                     x.Nombre.ToLower().Contains(qLower));
             }
 
-            var totalUnidades = await baseQuery.SumAsync(x => (decimal?)x.Cantidad) ?? 0;
-            var skusConStock = await baseQuery.CountAsync(x => x.Cantidad > 0);
-            return (totalUnidades, skusConStock);
+            var lista = await resumenQuery.ToListAsync();
+
+            return (
+                totalUnidades: lista.Sum(x => x.Cantidad),
+                skusConStock: lista.Count(x => x.Cantidad > 0)
+            );
         }
 
         public async Task AplicarMovimientoAsync(int productoId, int sedeId, decimal delta, string? motivo = null)
@@ -1103,6 +1142,132 @@ namespace Plataforma.Servicios.Implementacion
             }
 
             _dbContext.SaveChanges();
+        }
+
+        public async Task<(byte[] archivo, string nombreArchivo, string contentType)> ExportarExcelPersonalizadoAsync(
+            bool todasCategorias,
+            List<int> categoriasIds,
+            List<string> camposSeleccionados)
+        {
+            if (camposSeleccionados == null || !camposSeleccionados.Any())
+                throw new ArgumentException("Debes seleccionar al menos un campo para exportar.");
+
+            camposSeleccionados = camposSeleccionados
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (!todasCategorias && (categoriasIds == null || !categoriasIds.Any()))
+                throw new ArgumentException("Debes seleccionar al menos una categoría o marcar la opción de todas las categorías.");
+
+            var query =
+                from p in _dbContext.Productos.AsNoTracking()
+                join c in _dbContext.CategoriaProductos.AsNoTracking()
+                    on p.IdCatepro equals c.IdCateProducto into categoriaJoin
+                from c in categoriaJoin.DefaultIfEmpty()
+                join s in _dbContext.Servicio.AsNoTracking()
+                    on c.IdServicio equals s.IdServicio into servicioJoin
+                from s in servicioJoin.DefaultIfEmpty()
+                select new ProductoExportRow
+                {
+                    IdCatepro = p.IdCatepro,
+                    Cod_Producto = p.Cod_Producto,
+                    NombreProducto = p.NombreProducto,
+                    CantidadProducto = p.CantidadProducto,
+                    ValorUnidad = p.ValorUnidad,
+                    ValorVentaProducto = p.ValorVentaProducto,
+                    DescripcionCategoria = c != null ? c.Descripcion : string.Empty,
+                    NombreServicio = s != null ? s.NombreServicio : string.Empty,
+
+                    // Ajusta esta propiedad si en tu entidad se llama diferente:
+                    Id_Proveedor = p.idProveedor,
+
+                    // Ajusta esta propiedad si en tu entidad se llama diferente:
+                    ImagenPath = p.ImagenPath
+                };
+
+            if (!todasCategorias)
+            {
+                query = query.Where(x => categoriasIds.Contains(x.IdCatepro));
+            }
+
+            var productos = await query
+                .OrderBy(x => x.DescripcionCategoria)
+                .ThenBy(x => x.NombreProducto)
+                .ToListAsync();
+
+            var mapaCampos = new Dictionary<string, (string Header, Func<ProductoExportRow, object?> Valor)>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Cod_Producto"] = ("Código", x => x.Cod_Producto),
+                ["NombreProducto"] = ("Nombre", x => x.NombreProducto),
+                ["CantidadProducto"] = ("Cantidad", x => x.CantidadProducto),
+                ["ValorUnidad"] = ("Valor Unidad", x => x.ValorUnidad),
+                ["ValorVentaProducto"] = ("Valor Venta", x => x.ValorVentaProducto),
+                ["DescripcionCategoria"] = ("Categoría", x => x.DescripcionCategoria),
+                ["NombreServicio"] = ("Servicio", x => x.NombreServicio),
+                ["Id_Proveedor"] = ("Proveedor", x => x.Id_Proveedor),
+                ["ImagenPath"] = ("Ruta Imagen", x => x.ImagenPath)
+            };
+
+            var camposValidos = camposSeleccionados
+                .Where(x => mapaCampos.ContainsKey(x))
+                .ToList();
+
+            if (!camposValidos.Any())
+                throw new ArgumentException("Los campos seleccionados no son válidos para la exportación.");
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Productos");
+
+            // Encabezados
+            for (int i = 0; i < camposValidos.Count; i++)
+            {
+                worksheet.Cell(1, i + 1).Value = mapaCampos[camposValidos[i]].Header;
+                worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                worksheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+            }
+
+            // Datos
+            for (int fila = 0; fila < productos.Count; fila++)
+            {
+                var producto = productos[fila];
+
+                for (int col = 0; col < camposValidos.Count; col++)
+                {
+                    var valor = mapaCampos[camposValidos[col]].Valor(producto);
+                    worksheet.Cell(fila + 2, col + 1).Value = valor?.ToString() ?? string.Empty;
+                }
+            }
+
+            var rango = worksheet.Range(1, 1, Math.Max(productos.Count + 1, 1), camposValidos.Count);
+            rango.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            rango.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            worksheet.Columns().AdjustToContents();
+            worksheet.SheetView.FreezeRows(1);
+            worksheet.RangeUsed()?.SetAutoFilter();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+
+            var archivo = stream.ToArray();
+            var nombreArchivo = $"Productos_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return (archivo, nombreArchivo, contentType);
+        }
+        internal class ProductoExportRow
+        {
+            public int IdCatepro { get; set; }
+            public string? Cod_Producto { get; set; }
+            public string? NombreProducto { get; set; }
+            public decimal? CantidadProducto { get; set; }
+            public decimal? ValorUnidad { get; set; }
+            public decimal? ValorVentaProducto { get; set; }
+            public string? DescripcionCategoria { get; set; }
+            public string? NombreServicio { get; set; }
+            public int? Id_Proveedor { get; set; }
+            public string? ImagenPath { get; set; }
         }
     }
 

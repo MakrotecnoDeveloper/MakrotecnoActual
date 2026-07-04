@@ -8,10 +8,15 @@
         <a asp-action="CrearPeriodo" class="btn btn-primary">Nuevo período</a>
     </div>
 
-@if (TempData["ok"] != null)
-{
+    @if (TempData["ok"] != null)
+    {
         <div class="alert alert-success">@TempData["ok"]</div>
-}
+    }
+
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["error"]</div>
+    }
 
     <table class="table table-bordered table-striped">
         <thead>
@@ -22,6 +27,7 @@
                 <th>Fin</th>
                 <th>Pago</th>
                 <th>Estado</th>
+                <th style="width:260px;">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +40,45 @@
                     <td>@item.FechaFin.ToString("yyyy-MM-dd")</td>
                     <td>@item.FechaPago?.ToString("yyyy-MM-dd")</td>
                     <td>@item.Estado</td>
+                    <td>
+                        @if (item.Estado == "Abierto")
+                        {
+                            <form asp-action="CambiarEstadoPeriodo" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="idPeriodo" value="@item.IdPeriodo" />
+                                <input type="hidden" name="nuevoEstado" value="Calculado" />
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    Pasar a Calculado
+                                </button>
+                            </form>
+                        }
+                        else if (item.Estado == "Calculado")
+                        {
+                            <form asp-action="CambiarEstadoPeriodo" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="idPeriodo" value="@item.IdPeriodo" />
+                                <input type="hidden" name="nuevoEstado" value="Cerrado" />
+                                <button type="submit" class="btn btn-sm btn-dark">
+                                    Pasar a Cerrado
+                                </button>
+                            </form>
+                        }
+                        else if (item.Estado == "Cerrado")
+                        {
+                            <form asp-action="CambiarEstadoPeriodo" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="idPeriodo" value="@item.IdPeriodo" />
+                                <input type="hidden" name="nuevoEstado" value="Pagado" />
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    Pasar a Pagado
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Finalizado</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

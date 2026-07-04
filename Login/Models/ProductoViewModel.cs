@@ -38,6 +38,7 @@ public class ProductosIndexVm
     public string? Q { get; set; } // búsqueda
     public IEnumerable<Producto> Productos { get; set; } = Enumerable.Empty<Producto>();
     public IEnumerable<Sede> Sede { get; set; } = Enumerable.Empty<Sede>();
+    public string? EmpresaIdActual { get; set; }
 }
 
 public class ProductoInsertDto

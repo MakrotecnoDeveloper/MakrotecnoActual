@@ -44,9 +44,17 @@ namespace Plataforma.Servicios.Contrato
         Task<decimal> ObtenerTotalStockAsync(int? sedeId);
         Task<int> ObtenerSkusConStockAsync(int? sedeId);
         Task<PagedResult<ProductoStockVm>> ObtenerStockAsync(
-            int? sedeId, string? q, int page, int pageSize,
-            string? sortBy = null, bool desc = false);
-        Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(int? sedeId, string? q);
+        string empresaId,
+        int? sedeId,
+        string? q,
+        int page,
+        int pageSize,
+        string? sortBy = null,
+        bool desc = false);
+        Task<(decimal totalUnidades, int skusConStock)> ResumenAsync(
+        string empresaId,
+        int? sedeId,
+        string? q);
 
         Task AplicarMovimientoAsync(int productoId, int sedeId, decimal delta, string? motivo = null);
         Task<(int insertados, int omitidos)> InsertarLoteAsync(IEnumerable<ProductoInsertDto> lote);
@@ -62,5 +70,10 @@ namespace Plataforma.Servicios.Contrato
         Task<List<Producto>> BuscarProductosPorCodigo(string codigo);
         List<CategoriaWebEstadoViewModel> ObtenerCategoriasWeb();
         void ActualizarEstadoWebCategorias(List<CategoriaWebEstadoViewModel> categorias);
+        Task<(byte[] archivo, string nombreArchivo, string contentType)> ExportarExcelPersonalizadoAsync(
+            bool todasCategorias,
+            List<int> categoriasIds,
+            List<string> camposSeleccionados
+        );
     }
 }

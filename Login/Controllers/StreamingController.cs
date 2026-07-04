@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Plataforma.Models;
+using Plataforma.Models.Dto.Streaming;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 
@@ -90,6 +91,172 @@ namespace Plataforma.Controllers
             Console.WriteLine("IDCLIENTEPLATAFORMA: " + id + " ESTADO: " + estado + " IDCLIENTE " + idCliente);
             await _streamingservice.ActualizarCliente(id, estado, idCliente);
             return Json(new { success = true });
+        }
+        [HttpGet]
+        public IActionResult ConsultaCuentasStreaming()
+        {
+            return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> ConsultarCuentasStreamingJson(
+        string? termino,
+        DateTime? fechaInicio,
+        DateTime? fechaFin,
+        string? indicador)
+        {
+            try
+            {
+                var filtro = new FiltroCuentasStreamingDTO
+                {
+                    Termino = termino,
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin,
+                    Indicador = indicador
+                };
+
+                var cuentas = await _streamingservice.ConsultarCuentasStreamingAsync(filtro);
+
+                return Json(new
+                {
+                    ok = true,
+                    cuentas
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al consultar cuentas de streaming.",
+                    detalle = ex.Message
+                });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> EstructuraPorPlataforma()
+        {
+            var plataformas = await _streamingservice.ObtenerPlataformasAsync();
+
+            return View(plataformas);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ObtenerEstructuraPorPlataforma(int idPlataforma)
+        {
+            try
+            {
+                var datos = await _streamingservice.ObtenerEstructuraPorPlataformaAsync(idPlataforma);
+
+                return Json(new
+                {
+                    ok = true,
+                    datos
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al obtener la estructura de la plataforma.",
+                    detalle = ex.Message
+                });
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> ActualizarCuentaPlan([FromBody] ActualizarCuentaPlanDTO model)
+        {
+            try
+            {
+                var resultado = await _streamingservice.ActualizarCuentaPlanAsync(model);
+
+                if (!resultado.ok)
+                {
+                    return BadRequest(new
+                    {
+                        ok = false,
+                        mensaje = resultado.mensaje
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = resultado.mensaje
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al actualizar la cuenta / plan.",
+                    detalle = ex.Message
+                });
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AsignarClienteACuenta([FromBody] AsignarClienteACuentaDTO model)
+        {
+            try
+            {
+                var resultado = await _streamingservice.AsignarClienteACuentaAsync(model);
+
+                if (!resultado.ok)
+                {
+                    return BadRequest(new
+                    {
+                        ok = false,
+                        mensaje = resultado.mensaje
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = resultado.mensaje
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al asignar el cliente a la cuenta / plan.",
+                    detalle = ex.Message
+                });
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> ActualizarPerfilCuenta([FromBody] ActualizarPerfilCuentaDTO model)
+        {
+            try
+            {
+                var resultado = await _streamingservice.ActualizarPerfilCuentaAsync(model);
+
+                if (!resultado.ok)
+                {
+                    return BadRequest(new
+                    {
+                        ok = false,
+                        mensaje = resultado.mensaje
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = resultado.mensaje
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    ok = false,
+                    mensaje = "Error al actualizar el perfil.",
+                    detalle = ex.Message
+                });
+            }
         }
     }
 }

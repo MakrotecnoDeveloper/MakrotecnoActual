@@ -1,12 +1,11 @@
-﻿
+﻿@model Plataforma.Models.ViewModels.Usuario.SeleccionarSedeYCargoVm
+@using System.Text.Json
+
 @{
     ViewData["Title"] = "SeleccionarSedeYCargo";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var cedula = ViewBag.Cedula;
-    var idEmpresa = ViewBag.IdEmpresa;
-    var sedes = ViewBag.Sedes as List<Sede>;
-    var cargos = ViewBag.Cargos as List<TipoCargo>;
-    Console.WriteLine("Cedula Empleado: " + cedula + " idEmpresa: " + idEmpresa);
+
+    var cargosJson = JsonSerializer.Serialize(Model.Cargos);
 }
 
 <div class="content-wrapper justify-content-center">
@@ -15,34 +14,35 @@
             <div class="col-md-6">
                 <div class="card rounded-lg shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        Seleccione la Sede
+                        Seleccione la Sede y el Cargo
                     </div>
+
                     <div class="card-body">
                         <form id="sedeCargoForm" method="post" action="/Usuario/GuardarSedeYCargo">
-                            <input type="hidden" name="Cedula" value="@cedula" />
-                            <input type="hidden" name="IdEmpresa" value="@idEmpresa" />
+                            <input type="hidden" name="Cedula" value="@Model.Cedula" />
 
                             <div class="form-group">
                                 <label for="Sede">Seleccione la Sede:</label>
-                                <select id="Sede" name="IdSede" class="form-control">
-                                    @foreach (var sede in sedes)
+                                <select id="Sede" name="IdSede" class="form-control" required>
+                                    <option value="">Seleccione una sede</option>
+
+                                    @foreach (var sede in Model.Sedes)
                                     {
-                                        <option value="@sede.Id_sede">@sede.NombreSede</option>
+                                        <option value="@sede.IdSede" data-empresa="@sede.IdEmpresa">
+                                            @sede.NombreSede - @sede.NombreEmpresa
+                                        </option>
                                     }
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group mt-3">
                                 <label for="Cargo">Seleccione el Cargo:</label>
-                                <select id="Cargo" name="IdCargo" class="form-control">
-                                    @foreach (var cargo in cargos)
-                                    {
-                                        <option value="@cargo.Id_tipo">@cargo.DescripcionCargo</option>
-                                    }
+                                <select id="Cargo" name="IdCargo" class="form-control" required disabled>
+                                    <option value="">Seleccione un cargo</option>
                                 </select>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="submit" class="btn btn-primary mt-3">Guardar</button>
                         </form>
                     </div>
                 </div>
@@ -51,3 +51,30 @@
     </div>
 </div>
 
+<script>
+    const cargos = @Html.Raw(cargosJson);
+
+    const sedeSelect = document.getElementById("Sede");
+    const cargoSelect = document.getElementById("Cargo");
+
+    sedeSelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const empresaId = selectedOption.getAttribute("data-empresa");
+
+        cargoSelect.innerHTML = '<option value="">Seleccione un cargo</option>';
+        cargoSelect.disabled = true;
+
+        if (!empresaId) return;
+
+        const cargosFiltrados = cargos.filter(c => c.IdEmpresa === empresaId);
+
+        cargosFiltrados.forEach(cargo => {
+            const option = document.createElement("option");
+            option.value = cargo.IdCargo;
+            option.textContent = cargo.DescripcionCargo || cargo.NombreCargo;
+            cargoSelect.appendChild(option);
+        });
+
+        cargoSelect.disabled = cargosFiltrados.length === 0;
+    });
+</script>

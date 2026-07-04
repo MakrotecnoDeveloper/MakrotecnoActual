@@ -1,40 +1,60 @@
-﻿@model List<Plataforma.Models.Infopdv>
+﻿@model Plataforma.Models.ViewModels.Productos.SeleccionAccesoLoginVm
+@using System.Text.Json
 
 @{
     Layout = null;
+
+    var sedesJson = JsonSerializer.Serialize(Model.Sedes);
+    var pdvsJson = JsonSerializer.Serialize(Model.Pdvs);
 }
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Seleccionar PDV</title>
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Seleccionar acceso</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="~/css/styleLogin.css">
 </head>
 <body>
-
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 login-form text-center">
-                <form asp-controller="Home" asp-action="validacionLogin" method="POST">
+                <form asp-controller="Home" asp-action="ValidacionLogin" method="POST">
                     <div class="row login-form-header">
                         <p class="login-form-font-header">Makro<span>tecno POS</span></p>
                     </div>
 
-                    <!-- Campos ocultos para enviar cedula y contraseña -->
-                    <input type="hidden" name="cedula" value="@ViewBag.Cedula" />
-                    <input type="hidden" name="password" value="@ViewBag.Password" />
+                    <input type="hidden" name="cedula" value="@Model.Cedula" />
+                    <input type="hidden" name="password" value="@Model.Password" />
 
-                    <!-- Mostrar las PDV disponibles en un dropdown -->
+                    <div class="row login-from-row">
+                        <div class="col-md-12">
+                            <span>Seleccione la compañía:</span>
+                            <select id="empresaSelect" class="form-control mt-3">
+                                <option value="">Seleccione una compañía</option>
+                                @foreach (var empresa in Model.Empresas)
+                                {
+                                    <option value="@empresa.EmpresaId">@empresa.NombreEmpresa</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row login-from-row">
+                        <div class="col-md-12">
+                            <span>Seleccione la sede:</span>
+                            <select id="sedeSelect" class="form-control mt-3" disabled>
+                                <option value="">Seleccione una sede</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="row login-from-row">
                         <div class="col-md-12">
                             <span>Seleccione el PDV:</span>
-                            <select name="selectedPDV" class="form-control mt-3">
-                                @foreach (var pdv in Model)
-                                {
-                                    <option value="@pdv.InfopdvId">@pdv.NombreInfoPDV</option>
-                                }
+                            <select id="pdvSelect" name="selectedPDV" class="form-control mt-3" disabled required>
+                                <option value="">Seleccione un PDV</option>
                             </select>
                         </div>
                     </div>
@@ -48,5 +68,57 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const sedes = @Html.Raw(sedesJson);
+        const pdvs = @Html.Raw(pdvsJson);
+
+        const empresaSelect = document.getElementById("empresaSelect");
+        const sedeSelect = document.getElementById("sedeSelect");
+        const pdvSelect = document.getElementById("pdvSelect");
+
+        empresaSelect.addEventListener("change", function () {
+            const empresaId = this.value;
+
+            sedeSelect.innerHTML = '<option value="">Seleccione una sede</option>';
+            pdvSelect.innerHTML = '<option value="">Seleccione un PDV</option>';
+
+            sedeSelect.disabled = true;
+            pdvSelect.disabled = true;
+
+            if (!empresaId) return;
+
+            const sedesFiltradas = sedes.filter(s => s.EmpresaId === empresaId);
+
+            sedesFiltradas.forEach(sede => {
+                const option = document.createElement("option");
+                option.value = sede.SedeId;
+                option.textContent = sede.NombreSede;
+                sedeSelect.appendChild(option);
+            });
+
+            sedeSelect.disabled = sedesFiltradas.length === 0;
+        });
+
+        sedeSelect.addEventListener("change", function () {
+            const sedeId = parseInt(this.value);
+
+            pdvSelect.innerHTML = '<option value="">Seleccione un PDV</option>';
+            pdvSelect.disabled = true;
+
+            if (!sedeId) return;
+
+            const pdvsFiltrados = pdvs.filter(p => p.SedeId === sedeId);
+
+            pdvsFiltrados.forEach(pdv => {
+                const option = document.createElement("option");
+                option.value = pdv.PdvId;
+                option.textContent = pdv.NombrePdv;
+                pdvSelect.appendChild(option);
+            });
+
+            pdvSelect.disabled = pdvsFiltrados.length === 0;
+        });
+    </script>
 </body>
 </html>

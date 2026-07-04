@@ -79,6 +79,7 @@ builder.Services.AddScoped<IPosService, PosService>();
 builder.Services.AddScoped<ICxcService, CxcService>();
 builder.Services.AddScoped<IInicializacionClienteService, InicializacionClienteService>();
 builder.Services.AddScoped<IIntegracionService, IntegracionService>();
+builder.Services.AddScoped<IImportacionService, ImportacionService>();
 
 
 //Cultura de la aplicacion para formateo de n�meros, fechas y monedas, utilizando la cultura "es-CO" (español de Colombia).

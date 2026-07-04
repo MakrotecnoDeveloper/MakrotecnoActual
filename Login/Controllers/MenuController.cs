@@ -88,8 +88,12 @@ namespace Plataforma.Controllers
                 var permisosCargoList = permisosCargo.ToList();
 
                 var modulosFiltrados = _dbContext.Modulos
-                    .Where(m => modulosGenericosIds.Contains(m.IdModulo))
-                    .ToList();
+                .Where(m =>
+                    modulosGenericosIds.Contains(m.IdModulo) &&
+                    m.EsGenerico == true &&
+                    m.EsEspecializado == false
+                )
+                .ToList();
 
                 vm.ModulosGenericos = modulosFiltrados
                     .Select(m => new ModuloPermisoItemVM
@@ -106,8 +110,12 @@ namespace Plataforma.Controllers
 
                 // Cargar los módulos por actividad ANTES del Select
                 var modulosActividad = _dbContext.Modulos
-                    .Where(m => modulosActividadIds.Contains(m.IdModulo))
-                    .ToList();
+                .Where(m =>
+                    modulosActividadIds.Contains(m.IdModulo) &&
+                    m.EsEspecializado == true &&
+                    m.EsGenerico == false
+                )
+                .ToList();
 
                 // Construir el ViewModel en memoria (aquí sí puedes usar Any)
                 vm.ModulosActividad = modulosActividad

@@ -1,0 +1,238 @@
+﻿@model Plataforma.Models.ImportacionProductosViewModel
+
+@{
+    ViewData["Title"] = "Importar Productos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var campos = new List<string>
+    {
+        "cod_producto",
+        "nombreProducto",
+        "cantidadProducto",
+        "valorNetoProducto",
+        "valorVentaProducto",
+        "valorUnidad",
+        "id_empresa",
+        "estado",
+        "Ubicacion",
+        "idCatePro",
+        "idProveedor",
+        "imagenPath",
+        "AutenticidadProducto",
+        "CondicionProducto",
+        "EstadoWeb",
+        "IdUnidad",
+        "Iva"
+    };
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>Importar Productos</h1>
+        <p class="text-muted">
+            Importa productos desde texto pegado o archivo Excel.
+        </p>
+    </section>
+
+    <section class="content">
+        <form asp-action="Procesar" asp-controller="Importacion" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="CamposOrdenadosJson" id="CamposOrdenadosJson" />
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Configuración de importación</h3>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Tipo de operación</label>
+                            <select asp-for="TipoOperacion" class="form-control" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Crear">Crear</option>
+                                <option value="Actualizar">Actualizar</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Tipo de entrada</label>
+                            <select asp-for="TipoEntrada" class="form-control" id="tipoEntrada" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Texto">Texto pegado</option>
+                                <option value="Excel">Archivo Excel</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Margen de venta %</label>
+                            <input asp-for="MargenPorcentaje" class="form-control" type="number" step="0.01" />
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Id Empresa</label>
+                            <input asp-for="IdEmpresa" class="form-control" value="1234193470-6" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Categoría</label>
+                            <input asp-for="IdCatePro" class="form-control" value="1055" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Proveedor</label>
+                            <input asp-for="IdProveedor" class="form-control" value="24" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Unidad</label>
+                            <input asp-for="IdUnidad" class="form-control" value="1" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label>IVA</label>
+                            <input asp-for="Iva" class="form-control" value="0" />
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div id="bloqueTexto">
+                        <label>Texto del proveedor</label>
+                        <textarea asp-for="TextoProductos" class="form-control" rows="12"
+                                  placeholder="Pegue aquí la lista del proveedor..."></textarea>
+                    </div>
+
+                    <div id="bloqueExcel" style="display:none;">
+                        <label>Archivo Excel (.xlsx)</label>
+                        <input asp-for="ArchivoExcel" type="file" class="form-control" accept=".xlsx" />
+
+                        <div class="alert alert-info mt-3">
+                            Seleccione los campos en el mismo orden en que vienen las columnas del archivo.
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5>Campos disponibles</h5>
+                    <p class="text-muted">
+                        Marque los campos en el mismo orden en que vienen en el texto o Excel.
+                    </p>
+
+                    <div class="row">
+                        @foreach (var campo in campos)
+                        {
+                            <div class="col-md-3 mb-2">
+                                <label>
+                                    <input type="checkbox"
+                                           class="campo-check"
+                                           value="@campo" />
+                                    @campo
+                                </label>
+                            </div>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <h5>Orden seleccionado</h5>
+                    <p class="text-muted">
+                        Este será el orden usado para leer la información.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tablaOrdenCampos">
+                            <thead>
+                                <tr>
+                                    <th style="width:80px;">Orden</th>
+                                    <th>Campo</th>
+                                    <th style="width:120px;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">
+                        Procesar Importación
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        let camposOrdenados = [];
+
+        document.getElementById("tipoEntrada").addEventListener("change", function () {
+            const valor = this.value;
+
+            document.getElementById("bloqueTexto").style.display = valor === "Texto" ? "block" : "none";
+            document.getElementById("bloqueExcel").style.display = valor === "Excel" ? "block" : "none";
+        });
+
+        document.querySelectorAll(".campo-check").forEach(function (check) {
+            check.addEventListener("change", function () {
+                const campo = this.value;
+
+                if (this.checked) {
+                    if (!camposOrdenados.includes(campo)) {
+                        camposOrdenados.push(campo);
+                    }
+                } else {
+                    camposOrdenados = camposOrdenados.filter(x => x !== campo);
+                }
+
+                actualizarTablaOrden();
+            });
+        });
+
+        function actualizarTablaOrden() {
+            const tbody = document.querySelector("#tablaOrdenCampos tbody");
+            tbody.innerHTML = "";
+
+            camposOrdenados.forEach(function (campo, index) {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${campo}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="quitarCampo('${campo}')">
+                            Quitar
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("CamposOrdenadosJson").value = JSON.stringify(camposOrdenados);
+        }
+
+        function quitarCampo(campo) {
+            camposOrdenados = camposOrdenados.filter(x => x !== campo);
+
+            document.querySelectorAll(".campo-check").forEach(function (check) {
+                if (check.value === campo) {
+                    check.checked = false;
+                }
+            });
+
+            actualizarTablaOrden();
+        }
+    </script>
+}

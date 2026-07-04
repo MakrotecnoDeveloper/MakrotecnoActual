@@ -30,6 +30,9 @@
                     <th>Factura</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
+                    <th>Tipo documento</th>
+                    <th>Origen</th>
+                    <th>Referencia</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -43,6 +46,16 @@
                         <td>@factura.NumeroFactura</td>
                         <td>@factura.FechaEmision.ToShortDateString()</td>
                         <td>@factura.Venta.IdCliente</td>
+                        <td>@(factura.TipoDocumento ?? "FacturaVenta")</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                @(factura.OrigenModulo ?? factura.Venta?.OrigenModulo ?? "VentaNormal")
+                            </span>
+                        </td>
+
+                        <td>
+                            @(factura.CodigoReferenciaOrigen ?? factura.Venta?.CodigoReferenciaOrigen ?? "N/A")
+                        </td>
                         <td>$@factura.Total</td>
                         <td>@factura.EstadoFactura</td>
                         <td>

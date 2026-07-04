@@ -108,6 +108,29 @@
                             <div class="factura-label">Fecha de emisión</div>
                             <div class="factura-value">@Model.Factura.FechaEmision.ToString("dd/MM/yyyy")</div>
                         </div>
+                        <div class="mt-1">
+                            <div class="factura-label">Tipo documento</div>
+                            <div class="factura-value">
+                                @(Model.Factura.TipoDocumento ?? "FacturaVenta")
+                            </div>
+                        </div>
+
+                        <div class="mt-1">
+                            <div class="factura-label">Origen</div>
+                            <div class="factura-value">
+                                @(Model.Factura.OrigenModulo ?? Model.Factura.Venta?.OrigenModulo ?? "VentaNormal")
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Factura.CodigoReferenciaOrigen ?? Model.Factura.Venta?.CodigoReferenciaOrigen))
+                        {
+                            <div class="mt-1">
+                                <div class="factura-label">Referencia</div>
+                                <div class="factura-value">
+                                    @(Model.Factura.CodigoReferenciaOrigen ?? Model.Factura.Venta?.CodigoReferenciaOrigen)
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -172,6 +195,20 @@
                     </div>
                 </div>
 
+                @if (!string.IsNullOrWhiteSpace(Model.Factura.Observacion) ||
+                                !string.IsNullOrWhiteSpace(Model.Factura.Venta?.ObservacionVenta))
+                {
+                    <div class="alert alert-light border mb-3">
+                        <div class="fw-bold mb-1">
+                            Observación
+                        </div>
+
+                        <div>
+                            @(Model.Factura.Observacion ?? Model.Factura.Venta?.ObservacionVenta)
+                        </div>
+                    </div>
+                }
+
                 <!-- Tabla productos -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -191,7 +228,7 @@
                                     <td class="fw-semibold">@pedido.Codigo</td>
 
                                     <td class="text-muted">
-                                        @pedido.Producto?.NombreProducto
+                                        @(pedido.Producto?.NombreProducto ?? "Producto / Servicio")
                                     </td>
 
                                     <td class="text-end">@pedido.Stock</td>

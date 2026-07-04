@@ -30,5 +30,6 @@ namespace Plataforma.Services
 
         Task<List<TipoCargo>> ObtenerCargosAsync();
         Task AsignarAreaCargoAsync(AsignarAreaCargoVm vm);
+        Task CambiarEstadoPeriodoAsync(int idPeriodo, string nuevoEstado);
     }
 }

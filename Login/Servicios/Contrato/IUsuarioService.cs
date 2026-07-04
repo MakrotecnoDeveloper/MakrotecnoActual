@@ -1,4 +1,5 @@
 ﻿using Plataforma.Models;
+using Plataforma.Models.ViewModels.Productos;
 using System.Security.Claims;
 namespace Plataforma.Servicios.Contrato
 {
@@ -80,6 +81,8 @@ namespace Plataforma.Servicios.Contrato
         Task<bool> ExisteFechaAsync(string codProducto, DateTime fecha);
         Sede ObtenerSedePorId(int idSede);
         bool UsuarioTieneAccesoAPdv(int cedula, int pdvId);
+        SeleccionAccesoLoginVm ObtenerAccesosLoginPorUsuario(int cedula, string password);
+        int ObtenerRolPermisosPorSede(int cedula, int sedeId);
 
     }
 }

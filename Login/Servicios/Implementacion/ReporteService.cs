@@ -498,7 +498,7 @@ namespace Plataforma.Servicios.Implementacion
                     FechaEmisionFactura = item.FechaEmisionFacturaReal ?? item.FechaEmisionFacturaVenta,
 
                     IdCliente = item.IdCliente,
-                    CedulaCliente = item.CedulaCliente,
+                    CedulaCliente = (int)item.CedulaCliente,
 
                     CedulaVendedor = item.Cedula,
 

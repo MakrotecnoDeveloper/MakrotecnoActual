@@ -35,7 +35,13 @@
     <main class="main">
         <div class="topbar">
             <h1>Inventario de Productos</h1>
-            <input type="text" id="searchInput" placeholder="Buscar por nombre o código..." oninput="searchProducts()">
+
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre o código..." oninput="searchProducts()">
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalExportarExcel">
+                    Exportar Excel
+                </button>
+            </div>
         </div>
 
         <div id="grid" class="grid"></div>
@@ -46,7 +52,113 @@
             <button id="nextBtn" onclick="nextPage()">Siguiente</button>
         </div>
     </main>
+    <!-- MODAL EXPORTAR EXCEL -->
+    <div class="modal fade" id="modalExportarExcel" tabindex="-1" role="dialog" aria-labelledby="modalExportarExcelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalExportarExcelLabel">Exportar productos a Excel</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
+                <div class="modal-body">
+                    <!-- Categorías -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold">Categorías</label>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="checkTodasCategorias" checked>
+                            <label class="form-check-label" for="checkTodasCategorias">
+                                Todas las categorías
+                            </label>
+                        </div>
+
+                        <div id="contenedorCategorias" class="border rounded p-3 bg-light" style="max-height:250px; overflow-y:auto;">
+                            <!-- JS llena dinámicamente -->
+                        </div>
+
+                        <small class="text-muted">
+                            Si desmarcas "Todas las categorías", podrás elegir una o varias categorías específicas.
+                        </small>
+                    </div>
+
+                    <hr />
+
+                    <!-- Campos -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold">Campos a exportar</label>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="checkTodosCampos" checked>
+                            <label class="form-check-label" for="checkTodosCampos">
+                                Todos los campos
+                            </label>
+                        </div>
+
+                        <div class="row" id="contenedorCampos">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="Cod_Producto" id="campoCodigo" checked>
+                                    <label class="form-check-label" for="campoCodigo">Código</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="NombreProducto" id="campoNombre" checked>
+                                    <label class="form-check-label" for="campoNombre">Nombre</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="CantidadProducto" id="campoCantidad" checked>
+                                    <label class="form-check-label" for="campoCantidad">Cantidad</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="ValorUnidad" id="campoValorUnidad" checked>
+                                    <label class="form-check-label" for="campoValorUnidad">Valor Unidad</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="ValorVentaProducto" id="campoValorVenta" checked>
+                                    <label class="form-check-label" for="campoValorVenta">Valor Venta</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="DescripcionCategoria" id="campoCategoria" checked>
+                                    <label class="form-check-label" for="campoCategoria">Categoría</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="NombreServicio" id="campoServicio" checked>
+                                    <label class="form-check-label" for="campoServicio">Servicio</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="Id_Proveedor" id="campoProveedor">
+                                    <label class="form-check-label" for="campoProveedor">Proveedor</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input campo-exportar" type="checkbox" value="ImagenPath" id="campoImagen">
+                                    <label class="form-check-label" for="campoImagen">Ruta Imagen</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        Puedes exportar todas las categorías o solo las que selecciones, y además escoger exactamente qué columnas quieres en el Excel.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success" onclick="exportarExcelPersonalizado()">
+                        Exportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
     window.modelo = @Html.Raw(Json.Serialize(Model));

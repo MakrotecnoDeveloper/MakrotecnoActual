@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
+using Plataforma.Models.ViewModels.Usuario;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 
@@ -232,65 +233,162 @@ namespace Plataforma.Controllers
             var empresaSedeViewModel = _usuarioService.EmpleadoSede();
             return View(empresaSedeViewModel);
         }
-        [Authorize]
         [HttpPost]
-        //POST para validar si una cedula esta enlazado con una sede o no
         public IActionResult ValidarCedula(int cedula)
         {
-            var empleado = _usuarioService.ValidarCedula(cedula);
-            if (empleado != null)
+            if (cedula <= 0)
             {
-                string? idEmpresa = _usuarioService.ObtenerIdEmpresa(cedula);
-                if (string.IsNullOrEmpty(idEmpresa))
-                {
-                    var mensaje = "Error: La cedula " + cedula + " No esta sincronizado con una empresa";
-                    TempData["ErrorMessage"] = mensaje;
-                    return RedirectToAction("Error", "Errores");
-                }else
-                {
-                    var sede = _usuarioService.ObtenerSedePorEmpleado(cedula);
-                    var sedes = _usuarioService.ObtenerSedes(idEmpresa);
-                    var cargos = _usuarioService.ObtenerCargos(idEmpresa);
-
-                    if (sede == true)
-                    {
-                        ViewBag.Cedula = cedula;
-                        ViewBag.IdEmpresa = idEmpresa;
-                        ViewBag.Sedes = sedes;
-                        ViewBag.Cargos = cargos;
-                        return View("SeleccionarSedeYCargo");
-                    }
-                    else
-                    {
-                        var mensaje = "Error: La cedula ya tiene sede asignada.";
-                        TempData["ErrorMessage"] = mensaje;
-                        return RedirectToAction("Error", "Errores");
-                    }
-                }
-
-            }
-            else
-            {
-                var mensaje = "Error: No existe el empleado";
-                TempData["ErrorMessage"] = mensaje;
+                TempData["ErrorMessage"] = "Debe ingresar una cédula válida.";
                 return RedirectToAction("Error", "Errores");
             }
+
+            // 1. Validar si el usuario ya tiene sede/cargo configurado
+            /*var existeSedeEmpleado = _dbContext.Sedeempleado
+                .Any(x => x.Cedula == cedula);
+
+            if (existeSedeEmpleado)
+            {
+                // Aquí dejas tu flujo actual cuando sí existe.
+                // Por ejemplo:
+                return RedirectToAction("Index");
+            }*/
+
+            // 2. Buscar las empresas asociadas al empleado en empleadoempresa
+            var empresasEmpleado = _dbContext.EmpleadoEmpresa
+                .Where(x => x.Cedula == cedula && x.Id_empresa != null)
+                .Select(x => x.Id_empresa!)
+                .Distinct()
+                .ToList();
+
+            if (!empresasEmpleado.Any())
+            {
+                TempData["ErrorMessage"] = "El empleado no tiene empresas asociadas.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 3. Traer sedes de esas empresas
+            var sedes = (from s in _dbContext.Sede
+                         join e in _dbContext.Empresas
+                            on s.Id_empresa equals e.Id_empresa
+                         where s.Id_empresa != null
+                            && empresasEmpleado.Contains(s.Id_empresa)
+                         select new SedeEmpresaVm
+                         {
+                             IdSede = s.Id_sede,
+                             NombreSede = s.NombreSede ?? "",
+                             IdEmpresa = s.Id_empresa ?? "",
+                             NombreEmpresa = e.Nombre ?? ""
+                         })
+                .ToList();
+
+            // 4. Traer cargos de esas empresas
+            var cargos = _dbContext.TipoCargo
+                .Where(c => c.Id_empresa != null && empresasEmpleado.Contains(c.Id_empresa))
+                .Select(c => new CargoEmpresaVm
+                {
+                    IdCargo = c.Id_tipo,
+                    NombreCargo = c.NombreCargo ?? "",
+                    DescripcionCargo = c.DescripcionCargo ?? "",
+                    IdEmpresa = c.Id_empresa ?? ""
+                })
+                .ToList();
+
+            if (!sedes.Any())
+            {
+                TempData["ErrorMessage"] = "No hay sedes asociadas a las empresas del empleado.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            if (!cargos.Any())
+            {
+                TempData["ErrorMessage"] = "No hay cargos asociados a las empresas del empleado.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 5. Enviar todo a la vista
+            var vm = new SeleccionarSedeYCargoVm
+            {
+                Cedula = cedula,
+                Sedes = sedes,
+                Cargos = cargos
+            };
+
+            return View("SeleccionarSedeYCargo", vm);
         }
         [Authorize]
         [HttpPost]
-        //POST para insertar una sincronizacion entre empleado-sede
-        public IActionResult GuardarSedeYCargo(int cedula, int idSede, int idCargo)
+        public IActionResult GuardarSedeYCargo(int Cedula, int IdSede, int IdCargo)
         {
-            _usuarioService.InsertarSedeEmpleado(cedula, idSede, idCargo);
+            if (Cedula <= 0 || IdSede <= 0 || IdCargo <= 0)
+            {
+                TempData["ErrorMessage"] = "Debe seleccionar una sede y un cargo válidos.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 1. Validar que la sede exista
+            var sede = _dbContext.Sede
+                .FirstOrDefault(s => s.Id_sede == IdSede);
+
+            if (sede == null)
+            {
+                TempData["ErrorMessage"] = "La sede seleccionada no existe.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 2. Validar que el cargo exista
+            var cargo = _dbContext.TipoCargo
+                .FirstOrDefault(c => c.Id_tipo == IdCargo);
+
+            if (cargo == null)
+            {
+                TempData["ErrorMessage"] = "El cargo seleccionado no existe.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 3. Validar que el cargo pertenezca a la misma empresa de la sede
+            if (!string.Equals(cargo.Id_empresa, sede.Id_empresa, StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "El cargo seleccionado no pertenece a la empresa de la sede.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 4. Validar que el empleado sí tenga esa empresa asociada en empleadoempresa
+            var empleadoTieneEmpresa = _dbContext.EmpleadoEmpresa.Any(x =>
+                x.Cedula == Cedula &&
+                x.Id_empresa == sede.Id_empresa);
+
+            if (!empleadoTieneEmpresa)
+            {
+                TempData["ErrorMessage"] = "El empleado no tiene asociada la empresa de la sede seleccionada.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 5. Evitar duplicados en sedeempleado
+            var yaExiste = _dbContext.Sedeempleado.Any(x =>
+                x.Cedula == Cedula &&
+                x.Id_sede == IdSede);
+
+            if (yaExiste)
+            {
+                TempData["ErrorMessage"] = "El empleado ya tiene esta sede configurada.";
+                return RedirectToAction("Error", "Errores");
+            }
+
+            // 6. Guardar sede y cargo
+            var sedeEmpleado = new Sedeempleado
+            {
+                Cedula = Cedula,
+                Id_sede = IdSede,
+                Id_cargo = IdCargo
+            };
+
+            _dbContext.Sedeempleado.Add(sedeEmpleado);
+            _dbContext.SaveChanges();
+
+            TempData["SuccessMessage"] = "Sede y cargo asignados correctamente.";
+
             return RedirectToAction("Index");
         }
-        /*[Authorize]
-        [HttpGet]
-        public JsonResult GetSedes(string empresaId)
-        {
-            var sedes = _usuarioService.GetSedesByEmpresaId(empresaId);
-            return Json(sedes);
-        }*/
         [Authorize]
         [HttpGet]
         //Vista-Formulario para insertar un cliente
@@ -419,7 +517,7 @@ namespace Plataforma.Controllers
             var asignacion = new Syncpdv
             {
                 InfopdvId = idPdv,
-                Estado = 0,
+                Estado = 1,
                 FechaEstado = DateTime.Now,
                 Cedula = int.Parse(cedulaEmpleado)
             };

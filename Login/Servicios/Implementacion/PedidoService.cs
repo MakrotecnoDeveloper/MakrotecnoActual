@@ -4,6 +4,7 @@ using Plataforma.Domain.Exceptions;
 using Plataforma.Models;
 using Plataforma.Models.Dto.Pedido;
 using Plataforma.Servicios.Contrato;
+using Plataforma.ViewModels.Pedido;
 using System.Security.Claims;
 
 namespace Plataforma.Servicios.Implementacion
@@ -23,12 +24,65 @@ namespace Plataforma.Servicios.Implementacion
                 .Where(m => m.IdMetodo == metodoPago)
                 .ToListAsync();
         }
-        public async Task<bool> CrearVentaAsync(Ventas venta)
+        public async Task<CrearVentaViewModel> ConstruirCrearVentaViewModelAsync(ClaimsPrincipal usuario)
+        {
+            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
+            int.TryParse(cedulaStr, out int cedula);
+
+            var clientes = await _dbContext.Clientes
+                .OrderBy(c => c.NombreCliente)
+                .ToListAsync();
+
+            return new CrearVentaViewModel
+            {
+                Cedula = cedula,
+                Clientes = clientes
+            };
+        }
+        public async Task<bool> CrearVentaAsync(CrearVentaViewModel vm)
         {
             try
             {
+                var cliente = await _dbContext.Clientes
+                    .FirstOrDefaultAsync(c => c.IdCliente == vm.IdCliente);
+
+                if (cliente == null)
+                    return false;
+
+                var venta = new Ventas
+                {
+                    IdCliente = vm.IdCliente,
+                    Cedula = vm.Cedula,
+                    CedulaCliente = cliente.CedulaCliente ?? 0,
+
+                    Conceptos = vm.Conceptos?.Trim() ?? "",
+                    ObservacionVenta = string.IsNullOrWhiteSpace(vm.ObservacionVenta)
+                        ? "Venta normal generada desde el módulo de pedidos."
+                        : vm.ObservacionVenta.Trim(),
+
+                    FechaVenta = DateTime.Now,
+                    EstadoVenta = "Pendiente",
+                    Total = 0,
+                    MetodoPago = "Pendiente",
+
+                    TipoVenta = "Normal",
+                    TipoOperacion = "Producto",
+                    OrigenModulo = "VentaNormal",
+                    IdOrigenModulo = null,
+                    CodigoReferenciaOrigen = null
+                };
+
                 _dbContext.Ventas.Add(venta);
                 await _dbContext.SaveChangesAsync();
+
+                venta.IdOrigenModulo = venta.IdVenta;
+                venta.CodigoReferenciaOrigen = $"VN-{venta.IdVenta:D5}";
+
+                await _dbContext.SaveChangesAsync();
+
+                // Dejar el IdVenta disponible para el controller
+                vm.IdVentaCreada = venta.IdVenta;
+
                 return true;
             }
             catch
@@ -85,53 +139,44 @@ namespace Plataforma.Servicios.Implementacion
                 .ToDictionaryAsync(i => i.ProductoId, i => i.Cantidad);
         }
 
-
         public async Task GuardarPedidosAsync(List<Pedidos> pedidos, int idVenta, ClaimsPrincipal usuario)
         {
-            // 1) Obtener cédula
-            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
-            if (!int.TryParse(cedulaStr, out int cedula))
-                throw new PedidoException(PedidoErrorCode.UsuarioSinCedula,
-                    "No se pudo obtener la cédula del usuario autenticado.");
+            var ctx = ObtenerContextoClaims(usuario);
 
-            // 2) Consultar IdSede
-            var idSede = await _dbContext.Sedeempleado
-                .Where(se => se.Cedula == cedula)
-                .Select(se => se.Id_sede)
-                .FirstOrDefaultAsync();
+            var codigos = pedidos
+                .Where(p => !string.IsNullOrWhiteSpace(p.Codigo))
+                .Select(p => p.Codigo!)
+                .Distinct()
+                .ToList();
 
-            if (idSede == 0)
-                throw new PedidoException(PedidoErrorCode.UsuarioSinSede,
-                    "No se encontró una sede asociada al usuario.");
+            var productosEmpresa = await _dbContext.Productos
+                .Where(p => codigos.Contains(p.Cod_Producto!) && p.ID_Empresa == ctx.EmpresaId && p.Estado == 1)
+                .Select(p => p.Cod_Producto!)
+                .ToListAsync();
 
-            // 3) Consultar InfoPdvId
-            var infoPdvId = await _dbContext.Infopdv
-                .Where(p => p.Id_Sede == idSede)
-                .Select(p => p.InfopdvId)
-                .FirstOrDefaultAsync();
+            var productosPermitidos = productosEmpresa.ToHashSet();
 
-            if (infoPdvId == 0)
-                throw new PedidoException(PedidoErrorCode.SedeSinPdv,
-                    "No se encontró un PDV válido para la sede.");
-
-            // 4) Validar stock en batch (ProductoId string)
-            var codigos = pedidos.Select(p => p.Codigo).Distinct().ToList();
             var stocks = await _dbContext.InventarioSedes
-                .Where(i => i.SedeId == idSede && codigos.Contains(i.ProductoId))
-                .ToDictionaryAsync(i => i.ProductoId, i => i.Cantidad); // Cantidad: ajusta tipo (int/decimal)
+                .Where(i => i.SedeId == ctx.SedeId && codigos.Contains(i.ProductoId))
+                .ToDictionaryAsync(i => i.ProductoId, i => i.Cantidad);
 
             foreach (var pedido in pedidos)
             {
+                if (string.IsNullOrWhiteSpace(pedido.Codigo) || !productosPermitidos.Contains(pedido.Codigo))
+                    throw new PedidoException(PedidoErrorCode.InventarioNoEncontrado,
+                        $"El producto {pedido.Codigo} no pertenece a la empresa actual o no está activo.");
+
                 if (!stocks.TryGetValue(pedido.Codigo, out var stockActual))
                     throw new PedidoException(PedidoErrorCode.InventarioNoEncontrado,
-                        $"No existe inventario para el producto {pedido.Codigo} en la sede.");
+                        $"No existe inventario para el producto {pedido.Codigo} en la sede actual.");
 
                 if (pedido.Stock <= 0)
                     throw new PedidoException(PedidoErrorCode.StockInsuficiente,
                         $"Cantidad inválida para el producto {pedido.Codigo}.");
 
                 if (stockActual < pedido.Stock)
-                    throw new PedidoException(PedidoErrorCode.StockInsuficiente,$"Sin stock en productos.");
+                    throw new PedidoException(PedidoErrorCode.StockInsuficiente,
+                        $"Sin stock para el producto {pedido.Codigo}.");
             }
 
             using var tx = await _dbContext.Database.BeginTransactionAsync();
@@ -142,47 +187,38 @@ namespace Plataforma.Servicios.Implementacion
                 foreach (var pedido in pedidos)
                 {
                     var inv = await _dbContext.InventarioSedes
-                        .FirstOrDefaultAsync(i => i.SedeId == idSede && i.ProductoId == pedido.Codigo);
+                        .FirstOrDefaultAsync(i => i.SedeId == ctx.SedeId && i.ProductoId == pedido.Codigo);
 
                     if (inv == null)
                         throw new PedidoException(PedidoErrorCode.InventarioNoEncontrado,
-                            $"No existe inventario para el producto {pedido.Codigo} en la sede.");
+                            $"No existe inventario para el producto {pedido.Codigo} en la sede actual.");
 
                     inv.Cantidad -= pedido.Stock;
+                    inv.ActualizadoEn = DateTime.Now;
+                    inv.Cedula = ctx.Cedula;
 
-                    var valorUnitarioVenta = pedido.VVenta*pedido.Stock;
-                    var valorUnitarioNeto = pedido.VNeto*pedido.Stock;
+                    var valorVentaTotal = pedido.VVenta * pedido.Stock;
+                    var valorUnidadTotal = pedido.VNeto * pedido.Stock;
                     var ivaPorcentaje = pedido.IvaPorcentaje ?? 0m;
-
-                    var ivaLinea = valorUnitarioVenta * (ivaPorcentaje / 100m);
-                    var subTotalConIva = valorUnitarioVenta + ivaLinea;
+                    var ivaLinea = valorVentaTotal * (ivaPorcentaje / 100m);
+                    var subTotalConIva = valorVentaTotal + ivaLinea;
 
                     pedido.IdVenta = idVenta;
-                    pedido.InfopdvId = infoPdvId;
+                    pedido.InfopdvId = ctx.PdvId;
                     pedido.FechaRegistro = DateTime.Now;
-                    pedido.VUnidad = valorUnitarioNeto;
+                    pedido.VUnidad = valorUnidadTotal;
                     pedido.IvaValor = ivaLinea;
                     pedido.SubTotal = subTotalConIva;
 
                     totalVenta += pedido.SubTotal;
-
                     _dbContext.Pedidos.Add(pedido);
                 }
 
-                // ✅ Actualizar Ventas.Total (esto es lo que te está faltando)
                 var venta = await _dbContext.Ventas.FirstOrDefaultAsync(v => v.IdVenta == idVenta);
                 if (venta == null)
                     throw new PedidoException(PedidoErrorCode.VentaNoExiste, $"La venta {idVenta} no existe.");
 
                 venta.Total = totalVenta;
-
-                await _dbContext.SaveChangesAsync();
-                // Recalcular total real
-                var totalReal = await _dbContext.Pedidos
-                    .Where(p => p.IdVenta == idVenta)
-                    .SumAsync(p => p.SubTotal);
-
-                venta.Total = totalReal;
 
                 await _dbContext.SaveChangesAsync();
                 await tx.CommitAsync();
@@ -437,14 +473,23 @@ namespace Plataforma.Servicios.Implementacion
         {
             return _dbContext.InventarioSedes.Where(cd => cd.ProductoId == Codigo).ToList();
         }
-        public async Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo)
+        public async Task<List<InventarioSede>> BuscarProductosPorCodigo(string codigo, ClaimsPrincipal usuario)
         {
-            return await _dbContext.Set<InventarioSede>()
-                                 .Include(p => p.Producto)
-                                 .Where(p => p.ProductoId.Contains(codigo) || p.Producto.NombreProducto.Contains(codigo))
-                                 .OrderBy(p => p.Producto.NombreProducto)
-                                 .Take(20)
-                                 .ToListAsync();
+            var ctx = ObtenerContextoClaims(usuario);
+
+            return await _dbContext.InventarioSedes
+                .Include(i => i.Producto)
+                .Where(i =>
+                    i.SedeId == ctx.SedeId &&
+                    i.Producto.ID_Empresa == ctx.EmpresaId &&
+                    i.Producto.Estado == 1 &&
+                    (
+                        i.ProductoId.Contains(codigo) ||
+                        i.Producto.NombreProducto!.Contains(codigo)
+                    ))
+                .OrderBy(i => i.Producto.NombreProducto)
+                .Take(20)
+                .ToListAsync();
         }
         public async Task<bool> EmitirFacturaAsync(int idVenta, string metodoPago)
         {
@@ -476,7 +521,14 @@ namespace Plataforma.Servicios.Implementacion
                     SubTotal = subTotal,
                     IVA = iva,
                     Total = total,
-                    EstadoFactura = "Emitida"
+                    EstadoFactura = "Emitida",
+
+                    TipoDocumento = "FacturaVenta",
+                    OrigenModulo = venta.OrigenModulo,
+                    CodigoReferenciaOrigen = venta.CodigoReferenciaOrigen,
+                    Observacion = !string.IsNullOrWhiteSpace(venta.CodigoReferenciaOrigen)
+        ? $"Factura generada desde {venta.OrigenModulo}. Referencia: {venta.CodigoReferenciaOrigen}"
+        : "Factura generada desde venta normal."
                 };
 
                 _dbContext.Factura.Add(factura);
@@ -554,26 +606,22 @@ namespace Plataforma.Servicios.Implementacion
             if (texto.Length < 2)
                 return new List<ProductoVentaDto>();
 
-            // 1) Obtener idSede desde el usuario
-            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
-            if (!int.TryParse(cedulaStr, out int cedula))
-                throw new Exception("No se pudo obtener la cédula del usuario autenticado.");
+            var ctx = ObtenerContextoClaims(usuario);
 
-            var idSede = await _dbContext.Sedeempleado
-                .Where(se => se.Cedula == cedula)
-                .Select(se => se.Id_sede)
-                .FirstOrDefaultAsync();
-
-            if (idSede == 0)
-                throw new Exception("No se encontró una sede asociada al usuario.");
-
-            // 2) Buscar productos (maestro) por texto
             var productosBase = await _dbContext.Productos
-                .Where(p => p.Cod_Producto!.Contains(texto) || p.NombreProducto!.Contains(texto))
+                .Where(p =>
+                    p.ID_Empresa == ctx.EmpresaId &&
+                    p.Estado == 1 &&
+                    (
+                        p.Cod_Producto!.Contains(texto) ||
+                        p.NombreProducto!.Contains(texto)
+                    ))
                 .Select(p => new
                 {
                     Codigo = p.Cod_Producto!,
-                    Nombre = p.NombreProducto!
+                    Nombre = p.NombreProducto!,
+                    p.ValorUnidad,
+                    ValorVenta = p.ValorVentaProducto ?? 0m
                 })
                 .Take(30)
                 .ToListAsync();
@@ -583,39 +631,30 @@ namespace Plataforma.Servicios.Implementacion
 
             var codigos = productosBase.Select(x => x.Codigo).Distinct().ToList();
 
-            // 3) Consultar inventario de ESA sede (valores reales)
             var inventarios = await _dbContext.InventarioSedes
-                .Where(i => i.SedeId == idSede && codigos.Contains(i.ProductoId))
+                .Where(i => i.SedeId == ctx.SedeId && codigos.Contains(i.ProductoId))
                 .Select(i => new
                 {
                     Codigo = i.ProductoId,
-                    Stock = (decimal?)i.Cantidad,
-                    i.VUnidad,
-                    ValorVenta = i.PrecioUnitario // ✅ usar el precio real por sede
+                    Stock = i.Cantidad
                 })
                 .ToListAsync();
 
-            var invMap = inventarios.ToDictionary(x => x.Codigo, x => x);
+            var invMap = inventarios.ToDictionary(x => x.Codigo, x => x.Stock);
 
-            // 4) Armar DTO final combinando maestro + inventario sede
-            var result = new List<ProductoVentaDto>();
-
-            foreach (var p in productosBase)
-            {
-                invMap.TryGetValue(p.Codigo, out var inv);
-
-                result.Add(new ProductoVentaDto
+            return productosBase
+                .Where(p => invMap.ContainsKey(p.Codigo))
+                .Select(p => new ProductoVentaDto
                 {
                     codigo = p.Codigo,
                     nombre = p.Nombre,
-                    stockDisponible = inv?.Stock,        // null si no hay inventario en esa sede
-                    valorUnidad = inv?.VUnidad,          // real por sede
-                    valorVenta = inv?.ValorVenta         // real por sede (PrecioUnitario)
-                });
-            }
-
-            return result;
+                    valorUnidad = p.ValorUnidad,
+                    valorVenta = p.ValorVenta,
+                    stockDisponible = invMap[p.Codigo]
+                })
+                .ToList();
         }
+
         public async Task<bool> FacturarConPagosAsync(
         int idVenta,
         int idCliente,
@@ -670,7 +709,14 @@ namespace Plataforma.Servicios.Implementacion
                     SubTotal = baseFactura,
                     IVA = iva,
                     Total = totalFactura,
-                    EstadoFactura = "Emitida"
+                    EstadoFactura = "Emitida",
+
+                    TipoDocumento = "FacturaVenta",
+                    OrigenModulo = venta.OrigenModulo,
+                    CodigoReferenciaOrigen = venta.CodigoReferenciaOrigen,
+                    Observacion = !string.IsNullOrWhiteSpace(venta.CodigoReferenciaOrigen)
+        ? $"Factura generada desde {venta.OrigenModulo}. Referencia: {venta.CodigoReferenciaOrigen}"
+        : "Factura generada desde venta normal."
                 };
 
                 _dbContext.Factura.Add(factura);
@@ -760,6 +806,29 @@ namespace Plataforma.Servicios.Implementacion
                 .ThenInclude(v => v.Pedidos)
                 .OrderByDescending(f => f.FechaEmision)
                 .ToListAsync();
+        }
+
+        //Helpers
+        private (int Cedula, string EmpresaId, int SedeId, int PdvId) ObtenerContextoClaims(ClaimsPrincipal usuario)
+        {
+            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
+            var empresaId = usuario.FindFirst("EmpresaId")?.Value;
+            var sedeIdStr = usuario.FindFirst("SedeId")?.Value;
+            var pdvIdStr = usuario.FindFirst("PdvId")?.Value;
+
+            if (!int.TryParse(cedulaStr, out var cedula))
+                throw new Exception("No se pudo obtener la cédula del usuario autenticado.");
+
+            if (string.IsNullOrWhiteSpace(empresaId))
+                throw new Exception("No se pudo obtener la empresa del usuario autenticado.");
+
+            if (!int.TryParse(sedeIdStr, out var sedeId) || sedeId <= 0)
+                throw new Exception("No se pudo obtener la sede actual del usuario.");
+
+            if (!int.TryParse(pdvIdStr, out var pdvId) || pdvId <= 0)
+                throw new Exception("No se pudo obtener el PDV actual del usuario.");
+
+            return (cedula, empresaId, sedeId, pdvId);
         }
 
     }

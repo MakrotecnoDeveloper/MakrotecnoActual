@@ -14,6 +14,9 @@
                     <th>Cliente</th>
                     <th>Fecha</th>
                     <th>Estado</th>
+                    <th>Origen</th>
+                    <th>Tipo operación</th>
+                    <th>Referencia</th>
                     <th>Total</th>
                     <th>Acciones</th>
                 </tr>
@@ -26,6 +29,21 @@
                         <td>@venta.IdCliente</td>
                         <td>@venta.FechaVenta.ToString("dd/MM/yyyy")</td>
                         <td>@venta.EstadoVenta</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                @(venta.OrigenModulo ?? "VentaNormal")
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                @(venta.TipoOperacion ?? "Producto")
+                            </span>
+                        </td>
+
+                        <td>
+                            @(venta.CodigoReferenciaOrigen ?? "N/A")
+                        </td>
                         <td>$@venta.Total</td>
                         <td>
                             <a class="btn btn-sm btn-primary" asp-action="DetalleVenta" asp-route-idVenta="@venta.IdVenta">Ver Detalle</a>

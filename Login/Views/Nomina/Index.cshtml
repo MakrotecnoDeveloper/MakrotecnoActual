@@ -50,12 +50,28 @@
                                 <td>@item.FechaPago?.ToString("yyyy-MM-dd")</td>
                                 <td>@item.Estado</td>
                                 <td>
-                                    <form asp-action="GenerarNovedadesDesdeCierreCaja" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="idPeriodo" value="@item.IdPeriodo" />
-                                        <button type="submit" class="btn btn-sm btn-primary">Generar novedades desde cierre</button>
-                                    </form>
-                                    <a asp-action="Liquidaciones" asp-route-idPeriodo="@item.IdPeriodo" class="btn btn-sm btn-dark">Liquidaciones</a>
+                                    @if (item.Estado == "Abierto")
+                                    {
+                                        <form asp-action="GenerarNovedadesDesdeCierre" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="idPeriodo" value="@item.IdPeriodo" />
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                Generar novedades desde cierre
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (item.Estado == "Calculado")
+                                    {
+                                        <a asp-action="Liquidaciones" asp-route-idPeriodo="@item.IdPeriodo" class="btn btn-sm btn-success">
+                                            Liquidaciones
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-secondary" disabled>
+                                            Liquidaciones bloqueadas
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }

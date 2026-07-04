@@ -36,6 +36,7 @@ namespace Plataforma.Servicios.Implementacion
                 join c in _dbContext.CategoriaProductos on p.IdCatepro equals c.IdCateProducto into catJoin
                 from cat in catJoin.DefaultIfEmpty()
                 where inv.SedeId == ctx.IdSede
+                      && p.ID_Empresa == ctx.EmpresaId
                       && inv.Cantidad > 0
                       && p.Estado == 1
                 select cat != null ? (cat.Descripcion ?? "Sin categoría") : "Sin categoría"
@@ -67,6 +68,7 @@ namespace Plataforma.Servicios.Implementacion
                 join c in _dbContext.CategoriaProductos on p.IdCatepro equals c.IdCateProducto into catJoin
                 from cat in catJoin.DefaultIfEmpty()
                 where inv.SedeId == ctx.IdSede
+                      && p.ID_Empresa == ctx.EmpresaId
                       && inv.Cantidad > 0
                       && p.Estado == 1
                 select new PosProductoVm
@@ -122,6 +124,7 @@ namespace Plataforma.Servicios.Implementacion
                 join c in _dbContext.CategoriaProductos on p.IdCatepro equals c.IdCateProducto into catJoin
                 from cat in catJoin.DefaultIfEmpty()
                 where inv.SedeId == ctx.IdSede
+                      && p.ID_Empresa == ctx.EmpresaId
                       && inv.Cantidad > 0
                       && p.Estado == 1
                       && p.Cod_Producto == codigo
@@ -163,6 +166,7 @@ namespace Plataforma.Servicios.Implementacion
                     from inv in _dbContext.InventarioSedes
                     join p in _dbContext.Productos on inv.ProductoId equals p.Cod_Producto
                     where inv.SedeId == ctx.IdSede
+                          && p.ID_Empresa == ctx.EmpresaId
                           && codigos.Contains(inv.ProductoId)
                           && p.Estado == 1
                     select new
@@ -253,7 +257,13 @@ namespace Plataforma.Servicios.Implementacion
                         MetodoPago = ConstruirMetodoPago(request),
                         Total = 0,
                         Conceptos = request.Conceptos ?? "",
-                        TipoVenta = "Normal"
+                        TipoVenta = "Normal",
+
+                        TipoOperacion = "Producto",
+                        OrigenModulo = "POS",
+                        IdOrigenModulo = null,
+                        CodigoReferenciaOrigen = null,
+                        ObservacionVenta = "Venta facturada directamente desde POS."
                     };
 
                     _dbContext.Ventas.Add(venta);
@@ -322,6 +332,12 @@ namespace Plataforma.Servicios.Implementacion
                         IVA = ivaTotal,
                         Total = totalGeneral,
                         EstadoFactura = "Generada",
+
+                        TipoDocumento = "FacturaVenta",
+                        OrigenModulo = venta.OrigenModulo,
+                        CodigoReferenciaOrigen = venta.CodigoReferenciaOrigen,
+                        Observacion = "Factura generada desde POS.",
+
                         EsElectronica = false,
                         EstadoDian = "NoAplica"
                     };
@@ -377,37 +393,28 @@ namespace Plataforma.Servicios.Implementacion
             }
         }
 
-        private async Task<(int Cedula, int IdSede, int InfoPdvId, string? NombreSede)> ObtenerContextoCajaAsync(ClaimsPrincipal usuario)
+        //Helpers
+        private Task<(int Cedula, string EmpresaId, int IdSede, int InfoPdvId, string? NombreSede)> ObtenerContextoCajaAsync(ClaimsPrincipal usuario)
         {
-            var cedulaClaim = usuario.FindFirst("Cedula")?.Value;
+            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
+            var empresaId = usuario.FindFirst("EmpresaId")?.Value;
+            var sedeIdStr = usuario.FindFirst("SedeId")?.Value;
+            var pdvIdStr = usuario.FindFirst("PdvId")?.Value;
+            var nombreSede = usuario.FindFirst("NombreSede")?.Value;
 
-            if (string.IsNullOrWhiteSpace(cedulaClaim))
+            if (!int.TryParse(cedulaStr, out int cedula))
                 throw new Exception("No se encontró la cédula del usuario autenticado.");
 
-            if (!int.TryParse(cedulaClaim, out int cedula))
-                throw new Exception("La cédula del usuario autenticado no es válida.");
+            if (string.IsNullOrWhiteSpace(empresaId))
+                throw new Exception("No se encontró la empresa actual del usuario.");
 
-            var sede = await (
-                from se in _dbContext.Sedeempleado
-                join s in _dbContext.Sede on se.Id_sede equals s.Id_sede
-                where se.Cedula == cedula
-                select new
-                {
-                    s.Id_sede,
-                    s.NombreSede
-                }
-            ).FirstOrDefaultAsync();
+            if (!int.TryParse(sedeIdStr, out int idSede) || idSede <= 0)
+                throw new Exception("No se encontró la sede actual del usuario.");
 
-            if (sede == null)
-                throw new Exception("El cajero no tiene una sede asignada.");
+            if (!int.TryParse(pdvIdStr, out int pdvId) || pdvId <= 0)
+                throw new Exception("No se encontró el PDV actual del usuario.");
 
-            var pdv = await _dbContext.Infopdv
-                .FirstOrDefaultAsync(x => x.Id_Sede == sede.Id_sede);
-
-            if (pdv == null)
-                throw new Exception("La sede del cajero no tiene un PDV configurado.");
-
-            return (cedula, sede.Id_sede, pdv.InfopdvId, sede.NombreSede);
+            return Task.FromResult((cedula, empresaId, idSede, pdvId, nombreSede));
         }
 
         private static string ConstruirMetodoPago(PosCrearVentaRequest request)
@@ -431,6 +438,27 @@ namespace Plataforma.Servicios.Implementacion
                                  f.NumeroFactura.StartsWith($"{prefijo}-{fecha}-"));
 
             return $"{prefijo}-{fecha}-{(consecutivoHoy + 1):D4}";
+        }
+        private (int Cedula, string EmpresaId, int SedeId, int PdvId) ObtenerContextoClaims(ClaimsPrincipal usuario)
+        {
+            var cedulaStr = usuario.FindFirst("Cedula")?.Value;
+            var empresaId = usuario.FindFirst("EmpresaId")?.Value;
+            var sedeIdStr = usuario.FindFirst("SedeId")?.Value;
+            var pdvIdStr = usuario.FindFirst("PdvId")?.Value;
+
+            if (!int.TryParse(cedulaStr, out var cedula))
+                throw new Exception("No se pudo obtener la cédula del usuario autenticado.");
+
+            if (string.IsNullOrWhiteSpace(empresaId))
+                throw new Exception("No se pudo obtener la empresa del usuario autenticado.");
+
+            if (!int.TryParse(sedeIdStr, out var sedeId) || sedeId <= 0)
+                throw new Exception("No se pudo obtener la sede actual del usuario.");
+
+            if (!int.TryParse(pdvIdStr, out var pdvId) || pdvId <= 0)
+                throw new Exception("No se pudo obtener el PDV actual del usuario.");
+
+            return (cedula, empresaId, sedeId, pdvId);
         }
     }
 }

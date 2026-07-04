@@ -17,4 +17,5 @@ public class Plataformasuscripcion
         public string? Contrasena { get; set; }
         public int CedulaEmpleado { get; set; }
         public int Estado { get; set; }
+        public string? TipoCuenta { get; set; }
 }

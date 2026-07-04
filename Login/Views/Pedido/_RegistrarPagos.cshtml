@@ -11,6 +11,22 @@
                 <div class="text-muted">
                     Venta <span class="fw-semibold">#@Model.IdVenta</span>
                 </div>
+                <div class="mt-2 d-flex flex-wrap gap-2">
+                    <span class="badge bg-secondary">
+                        Origen: @(Model.OrigenModulo ?? "VentaNormal")
+                    </span>
+
+                    <span class="badge bg-info text-dark">
+                        Tipo: @(Model.TipoOperacion ?? "Producto")
+                    </span>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CodigoReferenciaOrigen))
+                    {
+                        <span class="badge bg-dark">
+                            Ref: @Model.CodigoReferenciaOrigen
+                        </span>
+                    }
+                </div>
             </div>
 
             <a href="javascript:history.back()" class="btn btn-outline-secondary">
@@ -38,6 +54,12 @@
                                 @Model.TotalVenta.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
                             </div>
                             <input type="hidden" id="uiTotalVenta" value="@Model.TotalVenta" />
+                            @if (!string.IsNullOrWhiteSpace(Model.ObservacionVenta))
+                            {
+                                <div class="alert alert-light border mt-3 small">
+                                    <strong>Observación:</strong> @Model.ObservacionVenta
+                                </div>
+                            }
                         </div>
 
                         <hr class="my-3" />

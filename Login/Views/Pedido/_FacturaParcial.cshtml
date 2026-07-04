@@ -10,6 +10,9 @@
             <th>Número</th>
             <th>Cliente</th>
             <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Origen</th>
+            <th>Referencia</th>
             <th>Total</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -21,6 +24,17 @@
             <td>@Model.NumeroFactura</td>
             <td>@Model.Venta.IdCliente</td>
             <td>@Model.FechaEmision.ToShortDateString()</td>
+            <td>@(Model.TipoDocumento ?? "FacturaVenta")</td>
+
+            <td>
+                <span class="badge bg-secondary">
+                    @(Model.OrigenModulo ?? Model.Venta?.OrigenModulo ?? "VentaNormal")
+                </span>
+            </td>
+
+            <td>
+                @(Model.CodigoReferenciaOrigen ?? Model.Venta?.CodigoReferenciaOrigen ?? "N/A")
+            </td>
             <td>$@Model.Total</td>
             <td>@Model.EstadoFactura</td>
             <td>

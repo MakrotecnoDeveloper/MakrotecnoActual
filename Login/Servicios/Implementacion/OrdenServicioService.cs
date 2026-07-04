@@ -255,49 +255,88 @@ namespace Plataforma.Servicios.Implementacion
                 }
                 if (infoPdvId == 0)
                     throw new Exception("No se encontró un PDV válido para la sede.");
-                    // Crear venta (aunque no haya productos, subtotal es 0)
-                    var venta = new Ventas
-                    {
-                        EstadoVenta = "Pendiente",
-                        FechaVenta = DateTime.Now,
-                        IdCliente = ordenExistente.Dispositivo.IdCliente,
-                        Total = (decimal)orden.ValorPago,
-                        MetodoPago = "Pendiente",
-                        Cedula = cedula,
-                        CedulaCliente = cedulaCliente,
-                        Conceptos = $"Venta generada desde la orden #{orden.IdOrden}"
-                    };
+                // Crear venta (aunque no haya productos, subtotal es 0)
+                var codigoOrden = $"OS-{orden.IdOrden:D5}";
+
+                var venta = new Ventas
+                {
+                    EstadoVenta = "Confirmada",
+                    FechaVenta = DateTime.Now,
+                    IdCliente = ordenExistente.Dispositivo.IdCliente,
+                    Total = (decimal)orden.ValorPago,
+                    MetodoPago = "Pendiente",
+                    Cedula = cedula,
+                    CedulaCliente = ordenExistente.Dispositivo.CedulaCliente,
+                    Conceptos = $"Servicio técnico generado desde la orden {codigoOrden}",
+
+                    TipoVenta = "Normal",
+                    TipoOperacion = "Mixta",
+                    OrigenModulo = "ServicioTecnico",
+                    IdOrigenModulo = orden.IdOrden,
+                    CodigoReferenciaOrigen = codigoOrden,
+                    ObservacionVenta = $"Venta generada automáticamente al finalizar la orden de servicio {codigoOrden}."
+                };
 
                 _dbContext.Ventas.Add(venta);
                 await _dbContext.SaveChangesAsync(); // Genera IdVenta
+
                 var pedidosNuevos = new List<Pedidos>();
+
+                decimal totalRepuestos = 0;
+
                 foreach (var item in itemsHist)
-                {      
-                        pedidosNuevos.Add(new Pedidos
-                        {
-                            IdVenta = venta.IdVenta,
-                            Codigo = "SERVICIO_TECNICO",
-                            Stock = item.Stock,
-                            VNeto = item.ValorNetoProducto * item.Stock,
-                            VVenta = 0,
-                            InfopdvId = infoPdvId,
-                            FechaRegistro = DateTime.Now,
-                            SubTotal = 0
-                        });
-                    // Acumular para el registro final del servicio
-                }
-                // Registro extra: el servicio vendido (con el valor final al cliente)
-                pedidosNuevos.Add(new Pedidos
                 {
-                    IdVenta = venta.IdVenta,
-                    Codigo = "SERVICIO_TECNICO",   // puedes usar un código especial
-                    Stock = 1,    // o 1 si prefieres que sea un servicio único
-                    VNeto = 0,    // suma de los costos
-                    VVenta = 0,       // aquí va el valor final que cobras
-                    InfopdvId = infoPdvId,
-                    FechaRegistro = DateTime.Now,
-                    SubTotal = (decimal)orden.ValorPago      // valor de venta final
-                });
+                    if (string.IsNullOrWhiteSpace(item.Cod_Producto))
+                        continue;
+
+                    decimal valorUnitarioRepuesto = (decimal)item.ValorVentaProducto;
+                    decimal subtotalRepuesto = valorUnitarioRepuesto * item.Stock;
+
+                    totalRepuestos += subtotalRepuesto;
+
+                    pedidosNuevos.Add(new Pedidos
+                    {
+                        IdVenta = venta.IdVenta,
+                        Codigo = item.Cod_Producto,
+                        Stock = item.Stock,
+                        VNeto = item.ValorNetoProducto,
+                        VUnidad = item.ValorNetoProducto,
+                        VVenta = valorUnitarioRepuesto,
+                        InfopdvId = infoPdvId,
+                        FechaRegistro = DateTime.Now,
+                        IvaPorcentaje = 0,
+                        IvaValor = 0,
+                        SubTotal = subtotalRepuesto
+                    });
+                }
+
+                decimal totalOrden = (decimal)orden.ValorPago;
+                decimal valorManoObra = totalOrden - totalRepuestos;
+
+                if (valorManoObra < 0)
+                {
+                    throw new Exception(
+                        $"El valor total de la orden ({totalOrden:C0}) no puede ser menor que el total de repuestos ({totalRepuestos:C0})."
+                    );
+                }
+
+                if (valorManoObra > 0)
+                {
+                    pedidosNuevos.Add(new Pedidos
+                    {
+                        IdVenta = venta.IdVenta,
+                        Codigo = "SERVICIO_TECNICO",
+                        Stock = 1,
+                        VNeto = 0,
+                        VUnidad = 0,
+                        VVenta = valorManoObra,
+                        InfopdvId = infoPdvId,
+                        FechaRegistro = DateTime.Now,
+                        IvaPorcentaje = 0,
+                        IvaValor = 0,
+                        SubTotal = valorManoObra
+                    });
+                }
                 _dbContext.Pedidos.AddRange(pedidosNuevos);
                 await _dbContext.SaveChangesAsync();
             }

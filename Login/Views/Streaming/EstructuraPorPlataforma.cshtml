@@ -1,0 +1,1276 @@
+﻿@model List<Plataformas>
+
+@{
+    ViewData["Title"] = "Estructura por Plataforma";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .estructura-header {
+        border-left: 5px solid #007bff;
+    }
+
+    .cuenta-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .cuenta-card-header {
+        background: #343a40;
+        color: white;
+        padding: 12px 15px;
+    }
+
+    .cuenta-meta {
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .perfil-row {
+        border-bottom: 1px solid #e9ecef;
+        padding: 10px 0;
+    }
+
+        .perfil-row:last-child {
+            border-bottom: none;
+        }
+
+    .perfil-libre {
+        border: 1px dashed #adb5bd;
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 8px;
+    }
+
+    .badge-soft {
+        padding: 6px 9px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .accion-btn {
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+
+    .resumen-box {
+        border-radius: 8px;
+        padding: 14px;
+        color: white;
+        margin-bottom: 15px;
+    }
+
+        .resumen-box h4 {
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .resumen-box p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="container-fluid mt-4">
+
+        <div class="card estructura-header mb-4">
+            <div class="card-body">
+                <h2 class="mb-1">Estructura por Plataforma / Servicio</h2>
+                <p class="text-muted mb-0">
+                    Visualiza una plataforma, sus cuentas o planes, y los perfiles/clientes asociados.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Seleccionar plataforma o servicio
+            </div>
+
+            <div class="card-body">
+                <div class="form-row">
+
+                    <div class="form-group col-md-8">
+                        <label>Plataforma / Servicio</label>
+                        <select id="idPlataforma" class="form-control">
+                            <option value="">Seleccione una opción</option>
+
+                            @foreach (var plataforma in Model)
+                            {
+                                <option value="@plataforma.IdPlataforma">
+                                    @plataforma.NombrePltf
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-4 d-flex align-items-end">
+                        <button type="button"
+                                class="btn btn-primary btn-block"
+                                onclick="consultarEstructura()">
+                            Consultar estructura
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="resumenGeneral"></div>
+
+        <div id="contenedorEstructura"></div>
+
+    </div>
+    <div class="modal fade" id="modalEditarCuentaPlan" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title">Editar cuenta / plan</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="planIdPltfSuscripcion">
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Descripción cuenta / plan</label>
+                            <input type="text" id="planDescripcion" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Tipo cuenta</label>
+                            <select id="planTipoCuenta" class="form-control">
+                                <option value="">Sin definir</option>
+                                <option value="FIJA">FIJA</option>
+                                <option value="VARIABLE">VARIABLE</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Estado</label>
+                            <select id="planEstado" class="form-control">
+                                <option value="1">Activa</option>
+                                <option value="0">Inactiva</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Correo / referencia</label>
+                            <input type="text" id="planCorreo" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Contraseña / observación</label>
+                            <input type="text" id="planContrasena" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Cantidad / cupos</label>
+                            <input type="number" id="planCantidad" class="form-control" min="1">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Valor venta</label>
+                            <input type="number" id="planValorVenta" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Valor neto</label>
+                            <input type="number" id="planValorNeto" class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-primary" onclick="guardarCuentaPlan()">
+                        Guardar cambios
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modalAsignarCliente" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Asignar cliente / participante</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="asigIdPltfSuscripcion">
+
+                    <div class="alert alert-info">
+                        Busca el cliente por nombre, celular o correo. Luego selecciona el cliente y completa los datos de asignación.
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-10">
+                            <label>Buscar cliente / participante</label>
+                            <input type="text" id="asigTerminoCliente" class="form-control" placeholder="Nombre, celular o correo">
+                        </div>
+
+                        <div class="form-group col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary btn-block" onclick="buscarClienteAsignar()">
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="asigResultadoClientes" class="mb-3"></div>
+
+                    <input type="hidden" id="asigIdClienteStreaming">
+
+                    <div id="asigClienteSeleccionado" class="alert alert-secondary d-none"></div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Fecha inicio</label>
+                            <input type="datetime-local" id="asigFechaInicio" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Fecha fin</label>
+                            <input type="datetime-local" id="asigFechaFin" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Clave perfil</label>
+                            <input type="text" id="asigClavePerfil" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Cantidad</label>
+                            <input type="number" id="asigCantidad" class="form-control" value="1" min="1">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>PPM</label>
+                            <select id="asigPpm" class="form-control">
+                                <option value="Perfil">Perfil</option>
+                                <option value="Pantalla">Pantalla</option>
+                                <option value="Meses">Meses</option>
+                                <option value="Mensualidad">Mensualidad</option>
+                                <option value="Participante">Participante</option>
+                                <option value="Cupo">Cupo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Valor venta</label>
+                            <input type="number" id="asigValorVenta" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Valor neto</label>
+                            <input type="number" id="asigValorNeto" class="form-control">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Estado</label>
+                            <select id="asigEstado" class="form-control">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-primary" onclick="guardarAsignacionCliente()">
+                        Asignar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEditarPerfilCuenta" tabindex="-1" role="dialog" aria-labelledby="modalEditarPerfilCuentaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="modalEditarPerfilCuentaLabel">
+                        Modificar / Renovar perfil o participante
+                    </h5>
+
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="editPerfilIdClientePlataforma">
+                    <input type="hidden" id="editPerfilIdPltfSuscripcion">
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Fecha inicio</label>
+                            <input type="datetime-local" class="form-control" id="editPerfilFechaIniPago">
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label>Fecha fin</label>
+                            <input type="datetime-local" class="form-control" id="editPerfilFechaFinPago">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Clave perfil</label>
+                            <input type="text" class="form-control" id="editPerfilClavePerfil">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Cantidad</label>
+                            <input type="number" class="form-control" id="editPerfilCantidad" min="1">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>PPM</label>
+                            <select class="form-control" id="editPerfilPpm">
+                                <option value="Pantalla">Pantalla</option>
+                                <option value="Perfil">Perfil</option>
+                                <option value="Meses">Meses</option>
+                                <option value="Mensualidad">Mensualidad</option>
+                                <option value="Participante">Participante</option>
+                                <option value="Cupo">Cupo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Valor venta</label>
+                            <input type="number" class="form-control" id="editPerfilValorVenta">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Valor neto</label>
+                            <input type="number" class="form-control" id="editPerfilValorNeto">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Estado</label>
+                            <select class="form-control" id="editPerfilEstado">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        Usa esta opción para renovar fechas, modificar clave de perfil, valores o estado del perfil/participante.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-primary" onclick="guardarCambiosPerfilCuenta()">
+                        Guardar cambios
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        document.getElementById("idPlataforma").addEventListener("change", function () {
+            if (this.value) {
+                consultarEstructura();
+            }
+        });
+
+        async function consultarEstructura() {
+            const idPlataforma = document.getElementById("idPlataforma").value;
+
+            if (!idPlataforma) {
+                document.getElementById("contenedorEstructura").innerHTML = `
+                    <div class="alert alert-warning">
+                        Debe seleccionar una plataforma o servicio.
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById("resumenGeneral").innerHTML = "";
+            document.getElementById("contenedorEstructura").innerHTML = `
+                <div class="alert alert-info">
+                    Cargando estructura...
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/Streaming/ObtenerEstructuraPorPlataforma?idPlataforma=${idPlataforma}`);
+                const data = await leerJsonSeguro(response);
+
+                pintarEstructura(data.datos || []);
+
+            } catch (error) {
+                console.error(error);
+
+                document.getElementById("contenedorEstructura").innerHTML = `
+                    <div class="alert alert-danger">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function pintarEstructura(cuentas) {
+            const resumen = document.getElementById("resumenGeneral");
+            const contenedor = document.getElementById("contenedorEstructura");
+
+            if (!cuentas || cuentas.length === 0) {
+                resumen.innerHTML = "";
+                contenedor.innerHTML = `
+                    <div class="alert alert-warning">
+                        No se encontraron cuentas o planes para esta plataforma.
+                    </div>
+                `;
+                return;
+            }
+
+            const totalCuentas = cuentas.length;
+            const totalAsignados = cuentas.reduce((acc, c) => acc + (c.totalAsignados || 0), 0);
+            const totalDisponibles = cuentas.reduce((acc, c) => acc + (c.cuposDisponibles || 0), 0);
+            const totalVencidos = cuentas.reduce((acc, c) => acc + (c.totalVencidos || 0), 0);
+            const totalProximos = cuentas.reduce((acc, c) => acc + (c.totalProximos || 0), 0);
+            const totalAlDia = cuentas.reduce((acc, c) => acc + (c.totalAlDia || 0), 0);
+
+            resumen.innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-info">
+                            <h4>${totalCuentas}</h4>
+                            <p>Cuentas / planes</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-primary">
+                            <h4>${totalAsignados}</h4>
+                            <p>Asignados</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-secondary">
+                            <h4>${totalDisponibles}</h4>
+                            <p>Disponibles</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-danger">
+                            <h4>${totalVencidos}</h4>
+                            <p>Vencidos</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-warning text-dark">
+                            <h4>${totalProximos}</h4>
+                            <p>Próximos</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="resumen-box bg-success">
+                            <h4>${totalAlDia}</h4>
+                            <p>Al día</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let html = "";
+
+            cuentas.forEach(cuenta => {
+                html += pintarCuenta(cuenta);
+            });
+
+            contenedor.innerHTML = html;
+        }
+
+        function pintarCuenta(cuenta) {
+            const porcentaje = calcularPorcentajeOcupacion(cuenta.totalAsignados, cuenta.cantidad);
+
+            let html = `
+                <div class="cuenta-card">
+
+                    <div class="cuenta-card-header">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="mb-1">
+                                    ${escaparHtml(cuenta.descripcionCuenta || 'Sin descripción')}
+                                </h5>
+
+                                <small>
+                                    ${escaparHtml(cuenta.nombrePlataforma || '')}
+                                </small>
+                            </div>
+
+                            <div class="text-right">
+                                ${pintarTipoCuenta(cuenta.tipoCuenta)}
+                                ${pintarEstadoCuenta(cuenta.estadoCuenta)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="cuenta-meta">
+                                    <strong>Correo / referencia:</strong><br>
+                                    ${escaparHtml(cuenta.correoPlataforma || 'No registrado')}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="cuenta-meta">
+                                    <strong>Contraseña / observación:</strong><br>
+                                    ${escaparHtml(cuenta.contrasenaPlataforma || 'No registrada')}
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="cuenta-meta">
+                                    <strong>Valor venta:</strong><br>
+                                    ${formatearMoneda(cuenta.valorVenta)}
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="cuenta-meta">
+                                    <strong>Cupos:</strong><br>
+                                    ${cuenta.totalAsignados || 0} / ${cuenta.cantidad || 0}
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="cuenta-meta">
+                                    <strong>Disponibles:</strong><br>
+                                    ${cuenta.cuposDisponibles || 0}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 style="width: ${porcentaje}%"
+                                 aria-valuenow="${porcentaje}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <span class="badge badge-success">
+                                    Al día: ${cuenta.totalAlDia || 0}
+                                </span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <span class="badge badge-warning">
+                                    Próximos: ${cuenta.totalProximos || 0}
+                                </span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <span class="badge badge-danger">
+                                    Vencidos: ${cuenta.totalVencidos || 0}
+                                </span>
+                            </div>
+
+                            <div class="col-md-3">
+                                <span class="badge badge-secondary">
+                                    Libres: ${cuenta.cuposDisponibles || 0}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm mb-2"
+                                    type="button"
+                                    data-toggle="collapse"
+                                    data-target="#perfiles_${cuenta.idPltfSuscripcion}">
+                                Ver perfiles / participantes
+                            </button>
+
+                                    <button class="btn btn-outline-secondary btn-sm mb-2"
+                                            type="button"
+                                            onclick='abrirModalEditarCuentaPlan(${JSON.stringify(cuenta)})'>
+                                        Editar cuenta / plan
+                                    </button>
+                        </div>
+
+                        <div class="collapse show" id="perfiles_${cuenta.idPltfSuscripcion}">
+                            ${pintarPerfiles(cuenta)}
+                        </div>
+
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function pintarPerfiles(cuenta) {
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-2">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Perfil / participante</th>
+                                <th>Celular</th>
+                                <th>Clave perfil</th>
+                                <th>Inicio</th>
+                                <th>Fin</th>
+                                <th>Días</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (!cuenta.perfiles || cuenta.perfiles.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            No hay perfiles o participantes asignados.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                cuenta.perfiles.forEach(perfil => {
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${escaparHtml(perfil.nombreCliente || '')}</strong><br>
+                                <small>${escaparHtml(perfil.correoCliente || '')}</small>
+                            </td>
+
+                            <td>${escaparHtml(perfil.celularCliente || '')}</td>
+
+                            <td>${escaparHtml(perfil.clavePerfil || '')}</td>
+
+                            <td>${formatearFecha(perfil.fechaIniPago)}</td>
+
+                            <td>${formatearFecha(perfil.fechaFinPago)}</td>
+
+                            <td>${perfil.diasParaVencer}</td>
+
+                            <td>${pintarEstadoCalculado(perfil.estadoCalculado)}</td>
+
+                            <td>
+                                   <button class="btn btn-info btn-sm accion-btn"
+                                            title="Modificar / renovar"
+                                            onclick='abrirModalEditarCuenta(${JSON.stringify(mapearPerfilParaModal(perfil, cuenta))})'>
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+
+                                <a href="https://wa.me/${limpiarCelularWhatsapp(perfil.celularCliente)}?text=${crearMensajeWhatsapp(perfil, cuenta)}"
+                                   class="btn btn-success btn-sm accion-btn"
+                                   title="WhatsApp"
+                                   target="_blank">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            for (let i = 0; i < (cuenta.cuposDisponibles || 0); i++) {
+                html += `
+                    <tr>
+                        <td>
+                            <span class="text-muted">
+                                Perfil / cupo disponible
+                            </span>
+                        </td>
+
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+
+                        <td>
+                            <span class="badge badge-secondary">
+                                Disponible
+                            </span>
+                        </td>
+
+                        <td>
+                                    <button class="btn btn-primary btn-sm accion-btn"
+                                            title="Asignar cliente / participante"
+                                            onclick='abrirModalAsignarCliente(${JSON.stringify(cuenta)})'>
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return html;
+        }
+
+                function mapearPerfilParaModal(perfil, cuenta) {
+            return {
+                idClientePlataforma: perfil.idClientePlataforma,
+                idPltfSuscripcion: cuenta.idPltfSuscripcion,
+
+                fechaIniPago: perfil.fechaIniPago,
+                fechaFinPago: perfil.fechaFinPago,
+
+                clavePerfil: perfil.clavePerfil,
+                cantidad: perfil.cantidad,
+                ppm: perfil.ppm,
+                valorVenta: perfil.valorVenta,
+                valorNeto: perfil.valorNeto,
+                estado: perfil.estado
+            };
+        }
+
+        function calcularPorcentajeOcupacion(totalAsignados, cantidad) {
+            const total = Number(cantidad || 0);
+            const usados = Number(totalAsignados || 0);
+
+            if (total <= 0) return 0;
+
+            const porcentaje = Math.round((usados / total) * 100);
+
+            if (porcentaje > 100) return 100;
+
+            return porcentaje;
+        }
+
+        function pintarEstadoCuenta(estado) {
+            if (estado === 1) {
+                return `<span class="badge badge-success ml-1">Activa</span>`;
+            }
+
+            return `<span class="badge badge-secondary ml-1">Inactiva</span>`;
+        }
+
+        function pintarTipoCuenta(tipoCuenta) {
+            if (!tipoCuenta) {
+                return `<span class="badge badge-light">Sin tipo</span>`;
+            }
+
+            if (String(tipoCuenta).toUpperCase() === "FIJA") {
+                return `<span class="badge badge-primary">FIJA</span>`;
+            }
+
+            if (String(tipoCuenta).toUpperCase() === "VARIABLE") {
+                return `<span class="badge badge-dark">VARIABLE</span>`;
+            }
+
+            return `<span class="badge badge-light">${escaparHtml(tipoCuenta)}</span>`;
+        }
+
+        function pintarEstadoCalculado(estado) {
+            if (estado === "Vencida") {
+                return `<span class="badge badge-danger">Vencida</span>`;
+            }
+
+            if (estado === "Próxima a vencer") {
+                return `<span class="badge badge-warning">Próxima</span>`;
+            }
+
+            if (estado === "Inactiva") {
+                return `<span class="badge badge-secondary">Inactiva</span>`;
+            }
+
+            return `<span class="badge badge-success">Al día</span>`;
+        }
+
+        function crearMensajeWhatsapp(perfil, cuenta) {
+            const mensaje =
+                `*---| ${cuenta.nombrePlataforma || ''} - ${cuenta.descripcionCuenta || ''} |---*\n` +
+                `- Cliente: ${perfil.nombreCliente || ''}\n` +
+                `- Correo / referencia: ${cuenta.correoPlataforma || ''}\n` +
+                `- Contraseña / observación: ${cuenta.contrasenaPlataforma || ''}\n` +
+                `- Clave perfil: ${perfil.clavePerfil || ''}\n` +
+                `- Fecha Inicio: ${formatearFecha(perfil.fechaIniPago)}\n` +
+                `- Fecha Fin: ${formatearFecha(perfil.fechaFinPago)}\n` +
+                `- Estado: ${perfil.estadoCalculado || ''}`;
+
+            return encodeURIComponent(mensaje);
+        }
+
+        async function leerJsonSeguro(response) {
+            const texto = await response.text();
+
+            let data;
+
+            try {
+                data = JSON.parse(texto);
+            } catch {
+                console.error("Respuesta no JSON:", texto);
+                throw new Error("El servidor devolvió una respuesta no válida.");
+            }
+
+            if (!response.ok || data.ok === false) {
+                throw new Error(data.mensaje || "Error en la solicitud.");
+            }
+
+            return data;
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return "";
+
+            return new Date(fecha).toLocaleDateString("es-CO");
+        }
+
+        function formatearMoneda(valor) {
+            const numero = Number(valor || 0);
+
+            return new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0
+            }).format(numero);
+        }
+
+        function limpiarCelularWhatsapp(celular) {
+            if (!celular) return "";
+
+            let limpio = String(celular).replace(/\D/g, "");
+
+            if (limpio.startsWith("57")) {
+                return limpio;
+            }
+
+            if (limpio.length === 10) {
+                return "57" + limpio;
+            }
+
+            return limpio;
+        }
+
+        function escaparHtml(valor) {
+            if (valor === null || valor === undefined) return "";
+
+            return String(valor)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+                function abrirModalEditarCuentaPlan(cuenta) {
+            document.getElementById("planIdPltfSuscripcion").value = cuenta.idPltfSuscripcion || 0;
+            document.getElementById("planDescripcion").value = cuenta.descripcionCuenta || "";
+            document.getElementById("planTipoCuenta").value = cuenta.tipoCuenta || "";
+            document.getElementById("planEstado").value = cuenta.estadoCuenta ?? 1;
+            document.getElementById("planCorreo").value = cuenta.correoPlataforma || "";
+            document.getElementById("planContrasena").value = cuenta.contrasenaPlataforma || "";
+            document.getElementById("planCantidad").value = cuenta.cantidad || 1;
+            document.getElementById("planValorVenta").value = cuenta.valorVenta || 0;
+            document.getElementById("planValorNeto").value = cuenta.valorNeto || 0;
+
+            $("#modalEditarCuentaPlan").modal("show");
+        }
+
+        async function guardarCuentaPlan() {
+            const model = {
+                idPltfSuscripcion: parseInt(document.getElementById("planIdPltfSuscripcion").value || "0"),
+                descripcion: document.getElementById("planDescripcion").value,
+                tipoCuenta: document.getElementById("planTipoCuenta").value,
+                correo: document.getElementById("planCorreo").value,
+                contrasena: document.getElementById("planContrasena").value,
+                cantidad: parseInt(document.getElementById("planCantidad").value || "0"),
+                valorVenta: parseInt(document.getElementById("planValorVenta").value || "0"),
+                valorNeto: parseInt(document.getElementById("planValorNeto").value || "0"),
+                estado: parseInt(document.getElementById("planEstado").value || "0")
+            };
+
+            if (model.idPltfSuscripcion <= 0) {
+                alert("No se encontró la cuenta / plan.");
+                return;
+            }
+
+            if (!model.descripcion.trim()) {
+                alert("Debe ingresar una descripción.");
+                return;
+            }
+
+            if (model.cantidad <= 0) {
+                alert("La cantidad / cupos debe ser mayor a cero.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/Streaming/ActualizarCuentaPlan", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(model)
+                });
+
+                const data = await leerJsonSeguro(response);
+
+                alert(data.mensaje || "Cuenta / plan actualizado correctamente.");
+
+                $("#modalEditarCuentaPlan").modal("hide");
+
+                await consultarEstructura();
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+
+        function abrirModalAsignarCliente(cuenta) {
+            document.getElementById("asigIdPltfSuscripcion").value = cuenta.idPltfSuscripcion || 0;
+            document.getElementById("asigIdClienteStreaming").value = "";
+            document.getElementById("asigTerminoCliente").value = "";
+            document.getElementById("asigResultadoClientes").innerHTML = "";
+            document.getElementById("asigClienteSeleccionado").classList.add("d-none");
+            document.getElementById("asigClienteSeleccionado").innerHTML = "";
+
+            document.getElementById("asigFechaInicio").value = obtenerFechaHoyInput();
+            document.getElementById("asigFechaFin").value = obtenerFechaMasUnMesInput();
+
+            document.getElementById("asigClavePerfil").value = "";
+            document.getElementById("asigCantidad").value = 1;
+            document.getElementById("asigPpm").value = "Perfil";
+            document.getElementById("asigValorVenta").value = cuenta.valorVenta || 0;
+            document.getElementById("asigValorNeto").value = cuenta.valorNeto || 0;
+            document.getElementById("asigEstado").value = 1;
+
+            $("#modalAsignarCliente").modal("show");
+        }
+
+        async function buscarClienteAsignar() {
+            const termino = document.getElementById("asigTerminoCliente").value.trim();
+
+            if (!termino) {
+                alert("Debe ingresar nombre, celular o correo.");
+                return;
+            }
+
+            const resultado = document.getElementById("asigResultadoClientes");
+
+            resultado.innerHTML = `
+                <div class="alert alert-info">
+                    Buscando cliente...
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/Producto/BuscarClientesStreaming?termino=${encodeURIComponent(termino)}`);
+                const data = await leerJsonSeguro(response);
+
+                const clientes = data.clientes || [];
+
+                if (clientes.length === 0) {
+                    resultado.innerHTML = `
+                        <div class="alert alert-warning">
+                            No se encontraron clientes.
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="list-group">`;
+
+                clientes.forEach(cliente => {
+                    const ids = cliente.idsClienteStreaming || cliente.idClienteStreaming || "";
+                    const idReal = String(ids).split(",")[0];
+
+                    html += `
+                        <button type="button"
+                                class="list-group-item list-group-item-action"
+                                onclick="seleccionarClienteAsignar(
+                                    '${idReal}',
+                                    '${escaparAtributo(cliente.nombreCliente || '')}',
+                                    '${escaparAtributo(cliente.celularCliente || '')}',
+                                    '${escaparAtributo(cliente.correoCliente || '')}'
+                                )">
+                            <strong>${escaparHtml(cliente.nombreCliente || 'Sin nombre')}</strong><br>
+                            <small>
+                                Celular: ${escaparHtml(cliente.celularCliente || 'No registrado')} |
+                                Correo: ${escaparHtml(cliente.correoCliente || 'No registrado')}
+                            </small>
+                        </button>
+                    `;
+                });
+
+                html += `</div>`;
+
+                resultado.innerHTML = html;
+
+            } catch (error) {
+                console.error(error);
+                resultado.innerHTML = `
+                    <div class="alert alert-danger">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function seleccionarClienteAsignar(idClienteStreaming, nombre, celular, correo) {
+            document.getElementById("asigIdClienteStreaming").value = idClienteStreaming;
+
+            const seleccionado = document.getElementById("asigClienteSeleccionado");
+
+            seleccionado.classList.remove("d-none");
+            seleccionado.innerHTML = `
+                <strong>Cliente seleccionado:</strong><br>
+                ${escaparHtml(nombre)}<br>
+                Celular: ${escaparHtml(celular || 'No registrado')} |
+                Correo: ${escaparHtml(correo || 'No registrado')}
+            `;
+
+            document.getElementById("asigResultadoClientes").innerHTML = "";
+        }
+
+        async function guardarAsignacionCliente() {
+            const model = {
+                idPltfSuscripcion: parseInt(document.getElementById("asigIdPltfSuscripcion").value || "0"),
+                idClienteStreaming: parseInt(document.getElementById("asigIdClienteStreaming").value || "0"),
+                fechaIniPago: document.getElementById("asigFechaInicio").value,
+                fechaFinPago: document.getElementById("asigFechaFin").value,
+                clavePerfil: document.getElementById("asigClavePerfil").value,
+                cantidad: parseInt(document.getElementById("asigCantidad").value || "0"),
+                ppm: document.getElementById("asigPpm").value,
+                valorVenta: parseInt(document.getElementById("asigValorVenta").value || "0"),
+                valorNeto: parseInt(document.getElementById("asigValorNeto").value || "0"),
+                estado: parseInt(document.getElementById("asigEstado").value || "0")
+            };
+
+            if (model.idPltfSuscripcion <= 0) {
+                alert("No se encontró la cuenta / plan.");
+                return;
+            }
+
+            if (model.idClienteStreaming <= 0) {
+                alert("Debe seleccionar un cliente.");
+                return;
+            }
+
+            if (!model.fechaIniPago || !model.fechaFinPago) {
+                alert("Debe ingresar fecha inicio y fecha fin.");
+                return;
+            }
+
+            if (new Date(model.fechaFinPago) < new Date(model.fechaIniPago)) {
+                alert("La fecha fin no puede ser menor que la fecha inicio.");
+                return;
+            }
+
+            if (model.cantidad <= 0) {
+                alert("La cantidad debe ser mayor a cero.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/Streaming/AsignarClienteACuenta", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(model)
+                });
+
+                const data = await leerJsonSeguro(response);
+
+                alert(data.mensaje || "Cliente asignado correctamente.");
+
+                $("#modalAsignarCliente").modal("hide");
+
+                await consultarEstructura();
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+        function obtenerFechaHoyInput() {
+            const d = new Date();
+
+            return formatearDateTimeLocal(d);
+        }
+
+        function obtenerFechaMasUnMesInput() {
+            const d = new Date();
+            d.setMonth(d.getMonth() + 1);
+
+            return formatearDateTimeLocal(d);
+        }
+
+        function formatearDateTimeLocal(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            const hours = String(d.getHours()).padStart(2, "0");
+            const minutes = String(d.getMinutes()).padStart(2, "0");
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function escaparAtributo(valor) {
+            if (valor === null || valor === undefined) return "";
+
+            return String(valor)
+                .replace(/\\/g, "\\\\")
+                .replace(/'/g, "\\'")
+                .replace(/"/g, "&quot;")
+                .replace(/\n/g, " ");
+        }
+                function abrirModalEditarCuenta(cuenta) {
+            document.getElementById("editPerfilIdClientePlataforma").value = cuenta.idClientePlataforma || 0;
+            document.getElementById("editPerfilIdPltfSuscripcion").value = cuenta.idPltfSuscripcion || 0;
+
+            document.getElementById("editPerfilFechaIniPago").value = formatearFechaInputEditar(cuenta.fechaIniPago || cuenta.fechaIni || cuenta.fechaInicio);
+            document.getElementById("editPerfilFechaFinPago").value = formatearFechaInputEditar(cuenta.fechaFinPago || cuenta.fechaFin || cuenta.fechaFinal);
+
+            document.getElementById("editPerfilClavePerfil").value = cuenta.clavePerfil || "";
+            document.getElementById("editPerfilCantidad").value = cuenta.cantidad || 1;
+            document.getElementById("editPerfilPpm").value = cuenta.ppm || "Perfil";
+            document.getElementById("editPerfilValorVenta").value = cuenta.valorVenta || 0;
+            document.getElementById("editPerfilValorNeto").value = cuenta.valorNeto || 0;
+            document.getElementById("editPerfilEstado").value = cuenta.estado ?? 1;
+
+            $("#modalEditarPerfilCuenta").modal("show");
+        }
+
+        function formatearFechaInputEditar(fecha) {
+            if (!fecha) return "";
+
+            const d = new Date(fecha);
+
+            if (isNaN(d.getTime())) return "";
+
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            const hours = String(d.getHours()).padStart(2, "0");
+            const minutes = String(d.getMinutes()).padStart(2, "0");
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        async function guardarCambiosPerfilCuenta() {
+            const model = {
+                idClientePlataforma: parseInt(document.getElementById("editPerfilIdClientePlataforma").value || "0"),
+                idPltfSuscripcion: parseInt(document.getElementById("editPerfilIdPltfSuscripcion").value || "0"),
+                fechaIniPago: document.getElementById("editPerfilFechaIniPago").value,
+                fechaFinPago: document.getElementById("editPerfilFechaFinPago").value,
+                clavePerfil: document.getElementById("editPerfilClavePerfil").value,
+                cantidad: parseInt(document.getElementById("editPerfilCantidad").value || "0"),
+                ppm: document.getElementById("editPerfilPpm").value,
+                valorVenta: parseInt(document.getElementById("editPerfilValorVenta").value || "0"),
+                valorNeto: parseInt(document.getElementById("editPerfilValorNeto").value || "0"),
+                estado: parseInt(document.getElementById("editPerfilEstado").value || "0")
+            };
+
+            if (model.idClientePlataforma <= 0) {
+                alert("No se encontró el perfil o participante a modificar.");
+                return;
+            }
+
+            if (!model.fechaIniPago || !model.fechaFinPago) {
+                alert("Debe ingresar fecha inicio y fecha fin.");
+                return;
+            }
+
+            if (new Date(model.fechaFinPago) < new Date(model.fechaIniPago)) {
+                alert("La fecha fin no puede ser menor que la fecha inicio.");
+                return;
+            }
+
+            if (model.cantidad <= 0) {
+                alert("La cantidad debe ser mayor a cero.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/Streaming/ActualizarPerfilCuenta", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(model)
+                });
+
+                const data = await leerJsonSeguro(response);
+
+                alert(data.mensaje || "Perfil actualizado correctamente.");
+
+                $("#modalEditarPerfilCuenta").modal("hide");
+
+                await consultarEstructura();
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+    </script>
+}
