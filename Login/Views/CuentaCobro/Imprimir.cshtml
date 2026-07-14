@@ -1,0 +1,487 @@
+﻿@model Plataforma.ViewModels.CuentasCobro.CuentaCobroDetalleVm
+
+@{
+    Layout = null;
+    var cultura = new System.Globalization.CultureInfo("es-CO");
+
+    var empresaNombre = Model.Empresa?.Nombre ?? "Makrotecno";
+    var empresaNit = Model.Empresa?.Id_empresa ?? "No registrado";
+    var empresaDireccion = Model.Empresa?.Direccion ?? "No registrada";
+    var empresaTelefono = Model.Empresa?.Telefono ?? "No registrado";
+    var empresaPais = Model.Empresa?.Pais ?? "";
+
+    var banco = Model.CuentaBancaria?.Banco ?? "No registrado";
+    var tipoCuenta = Model.CuentaBancaria?.TipoCuenta ?? "No registrado";
+    var numeroCuenta = Model.CuentaBancaria?.NumeroCuenta ?? "No registrado";
+    var titularCuenta = Model.CuentaBancaria?.TitularCuenta ?? empresaNombre;
+    var documentoTitular = Model.CuentaBancaria?.DocumentoTitular ?? empresaNit;
+
+    var fechaAprobacion = Model.FechaAprobacionDocumento.HasValue
+        ? Model.FechaAprobacionDocumento.Value.ToString("dd/MM/yyyy")
+        : "10/05/2024";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Cuenta de cobro @Model.NumeroCuentaCobro</title>
+
+    <style>
+        @@page {
+            size: letter;
+            margin: 16mm 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #e5e7eb;
+            color: #111;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+        }
+
+        .no-print {
+            width: 216mm;
+            margin: 15px auto;
+            text-align: right;
+        }
+
+        .btn-print {
+            background: #111827;
+            color: white;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-close {
+            background: white;
+            color: #111827;
+            border: 1px solid #9ca3af;
+            padding: 9px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+        .page {
+            width: 216mm;
+            min-height: 279mm;
+            background: white;
+            margin: 0 auto;
+            padding: 16mm 15mm;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .header-table td {
+            border: 1px solid #111;
+            vertical-align: middle;
+        }
+
+        .logo-cell {
+            width: 31mm;
+            height: 24mm;
+            text-align: center;
+            padding: 4px;
+        }
+
+        .logo {
+            max-width: 25mm;
+            max-height: 18mm;
+            object-fit: contain;
+        }
+
+        .title-cell {
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.25;
+            font-weight: normal;
+        }
+
+        .title-main {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .doc-table {
+            width: 50mm;
+            font-size: 11px;
+        }
+
+            .doc-table td {
+                border: 1px solid #111;
+                padding: 3px 5px;
+            }
+
+        .doc-label {
+            font-weight: 700;
+            width: 28mm;
+        }
+
+        .main-info {
+            margin-top: 14mm;
+            display: grid;
+            grid-template-columns: 1fr 44mm;
+            gap: 12mm;
+        }
+
+        .company-info {
+            line-height: 1.25;
+            font-size: 13px;
+        }
+
+        .date-info {
+            line-height: 1.4;
+            font-size: 13px;
+        }
+
+        .section-title {
+            margin-top: 6mm;
+            margin-bottom: 1mm;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .client-table td {
+            border: 1px solid #111;
+            padding: 2px 5px;
+            height: 18px;
+            font-size: 13px;
+        }
+
+        .client-label {
+            width: 45%;
+            font-weight: 500;
+        }
+
+        .service-detail {
+            border-bottom: 1px solid #111;
+            min-height: 31px;
+            line-height: 1.35;
+            padding: 2px 0 5px 0;
+            font-size: 12.5px;
+        }
+
+        .values-table {
+            margin-top: 5mm;
+        }
+
+            .values-table td {
+                border: 1px solid #111;
+                padding: 2px 6px;
+                height: 18px;
+                font-size: 13px;
+            }
+
+        .values-label {
+            width: 45%;
+        }
+
+        .value-final td {
+            background: #d9e2f3;
+            font-weight: 700;
+        }
+
+        .declaration {
+            margin-top: 15mm;
+        }
+
+        .declaration-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .declaration-text {
+            line-height: 1.35;
+            max-width: 145mm;
+        }
+
+        .signature-wrapper {
+            margin-top: 23mm;
+            text-align: center;
+        }
+
+        .signature-img {
+            max-width: 55mm;
+            max-height: 18mm;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto -2mm auto;
+        }
+
+        .signature-line {
+            width: 60mm;
+            border-top: 1px solid #111;
+            margin: 0 auto 3px auto;
+        }
+
+        .signature-label {
+            font-size: 13px;
+        }
+
+        .cc-line {
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .footer-note {
+            margin-top: 9mm;
+            font-size: 10px;
+            color: #555;
+            text-align: center;
+        }
+
+        a {
+            color: #0645ad;
+        }
+
+        @@media print {
+            body {
+                background: white;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .page {
+                margin: 0;
+                width: auto;
+                min-height: auto;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <button class="btn-close" onclick="window.close()">Cerrar</button>
+        <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+
+    <div class="page">
+
+        <!-- ENCABEZADO -->
+        <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    <img src="/img/Logo.png" alt="Logo" class="logo" />
+                </td>
+
+                <td class="title-cell">
+                    <div class="title-main">CUENTA DE COBRO</div>
+                    <div>N° @Model.NumeroCuentaCobro</div>
+                </td>
+
+                <td style="width: 50mm; padding:0;">
+                    <table class="doc-table">
+                        <tr>
+                            <td class="doc-label">CÓDIGO</td>
+                            <td>@Model.CodigoDocumento</td>
+                        </tr>
+                        <tr>
+                            <td class="doc-label">VERSIÓN</td>
+                            <td>@Model.VersionDocumento</td>
+                        </tr>
+                        <tr>
+                            <td class="doc-label">FECHA DE APROBACIÓN</td>
+                            <td>@fechaAprobacion</td>
+                        </tr>
+                        <tr>
+                            <td class="doc-label">PÁGINA</td>
+                            <td>1 de 1</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- DATOS EMPRESA / FECHA -->
+        <div class="main-info">
+            <div class="company-info">
+                <strong>@empresaNombre</strong><br />
+                <strong>NIT:</strong> @empresaNit<br />
+                <strong>Dirección:</strong> @empresaDireccion<br />
+                <strong>Teléfono:</strong> @empresaTelefono<br />
+
+                @* Si luego agregas Correo a Empresas, puedes activar esta línea:
+                   <strong>Correo:</strong> @Model.Empresa?.Correo<br />
+                *@
+
+                <strong>Tipo cuenta y Entidad:</strong> @tipoCuenta, @banco<br />
+                <strong>Número:</strong> @numeroCuenta<br />
+
+                @if (!string.IsNullOrWhiteSpace(Model.CuentaBancaria?.Convenio))
+                {
+                    <strong>Convenio:</strong> 
+                    @Model.CuentaBancaria.Convenio
+                
+                    <br />
+                }
+
+                <strong>Titular:</strong> @titularCuenta<br />
+                <strong>Documento titular:</strong> @documentoTitular
+            </div>
+
+            <div class="date-info">
+                <strong>Fecha:</strong> @Model.FechaCuentaCobro.ToString("dd/MM/yyyy")<br />
+                <strong>Ciudad:</strong> @(Model.Ciudad ?? "No registrada")<br />
+                <strong>Factura:</strong> @Model.NumeroFactura
+            </div>
+        </div>
+
+        <!-- DATOS CLIENTE -->
+        <div class="section-title">DATOS DEL CLIENTE</div>
+
+        <table class="client-table">
+            <tr>
+                <td class="client-label">Nombre:</td>
+                <td>@Model.NombreCliente</td>
+            </tr>
+            <tr>
+                <td class="client-label">Cédula/NIT:</td>
+                <td>@Model.DocumentoCliente</td>
+            </tr>
+            <tr>
+                <td class="client-label">Dirección:</td>
+                <td>@Model.DireccionCliente</td>
+            </tr>
+            <tr>
+                <td class="client-label">Teléfono:</td>
+                <td>@Model.TelefonoCliente</td>
+            </tr>
+            <tr>
+                <td class="client-label">Correo electrónico:</td>
+                <td>@Model.CorreoCliente</td>
+            </tr>
+            <tr>
+                <td class="client-label">Banco:</td>
+                <td>@(string.IsNullOrWhiteSpace(Model.BancoCliente) ? "N/A" : Model.BancoCliente)</td>
+            </tr>
+        </table>
+
+        <!-- DETALLE -->
+        <div class="section-title">DETALLE DEL SERVICIO / PRODUCTO</div>
+
+        <div class="service-detail">
+            @if (!string.IsNullOrWhiteSpace(Model.DetalleServicio))
+            {
+                @Model.DetalleServicio
+            }
+            else if (Model.Detalles != null && Model.Detalles.Any())
+            {
+                @string.Join(", ", Model.Detalles.Select(x => x.NombreProducto))
+            }
+            else
+            {
+                <span>Detalle no registrado.</span>
+            }
+        </div>
+
+        @if (Model.Detalles != null && Model.Detalles.Any())
+        {
+            <table class="values-table">
+                <tr>
+                    <td style="font-weight:700;">Producto</td>
+                    <td style="font-weight:700; width:22mm; text-align:right;">Cant.</td>
+                    <td style="font-weight:700; width:34mm; text-align:right;">Vr. Unitario</td>
+                    <td style="font-weight:700; width:34mm; text-align:right;">Total</td>
+                </tr>
+
+                @foreach (var item in Model.Detalles)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(item.CodigoProducto))
+                            {
+                                <span>@item.CodigoProducto - </span>
+                            }
+                            @item.NombreProducto
+                        </td>
+                        <td style="text-align:right;">@item.Cantidad.ToString("N2", cultura)</td>
+                        <td style="text-align:right;">@item.ValorUnitario.ToString("C0", cultura)</td>
+                        <td style="text-align:right;">@item.TotalLinea.ToString("C0", cultura)</td>
+                    </tr>
+                }
+            </table>
+        }
+
+        <!-- VALORES -->
+        <table class="values-table">
+            <tr>
+                <td class="values-label">Valor total del servicio/producto:</td>
+                <td>@Model.ValorTotalServicio.ToString("C0", cultura)</td>
+            </tr>
+            <tr>
+                <td class="values-label">Retención en la fuente:</td>
+                <td>@Model.RetencionFuente.ToString("C2", cultura)</td>
+            </tr>
+            <tr>
+                <td class="values-label">Otras deducciones:</td>
+                <td>@Model.OtrasDeducciones.ToString("C2", cultura)</td>
+            </tr>
+            <tr class="value-final">
+                <td class="values-label">VALOR NETO A PAGAR:</td>
+                <td>@Model.ValorNetoPagar.ToString("C0", cultura)</td>
+            </tr>
+        </table>
+
+        <!-- DECLARACIÓN -->
+        <div class="declaration">
+            <div class="declaration-title">DECLARACIÓN</div>
+
+            <div class="declaration-text">
+                @if (!string.IsNullOrWhiteSpace(Model.Declaracion))
+                {
+                    @Model.Declaracion
+                }
+                else
+                {
+                    <span>
+                        Declaro bajo la gravedad de juramento que los productos y/o servicios relacionados en la presente
+                        cuenta de cobro fueron efectivamente suministrados a @Model.NombreCliente, y que no tengo vínculo laboral con la empresa.
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- FIRMA -->
+        <div class="signature-wrapper">
+
+            @if (!string.IsNullOrWhiteSpace(Model.FirmaPath))
+            {
+                <img src="@Model.FirmaPath" alt="Firma" class="signature-img" />
+            }
+
+            <div class="signature-line"></div>
+            <div class="signature-label">Firma del contratista</div>
+
+            <div class="cc-line">
+                C.C. @Model.CedulaContratista de @(Model.CiudadExpedicionContratista ?? Model.Ciudad ?? "")
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Documento generado desde Makrotecno POS. Esta cuenta de cobro está asociada a la factura @Model.NumeroFactura.
+        </div>
+
+    </div>
+
+</body>
+</html>

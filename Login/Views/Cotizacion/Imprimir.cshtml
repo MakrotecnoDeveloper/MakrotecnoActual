@@ -1,0 +1,461 @@
+﻿@model Plataforma.ViewModels.Cotizacion.CotizacionDetalleVm
+
+@{
+    Layout = null;
+    var cultura = new System.Globalization.CultureInfo("es-CO");
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Cotización @Model.NumeroCotizacion</title>
+
+    <style>
+        @@page {
+            size: letter;
+            margin: 18mm 14mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #111827;
+            margin: 0;
+            font-size: 13px;
+            background: #f3f4f6;
+        }
+
+        .page {
+            width: 216mm;
+            min-height: 279mm;
+            background: #fff;
+            margin: 0 auto;
+            padding: 18mm 14mm;
+        }
+
+        .no-print {
+            width: 216mm;
+            margin: 15px auto;
+            text-align: right;
+        }
+
+        .btn-print {
+            background: #111827;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #111827;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo {
+            width: 82px;
+            height: 82px;
+            object-fit: contain;
+        }
+
+        .company-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .company-info {
+            font-size: 12px;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+
+        .doc-box {
+            text-align: right;
+        }
+
+        .doc-title {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #111827;
+            margin-bottom: 6px;
+        }
+
+        .doc-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .section {
+            margin-top: 16px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .info-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fafafa;
+        }
+
+        .row {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .label {
+            font-weight: 700;
+            color: #374151;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #111827;
+            color: #fff;
+            text-align: left;
+            padding: 8px;
+            font-size: 12px;
+            border: 1px solid #111827;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            vertical-align: top;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .totals-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 14px;
+        }
+
+        .totals {
+            width: 310px;
+        }
+
+            .totals td {
+                padding: 7px 8px;
+            }
+
+        .total-final {
+            background: #111827;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .observations {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 55px;
+            line-height: 1.4;
+            background: #fafafa;
+        }
+
+        .terms {
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 35px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: end;
+        }
+
+        .signature {
+            border-top: 1px solid #111827;
+            padding-top: 7px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .small-note {
+            margin-top: 25px;
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+
+        @@media print {
+            body {
+                background: #fff;
+            }
+
+            .page {
+                width: auto;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <button class="btn-print" onclick="window.print()">
+            Imprimir / Guardar PDF
+        </button>
+    </div>
+
+    <div class="page">
+
+        <div class="header">
+            <div class="brand">
+                <img src="/img/Logo.png" class="logo" alt="Logo" />
+                <div>
+                    <div class="company-name">
+                        @(Model.Empresa?.Nombre ?? "Makrotecno")
+                    </div>
+
+                    <div class="company-info">
+                        Soluciones tecnológicas, software y soporte técnico<br />
+
+                        <strong>NIT / Documento:</strong>
+                        @(Model.Empresa?.Id_empresa ?? "No registrado")<br />
+
+                        <strong>Teléfono:</strong>
+                        @(Model.Empresa?.Telefono ?? "No registrado")<br />
+
+                        <strong>Dirección:</strong>
+                        @(Model.Empresa?.Direccion ?? "No registrada")<br />
+
+                        <strong>País:</strong>
+                        @(Model.Empresa?.Pais ?? "No registrado")
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-box">
+                <div class="doc-title">COTIZACIÓN</div>
+                <div class="doc-number">@Model.NumeroCotizacion</div>
+                <div class="status">@Model.EstadoCotizacion</div>
+            </div>
+        </div>
+
+        <div class="grid-2 section">
+            <div class="info-box">
+                <div class="section-title">Datos del cliente</div>
+
+                <div class="row">
+                    <span class="label">Cliente:</span> @Model.NombreCliente
+                </div>
+
+                <div class="row">
+                    <span class="label">Documento:</span> @Model.CedulaCliente
+                </div>
+
+                <div class="row">
+                    <span class="label">Teléfono:</span> @Model.TelefonoCliente
+                </div>
+
+                <div class="row">
+                    <span class="label">Correo:</span> @Model.CorreoCliente
+                </div>
+
+                <div class="row">
+                    <span class="label">Dirección:</span> @Model.DireccionCliente
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="section-title">Información de la cotización</div>
+
+                <div class="row">
+                    <span class="label">Fecha creación:</span>
+                    @Model.FechaCreacion.ToString("dd/MM/yyyy")
+                </div>
+
+                <div class="row">
+                    <span class="label">Fecha vencimiento:</span>
+                    @(Model.FechaVencimiento.HasValue
+                                        ? Model.FechaVencimiento.Value.ToString("dd/MM/yyyy")
+                                        : "Sin vencimiento")
+                </div>
+
+                <div class="row">
+                    <span class="label">Referencia:</span>
+                    @Model.NumeroCotizacion
+                </div>
+
+                <div class="row">
+                    <span class="label">Estado:</span>
+                    @Model.EstadoCotizacion
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Detalle de productos cotizados</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 95px;">Código</th>
+                        <th>Producto</th>
+                        <th class="text-end" style="width: 75px;">Cant.</th>
+                        <th class="text-end" style="width: 105px;">Vr. Unitario</th>
+                        <th class="text-end" style="width: 85px;">IVA</th>
+                        <th class="text-end" style="width: 115px;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Detalles)
+                    {
+                        <tr>
+                            <td>@item.CodigoProducto</td>
+                            <td>@item.NombreProducto</td>
+                            <td class="text-end">@item.Cantidad.ToString("N2", cultura)</td>
+                            <td class="text-end">@item.ValorVenta.ToString("C0", cultura)</td>
+                            <td class="text-end">@item.IvaValor.ToString("C0", cultura)</td>
+                            <td class="text-end">@item.TotalLinea.ToString("C0", cultura)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="totals-wrapper">
+                <table class="totals">
+                    <tr>
+                        <td><strong>Subtotal</strong></td>
+                        <td class="text-end">@Model.Subtotal.ToString("C0", cultura)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>IVA</strong></td>
+                        <td class="text-end">@Model.IvaTotal.ToString("C0", cultura)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Descuento</strong></td>
+                        <td class="text-end">@Model.Descuento.ToString("C0", cultura)</td>
+                    </tr>
+                    <tr class="total-final">
+                        <td>Total cotizado</td>
+                        <td class="text-end">@Model.Total.ToString("C0", cultura)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Observaciones</div>
+
+            <div class="observations">
+                @if (!string.IsNullOrWhiteSpace(Model.ObservacionGeneral))
+                {
+                    @Model.ObservacionGeneral
+                }
+                else
+                {
+                    <span>Sin observaciones adicionales.</span>
+                }
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Condiciones comerciales</div>
+
+            <div class="terms">
+                <p>
+                    Esta cotización tiene carácter informativo y comercial. Los valores aquí relacionados
+                    estarán sujetos a disponibilidad de inventario al momento de la confirmación por parte del cliente.
+                </p>
+
+                <p>
+                    La cotización no representa una factura de venta ni genera obligación de entrega hasta que sea aceptada
+                    y convertida formalmente en venta dentro del sistema.
+                </p>
+
+                <p>
+                    Los precios, cantidades y condiciones podrán variar si la cotización se encuentra vencida o si cambia
+                    la disponibilidad del producto.
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="signature">
+                Elaborado por<br />
+                Makrotecno
+            </div>
+
+            <div class="signature">
+                Aceptado por<br />
+                Cliente
+            </div>
+        </div>
+
+        <div class="small-note">
+            Documento generado desde Makrotecno POS. Esta cotización no equivale a factura de venta.
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -53,7 +53,7 @@
     <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
 
         <!-- Preloader -->
@@ -75,11 +75,16 @@
         </nav>
         <!-- /.navbar -->
         <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 makro-sidebar">
             <!-- Brand Logo -->
             <a asp-controller="Inicio" asp-action="Index" class="brand-link">
-                <img src="~/img/logo-inverse.png" class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">@nombreEmpresa</span>
+                <img src="~/img/logo-inverse.png"
+                     class="brand-image img-circle elevation-3"
+                     style="opacity: .8">
+
+                <span class="brand-text font-weight-light">
+                    @(string.IsNullOrWhiteSpace(nombreEmpresa) ? "Makrotecno" : nombreEmpresa)
+                </span>
             </a>
 
         <!-- Sidebar -->
@@ -89,15 +94,25 @@
                 <div class="image">
                     <img src="~/AdminLTE/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
                 </div>
-                <div class="info">
-                        <p href="#" class="d-block text-white bg-dark">@User.FindFirst("Nombre")?.Value</p>
-                        <p href="#" class="d-block text-white bg-dark">@User.FindFirst("NombreRol")?.Value</p>
-                </div>
+                    <div class="info">
+                        <p class="d-block text-white mb-1">
+                            <i class="fas fa-user mr-1"></i>
+                            @User.FindFirst("Nombre")?.Value
+                        </p>
+
+                        <p class="d-block text-muted mb-0">
+                            <i class="fas fa-id-badge mr-1"></i>
+                            @User.FindFirst("NombreRol")?.Value
+                        </p>
+                    </div>
             </div>
 
             <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <nav class="mt-2 pb-5">
+                    <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent"
+                        data-widget="treeview"
+                        role="menu"
+                        data-accordion="false">
 
                         @foreach (var modulo in menu)
                         {
@@ -107,7 +122,7 @@
                             @foreach (var grupo in modulo.Grupos.OrderBy(g => g.OrdenGrupo))
                             {
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">
+                                    <a href="#" class="nav-link menu-grupo-link">
                                         <i class="nav-icon @(grupo.IconoGrupo ?? modulo.IconoHeader)"></i>
                                         <p>
                                             @grupo.NombreGrupo
@@ -119,7 +134,7 @@
                                         @foreach (var op in grupo.Opciones.OrderBy(o => o.OrdenOpcion))
                                         {
                                             <li class="nav-item">
-                                                <a asp-controller="@op.Controller" asp-action="@op.Action" class="nav-link">
+                                                <a asp-controller="@op.Controller" asp-action="@op.Action" class="nav-link menu-opcion-link">
                                                     <i class="@op.Icono nav-icon"></i>
                                                     <p>@op.Titulo</p>
                                                 </a>
@@ -181,8 +196,20 @@
     <script src="~/AdminLTE/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
     <!-- AdminLTE App -->
     <script src="~/AdminLTE/dist/js/adminlte.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="~/AdminLTE/dist/js/demo.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuLinks = document.querySelectorAll('.menu-opcion-link');
+
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 991) {
+                        document.body.classList.remove('sidebar-open');
+                        document.body.classList.add('sidebar-collapse');
+                    }
+                });
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- Fin AdminLTE -->
 </body>

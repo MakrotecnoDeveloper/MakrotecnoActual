@@ -187,4 +187,200 @@ body {
     padding: 0px;
 }
 
+/*Menu*/
+/* ================================
+   MEJORAS SIDEBAR MAKROTECNO
+================================ */
+
+.main-sidebar {
+    height: 100vh !important;
+    overflow: hidden;
+}
+
+    .main-sidebar .brand-link {
+        min-height: 57px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: normal;
+    }
+
+    .main-sidebar .brand-text {
+        font-size: 15px;
+        line-height: 1.2;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* Scroll real del contenido del menú */
+    .main-sidebar .sidebar {
+        height: calc(100vh - 57px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-bottom: 90px;
+    }
+
+        /* Scroll más limpio */
+        .main-sidebar .sidebar::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .main-sidebar .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-sidebar .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+        }
+
+            .main-sidebar .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.4);
+            }
+
+/* Panel usuario */
+.user-panel {
+    align-items: center;
+}
+
+    .user-panel .info {
+        overflow: hidden;
+    }
+
+        .user-panel .info p {
+            margin-bottom: 2px;
+            font-size: 13px;
+            line-height: 1.2;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            background: transparent !important;
+        }
+
+/* Headers del menú */
+.nav-sidebar .nav-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: #adb5bd;
+    padding: 12px 14px 6px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+/* Ítems principales */
+.nav-sidebar .nav-item > .nav-link {
+    border-radius: 10px;
+    margin: 2px 8px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+}
+
+/* Texto de opciones */
+.nav-sidebar .nav-link p {
+    white-space: normal;
+    line-height: 1.25;
+    font-size: 14px;
+}
+
+/* Submenús */
+.nav-treeview {
+    padding-left: 6px;
+}
+
+    .nav-treeview .nav-link {
+        margin-left: 10px;
+        padding-left: 14px;
+    }
+
+        .nav-treeview .nav-link p {
+            font-size: 13px;
+        }
+
+/* Iconos */
+.nav-sidebar .nav-icon {
+    width: 22px;
+    min-width: 22px;
+    text-align: center;
+}
+
+/* Espacio inferior para que no se escondan opciones con el footer */
+.nav-sidebar {
+    padding-bottom: 80px;
+}
+
+/* Navbar mejor en móvil */
+.main-header.navbar {
+    min-height: 56px;
+}
+
+/* ================================
+   RESPONSIVE CELULAR / TABLET
+================================ */
+
+@media (max-width: 991.98px) {
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .main-sidebar {
+        height: 100vh !important;
+        max-height: 100vh !important;
+    }
+
+        .main-sidebar .sidebar {
+            height: calc(100vh - 57px) !important;
+            max-height: calc(100vh - 57px) !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 130px;
+        }
+
+    .nav-sidebar .nav-link {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+
+        .nav-sidebar .nav-link p {
+            font-size: 14px;
+        }
+
+    .nav-treeview .nav-link p {
+        font-size: 13px;
+    }
+
+    .brand-link .brand-image {
+        margin-left: 0;
+    }
+
+    .brand-link .brand-text {
+        font-size: 14px;
+    }
+
+    .content-wrapper {
+        padding-bottom: 70px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .main-sidebar .sidebar {
+        padding-bottom: 160px;
+    }
+
+    .user-panel .image {
+        display: none;
+    }
+
+    .user-panel .info {
+        padding-left: 10px;
+    }
+
+    .nav-sidebar .nav-header {
+        padding-left: 16px;
+    }
+
+    .nav-sidebar .nav-link {
+        min-height: 44px;
+    }
+}
+
 /* Home */

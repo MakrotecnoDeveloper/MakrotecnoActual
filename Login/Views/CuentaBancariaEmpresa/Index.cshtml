@@ -1,0 +1,139 @@
+﻿@model List<Plataforma.ViewModels.CuentasBancarias.CuentaBancariaEmpresaVm>
+
+@{
+    ViewData["Title"] = "Cuentas bancarias";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container py-4">
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="mb-1 fw-semibold">
+                    <i class="bi bi-bank"></i> Cuentas bancarias
+                </h3>
+                <div class="text-muted">
+                    Configura las cuentas bancarias que aparecerán en cuentas de cobro.
+                </div>
+            </div>
+
+            <a asp-action="Crear" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva cuenta bancaria
+            </a>
+        </div>
+
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success">@TempData["Ok"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body table-responsive">
+
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Titular</th>
+                            <th>Banco</th>
+                            <th>Tipo</th>
+                            <th>Número</th>
+                            <th>Principal</th>
+                            <th>Estado</th>
+                            <th style="width:250px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@item.TitularCuenta</div>
+                                        <div class="text-muted small">@item.DocumentoTitular</div>
+                                    </td>
+
+                                    <td>@item.Banco</td>
+                                    <td>@item.TipoCuenta</td>
+                                    <td>@item.NumeroCuenta</td>
+
+                                    <td>
+                                        @if (item.EsPrincipal)
+                                        {
+                                            <span class="badge bg-success">Principal</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark border">No</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (item.Estado)
+                                        {
+                                            <span class="badge bg-primary">Activa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactiva</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <a asp-action="Editar"
+                                           asp-route-id="@item.IdCuentaBancariaEmpresa"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+
+                                        @if (!item.EsPrincipal && item.Estado)
+                                        {
+                                            <form asp-action="MarcarPrincipal"
+                                                  asp-route-id="@item.IdCuentaBancariaEmpresa"
+                                                  method="post"
+                                                  class="d-inline">
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    Principal
+                                                </button>
+                                            </form>
+                                        }
+
+                                        <form asp-action="CambiarEstado"
+                                              asp-route-id="@item.IdCuentaBancariaEmpresa"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('¿Desea cambiar el estado de esta cuenta bancaria?');">
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit" class="btn btn-sm @(item.Estado ? "btn-outline-danger" : "btn-outline-secondary")">
+                                                @(item.Estado ? "Inactivar" : "Activar")
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No hay cuentas bancarias registradas.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>

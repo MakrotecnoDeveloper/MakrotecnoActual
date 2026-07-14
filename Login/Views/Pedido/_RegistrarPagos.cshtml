@@ -53,7 +53,7 @@
                             <div class="fs-3 fw-bold" id="uiTotalVentaText">
                                 @Model.TotalVenta.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
                             </div>
-                            <input type="hidden" id="uiTotalVenta" value="@Model.TotalVenta" />
+                            <input type="hidden" id="uiTotalVenta" value="@Model.TotalVenta.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
                             @if (!string.IsNullOrWhiteSpace(Model.ObservacionVenta))
                             {
                                 <div class="alert alert-light border mt-3 small">
@@ -190,23 +190,63 @@
 
     <script>
         (function () {
-            // Helpers
             const $ = (id) => document.getElementById(id);
 
-            function toNumber(v) {
-                // acepta "1.000.000" o "1000000"
-                if (v == null) return 0;
-                const s = String(v).trim();
-                if (!s) return 0;
-                const cleaned = s.replace(/[^\d]/g, "");
-                return cleaned ? Number(cleaned) : 0;
+        function toMoneyNumber(v) {
+            if (v == null) return 0;
+
+            let s = String(v).trim();
+
+            if (!s) return 0;
+
+            // Quita símbolo de pesos y espacios
+            s = s.replace(/\$/g, "").replace(/\s/g, "");
+
+            // Caso colombiano con decimal: 2.000,00
+            if (s.includes(",") && s.includes(".")) {
+                s = s.replace(/\./g, "").replace(",", ".");
+                const n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
             }
+
+            // Caso colombiano simple: 2.000
+            // Solo lo tratamos como separador de miles si después del punto hay exactamente 3 dígitos
+            if (s.includes(".") && /^\d{1,3}(\.\d{3})+$/.test(s)) {
+                s = s.replace(/\./g, "");
+                const n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
+            }
+
+            // Caso decimal estándar: 2000.00
+            if (s.includes(".")) {
+                const n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
+            }
+
+            // Caso con coma decimal: 2000,00
+            if (s.includes(",")) {
+                s = s.replace(",", ".");
+                const n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
+            }
+
+            // Caso entero normal: 2000
+            s = s.replace(/[^\d]/g, "");
+
+            return s ? Number(s) : 0;
+        }
 
             function moneyCO(n) {
-                try { return n.toLocaleString("es-CO"); } catch { return String(n); }
+                try {
+                    return n.toLocaleString("es-CO", {
+                        maximumFractionDigits: 0
+                    });
+                } catch {
+                    return String(n);
+                }
             }
 
-            const totalVenta = Number($("uiTotalVenta")?.value || 0);
+            const totalVenta = toMoneyNumber($("uiTotalVenta")?.value);
 
             const inpEfe = $("MontoEfectivo");
             const inpTra = $("MontoTransferencia");
@@ -220,33 +260,36 @@
             const uiCreditoTip = $("uiCreditoTip");
 
             function toggleCredito() {
-                const credito = toNumber(inpCre?.value);
-
+                const credito = toMoneyNumber(inpCre?.value);
                 const habilitar = credito > 0;
+
+                if (!inpFecha) return;
 
                 inpFecha.disabled = !habilitar;
 
-                // Si no hay crédito, limpiamos fecha y quitamos required
                 if (!habilitar) {
                     inpFecha.value = "";
                     inpFecha.removeAttribute("required");
-                    uiCreditoTip.classList.remove("text-danger");
-                    uiCreditoTip.classList.add("text-muted");
+
+                    uiCreditoTip?.classList.remove("text-danger");
+                    uiCreditoTip?.classList.add("text-muted");
                 } else {
-                    // Si hay crédito, pedimos fecha
                     inpFecha.setAttribute("required", "required");
-                    uiCreditoTip.classList.remove("text-muted");
-                    uiCreditoTip.classList.add("text-danger");
+
+                    uiCreditoTip?.classList.remove("text-muted");
+                    uiCreditoTip?.classList.add("text-danger");
                 }
             }
 
             function recalcular() {
-                const efectivo = toNumber(inpEfe?.value);
-                const transf = toNumber(inpTra?.value);
-                const credito = toNumber(inpCre?.value);
+                const efectivo = toMoneyNumber(inpEfe?.value);
+                const transf = toMoneyNumber(inpTra?.value);
+                const credito = toMoneyNumber(inpCre?.value);
 
                 const pagado = efectivo + transf + credito;
-                const diff = pagado - totalVenta;
+
+                // Redondeo para evitar diferencias mínimas por decimales
+                const diff = Math.round(pagado - totalVenta);
 
                 uiPagado.textContent = `$ ${moneyCO(pagado)}`;
 
@@ -260,6 +303,7 @@
                         : "Pago completo. Perfecto ✅";
                 } else {
                     const faltante = Math.abs(diff);
+
                     uiFaltante.textContent = `$ ${moneyCO(faltante)}`;
                     uiCambio.textContent = `$ 0`;
 
@@ -268,14 +312,16 @@
                 }
             }
 
-            // listeners
             ["input", "change"].forEach(evt => {
-                inpEfe?.addEventListener(evt, () => recalcular());
-                inpTra?.addEventListener(evt, () => recalcular());
-                inpCre?.addEventListener(evt, () => { toggleCredito(); recalcular(); });
+                inpEfe?.addEventListener(evt, recalcular);
+                inpTra?.addEventListener(evt, recalcular);
+
+                inpCre?.addEventListener(evt, () => {
+                    toggleCredito();
+                    recalcular();
+                });
             });
 
-            // init
             toggleCredito();
             recalcular();
         })();

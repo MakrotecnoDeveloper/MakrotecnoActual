@@ -105,9 +105,6 @@
                                                 <td>${plataformasstr.correoPlataforma}</td>
                                                 <td>${plataformasstr.clavePlataforma}</td>
                                                 <td>${plataformasstr.estado}</td>
-                                                <td>${new Date(plataformasstr.fechaIni).toLocaleDateString()}</td>
-                                                <td>${new Date(plataformasstr.fechaFin).toLocaleDateString()}</td>
-                                                <td>${plataformasstr.estado ? 'Activo' : 'Inactivo'}</td>
                                                 <td>
                                                     <button class="btn btn-warning btn-sm" onclick="editarEstado(${plataformasstr.idClientePlataforma}, ${plataformasstr.estado}, ${plataformasstr.idCliente})">
                                                         <i class="fas fa-edit"></i>

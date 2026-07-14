@@ -1,29 +1,234 @@
 ﻿@model PermisosMenuViewModel
+
 @{
     ViewData["Title"] = "Permisos del menú";
 }
-<div class="content-wrapper">
-    <h2 class="mb-4">Permisos del menú por cargo</h2>
-    <p>Genericos: @Model.ModulosGenericos?.Count() | Actividad: @Model.ModulosActividad?.Count()</p>
-    <p>Cargos: @Model.Cargos?.Count()</p>
-    <p>Cargo seleccionado: @Model.CargoIdSeleccionado</p>
-    <!-- Selección de cargo -->
-    <form asp-action="Index" method="get" class="mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Cargo</label>
-                <select class="form-select" name="cargoId" onchange="this.form.submit()">
-                    <option value="">-- Seleccione un cargo --</option>
-                    @foreach (var c in Model.Cargos)
-                    {
-                        <option value="@c.Value" selected="@(Model.CargoIdSeleccionado?.ToString() == c.Value)">
-                            @c.Text
-                        </option>
-                    }
-                </select>
+
+<style>
+    .permisos-wrapper {
+        padding: 20px;
+    }
+
+    .page-title {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 5px;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-bottom: 25px;
+    }
+
+    .card-permisos {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.08);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .card-permisos-header {
+        background: #f8fafc;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .card-permisos-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .card-permisos-body {
+        padding: 22px;
+        background: #fff;
+    }
+
+    .bloque-modulo {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .bloque-header {
+        background: #f3f4f6;
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .bloque-title {
+        font-weight: 700;
+        color: #374151;
+        margin: 0;
+    }
+
+    .bloque-body {
+        padding: 16px 18px;
+    }
+
+    .permiso-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 10px;
+        transition: background .2s ease;
+    }
+
+    .permiso-item:hover {
+        background: #f9fafb;
+    }
+
+    .permiso-item label {
+        margin-left: 8px;
+        cursor: pointer;
+        color: #374151;
+    }
+
+    .btn-soft-primary {
+        border: 1px solid #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+        border-radius: 10px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    .btn-soft-primary:hover {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .btn-soft-secondary {
+        border: 1px solid #6b7280;
+        color: #374151;
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    .btn-soft-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .summary-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .summary-item {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 12px 16px;
+        min-width: 180px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .summary-label {
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .summary-value {
+        font-weight: 700;
+        color: #111827;
+        font-size: 18px;
+    }
+
+    .sticky-save {
+        position: sticky;
+        bottom: 0;
+        background: #ffffff;
+        border-top: 1px solid #e5e7eb;
+        padding: 16px 0;
+        margin-top: 20px;
+        z-index: 10;
+    }
+
+    .empty-box {
+        padding: 20px;
+        border-radius: 14px;
+        background: #f9fafb;
+        color: #6b7280;
+        border: 1px dashed #d1d5db;
+    }
+</style>
+
+<div class="content-wrapper permisos-wrapper">
+
+    <div class="mb-4">
+        <h2 class="page-title">Permisos del menú por cargo</h2>
+        <p class="page-subtitle">
+            Gestiona los módulos disponibles para cada cargo según el plan contratado y la actividad económica de la empresa.
+        </p>
+    </div>
+
+    <div class="summary-box">
+        <div class="summary-item">
+            <div class="summary-label">Módulos genéricos</div>
+            <div class="summary-value">@Model.ModulosGenericos?.Count()</div>
+        </div>
+
+        <div class="summary-item">
+            <div class="summary-label">Módulos por actividad</div>
+            <div class="summary-value">@Model.ModulosActividad?.Count()</div>
+        </div>
+
+        <div class="summary-item">
+            <div class="summary-label">Cargos disponibles</div>
+            <div class="summary-value">@Model.Cargos?.Count()</div>
+        </div>
+
+        <div class="summary-item">
+            <div class="summary-label">Cargo seleccionado</div>
+            <div class="summary-value">
+                @(Model.CargoIdSeleccionado?.ToString() ?? "Ninguno")
             </div>
         </div>
-    </form>
+    </div>
+
+    <!-- Selección de cargo -->
+    <div class="card card-permisos">
+        <div class="card-permisos-header">
+            <h5 class="card-permisos-title">Seleccionar cargo</h5>
+        </div>
+
+        <div class="card-permisos-body">
+            <form asp-action="Index" method="get">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Cargo</label>
+                        <select class="form-select" name="cargoId" onchange="this.form.submit()">
+                            <option value="">-- Seleccione un cargo --</option>
+                            @foreach (var c in Model.Cargos)
+                            {
+                                <option value="@c.Value" selected="@(Model.CargoIdSeleccionado?.ToString() == c.Value)">
+                                    @c.Text
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     @if (Model.CargoIdSeleccionado != null)
     {
@@ -31,57 +236,203 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="CargoIdSeleccionado" />
 
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>📦 Módulos genéricos (por plan)</h4>
-                    <hr />
-                    @for (int i = 0; i < Model.ModulosGenericos.Count; i++)
-                    {
-                        <div class="form-check mb-2">
-                            <input type="hidden" asp-for="ModulosGenericos[i].ModuloId" />
-                            <input type="hidden" asp-for="ModulosGenericos[i].NombreModulo" />
-                            <input type="hidden" asp-for="ModulosGenericos[i].EsGenerico" />
+            <!-- Módulos genéricos -->
+            <div class="card card-permisos">
+                <div class="card-permisos-header">
+                    <h4 class="card-permisos-title">📦 Módulos genéricos por plan</h4>
 
-                            <input class="form-check-input"
-                                   asp-for="ModulosGenericos[i].Activo"
-                                   type="checkbox" />
-                            <label class="form-check-label">
-                                @Model.ModulosGenericos[i].NombreModulo
-                            </label>
-                        </div>
-                    }
+                    <div>
+                        <button type="button" class="btn-soft-primary" onclick="seleccionarTodos('genericos', true)">
+                            Seleccionar todos
+                        </button>
+                        <button type="button" class="btn-soft-secondary" onclick="seleccionarTodos('genericos', false)">
+                            Quitar todos
+                        </button>
+                    </div>
                 </div>
 
-                <div class="col-md-6">
-                    <h4>🏭 Módulos por actividad económica</h4>
-                    <hr />
-                    @for (int i = 0; i < Model.ModulosActividad.Count; i++)
+                <div class="card-permisos-body">
+                    @if (Model.ModulosGenericos != null && Model.ModulosGenericos.Any())
                     {
-                        <div class="form-check mb-2">
-                            <input type="hidden" asp-for="ModulosActividad[i].ModuloId" />
-                            <input type="hidden" asp-for="ModulosActividad[i].NombreModulo" />
-                            <input type="hidden" asp-for="ModulosActividad[i].EsGenerico" />
+                        var gruposGenericos = Model.ModulosGenericos
+                        .GroupBy(x => x.BloqueModulo)
+                        .OrderBy(x => x.Key)
+                        .ToList();
 
-                            <input class="form-check-input"
-                                   asp-for="ModulosActividad[i].Activo"
-                                   type="checkbox" />
-                            <label class="form-check-label">
-                                @Model.ModulosActividad[i].NombreModulo
-                            </label>
+                        foreach (var grupo in gruposGenericos)
+                        {
+                            <div class="bloque-modulo">
+                                <div class="bloque-header">
+                                    <h5 class="bloque-title">@grupo.Key</h5>
+
+                                    <div>
+                                        <button type="button"
+                                                class="btn-soft-primary"
+                                                onclick="seleccionarBloque('generico-bloque-@grupo.Key.Replace(" ", "-")', true)">
+                                            Seleccionar bloque
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn-soft-secondary"
+                                                onclick="seleccionarBloque('generico-bloque-@grupo.Key.Replace(" ", "-")', false)">
+                                            Quitar bloque
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="bloque-body">
+                                    <div class="row">
+                                        @for (int i = 0; i < Model.ModulosGenericos.Count; i++)
+                                        {
+                                            if (Model.ModulosGenericos[i].BloqueModulo == grupo.Key)
+                                            {
+                                                var bloqueClase = "generico-bloque-" + grupo.Key.Replace(" ", "-");
+
+                                                <div class="col-md-6 col-lg-4">
+                                                    <div class="permiso-item">
+                                                        <input type="hidden" asp-for="ModulosGenericos[i].ModuloId" />
+                                                        <input type="hidden" asp-for="ModulosGenericos[i].NombreModulo" />
+                                                        <input type="hidden" asp-for="ModulosGenericos[i].EsGenerico" />
+                                                        <input type="hidden" asp-for="ModulosGenericos[i].BloqueModulo" />
+
+                                                        <input class="form-check-input permiso-check genericos @bloqueClase"
+                                                               asp-for="ModulosGenericos[i].Activo"
+                                                               type="checkbox" />
+
+                                                        <label class="form-check-label">
+                                                            @Model.ModulosGenericos[i].NombreModulo
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-box">
+                            No hay módulos genéricos disponibles para este plan.
                         </div>
                     }
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    Guardar permisos
-                </button>
+            <!-- Módulos por actividad económica -->
+            <div class="card card-permisos">
+                <div class="card-permisos-header">
+                    <h4 class="card-permisos-title">🏭 Módulos por actividad económica</h4>
+
+                    <div>
+                        <button type="button" class="btn-soft-primary" onclick="seleccionarTodos('actividad', true)">
+                            Seleccionar todos
+                        </button>
+                        <button type="button" class="btn-soft-secondary" onclick="seleccionarTodos('actividad', false)">
+                            Quitar todos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-permisos-body">
+                    @if (Model.ModulosActividad != null && Model.ModulosActividad.Any())
+                    {
+                        var gruposActividad = Model.ModulosActividad
+                        .GroupBy(x => x.BloqueModulo)
+                        .OrderBy(x => x.Key)
+                        .ToList();
+
+                        foreach (var grupo in gruposActividad)
+                        {
+                            <div class="bloque-modulo">
+                                <div class="bloque-header">
+                                    <h5 class="bloque-title">@grupo.Key</h5>
+
+                                    <div>
+                                        <button type="button"
+                                                class="btn-soft-primary"
+                                                onclick="seleccionarBloque('actividad-bloque-@grupo.Key.Replace(" ", "-")', true)">
+                                            Seleccionar bloque
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn-soft-secondary"
+                                                onclick="seleccionarBloque('actividad-bloque-@grupo.Key.Replace(" ", "-")', false)">
+                                            Quitar bloque
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="bloque-body">
+                                    <div class="row">
+                                        @for (int i = 0; i < Model.ModulosActividad.Count; i++)
+                                        {
+                                            if (Model.ModulosActividad[i].BloqueModulo == grupo.Key)
+                                            {
+                                                var bloqueClase = "actividad-bloque-" + grupo.Key.Replace(" ", "-");
+
+                                                <div class="col-md-6 col-lg-4">
+                                                    <div class="permiso-item">
+                                                        <input type="hidden" asp-for="ModulosActividad[i].ModuloId" />
+                                                        <input type="hidden" asp-for="ModulosActividad[i].NombreModulo" />
+                                                        <input type="hidden" asp-for="ModulosActividad[i].EsGenerico" />
+                                                        <input type="hidden" asp-for="ModulosActividad[i].BloqueModulo" />
+
+                                                        <input class="form-check-input permiso-check actividad @bloqueClase"
+                                                               asp-for="ModulosActividad[i].Activo"
+                                                               type="checkbox" />
+
+                                                        <label class="form-check-label">
+                                                            @Model.ModulosActividad[i].NombreModulo
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-box">
+                            No hay módulos especializados disponibles para esta actividad económica.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="sticky-save">
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-4 py-2">
+                        Guardar permisos
+                    </button>
+                </div>
             </div>
         </form>
     }
     else
     {
-        <p>Selecciona un cargo para gestionar sus permisos.</p>
+        <div class="empty-box">
+            Selecciona un cargo para gestionar sus permisos.
+        </div>
     }
 </div>
+
+<script>
+    function seleccionarTodos(clase, activo) {
+        const checks = document.querySelectorAll('.' + clase);
+        checks.forEach(chk => {
+            chk.checked = activo;
+        });
+    }
+
+    function seleccionarBloque(clase, activo) {
+        const checks = document.querySelectorAll('.' + clase);
+        checks.forEach(chk => {
+            chk.checked = activo;
+        });
+    }
+</script>

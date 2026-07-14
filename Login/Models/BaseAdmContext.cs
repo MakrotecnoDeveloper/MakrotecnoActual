@@ -1,4 +1,5 @@
-﻿using MakroTecno.Models;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using MakroTecno.Models;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Data.Configurations;
 
@@ -79,6 +80,24 @@ public partial class BaseAdmContext : DbContext
     public virtual DbSet<ImportacionesProducto> ImportacionesProductos { get; set; }
     public virtual DbSet<ImportacionesProductosDetalle> ImportacionesProductosDetalles { get; set; }
     /*Importaciones Fin*/
+    /*Modulo Deportistas*/
+    public DbSet<Deporte> Deportes { get; set; }
+    public DbSet<Deportista> Deportistas { get; set; }
+    public DbSet<PruebaDeportiva> PruebasDeportivas { get; set; }
+    public DbSet<SesionTomaTiempo> SesionesTomaTiempo { get; set; }
+    public DbSet<ResultadoDeportivo> ResultadosDeportivos { get; set; }
+    /*Fin Modulo Deportistas*/
+    /*Modulo de Cotizaciones*/
+    public DbSet<Cotizacion> Cotizaciones { get; set; }
+    public DbSet<CotizacionDetalle> CotizacionDetalles { get; set; }
+    public DbSet<CotizacionSeguimiento> CotizacionSeguimientos { get; set; }
+    /*Fin Modulo Cotizaciones*/
+    /*Modulo de Cuentas de cobro*/
+    public DbSet<CuentaBancariaEmpresa> CuentasBancariasEmpresa { get; set; }
+    public DbSet<CuentaCobro> CuentasCobro { get; set; }
+    public DbSet<CuentaCobroDetalle> CuentasCobroDetalle { get; set; }
+    /*Fin Modulo de  Cuentas de Cobro*/
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -179,6 +198,11 @@ public partial class BaseAdmContext : DbContext
         modelBuilder.Entity<RappiTienda>().HasOne(x => x.Sede).WithMany().HasForeignKey(x => x.SedeId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<RappiSincronizacionDetalle>().HasOne(x => x.RappiSincronizacion).WithMany(x => x.Detalles).HasForeignKey(x => x.RappiSincronizacionId).OnDelete(DeleteBehavior.Cascade);
         /*Integraciones Rappi Fin*/
+        /*Inicio Modulo Cotizaciones*/
+        modelBuilder.Entity<Cotizacion>().HasKey(c => c.IdCotizacion);
+        modelBuilder.Entity<CotizacionDetalle>().HasKey(d => d.IdCotizacionDetalle);
+        modelBuilder.Entity<CotizacionSeguimiento>().HasKey(s => s.IdCotizacionSeguimiento);
+        /*Fin Modulo Cotizaciones*/
 
         /*Configuracion para Nomina*/
         modelBuilder.ApplyConfiguration(new ContratoConfiguration());
@@ -537,5 +561,233 @@ public partial class BaseAdmContext : DbContext
                 .HasDefaultValueSql("(getdate())");
         });
         /*Importaciones Fin*/
+
+        /*Inicio Modulo Deportistas*/
+        modelBuilder.Entity<Deporte>(entity =>
+        {
+            entity.HasKey(e => e.IdDeporte);
+            entity.Property(e => e.Nombre).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Descripcion).HasMaxLength(300);
+        });
+
+        modelBuilder.Entity<Deportista>(entity =>
+        {
+            entity.HasKey(e => e.IdDeportista);
+            entity.Property(e => e.IdEmpresa).HasMaxLength(50);
+
+            entity.HasOne(e => e.Deporte)
+                .WithMany(e => e.Deportistas)
+                .HasForeignKey(e => e.IdDeporte);
+
+            entity.HasOne(e => e.Cliente)
+                .WithMany()
+                .HasForeignKey(e => e.IdCliente)
+                .HasPrincipalKey(e => e.IdCliente);
+        });
+
+        modelBuilder.Entity<PruebaDeportiva>(entity =>
+        {
+            entity.HasKey(e => e.IdPruebaDeportiva);
+            entity.Property(e => e.Nombre).HasMaxLength(120).IsRequired();
+            entity.Property(e => e.UnidadMedida).HasMaxLength(50);
+            entity.Property(e => e.Modalidad).HasMaxLength(80);
+            entity.Property(e => e.Distancia).HasColumnType("decimal(10,2)");
+
+            entity.HasOne(e => e.Deporte)
+                .WithMany(e => e.PruebasDeportivas)
+                .HasForeignKey(e => e.IdDeporte);
+        });
+
+        modelBuilder.Entity<SesionTomaTiempo>(entity =>
+        {
+            entity.HasKey(e => e.IdSesionTomaTiempo);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+            entity.Property(e => e.IdEmpresa).HasMaxLength(50);
+            entity.Property(e => e.UsuarioRegistro).HasMaxLength(150);
+
+            entity.HasOne(e => e.PruebaDeportiva)
+                .WithMany(e => e.SesionesTomaTiempo)
+                .HasForeignKey(e => e.IdPruebaDeportiva);
+        });
+
+        modelBuilder.Entity<ResultadoDeportivo>(entity =>
+        {
+            entity.HasKey(e => e.IdResultadoDeportivo);
+            entity.Property(e => e.Observaciones).HasMaxLength(500);
+
+            entity.HasOne(e => e.SesionTomaTiempo)
+                .WithMany(e => e.Resultados)
+                .HasForeignKey(e => e.IdSesionTomaTiempo);
+
+            entity.HasOne(e => e.Deportista)
+                .WithMany(e => e.ResultadosDeportivos)
+                .HasForeignKey(e => e.IdDeportista);
+        });
+        /*Fin Modulo Deportistas*/
+        /*Inicio Modulo Cotizaciones*/
+        modelBuilder.Entity<Cotizacion>(entity =>
+        {
+            entity.ToTable("Cotizaciones", "dbo");
+
+            entity.Property(e => e.NumeroCotizacion)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.EstadoCotizacion)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasDefaultValue("Pendiente");
+
+            entity.Property(e => e.IdEmpresa)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.ObservacionGeneral)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Subtotal)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IvaTotal)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.Descuento)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.Total)
+                .HasColumnType("decimal(18,2)");
+
+            entity.HasOne(e => e.Cliente)
+                .WithMany()
+                .HasForeignKey(e => e.IdCliente)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.VentaGenerada)
+                .WithMany()
+                .HasForeignKey(e => e.IdVentaGenerada)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.Detalles)
+                .WithOne(d => d.Cotizacion)
+                .HasForeignKey(d => d.IdCotizacion)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.Seguimientos)
+                .WithOne(s => s.Cotizacion)
+                .HasForeignKey(s => s.IdCotizacion)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.NumeroCotizacion)
+                .IsUnique();
+
+            entity.HasIndex(e => e.EstadoCotizacion);
+            entity.HasIndex(e => e.IdEmpresa);
+            entity.HasIndex(e => e.SedeId);
+            entity.HasIndex(e => e.InfopdvId);
+            entity.HasIndex(e => e.IdVentaGenerada);
+        });
+
+        modelBuilder.Entity<CotizacionDetalle>(entity =>
+        {
+            entity.ToTable("CotizacionDetalles", "dbo");
+
+            entity.Property(e => e.CodigoProducto)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.NombreProducto)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(e => e.Observacion)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Cantidad)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.ValorNeto)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.ValorUnidad)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.ValorVenta)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IvaPorcentaje)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.IvaValor)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.SubTotal)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.TotalLinea)
+                .HasColumnType("decimal(18,2)");
+
+            entity.HasOne(e => e.Producto)
+                .WithMany()
+                .HasForeignKey(e => e.CodigoProducto)
+                .HasPrincipalKey(p => p.Cod_Producto)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CotizacionSeguimiento>(entity =>
+        {
+            entity.ToTable("CotizacionSeguimientos", "dbo");
+
+            entity.Property(e => e.EstadoAnterior)
+                .HasMaxLength(30);
+
+            entity.Property(e => e.EstadoNuevo)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(e => e.Observacion)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            entity.Property(e => e.UsuarioRegistro)
+                .HasMaxLength(150);
+        });
+        /*Fin Modulo Cotizaciones*/
+        /*Inicio Modulo de Cuentas de Cobro*/
+        modelBuilder.Entity<CuentaBancariaEmpresa>().HasKey(x => x.IdCuentaBancariaEmpresa);
+        modelBuilder.Entity<CuentaCobro>().HasKey(x => x.IdCuentaCobro);
+        modelBuilder.Entity<CuentaCobroDetalle>().HasKey(x => x.IdCuentaCobroDetalle);
+
+        modelBuilder.Entity<CuentaCobro>(entity =>
+        {
+            entity.ToTable("CuentasCobro", "dbo");
+
+            entity.HasOne(x => x.Factura)
+                .WithMany()
+                .HasForeignKey(x => x.IdFactura)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Venta)
+                .WithMany()
+                .HasForeignKey(x => x.IdVenta)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany()
+                .HasForeignKey(x => x.IdCliente)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.CuentaBancariaEmpresa)
+                .WithMany()
+                .HasForeignKey(x => x.IdCuentaBancariaEmpresa)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(x => x.Detalles)
+                .WithOne(x => x.CuentaCobro)
+                .HasForeignKey(x => x.IdCuentaCobro)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(x => x.NumeroCuentaCobro).IsUnique();
+        });
+        /*Fin Modulo de Cuentas de Cobro*/
     }
 }

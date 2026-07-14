@@ -96,15 +96,17 @@ namespace Plataforma.Controllers
                 .ToList();
 
                 vm.ModulosGenericos = modulosFiltrados
-                    .Select(m => new ModuloPermisoItemVM
-                    {
-                        ModuloId = m.IdModulo,
-                        NombreModulo = m.NombreModulo,
-                        EsGenerico = true,
-                        Activo = permisosCargoList.Any(p => p.ModuloId == m.IdModulo && p.Activo)
-                    })
-                    .OrderBy(m => m.NombreModulo)
-                    .ToList();
+                .Select(m => new ModuloPermisoItemVM
+                {
+                    ModuloId = m.IdModulo,
+                    NombreModulo = m.NombreModulo,
+                    EsGenerico = true,
+                    BloqueModulo = string.IsNullOrWhiteSpace(m.Descripcion) ? "General" : m.Descripcion,
+                    Activo = permisosCargoList.Any(p => p.ModuloId == m.IdModulo && p.Activo)
+                })
+                .OrderBy(m => m.BloqueModulo)
+                .ThenBy(m => m.NombreModulo)
+                .ToList();
 
                 // Por actividad
 
@@ -119,15 +121,17 @@ namespace Plataforma.Controllers
 
                 // Construir el ViewModel en memoria (aquí sí puedes usar Any)
                 vm.ModulosActividad = modulosActividad
-                    .Select(m => new ModuloPermisoItemVM
-                    {
-                        ModuloId = m.IdModulo,
-                        NombreModulo = m.NombreModulo,
-                        EsGenerico = false,
-                        Activo = permisosCargoList.Any(p => p.ModuloId == m.IdModulo && p.Activo)
-                    })
-                    .OrderBy(m => m.NombreModulo)
-                    .ToList();
+                .Select(m => new ModuloPermisoItemVM
+                {
+                    ModuloId = m.IdModulo,
+                    NombreModulo = m.NombreModulo,
+                    EsGenerico = false,
+                    BloqueModulo = string.IsNullOrWhiteSpace(m.Descripcion) ? "General" : m.Descripcion,
+                    Activo = permisosCargoList.Any(p => p.ModuloId == m.IdModulo && p.Activo)
+                })
+                .OrderBy(m => m.BloqueModulo)
+                .ThenBy(m => m.NombreModulo)
+                .ToList();
 
             }
 

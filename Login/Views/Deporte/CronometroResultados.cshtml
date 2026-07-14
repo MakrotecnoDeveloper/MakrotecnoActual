@@ -1,0 +1,511 @@
+﻿@model Plataforma.Models.ViewModels.Deporte.CronometroResultadosVm
+
+@{
+    ViewData["Title"] = "Cronometro y Resultados";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .sport-page {
+        background: #f6f8fb;
+        min-height: calc(100vh - 120px);
+        padding: 18px;
+        border-radius: 8px;
+    }
+
+    .sport-card {
+        border: 1px solid #e3e7ee;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
+    }
+
+    .timer-box {
+        background: #101827;
+        color: #fff;
+        border-radius: 8px;
+        padding: 24px 18px;
+        text-align: center;
+    }
+
+    .timer-display {
+        font-family: Consolas, "Courier New", monospace;
+        font-size: clamp(2.2rem, 5vw, 4.2rem);
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1;
+    }
+
+    .search-results {
+        z-index: 1000;
+        max-height: 260px;
+        overflow-y: auto;
+    }
+
+    .stat-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .stat-box small {
+        color: #64748b;
+        display: block;
+        margin-bottom: 4px;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="container-fluid sport-page">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-0">Cronometro y Resultados</h3>
+                <small class="text-muted">Registro individual y toma grupal de tiempos deportivos</small>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <div class="card sport-card mb-3">
+            <div class="card-body">
+                <form asp-controller="Deporte" asp-action="CronometroResultados" method="get" class="row g-2 align-items-end" id="formBuscarIndividual">
+                    <div class="col-md-5 position-relative">
+                        <label class="form-label">Buscar deportista</label>
+                        <input type="text" id="txtBuscarIndividual" class="form-control" placeholder="Nombre, apellido o cedula" autocomplete="off" />
+                        <input type="hidden" name="cedula" id="cedulaIndividual" value="@Model.Cedula" />
+                        <div id="resultadosIndividual" class="list-group position-absolute w-100 shadow-sm search-results"></div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">Prueba deportiva</label>
+                        <select name="idPruebaDeportiva" class="form-select">
+                            <option value="">Todas las pruebas</option>
+                            @foreach (var prueba in Model.PruebasDeportivas)
+                            {
+                                if (Model.IdPruebaDeportivaSeleccionada?.ToString() == prueba.Value)
+                                {
+                                    <option value="@prueba.Value" selected>@prueba.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@prueba.Value">@prueba.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.BusquedaRealizada && !string.IsNullOrWhiteSpace(Model.Mensaje))
+        {
+            <div class="alert @(Model.ClienteEncontrado ? "alert-info" : "alert-warning")">
+                @Model.Mensaje
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-4">
+                @if (Model.ClienteEncontrado)
+                {
+                    <div class="card sport-card mb-3">
+                        <div class="card-header">
+                            <strong>Deportista</strong>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="mb-1">@Model.NombreCliente</h5>
+                            <div class="text-muted">Cedula: @Model.Cedula</div>
+                        </div>
+                    </div>
+
+                    <div class="card sport-card mb-3">
+                        <div class="card-header">
+                            <strong>Estadisticas</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <small>Mejor</small>
+                                        <strong>@(Model.MejorTiempo?.ToString(@"mm\:ss\.ff") ?? "--")</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <small>Ultimo</small>
+                                        <strong>@(Model.UltimoTiempo?.ToString(@"mm\:ss\.ff") ?? "--")</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-box">
+                                        <small>Promedio</small>
+                                        <strong>@(Model.PromedioTiempo?.ToString(@"mm\:ss\.ff") ?? "--")</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="card sport-card mb-3">
+                    <div class="card-header">
+                        <strong>Resultados registrados</strong>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Resultados.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Prueba</th>
+                                            <th>Tiempo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Resultados)
+                                        {
+                                            <tr>
+                                                <td>@item.FechaPrueba.ToString("dd/MM/yyyy")</td>
+                                                <td>@item.Prueba</td>
+                                                <td><strong>@item.TiempoFormato</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted">No hay resultados para mostrar.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card sport-card mb-3">
+                    <div class="card-header">
+                        <strong>Cronometro</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="timer-box mb-3">
+                            <div id="displayCronometro" class="timer-display">00:00.00</div>
+                            <small class="text-white-50">Use el mismo cronometro para tiempo individual o llegada grupal</small>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <button type="button" id="btnIniciar" class="btn btn-success">
+                                <i class="fa-solid fa-play"></i> Iniciar
+                            </button>
+                            <button type="button" id="btnPausar" class="btn btn-warning">
+                                <i class="fa-solid fa-pause"></i> Pausar
+                            </button>
+                            <button type="button" id="btnReiniciar" class="btn btn-secondary">
+                                <i class="fa-solid fa-rotate-left"></i> Reiniciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.ClienteEncontrado)
+                {
+                    <div class="card sport-card mb-3">
+                        <div class="card-header">
+                            <strong>Registrar tiempo individual</strong>
+                        </div>
+                        <div class="card-body">
+                            <form asp-controller="Deporte" asp-action="RegistrarTiempo" method="post" class="row g-3">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="Cedula" value="@Model.Cedula" />
+
+                                <div class="col-md-5">
+                                    <label class="form-label">Prueba deportiva</label>
+                                    <select name="IdPruebaDeportiva" class="form-select">
+                                        <option value="">Seleccione una prueba</option>
+                                        @foreach (var prueba in Model.PruebasDeportivas)
+                                        {
+                                            if (Model.IdPruebaDeportivaSeleccionada?.ToString() == prueba.Value)
+                                            {
+                                                <option value="@prueba.Value" selected>@prueba.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@prueba.Value">@prueba.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Tiempo</label>
+                                    <input name="TiempoTexto" id="TiempoTextoIndividual" class="form-control tiempo-destino" placeholder="00:38.45" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Fecha</label>
+                                    <input name="FechaPrueba" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">Observaciones</label>
+                                    <textarea name="Observaciones" class="form-control" rows="2" placeholder="Opcional"></textarea>
+                                </div>
+
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-dark w-100" id="btnTomarIndividual">
+                                        Tomar tiempo actual
+                                    </button>
+                                </div>
+
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa-solid fa-floppy-disk"></i> Guardar tiempo individual
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <div class="card sport-card">
+                    <div class="card-header">
+                        <strong>Toma grupal rapida</strong>
+                    </div>
+                    <div class="card-body">
+                        <form asp-controller="Deporte" asp-action="RegistrarTiemposGrupo" method="post" id="formGrupo">
+                            @Html.AntiForgeryToken()
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Prueba deportiva</label>
+                                    <select name="IdPruebaDeportiva" class="form-select" required>
+                                        <option value="">Seleccione una prueba</option>
+                                        @foreach (var prueba in Model.PruebasDeportivas)
+                                        {
+                                            if (Model.IdPruebaDeportivaSeleccionada?.ToString() == prueba.Value)
+                                            {
+                                                <option value="@prueba.Value" selected>@prueba.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@prueba.Value">@prueba.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 position-relative">
+                                    <label class="form-label">Agregar deportista</label>
+                                    <input type="text" id="txtBuscarGrupo" class="form-control" placeholder="Nombre, apellido o cedula" autocomplete="off" />
+                                    <div id="resultadosGrupo" class="list-group position-absolute w-100 shadow-sm search-results"></div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Fecha sesion</label>
+                                    <input name="FechaSesion" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Observaciones sesion</label>
+                                    <input name="ObservacionesSesion" class="form-control" placeholder="Opcional" />
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Deportista</th>
+                                            <th style="width: 140px;">Tiempo</th>
+                                            <th style="width: 100px;">Posicion</th>
+                                            <th style="width: 150px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaGrupo">
+                                        <tr id="filaGrupoVacia">
+                                            <td colspan="4" class="text-muted">Agregue deportistas para tomar tiempos grupales.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-floppy-disk"></i> Guardar tiempos grupales
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            let inicio = 0;
+            let acumulado = 0;
+            let corriendo = false;
+            let intervalo = null;
+            let posicionActual = 1;
+            let indiceGrupo = 0;
+
+            const display = document.getElementById('displayCronometro');
+            const btnIniciar = document.getElementById('btnIniciar');
+            const btnPausar = document.getElementById('btnPausar');
+            const btnReiniciar = document.getElementById('btnReiniciar');
+            const btnTomarIndividual = document.getElementById('btnTomarIndividual');
+            const inputIndividual = document.getElementById('TiempoTextoIndividual');
+            const tablaGrupo = document.getElementById('tablaGrupo');
+            const filaGrupoVacia = document.getElementById('filaGrupoVacia');
+
+            const formatear = (ms) => {
+                const totalCentecimas = Math.floor(ms / 10);
+                const centecimas = totalCentecimas % 100;
+                const totalSegundos = Math.floor(totalCentecimas / 100);
+                const segundos = totalSegundos % 60;
+                const minutos = Math.floor(totalSegundos / 60);
+
+                return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}.${String(centecimas).padStart(2, '0')}`;
+            };
+
+            const tiempoActualMs = () => corriendo ? acumulado + (Date.now() - inicio) : acumulado;
+
+            const actualizar = () => {
+                if (display) display.textContent = formatear(tiempoActualMs());
+            };
+
+            btnIniciar?.addEventListener('click', () => {
+                if (corriendo) return;
+                inicio = Date.now();
+                corriendo = true;
+                intervalo = setInterval(actualizar, 40);
+            });
+
+            btnPausar?.addEventListener('click', () => {
+                if (!corriendo) return;
+                acumulado += Date.now() - inicio;
+                corriendo = false;
+                clearInterval(intervalo);
+                actualizar();
+            });
+
+            btnReiniciar?.addEventListener('click', () => {
+                acumulado = 0;
+                inicio = Date.now();
+                corriendo = false;
+                posicionActual = 1;
+                clearInterval(intervalo);
+                actualizar();
+            });
+
+            btnTomarIndividual?.addEventListener('click', () => {
+                if (inputIndividual) inputIndividual.value = formatear(tiempoActualMs());
+            });
+
+            const configurarBusqueda = (inputId, contenedorId, onSelect) => {
+                const input = document.getElementById(inputId);
+                const contenedor = document.getElementById(contenedorId);
+                if (!input || !contenedor) return;
+
+                let timeout = null;
+
+                input.addEventListener('input', () => {
+                    const texto = input.value.trim();
+                    clearTimeout(timeout);
+
+                    if (texto.length < 2) {
+                        contenedor.innerHTML = '';
+                        return;
+                    }
+
+                    timeout = setTimeout(async () => {
+                        const response = await fetch(`/Deporte/BuscarDeportistas?texto=${encodeURIComponent(texto)}`);
+                        const data = await response.json();
+                        contenedor.innerHTML = '';
+
+                        if (!data || data.length === 0) {
+                            contenedor.innerHTML = '<div class="list-group-item text-muted">Sin coincidencias</div>';
+                            return;
+                        }
+
+                        data.forEach(item => {
+                            const boton = document.createElement('button');
+                            boton.type = 'button';
+                            boton.className = 'list-group-item list-group-item-action';
+                            boton.innerHTML = `<strong>${item.nombreCompleto}</strong><br><small>Cedula: ${item.cedulaCliente}</small>`;
+                            boton.addEventListener('click', () => {
+                                input.value = `${item.nombreCompleto} - ${item.cedulaCliente}`;
+                                contenedor.innerHTML = '';
+                                onSelect(item);
+                            });
+                            contenedor.appendChild(boton);
+                        });
+                    }, 300);
+                });
+            };
+
+            configurarBusqueda('txtBuscarIndividual', 'resultadosIndividual', (item) => {
+                document.getElementById('cedulaIndividual').value = item.cedulaCliente;
+                document.getElementById('formBuscarIndividual').submit();
+            });
+
+            configurarBusqueda('txtBuscarGrupo', 'resultadosGrupo', (item) => {
+                if (!tablaGrupo) return;
+                filaGrupoVacia?.remove();
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${item.nombreCompleto}</strong><br>
+                        <small class="text-muted">Cedula: ${item.cedulaCliente}</small>
+                        <input type="hidden" name="Tiempos[${indiceGrupo}].IdCliente" value="${item.idCliente}" />
+                    </td>
+                    <td>
+                        <input name="Tiempos[${indiceGrupo}].TiempoTexto" class="form-control form-control-sm tiempo-grupo" readonly />
+                    </td>
+                    <td>
+                        <input name="Tiempos[${indiceGrupo}].Posicion" class="form-control form-control-sm posicion-grupo" readonly />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-success btn-llegada">Tomar llegada</button>
+                    </td>
+                `;
+
+                tr.querySelector('.btn-llegada').addEventListener('click', (e) => {
+                    tr.querySelector('.tiempo-grupo').value = formatear(tiempoActualMs());
+                    tr.querySelector('.posicion-grupo').value = posicionActual;
+                    tr.classList.add('table-success');
+                    e.currentTarget.disabled = true;
+                    e.currentTarget.innerText = 'Registrado';
+                    posicionActual++;
+                });
+
+                tablaGrupo.appendChild(tr);
+                indiceGrupo++;
+            });
+
+            actualizar();
+        })();
+    </script>
+}

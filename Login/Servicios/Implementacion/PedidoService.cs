@@ -180,10 +180,9 @@ namespace Plataforma.Servicios.Implementacion
             }
 
             using var tx = await _dbContext.Database.BeginTransactionAsync();
+
             try
             {
-                decimal totalVenta = 0m;
-
                 foreach (var pedido in pedidos)
                 {
                     var inv = await _dbContext.InventarioSedes
@@ -210,17 +209,25 @@ namespace Plataforma.Servicios.Implementacion
                     pedido.IvaValor = ivaLinea;
                     pedido.SubTotal = subTotalConIva;
 
-                    totalVenta += pedido.SubTotal;
                     _dbContext.Pedidos.Add(pedido);
                 }
 
                 var venta = await _dbContext.Ventas.FirstOrDefaultAsync(v => v.IdVenta == idVenta);
+
                 if (venta == null)
                     throw new PedidoException(PedidoErrorCode.VentaNoExiste, $"La venta {idVenta} no existe.");
 
-                venta.Total = totalVenta;
-
+                // Guarda pedidos nuevos e inventario
                 await _dbContext.SaveChangesAsync();
+
+                // Recalcula total real acumulado de la venta
+                venta.Total = await _dbContext.Pedidos
+                    .Where(p => p.IdVenta == idVenta)
+                    .SumAsync(p => p.SubTotal);
+
+                // Guarda total actualizado
+                await _dbContext.SaveChangesAsync();
+
                 await tx.CommitAsync();
             }
             catch

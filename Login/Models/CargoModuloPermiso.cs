@@ -26,6 +26,7 @@ public class ModuloPermisoItemVM
 
     // si el checkbox está marcado o no
     public bool Activo { get; set; }
+    public string BloqueModulo { get; set; } = "General";
 }
 
 public class PermisosMenuViewModel

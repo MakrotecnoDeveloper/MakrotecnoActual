@@ -1,0 +1,337 @@
+﻿@model Plataforma.ViewModels.Cotizacion.CotizacionCrearVm
+
+@{
+    ViewData["Title"] = "Crear cotización";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container py-4">
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="mb-1 fw-semibold">
+                    <i class="bi bi-file-earmark-plus"></i> Crear cotización
+                </h3>
+                <div class="text-muted">
+                    La cotización no descuenta inventario hasta convertirse en venta.
+                </div>
+            </div>
+
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <form asp-action="Crear" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row g-3">
+
+                <div class="col-12 col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-body p-4">
+                            <h5 class="fw-semibold mb-3">Información general</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Número</label>
+                                <input asp-for="NumeroCotizacion" class="form-control" readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Cliente</label>
+                                <select asp-for="IdCliente" asp-items="Model.Clientes" class="form-select">
+                                    <option value="">Seleccione un cliente...</option>
+                                </select>
+                                <span asp-validation-for="IdCliente" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Fecha vencimiento</label>
+                                <input asp-for="FechaVencimiento" type="date" class="form-control" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Observación general</label>
+                                <textarea asp-for="ObservacionGeneral" class="form-control" rows="4"
+                                          placeholder="Ej: cotización enviada por WhatsApp, condiciones de entrega, garantía, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <h5 class="fw-semibold mb-3">Resumen</h5>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal</span>
+                                <strong id="uiSubtotal">$ 0</strong>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>IVA</span>
+                                <strong id="uiIva">$ 0</strong>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Descuento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Descuento" id="Descuento" class="form-control" value="0" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between fs-5 border-top pt-3">
+                                <span>Total</span>
+                                <strong id="uiTotal">$ 0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-semibold mb-0">Productos cotizados</h5>
+                                    <div class="text-muted small">
+                                        Escribe el código del producto. El sistema validará el inventario al guardar.
+                                    </div>
+                                </div>
+
+                                <button type="button" id="btnAgregarFila" class="btn btn-outline-primary">
+                                    <i class="bi bi-plus-circle"></i> Agregar
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table align-middle" id="tablaDetalles">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:140px;">Código</th>
+                                            <th>Nombre</th>
+                                            <th style="width:110px;">Cantidad</th>
+                                            <th style="width:130px;">Valor venta</th>
+                                            <th style="width:100px;">IVA %</th>
+                                            <th style="width:140px;">Total</th>
+                                            <th style="width:70px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.Detalles.Count; i++)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <input name="Detalles[@i].CodigoProducto"
+                                                           value="@Model.Detalles[i].CodigoProducto"
+                                                           class="form-control codigo" />
+                                                </td>
+                                                <td>
+                                                    <input name="Detalles[@i].NombreProducto"
+                                                           value="@Model.Detalles[i].NombreProducto"
+                                                           class="form-control nombre" />
+                                                </td>
+                                                <td>
+                                                    <input name="Detalles[@i].Cantidad"
+                                                           value="@Model.Detalles[i].Cantidad"
+                                                           type="number"
+                                                           step="0.01"
+                                                           class="form-control cantidad" />
+                                                </td>
+                                                <td>
+                                                    <input name="Detalles[@i].ValorVenta"
+                                                           value="@Model.Detalles[i].ValorVenta"
+                                                           type="number"
+                                                           step="0.01"
+                                                           class="form-control valorVenta" />
+                                                </td>
+                                                <td>
+                                                    <input name="Detalles[@i].IvaPorcentaje"
+                                                           value="@Model.Detalles[i].IvaPorcentaje"
+                                                           type="number"
+                                                           step="0.01"
+                                                           class="form-control iva" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control totalLinea" readonly />
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btnEliminarFila">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+
+                                                <input type="hidden" name="Detalles[@i].ValorNeto" class="valorNeto" value="@Model.Detalles[i].ValorNeto" />
+                                                <input type="hidden" name="Detalles[@i].ValorUnidad" class="valorUnidad" value="@Model.Detalles[i].ValorUnidad" />
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <hr />
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    Cancelar
+                                </a>
+
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-save"></i> Guardar cotización
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const moneyCO = (n) => {
+                try {
+                    return "$ " + Number(n || 0).toLocaleString("es-CO", {
+                        maximumFractionDigits: 0
+                    });
+                } catch {
+                    return "$ " + n;
+                }
+            };
+
+            function toNumber(v) {
+                if (v == null) return 0;
+                let s = String(v).trim();
+                if (!s) return 0;
+                s = s.replace(/\$/g, "").replace(/\s/g, "");
+
+                if (s.includes(",") && s.includes(".")) {
+                    s = s.replace(/\./g, "").replace(",", ".");
+                    const n = parseFloat(s);
+                    return isNaN(n) ? 0 : n;
+                }
+
+                if (s.includes(".") && /^\d{1,3}(\.\d{3})+$/.test(s)) {
+                    s = s.replace(/\./g, "");
+                    const n = parseFloat(s);
+                    return isNaN(n) ? 0 : n;
+                }
+
+                if (s.includes(".")) {
+                    const n = parseFloat(s);
+                    return isNaN(n) ? 0 : n;
+                }
+
+                if (s.includes(",")) {
+                    s = s.replace(",", ".");
+                    const n = parseFloat(s);
+                    return isNaN(n) ? 0 : n;
+                }
+
+                s = s.replace(/[^\d]/g, "");
+                return s ? Number(s) : 0;
+            }
+
+            function recalcularIndices() {
+                $("#tablaDetalles tbody tr").each(function (index) {
+                    $(this).find(".codigo").attr("name", `Detalles[${index}].CodigoProducto`);
+                    $(this).find(".nombre").attr("name", `Detalles[${index}].NombreProducto`);
+                    $(this).find(".cantidad").attr("name", `Detalles[${index}].Cantidad`);
+                    $(this).find(".valorVenta").attr("name", `Detalles[${index}].ValorVenta`);
+                    $(this).find(".iva").attr("name", `Detalles[${index}].IvaPorcentaje`);
+                    $(this).find(".valorNeto").attr("name", `Detalles[${index}].ValorNeto`);
+                    $(this).find(".valorUnidad").attr("name", `Detalles[${index}].ValorUnidad`);
+                });
+            }
+
+            function calcularTotales() {
+                let subtotal = 0;
+                let ivaTotal = 0;
+
+                $("#tablaDetalles tbody tr").each(function () {
+                    const cantidad = toNumber($(this).find(".cantidad").val());
+                    const valorVenta = toNumber($(this).find(".valorVenta").val());
+                    const ivaPorc = toNumber($(this).find(".iva").val());
+
+                    const baseLinea = cantidad * valorVenta;
+                    const ivaLinea = baseLinea * (ivaPorc / 100);
+                    const totalLinea = baseLinea + ivaLinea;
+
+                    subtotal += baseLinea;
+                    ivaTotal += ivaLinea;
+
+                    $(this).find(".totalLinea").val(moneyCO(totalLinea));
+                });
+
+                const descuento = toNumber($("#Descuento").val());
+                const total = subtotal + ivaTotal - descuento;
+
+                $("#uiSubtotal").text(moneyCO(subtotal));
+                $("#uiIva").text(moneyCO(ivaTotal));
+                $("#uiTotal").text(moneyCO(total));
+            }
+
+            $("#btnAgregarFila").on("click", function () {
+                const index = $("#tablaDetalles tbody tr").length;
+
+                const fila = `
+                    <tr>
+                        <td>
+                            <input name="Detalles[${index}].CodigoProducto" class="form-control codigo" />
+                        </td>
+                        <td>
+                            <input name="Detalles[${index}].NombreProducto" class="form-control nombre" />
+                        </td>
+                        <td>
+                            <input name="Detalles[${index}].Cantidad" type="number" step="0.01" class="form-control cantidad" />
+                        </td>
+                        <td>
+                            <input name="Detalles[${index}].ValorVenta" type="number" step="0.01" class="form-control valorVenta" />
+                        </td>
+                        <td>
+                            <input name="Detalles[${index}].IvaPorcentaje" type="number" step="0.01" class="form-control iva" />
+                        </td>
+                        <td>
+                            <input type="text" class="form-control totalLinea" readonly />
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger btnEliminarFila">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+
+                        <input type="hidden" name="Detalles[${index}].ValorNeto" class="valorNeto" value="0" />
+                        <input type="hidden" name="Detalles[${index}].ValorUnidad" class="valorUnidad" value="0" />
+                    </tr>`;
+
+                $("#tablaDetalles tbody").append(fila);
+            });
+
+            $(document).on("click", ".btnEliminarFila", function () {
+                if ($("#tablaDetalles tbody tr").length > 1) {
+                    $(this).closest("tr").remove();
+                    recalcularIndices();
+                    calcularTotales();
+                }
+            });
+
+            $(document).on("input change", ".cantidad, .valorVenta, .iva, #Descuento", function () {
+                calcularTotales();
+            });
+
+            $(document).ready(function () {
+                calcularTotales();
+            });
+        })();
+    </script>
+}

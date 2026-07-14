@@ -1,0 +1,124 @@
+﻿@model Plataforma.ViewModels.CuentasBancarias.CuentaBancariaEmpresaVm
+
+@{
+    ViewData["Title"] = "Editar cuenta bancaria";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="container py-4">
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="mb-1 fw-semibold">
+                    <i class="bi bi-pencil-square"></i> Editar cuenta bancaria
+                </h3>
+                <div class="text-muted">
+                    Actualiza la información bancaria de la empresa.
+                </div>
+            </div>
+
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <form asp-action="Editar" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="IdCuentaBancariaEmpresa" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label asp-for="TitularCuenta" class="form-label fw-semibold"></label>
+                            <input asp-for="TitularCuenta" class="form-control" />
+                            <span asp-validation-for="TitularCuenta" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="DocumentoTitular" class="form-label fw-semibold"></label>
+                            <input asp-for="DocumentoTitular" class="form-control" />
+                            <span asp-validation-for="DocumentoTitular" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Banco" class="form-label fw-semibold"></label>
+                            <input asp-for="Banco" class="form-control" />
+                            <span asp-validation-for="Banco" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="TipoCuenta" class="form-label fw-semibold"></label>
+                            <select asp-for="TipoCuenta" class="form-select">
+                                <option value="">Seleccione...</option>
+                                <option value="Ahorros">Ahorros</option>
+                                <option value="Corriente">Corriente</option>
+                                <option value="Nequi">Nequi</option>
+                                <option value="Daviplata">Daviplata</option>
+                                <option value="Billetera digital">Billetera digital</option>
+                            </select>
+                            <span asp-validation-for="TipoCuenta" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="NumeroCuenta" class="form-label fw-semibold"></label>
+                            <input asp-for="NumeroCuenta" class="form-control" />
+                            <span asp-validation-for="NumeroCuenta" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Convenio" class="form-label fw-semibold"></label>
+                            <input asp-for="Convenio" class="form-control" />
+                            <span asp-validation-for="Convenio" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="EsPrincipal" class="form-check-input" />
+                                <label asp-for="EsPrincipal" class="form-check-label fw-semibold"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="Estado" class="form-check-input" />
+                                <label asp-for="Estado" class="form-check-label fw-semibold">Activa</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Observacion" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Observacion" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Observacion" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-save"></i> Actualizar cuenta bancaria
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

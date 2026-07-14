@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Models;
 using Plataforma.Services;
+using Plataforma.Services.Interfaces;
 using Plataforma.Servicios.Contrato;
 using Plataforma.Servicios.Implementacion;
 using Serilog;
@@ -80,6 +81,10 @@ builder.Services.AddScoped<ICxcService, CxcService>();
 builder.Services.AddScoped<IInicializacionClienteService, InicializacionClienteService>();
 builder.Services.AddScoped<IIntegracionService, IntegracionService>();
 builder.Services.AddScoped<IImportacionService, ImportacionService>();
+builder.Services.AddScoped<IDeporteService, DeporteService>();
+builder.Services.AddScoped<ICotizacionService, CotizacionService>();
+builder.Services.AddScoped<ICuentaCobroService, CuentaCobroService>();
+builder.Services.AddScoped<ICuentaBancariaEmpresaService, CuentaBancariaEmpresaService>();
 
 
 //Cultura de la aplicacion para formateo de n�meros, fechas y monedas, utilizando la cultura "es-CO" (español de Colombia).

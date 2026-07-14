@@ -1,0 +1,218 @@
+﻿@model Plataforma.ViewModels.Cotizacion.CotizacionConvertirVentaVm
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Convertir cotización en venta";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var culturaPost = new CultureInfo("es-CO");
+}
+
+<div class="content-wrapper">
+    <div class="container py-4">
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="mb-1 fw-semibold">
+                    Convertir cotización en venta
+                </h3>
+                <div class="text-muted">
+                    Cotización @Model.NumeroCotizacion - Cliente: @Model.NombreCliente
+                </div>
+            </div>
+
+            <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form asp-action="ConvertirVenta" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="IdCotizacion" />
+            <input type="hidden" asp-for="NumeroCotizacion" />
+            <input type="hidden" asp-for="IdCliente" />
+            <input type="hidden" asp-for="CedulaCliente" />
+            <input type="hidden" asp-for="NombreCliente" />
+
+            <div class="row g-3">
+
+                <div class="col-12 col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+
+                            <h5 class="fw-semibold mb-3">Productos a convertir</h5>
+
+                            <div class="alert alert-info small">
+                                Selecciona únicamente los productos que el cliente acepta comprar.
+                                Los productos no seleccionados quedarán excluidos de la venta.
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle" id="tablaConvertir">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:70px;">Va</th>
+                                            <th>Código</th>
+                                            <th>Producto</th>
+                                            <th class="text-end">Cotizado</th>
+                                            <th class="text-end">Stock sede</th>
+                                            <th class="text-end">Valor</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.Detalles.Count; i++)
+                                        {
+                                            var item = Model.Detalles[i];
+                                            var sinStock = item.StockDisponible < item.Cantidad;
+
+                                            <tr class="@(sinStock ? "table-danger" : "")">
+                                                <td class="text-center">
+                                                    <input type="checkbox"
+                                                           name="Detalles[@i].IncluidoEnVenta"
+                                                           value="true"
+                                                           class="form-check-input chkIncluir"
+                                                           @(item.IncluidoEnVenta && !sinStock ? "checked" : "")
+                                                           data-total="@item.TotalLinea.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                           @(sinStock ? "disabled" : "") />
+
+                                                    <input type="hidden" name="Detalles[@i].IncluidoEnVenta" value="false" />
+                                                </td>
+
+                                                <td>
+                                                    @item.CodigoProducto
+                                                    <input type="hidden" name="Detalles[@i].IdCotizacionDetalle" value="@item.IdCotizacionDetalle" />
+                                                    <input type="hidden" name="Detalles[@i].CodigoProducto" value="@item.CodigoProducto" />
+                                                </td>
+
+                                                <td>
+                                                    @item.NombreProducto
+                                                    <input type="hidden" name="Detalles[@i].NombreProducto" value="@item.NombreProducto" />
+                                                </td>
+
+                                                <td class="text-end">
+                                                    @item.Cantidad
+                                                    <input type="hidden" name="Detalles[@i].Cantidad" value="@item.Cantidad.ToString("0.##", culturaPost)" />
+                                                </td>
+
+                                                <td class="text-end">
+                                                    @item.StockDisponible
+
+                                                    @if (sinStock)
+                                                    {
+                                                        <div class="text-danger small">
+                                                            Stock insuficiente
+                                                        </div>
+                                                    }
+
+                                                    <input type="hidden" name="Detalles[@i].StockDisponible" value="@item.StockDisponible.ToString("0.##", culturaPost)" />
+                                                </td>
+
+                                                <td class="text-end">
+                                                    @item.ValorVenta.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
+
+                                                    <input type="hidden" name="Detalles[@i].ValorVenta" value="@item.ValorVenta.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].ValorNeto" value="@item.ValorNeto.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].ValorUnidad" value="@item.ValorUnidad.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].IvaPorcentaje" value="@item.IvaPorcentaje.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].IvaValor" value="@item.IvaValor.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].SubTotal" value="@item.SubTotal.ToString("0.##", culturaPost)" />
+                                                    <input type="hidden" name="Detalles[@i].TotalLinea" value="@item.TotalLinea.ToString("0.##", culturaPost)" />
+                                                </td>
+
+                                                <td class="text-end fw-semibold">
+                                                    @item.TotalLinea.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-body p-4">
+                            <h5 class="fw-semibold mb-3">Resumen venta</h5>
+
+                            <div class="text-muted small">Total seleccionado</div>
+                            <div class="fs-3 fw-bold" id="uiTotalSeleccionado">$ 0</div>
+
+                            <input type="hidden" asp-for="TotalSeleccionado" id="TotalSeleccionado" />
+
+                            <hr />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Observación de venta</label>
+                                <textarea asp-for="ObservacionVenta" class="form-control" rows="5"></textarea>
+                                <span asp-validation-for="ObservacionVenta" class="text-danger small"></span>
+                            </div>
+
+                            <div class="alert alert-warning small">
+                                Al convertir la cotización en venta, se crearán los pedidos y se descontará inventario de la sede actual.
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100"
+                                    onclick="return confirm('¿Desea convertir esta cotización en venta?');">
+                                <i class="bi bi-cart-check"></i> Convertir en venta
+                            </button>
+
+                            <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion"
+                               class="btn btn-outline-secondary w-100 mt-2">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            function moneyCO(n) {
+                try {
+                    return "$ " + Number(n || 0).toLocaleString("es-CO", {
+                        maximumFractionDigits: 0
+                    });
+                } catch {
+                    return "$ " + n;
+                }
+            }
+
+            function recalcular() {
+                let total = 0;
+
+                document.querySelectorAll(".chkIncluir").forEach(chk => {
+                    if (chk.checked && !chk.disabled) {
+                        total += Number(chk.dataset.total || 0);
+                    }
+                });
+
+                document.getElementById("uiTotalSeleccionado").textContent = moneyCO(total);
+                document.getElementById("TotalSeleccionado").value = total.toString().replace(".", ",");
+            }
+
+            document.querySelectorAll(".chkIncluir").forEach(chk => {
+                chk.addEventListener("change", recalcular);
+            });
+
+            recalcular();
+        })();
+    </script>
+}

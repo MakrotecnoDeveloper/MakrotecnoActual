@@ -1,0 +1,405 @@
+﻿@model Plataforma.Models.ViewModels.Deporte.EstilosDeportivosAdminVm
+
+@{
+    ViewData["Title"] = "Estilos Deportivos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .sport-page {
+        background: #f6f8fb;
+        min-height: calc(100vh - 120px);
+        padding: 18px;
+        border-radius: 8px;
+    }
+
+    .sport-card {
+        border: 1px solid #e3e7ee;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
+    }
+
+    .table-selected {
+        background: #e8f1ff !important;
+        font-weight: 600;
+    }
+
+    .badge-status {
+        min-width: 72px;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="container-fluid sport-page">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-0">Estilos deportivos</h3>
+                <small class="text-muted">Administración de pruebas, distancias, modalidades y estilos por deporte</small>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <div class="row">
+
+            <div class="col-lg-5">
+                <div class="card sport-card mb-3">
+                    <div class="card-header">
+                        <strong>Deportes</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <form asp-action="EstilosDeportivos" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="idDeporte" value="@Model.IdDeporteSeleccionado" />
+
+                            <div class="col-md-8">
+                                <input name="buscarDeporte"
+                                       value="@Model.BuscarDeporte"
+                                       class="form-control"
+                                       placeholder="Buscar deporte..." />
+                            </div>
+
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Buscar
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Deporte</th>
+                                        <th>Estilos</th>
+                                        <th>Estado</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Deportes.Any())
+                                    {
+                                        foreach (var deporte in Model.Deportes)
+                                        {
+                                            var seleccionado = Model.IdDeporteSeleccionado == deporte.IdDeporte;
+
+                                            <tr class="@(seleccionado ? "table-selected" : "")">
+                                                <td>
+                                                    <strong>@deporte.Nombre</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(deporte.Descripcion))
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">@deporte.Descripcion</small>
+                                                    }
+                                                </td>
+
+                                                <td>@deporte.CantidadEstilos</td>
+
+                                                <td>
+                                                    @if (deporte.Activo)
+                                                    {
+                                                        <span class="badge bg-success badge-status">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary badge-status">Inactivo</span>
+                                                    }
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <a asp-action="EstilosDeportivos"
+                                                       asp-route-idDeporte="@deporte.IdDeporte"
+                                                       asp-route-buscarDeporte="@Model.BuscarDeporte"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        Ver estilos
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="text-muted">
+                                                No hay deportes para mostrar.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (Model.TotalPaginasDeportes > 1)
+                        {
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    @for (var i = 1; i <= Model.TotalPaginasDeportes; i++)
+                                    {
+                                        <li class="page-item @(i == Model.PaginaDeportes ? "active" : "")">
+                                            <a class="page-link"
+                                               asp-action="EstilosDeportivos"
+                                               asp-route-idDeporte="@Model.IdDeporteSeleccionado"
+                                               asp-route-buscarDeporte="@Model.BuscarDeporte"
+                                               asp-route-buscarEstilo="@Model.BuscarEstilo"
+                                               asp-route-paginaDeportes="@i"
+                                               asp-route-paginaEstilos="@Model.PaginaEstilos">
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+
+                <div class="card sport-card mb-3">
+                    <div class="card-header">
+                        <strong>Crear nuevo estilo/prueba</strong>
+                    </div>
+
+                    <div class="card-body">
+                        <form asp-action="CrearEstiloDeportivo" method="post" class="row g-3">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="IdDeporte" value="@Model.IdDeporteSeleccionado" />
+
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <input name="Nombre" class="form-control" placeholder="Ej: 40m Libre" required />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Distancia</label>
+                                <input name="Distancia" class="form-control" type="number" step="0.01" placeholder="40" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Unidad</label>
+                                <input name="UnidadMedida" class="form-control" placeholder="Metros" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Modalidad / Estilo</label>
+                                <input name="Modalidad" class="form-control" placeholder="Libre, Espalda, Pecho..." />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                <select name="Activo" class="form-select">
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100" @(Model.IdDeporteSeleccionado.HasValue ? "" : "disabled")>
+                                    Crear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card sport-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Estilos/pruebas definidos</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <form asp-action="EstilosDeportivos" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="idDeporte" value="@Model.IdDeporteSeleccionado" />
+                            <input type="hidden" name="buscarDeporte" value="@Model.BuscarDeporte" />
+
+                            <div class="col-md-8">
+                                <input name="buscarEstilo"
+                                       value="@Model.BuscarEstilo"
+                                       class="form-control"
+                                       placeholder="Buscar estilo, modalidad o unidad..." />
+                            </div>
+
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Buscar
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Distancia</th>
+                                        <th>Unidad</th>
+                                        <th>Modalidad</th>
+                                        <th>Estado</th>
+                                        <th style="width: 170px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Estilos.Any())
+                                    {
+                                        foreach (var estilo in Model.Estilos)
+                                        {
+                                            <tr>
+                                                <td>@estilo.Nombre</td>
+                                                <td>@(estilo.Distancia?.ToString("0.##") ?? "-")</td>
+                                                <td>@(estilo.UnidadMedida ?? "-")</td>
+                                                <td>@(estilo.Modalidad ?? "-")</td>
+                                                <td>
+                                                    @if (estilo.Activo)
+                                                    {
+                                                        <span class="badge bg-success badge-status">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary badge-status">Inactivo</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-warning"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalEditarEstilo_@estilo.IdPruebaDeportiva">
+                                                        Editar
+                                                    </button>
+
+                                                    <form asp-action="CambiarEstadoEstiloDeportivo"
+                                                          method="post"
+                                                          class="d-inline">
+                                                        @Html.AntiForgeryToken()
+
+                                                        <input type="hidden" name="idPruebaDeportiva" value="@estilo.IdPruebaDeportiva" />
+                                                        <input type="hidden" name="idDeporte" value="@estilo.IdDeporte" />
+
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                            @(estilo.Activo ? "Inactivar" : "Activar")
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+
+                                            <div class="modal fade" id="modalEditarEstilo_@estilo.IdPruebaDeportiva" tabindex="-1">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <form asp-action="ActualizarEstiloDeportivo" method="post">
+                                                            @Html.AntiForgeryToken()
+
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Editar estilo/prueba deportiva</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+
+                                                            <div class="modal-body">
+                                                                <input type="hidden" name="IdPruebaDeportiva" value="@estilo.IdPruebaDeportiva" />
+                                                                <input type="hidden" name="IdDeporte" value="@estilo.IdDeporte" />
+
+                                                                <div class="row g-3">
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Nombre</label>
+                                                                        <input name="Nombre" value="@estilo.Nombre" class="form-control" required />
+                                                                    </div>
+
+                                                                    <div class="col-md-3">
+                                                                        <label class="form-label">Distancia</label>
+                                                                        <input name="Distancia" value="@estilo.Distancia" class="form-control" type="number" step="0.01" />
+                                                                    </div>
+
+                                                                    <div class="col-md-3">
+                                                                        <label class="form-label">Unidad</label>
+                                                                        <input name="UnidadMedida" value="@estilo.UnidadMedida" class="form-control" />
+                                                                    </div>
+
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Modalidad / Estilo</label>
+                                                                        <input name="Modalidad" value="@estilo.Modalidad" class="form-control" />
+                                                                    </div>
+
+                                                                    <div class="col-md-3">
+                                                                        <label class="form-label">Estado</label>
+                                                                        <select name="Activo" class="form-select">
+                                                                            @if (estilo.Activo)
+                                                                            {
+                                                                                <option value="true" selected>Activo</option>
+                                                                                <option value="false">Inactivo</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="true">Activo</option>
+                                                                                <option value="false" selected>Inactivo</option>
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                    Cancelar
+                                                                </button>
+
+                                                                <button type="submit" class="btn btn-primary">
+                                                                    Guardar cambios
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-muted">
+                                                No hay estilos/pruebas definidos para este deporte.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (Model.TotalPaginasEstilos > 1)
+                        {
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    @for (var i = 1; i <= Model.TotalPaginasEstilos; i++)
+                                    {
+                                        <li class="page-item @(i == Model.PaginaEstilos ? "active" : "")">
+                                            <a class="page-link"
+                                               asp-action="EstilosDeportivos"
+                                               asp-route-idDeporte="@Model.IdDeporteSeleccionado"
+                                               asp-route-buscarDeporte="@Model.BuscarDeporte"
+                                               asp-route-buscarEstilo="@Model.BuscarEstilo"
+                                               asp-route-paginaDeportes="@Model.PaginaDeportes"
+                                               asp-route-paginaEstilos="@i">
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

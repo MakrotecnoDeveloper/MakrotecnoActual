@@ -76,6 +76,13 @@
                target="_blank">
                 <i class="bi bi-printer"></i> Imprimir (Diseño)
             </a>
+
+            <a asp-controller="CuentaCobro"
+               asp-action="CrearDesdeFactura"
+               asp-route-idFactura="@Model.Factura.IdFactura"
+               class="btn btn-outline-primary">
+                Generar cuenta de cobro
+            </a>
         </div>
 
         <!-- FACTURA -->

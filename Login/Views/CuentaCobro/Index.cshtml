@@ -1,0 +1,73 @@
+﻿@model List<Plataforma.ViewModels.CuentasCobro.CuentaCobroIndexVm>
+
+@{
+    ViewData["Title"] = "Cuentas de cobro";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var cultura = new System.Globalization.CultureInfo("es-CO");
+}
+
+<div class="content-wrapper">
+    <div class="container py-4">
+
+        <h3 class="mb-3">Cuentas de cobro</h3>
+
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success">@TempData["Ok"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Número</th>
+                            <th>Factura</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th style="width:180px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.NumeroCuentaCobro</td>
+                                <td>@item.NumeroFactura</td>
+                                <td>@item.NombreCliente</td>
+                                <td>@item.FechaCuentaCobro.ToString("dd/MM/yyyy")</td>
+                                <td>@item.ValorNetoPagar.ToString("C0", cultura)</td>
+                                <td>@item.EstadoCuentaCobro</td>
+                                <td>
+                                    <a asp-action="Detalle" asp-route-id="@item.IdCuentaCobro" class="btn btn-sm btn-outline-primary">
+                                        Ver
+                                    </a>
+                                    <a asp-action="Imprimir" asp-route-id="@item.IdCuentaCobro" target="_blank" class="btn btn-sm btn-outline-dark">
+                                        Imprimir
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    No hay cuentas de cobro registradas.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
